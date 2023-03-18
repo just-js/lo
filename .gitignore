@@ -1,0 +1,12 @@
+deps/*
+*.o
+*.so
+*.a
+spin
+*.debug
+scratch
+deps
+module/*
+!module/fs
+!module/load
+.vscode
