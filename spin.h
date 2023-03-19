@@ -153,13 +153,11 @@ void SET_MODULE(Isolate *isolate, Local<ObjectTemplate>
   recv, const char *name, Local<ObjectTemplate> module);
 void SET_VALUE(Isolate *isolate, Local<ObjectTemplate> 
   recv, const char *name, Local<Value> value);
-template <typename F>
 void SET_FAST_METHOD(Isolate* isolate, Local<ObjectTemplate> exports, 
-  const char * name, F* fastCFunc, FunctionCallback slowFunc);
-template <typename F>
+  const char * name, v8::CFunction* fastCFunc, FunctionCallback slowFunc);
 void SET_FAST_PROP(Isolate* isolate, Local<ObjectTemplate> exports, 
-  const char * name, F* fastGetter, FunctionCallback slowGetter,
-  F* fastSetter, FunctionCallback slowSetter);
+  const char * name, v8::CFunction* fastGetter, FunctionCallback slowGetter,
+  v8::CFunction* fastSetter, FunctionCallback slowSetter);
 
 // internal API - on the spin:: namespace so can be used from other modules
 uint64_t hrtime();
@@ -188,7 +186,7 @@ void SetModuleCallbacks(const FunctionCallbackInfo<Value> &args);
 void Builtins(const FunctionCallbackInfo<Value> &args);
 void Modules(const FunctionCallbackInfo<Value> &args);
 void Builtin(const FunctionCallbackInfo<Value> &args);
-void Load(const FunctionCallbackInfo<Value> &args);
+void Library(const FunctionCallbackInfo<Value> &args);
 void BindFastApi(const FunctionCallbackInfo<Value> &args);
 
 void NextTick(const FunctionCallbackInfo<Value> &args);

@@ -45,10 +45,10 @@ const api = {
     rpointer: 'RSA*'
   },
   EVP_PKEY_free: {
-    parameters: ['pointer'], pointers: ['EVP_PKEY*']
+    parameters: ['pointer'], pointers: ['EVP_PKEY*'], result: 'void'
   },
   EVP_PKEY_CTX_free: {
-    parameters: ['pointer'], pointers: ['EVP_PKEY_CTX*']
+    parameters: ['pointer'], pointers: ['EVP_PKEY_CTX*'], result: 'void'
   },
   EVP_MD_CTX_new: {
     parameters: [],
@@ -62,18 +62,19 @@ const api = {
   },
   EVP_MD_CTX_free: {
     parameters: ['pointer'],
-    pointers: ['EVP_MD_CTX*']
+    pointers: ['EVP_MD_CTX*'],
+    result: 'void'
   },
   EVP_get_digestbynid: {
     parameters: ['i32'],
     result: 'pointer',
-    rpointer: 'EVP_MD*'
+    rpointer: 'const EVP_MD*'
   },
   EVP_get_digestbyname: {
     parameters: ['pointer'],
     pointers: ['const char*'],
     result: 'pointer',
-    rpointer: 'EVP_MD*'
+    rpointer: 'const EVP_MD*'
   },
   EVP_Digest: {
     parameters: ['pointer', 'u32', 'pointer', 'pointer', 'pointer', 'pointer'],
@@ -102,38 +103,38 @@ const api = {
   },
   EVP_DigestFinal: {
     parameters: ['pointer', 'pointer', 'pointer'],
-    pointers: ['EVP_MD_CTX*', 'unsigned char*', 'size_t*'],
+    pointers: ['EVP_MD_CTX*', 'unsigned char*', 'unsigned int*'],
     result: 'i32'
   },
   EVP_sha1: {
     parameters: [],
     result: 'pointer',
-    rpointer: 'EVP_MD*'
+    rpointer: 'const EVP_MD*'
   },
   EVP_sha224: {
     parameters: [],
     result: 'pointer',
-    rpointer: 'EVP_MD*'
+    rpointer: 'const EVP_MD*'
   },
   EVP_sha256: {
     parameters: [],
     result: 'pointer',
-    rpointer: 'EVP_MD*'
+    rpointer: 'const EVP_MD*'
   },
   EVP_sha384: {
     parameters: [],
     result: 'pointer',
-    rpointer: 'EVP_MD*'
+    rpointer: 'const EVP_MD*'
   },
   EVP_sha512: {
     parameters: [],
     result: 'pointer',
-    rpointer: 'EVP_MD*'
+    rpointer: 'const EVP_MD*'
   },
   EVP_sha512_256: {
     parameters: [],
     result: 'pointer',
-    rpointer: 'EVP_MD*'
+    rpointer: 'const EVP_MD*'
   },
   EVP_DigestVerifyInit: {
     parameters: ['pointer', 'pointer', 'pointer', 'pointer', 'pointer'],
@@ -148,7 +149,7 @@ const api = {
   BIO_s_mem: {
     parameters: [],
     result: 'pointer',
-    rpointer: 'BIO_METHOD*'
+    rpointer: 'const BIO_METHOD*'
   },
   BIO_new: {
     parameters: ['pointer'],
@@ -164,17 +165,19 @@ const api = {
   },
   BIO_ctrl: {
     parameters: ['pointer', 'i32', 'u64', 'pointer'],
+    pointers: ['BIO*'],
     result: 'i32'
   },
   BIO_read: {
     parameters: ['pointer', 'pointer', 'i32'],
+    pointers: ['BIO*'],
     result: 'i32'
   },
   PEM_write_bio_PrivateKey: {
     parameters: [
       'pointer', 'pointer', 'pointer', 'pointer', 'i32', 'pointer', 'pointer'
     ],
-    pointers: ['BIO*', 'EVP_PKEY*', 'EVP_CIPHER*'],
+    pointers: ['BIO*', 'EVP_PKEY*', 'EVP_CIPHER*', 'unsigned char*', , 'pem_password_cb*'],
     result: 'i32'
   },
   PEM_write_bio_PUBKEY: {
@@ -229,7 +232,8 @@ const api = {
   },
   X509_free: {
     parameters: ['pointer'],
-    pointers: ['X509*']
+    pointers: ['X509*'],
+    result: 'void'
   },
   X509_get_pubkey: {
     parameters: ['pointer'],
@@ -280,7 +284,7 @@ const api = {
   },
   SSL_shutdown: {
     parameters: ['pointer'],
-    pointers: ['const SSL*'],
+    pointers: ['SSL*'],
     result: 'i32'
   },
   SSL_get_servername: {
@@ -296,16 +300,17 @@ const api = {
   },
   SSL_free: {
     parameters: ['pointer'],
-    pointers: ['const SSL*']
+    pointers: ['SSL*'],
+    result: 'void'
   },
   SSL_read: {
     parameters: ['pointer', 'pointer', 'i32'],
-    pointers: ['const SSL*'],
+    pointers: ['SSL*'],
     result: 'i32'
   },
   SSL_write: {
     parameters: ['pointer', 'pointer', 'i32'],
-    pointers: ['const SSL*'],
+    pointers: ['SSL*'],
     result: 'i32'
   },
   SSL_get_version: {
@@ -316,7 +321,7 @@ const api = {
   },
   SSL_CIPHER_get_name: {
     parameters: ['pointer'],
-    pointers: ['const SSLCIPHER*'],
+    pointers: ['const SSL_CIPHER*'],
     result: 'pointer',
     rpointer: 'const char*'
   },
@@ -324,7 +329,7 @@ const api = {
     parameters: ['pointer'],
     pointers: ['const SSL*'],
     result: 'pointer',
-    rpointer: 'SSLCIPHER*'
+    rpointer: 'const SSL_CIPHER*'
   },
   SSL_get_peer_certificate: {
     parameters: ['pointer'],
@@ -357,6 +362,7 @@ const api = {
   SSL_set_accept_state: {
     parameters: ['pointer'],
     pointers: ['SSL*'],
+    result: 'void'
   },
   SSL_accept: {
     parameters: ['pointer'],
@@ -366,6 +372,7 @@ const api = {
   SSL_set_connect_state: {
     parameters: ['pointer'],
     pointers: ['SSL*'],
+    result: 'void'
   },
   SSL_do_handshake: {
     parameters: ['pointer'],
@@ -410,17 +417,20 @@ const api = {
   },
   SSL_CTX_free: {
     parameters: ['pointer'],
-    pointers: ['SSL_CTX*']
+    pointers: ['SSL_CTX*'],
+    result: 'void'
   },
   TLS_server_method: {
     parameters: [],
     result: 'pointer',
-    rpointer: 'SSL_METHOD*'
+    rpointer: 'SSL_METHOD*',
+    result: 'void'
   },
   TLS_client_method: {
     parameters: [],
     result: 'pointer',
-    rpointer: 'SSL_METHOD*'
+    rpointer: 'SSL_METHOD*',
+    result: 'void'
   },
   SSL_CTX_set_ciphersuites: {
     parameters: ['pointer', 'pointer'],
@@ -429,7 +439,7 @@ const api = {
   },
   SSL_ctrl: {
     parameters: ['pointer', 'i32', 'u64', 'pointer'],
-    pointers: ['const SSL*'],
+    pointers: ['SSL*'],
     result: 'u64'
   },
   RSA_pkey_ctx_ctrl: {
@@ -440,11 +450,11 @@ const api = {
   EVP_sha512_224: {
     parameters: [],
     result: 'pointer',
-    rpointer: 'EVP_MD*'
+    rpointer: 'const EVP_MD*'
   }
 }
 
-const name = 'openssl'
+const name = 'libssl'
 
 const includes = [
   'openssl/opensslv.h',
@@ -461,6 +471,6 @@ const includes = [
 ]
 
 const libs = ['ssl', 'crypto']
-const obj = ['openssl.a']
+const obj = []
 
 export { api, name, includes, libs, obj }

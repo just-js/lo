@@ -109,9 +109,8 @@ void spin::SET_VALUE(Isolate *isolate, Local<ObjectTemplate>
     value);
 }
 
-template <typename F>
 void spin::SET_FAST_METHOD(Isolate* isolate, v8::Local<v8::ObjectTemplate> 
-  exports, const char * name, F* fastCFunc, v8::FunctionCallback slowFunc) {
+  exports, const char * name, v8::CFunction* fastCFunc, v8::FunctionCallback slowFunc) {
   v8::Local<v8::FunctionTemplate> funcTemplate = v8::FunctionTemplate::New(
     isolate,
     slowFunc,
@@ -128,10 +127,9 @@ void spin::SET_FAST_METHOD(Isolate* isolate, v8::Local<v8::ObjectTemplate>
   );
 }
 
-template <typename F>
 void spin::SET_FAST_PROP(Isolate* isolate, v8::Local<v8::ObjectTemplate> 
-  exports, const char * name, F* fastGetter, v8::FunctionCallback slowGetter,
-  F* fastSetter, v8::FunctionCallback slowSetter) {
+  exports, const char * name, v8::CFunction* fastGetter, v8::FunctionCallback slowGetter,
+  v8::CFunction* fastSetter, v8::FunctionCallback slowSetter) {
   v8::Local<v8::FunctionTemplate> getter = v8::FunctionTemplate::New(
     isolate,
     slowGetter,
@@ -451,7 +449,7 @@ void spin::Error(const FunctionCallbackInfo<Value> &args) {
   }
 }
 
-void spin::Load(const FunctionCallbackInfo<Value> &args) {
+void spin::Library(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
   Local<ObjectTemplate> exports = ObjectTemplate::New(isolate);
@@ -856,9 +854,9 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_MODULE(isolate, target, "version", version);
   SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);
   SET_METHOD(isolate, target, "nextTick", NextTick);
-  SET_METHOD(isolate, target, "builtin", Builtin); // FC
-  SET_METHOD(isolate, target, "load", Load);
-  SET_METHOD(isolate, target, "readMemory", ReadMemory); // FC
+  SET_METHOD(isolate, target, "builtin", Builtin);
+  SET_METHOD(isolate, target, "library", Library);
+  SET_METHOD(isolate, target, "readMemory", ReadMemory);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
   SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
   SET_METHOD(isolate, target, "utf8Length", Utf8Length);

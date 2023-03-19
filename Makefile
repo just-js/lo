@@ -22,11 +22,11 @@ ASSETS=
 # when initializing a module, the path to the api defintion
 MODULE_DEF=
 # directory to look for native api bindings
-BINDINGS_DIR=
+BINDINGS_DIR=bindings
 # directory where scc binary is located
 SCC_DIR=/home/andrew/go/bin
 # flags for v8 compilation
-V8_FLAGS="-DV8_DEPRECATION_WARNINGS=1 -DV8_IMMINENT_DEPRECATION_WARNINGS=1 -DV8_HAS_ATTRIBUTE_VISIBILITY=1"
+V8_FLAGS="-DV8_DEPRECATION_WARNINGS=1 -DV8_IMMINENT_DEPRECATION_WARNINGS=1 -DV8_HAS_ATTRIBUTE_VISIBILITY=0"
 #V8_FLAGS=
 
 .PHONY: help clean
@@ -52,7 +52,7 @@ main.h: ## generate the main.h to initialize libs and modules
 main.o: main.h ## compile the main app
 	$(CC) -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -march=native -mtune=native -Wpedantic -Wall -Wextra -Wno-unused-parameter main.cc
 
-${TARGET}.o: ## compile the main library
+${TARGET}.o: ${TARGET}.h ${TARGET}.cc ## compile the main library
 	$(CC) -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -march=native -mtune=native -Wpedantic -Wall -Wextra -Wno-unused-parameter ${TARGET}.cc
 
 ${TARGET}: ${TARGET}.o main.o builtins.o ## link the runtime
@@ -65,10 +65,20 @@ all:
 	${MAKE} clean
 	${MAKE} ${TARGET}
 
-init: ${BINDINGS_DIR}/${MODULE} ## initialize a new module from an api definition
+${MODULE_DIR}/${MODULE}: ## initialize a new module from an api definition
 	mkdir -p ${MODULE_DIR}/${MODULE}
 
-gen: ${TARGET} ## generate source and Makefile from definitions for a library
+libs:
+	${MAKE} MODULE=epoll gen library
+	${MAKE} MODULE=fs gen library
+	${MAKE} MODULE=libssl gen library
+	${MAKE} MODULE=load gen library
+	${MAKE} MODULE=net gen library
+	${MAKE} MODULE=sqlite gen library
+	${MAKE} MODULE=system gen library
+	${MAKE} MODULE=tcc gen library
+
+gen: ${TARGET} ${MODULE_DIR}/${MODULE} ## generate source and Makefile from definitions for a library
 	./${TARGET} gen --make ${BINDINGS_DIR}/${MODULE}/${MODULE}.js > ${MODULE_DIR}/${MODULE}/Makefile
 	./${TARGET} gen ${BINDINGS_DIR}/${MODULE}/${MODULE}.js > ${MODULE_DIR}/${MODULE}/${MODULE}.cc
 

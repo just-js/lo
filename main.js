@@ -49,6 +49,16 @@ function readFileBytes (path, flags = O_RDONLY) {
   return buf
 }
 
+function load (name) {
+  const lib = spin.library(name)
+  if (lib) return lib
+  const handle = loader.load.dlopen(C(`module/${name}/${name}.so`).ptr, 1)
+  if (!handle) return
+  const sym = loader.load.dlsym(handle, C(`_register_${name}`).ptr)
+  if (!sym) return
+  return spin.library(sym)
+}
+
 function assert (condition, message, ErrorType = Error) {
   if (!condition) {
     throw new ErrorType(message || "Assertion failed")
@@ -86,7 +96,7 @@ async function onModuleLoad (specifier, resource) {
   const mod = spin.loadModule(src, specifier)
   mod.resource = resource
   moduleCache.set(specifier, mod)
-  const { requests, namespace } = mod
+  const { requests } = mod
   for (const request of requests) {
     const buf = ptr(readFileBytes(request))
     const src = spin.utf8Decode(buf.ptr, buf.byteLength)
@@ -109,21 +119,27 @@ function onModuleInstantiate (specifier) {
 
 const O_RDONLY = 0
 const moduleCache = new Map()
-const stat = ptr(new Uint8Array(160))
-const st = new BigUint64Array(stat.buffer)
 
-const { fs } = spin.load('fs')
+const { fs } = spin.library('fs')
 
 spin.fs = fs
 spin.fs.readFileBytes = readFileBytes
+
+
+const loader = spin.library('load')
+spin.load = load
 spin.hrtime = wrap(new Uint32Array(2), spin.hrtime, [])
 spin.getAddress = wrap(new Uint32Array(2), spin.getAddress, ['buffer'])
+loader.load.dlopen = wrap(new Uint32Array(2), loader.load.dlopen, ['pointer', 'i32'])
+loader.load.dlsym = wrap(new Uint32Array(2), loader.load.dlsym, ['pointer', 'pointer'])
+const stat = ptr(new Uint8Array(160))
+const st = new BigUint64Array(stat.buffer)
 spin.assert = assert
 spin.moduleCache = moduleCache
 spin.wrap = wrap
 spin.cstr = C
 spin.ptr = ptr
-spin.addr = address
+spin.addr = addr
 spin.setModuleCallbacks(onModuleLoad, onModuleInstantiate)
 
 if (spin.args[1] === 'gen') {
