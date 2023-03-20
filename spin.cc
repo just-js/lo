@@ -1,4 +1,5 @@
 #include "spin.h"
+#include "src/common/globals.h"
 
 using v8::String;
 using v8::FunctionCallbackInfo;
@@ -60,6 +61,8 @@ std::map<int, Global<Module>> module_map;
 clock_t clock_id = CLOCK_MONOTONIC;
 struct timespec t;
 
+// it would be faster to just encode all the assets into a big bugger, with
+// length prefixes and just receive them in one call
 void spin::builtins_add (const char* name, const char* source, 
   unsigned int size) {
   struct builtin* b = new builtin();
@@ -120,6 +123,8 @@ CTypeInfo* CTypeFromV8 (uint8_t v8Type) {
     return new CTypeInfo(CTypeInfo::Type::kUint64);
   if (v8Type == spin::FastTypes::function) 
     return new CTypeInfo(CTypeInfo::Type::kUint64);
+  if (v8Type == spin::FastTypes::string) 
+    return new CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
   if (v8Type == spin::FastTypes::buffer) {
     return new CTypeInfo(CTypeInfo::Type::kUint8, 
       CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
@@ -533,11 +538,12 @@ void spin::Library(const FunctionCallbackInfo<Value> &args) {
 void spin::Builtin(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value name(isolate, args[0]);
-  spin::builtin* b = builtins[*name];
-  if (b == nullptr) {
+  auto iter = builtins.find(*name);
+  if (iter == builtins.end()) {
     args.GetReturnValue().Set(Null(isolate));
     return;
   }
+  spin::builtin* b = (iter->second);
   if (args.Length() == 1) {
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, b->source, 
       NewStringType::kNormal, b->size).ToLocalChecked());
@@ -562,12 +568,23 @@ void spin::NextTick(const FunctionCallbackInfo<Value>& args) {
 
 void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
-  uint64_t addr = (uint64_t)args[0]->IntegerValue(
-    isolate->GetCurrentContext()).ToChecked();
-  char* str = reinterpret_cast<char*>(addr);
-  // we could encode length into first 4 bytes of the buffer
   int read = 0;
-  int written = args[1].As<String>()->WriteUtf8(isolate, 
+  Local<String> jstr = args[1].As<String>();
+  int written = 0;
+  if (jstr->IsOneByte()) {
+    uint8_t* str = reinterpret_cast<uint8_t*>(args[0]->IntegerValue(
+      isolate->GetCurrentContext()).ToChecked());
+    written = str->WriteOneByte(isolate, 
+      str, 0, str->Length(), 
+      String::HINT_MANY_WRITES_EXPECTED | 
+      String::NO_NULL_TERMINATION
+    );
+    args.GetReturnValue().Set(Integer::New(isolate, written));
+    return;
+  }
+  char* str = reinterpret_cast<char*>(args[0]->IntegerValue(
+    isolate->GetCurrentContext()).ToChecked());
+  written = str->WriteUtf8(isolate, 
     str, -1, &read, 
     String::HINT_MANY_WRITES_EXPECTED | 
     String::REPLACE_INVALID_UTF8 |
@@ -811,6 +828,14 @@ void spin::SetModuleCallbacks(const FunctionCallbackInfo<Value> &args) {
   Local<Context> context = args.GetIsolate()->GetCurrentContext();
   context->SetEmbedderData(1, args[0].As<Function>()); // async resolver
   context->SetEmbedderData(2, args[1].As<Function>()); // sync resolver
+}
+
+void spin::CreateSnapshot(const FunctionCallbackInfo<Value> &args) {
+  Isolate* isolate = args.GetIsolate();
+  const char* embedded_source = "spin.print('hello')";
+  //v8::StartupData result = i::CreateSnapshotDataBlobInternal(
+  //  v8::SnapshotCreator::FunctionCodeHandling::kClear, embedded_source,
+  //  isolate);
 }
 
 // fast api calls

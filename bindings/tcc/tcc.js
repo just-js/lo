@@ -42,6 +42,11 @@ const api = {
     parameters: ['pointer', 'pointer', 'pointer'],
     pointers: ['TCCState*', 'const char*', 'const void*'],
     result: 'i32'
+  },
+  tcc_output_file: {
+    parameters: ['pointer', 'pointer'],
+    pointers: ['TCCState*', 'const char*'],
+    result: 'i32'
   }
 }
 

@@ -199,6 +199,21 @@ int32_t tcc_add_symbolFast(void* p, void* p0, void* p1, void* p2) {
   const void* v2 = reinterpret_cast<const void*>(p2);
   return tcc_add_symbol(v0, v1, v2);
 }
+void tcc_output_fileSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+
+  Local<Context> context = isolate->GetCurrentContext();
+  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  int32_t rc = tcc_output_file(v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t tcc_output_fileFast(void* p, void* p0, void* p1) {
+  TCCState* v0 = reinterpret_cast<TCCState*>(p0);
+  const char* v1 = reinterpret_cast<const char*>(p1);
+  return tcc_output_file(v0, v1);
+}
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
@@ -283,6 +298,15 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infotcc_add_symbol = new v8::CFunctionInfo(*rctcc_add_symbol, 4, cargstcc_add_symbol);
   v8::CFunction* pFtcc_add_symbol = new v8::CFunction((const void*)&tcc_add_symbolFast, infotcc_add_symbol);
   SET_FAST_METHOD(isolate, module, "tcc_add_symbol", pFtcc_add_symbol, tcc_add_symbolSlow);
+
+  v8::CTypeInfo* cargstcc_output_file = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+  cargstcc_output_file[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargstcc_output_file[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargstcc_output_file[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  v8::CTypeInfo* rctcc_output_file = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infotcc_output_file = new v8::CFunctionInfo(*rctcc_output_file, 3, cargstcc_output_file);
+  v8::CFunction* pFtcc_output_file = new v8::CFunction((const void*)&tcc_output_fileFast, infotcc_output_file);
+  SET_FAST_METHOD(isolate, module, "tcc_output_file", pFtcc_output_file, tcc_output_fileSlow);
 
   SET_MODULE(isolate, target, "tcc", module);
 }

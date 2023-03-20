@@ -71,7 +71,7 @@ v8::MaybeLocal<v8::Module> OnModuleInstantiate(v8::Local<v8::Context> context,
 enum FastTypes: int {
   i8 = 1, i16 = 2, i32 = 3, u8 = 4, u16 = 5, u32 = 6, empty = 7, f32 = 8,
   f64 = 9, u64 = 10, i64 = 11, iSize = 12, uSize = 13, pointer = 14,
-  buffer = 15, function = 16, u32array = 17, boolean = 18
+  buffer = 15, function = 16, u32array = 17, boolean = 18, string = 19
 };
 
 // helpers for adding properties and methods to JS object templates
@@ -125,6 +125,10 @@ void Utf8Length(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Utf8Encode(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Utf8EncodeInto(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Utf8Decode(const v8::FunctionCallbackInfo<v8::Value> &args);
+
+void CreateSnapshot(const v8::FunctionCallbackInfo<v8::Value> &args);
+
+
 // these can be fast api calls as they don't interact with JS heap
 void GetErrno(const v8::FunctionCallbackInfo<v8::Value> &args);
 int fastGetErrno(void* p);
