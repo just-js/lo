@@ -9,6 +9,60 @@
 namespace spin {
 namespace fs {
 
+using v8::String;
+using v8::FunctionCallbackInfo;
+using v8::Array;
+using v8::Local;
+using v8::ObjectTemplate;
+using v8::Isolate;
+using v8::Value;
+using v8::Uint32Array;
+using v8::ArrayBuffer;
+using v8::Context;
+using v8::Integer;
+using v8::Function;
+using v8::NewStringType;
+using v8::Object;
+using v8::BackingStore;
+using v8::TryCatch;
+using v8::ScriptCompiler;
+using v8::Module;
+using v8::FixedArray;
+using v8::ScriptOrigin;
+using v8::SharedArrayBuffer;
+using v8::MaybeLocal;
+using v8::HandleScope;
+using v8::Promise;
+using v8::Number;
+using v8::StackTrace;
+using v8::Message;
+using v8::StackFrame;
+using v8::Maybe;
+using v8::FunctionTemplate;
+using v8::FunctionCallback;
+using v8::PromiseRejectMessage;
+using v8::CFunction;
+using v8::Global;
+using v8::Exception;
+using v8::CTypeInfo;
+using v8::PropertyAttribute;
+using v8::Signature;
+using v8::ConstructorBehavior;
+using v8::SideEffectType;
+using v8::kPromiseRejectAfterResolved;
+using v8::kPromiseResolveAfterResolved;
+using v8::kPromiseHandlerAddedAfterReject;
+using v8::Data;
+using v8::PrimitiveArray;
+using v8::TypedArray;
+using v8::Uint8Array;
+using v8::Boolean;
+using v8::ModuleRequest;
+using v8::CFunctionInfo;
+using v8::OOMDetails;
+using v8::V8;
+
+
 
 void closeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();

@@ -1,8 +1,61 @@
 #include "spin.h"
 
-std::map<std::string, spin::builtin*> spin::builtins;
-std::map<std::string, spin::register_plugin> spin::modules;
-std::map<int, v8::Global<v8::Module>> spin::module_map;
+using v8::String;
+using v8::FunctionCallbackInfo;
+using v8::Array;
+using v8::Local;
+using v8::ObjectTemplate;
+using v8::Isolate;
+using v8::Value;
+using v8::Uint32Array;
+using v8::ArrayBuffer;
+using v8::Context;
+using v8::Integer;
+using v8::Function;
+using v8::NewStringType;
+using v8::Object;
+using v8::BackingStore;
+using v8::TryCatch;
+using v8::ScriptCompiler;
+using v8::Module;
+using v8::FixedArray;
+using v8::ScriptOrigin;
+using v8::SharedArrayBuffer;
+using v8::MaybeLocal;
+using v8::HandleScope;
+using v8::Promise;
+using v8::Number;
+using v8::StackTrace;
+using v8::Message;
+using v8::StackFrame;
+using v8::Maybe;
+using v8::FunctionTemplate;
+using v8::FunctionCallback;
+using v8::PromiseRejectMessage;
+using v8::CFunction;
+using v8::Global;
+using v8::Exception;
+using v8::CTypeInfo;
+using v8::PropertyAttribute;
+using v8::Signature;
+using v8::ConstructorBehavior;
+using v8::SideEffectType;
+using v8::kPromiseRejectAfterResolved;
+using v8::kPromiseResolveAfterResolved;
+using v8::kPromiseHandlerAddedAfterReject;
+using v8::Data;
+using v8::PrimitiveArray;
+using v8::TypedArray;
+using v8::Uint8Array;
+using v8::Boolean;
+using v8::ModuleRequest;
+using v8::CFunctionInfo;
+using v8::OOMDetails;
+using v8::V8;
+
+std::map<std::string, spin::builtin*> builtins;
+std::map<std::string, spin::register_plugin> modules;
+std::map<int, Global<Module>> module_map;
 
 clock_t clock_id = CLOCK_MONOTONIC;
 struct timespec t;
@@ -15,11 +68,15 @@ void spin::builtins_add (const char* name, const char* source,
   builtins[name] = b;
 }
 
+void spin::modules_add (const char* name, register_plugin plugin_handler) {
+  modules[name] = plugin_handler;
+}
+
 void spin::FreeMemory(void* buf, size_t length, void* data) {
   free(buf);
 }
 
-void cleanupIsolate (v8::Isolate* isolate) {
+void cleanupIsolate (Isolate* isolate) {
   isolate->ContextDisposedNotification();
   isolate->LowMemoryNotification();
   isolate->ClearKeptObjects();
@@ -30,56 +87,56 @@ void cleanupIsolate (v8::Isolate* isolate) {
   isolate->Dispose();
 }
 
-v8::CTypeInfo* CTypeFromV8 (uint8_t v8Type) {
+CTypeInfo* CTypeFromV8 (uint8_t v8Type) {
   if (v8Type == spin::FastTypes::boolean) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kBool);
+    return new CTypeInfo(CTypeInfo::Type::kBool);
   if (v8Type == spin::FastTypes::i8) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+    return new CTypeInfo(CTypeInfo::Type::kInt32);
   if (v8Type == spin::FastTypes::i16) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+    return new CTypeInfo(CTypeInfo::Type::kInt32);
   if (v8Type == spin::FastTypes::i32) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+    return new CTypeInfo(CTypeInfo::Type::kInt32);
   if (v8Type == spin::FastTypes::u8) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+    return new CTypeInfo(CTypeInfo::Type::kUint32);
   if (v8Type == spin::FastTypes::u16) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+    return new CTypeInfo(CTypeInfo::Type::kUint32);
   if (v8Type == spin::FastTypes::u32) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+    return new CTypeInfo(CTypeInfo::Type::kUint32);
   if (v8Type == spin::FastTypes::f32) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kFloat32);
+    return new CTypeInfo(CTypeInfo::Type::kFloat32);
   if (v8Type == spin::FastTypes::f64) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kFloat64);
+    return new CTypeInfo(CTypeInfo::Type::kFloat64);
   if (v8Type == spin::FastTypes::empty) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+    return new CTypeInfo(CTypeInfo::Type::kVoid);
   if (v8Type == spin::FastTypes::i64) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kInt64);
+    return new CTypeInfo(CTypeInfo::Type::kInt64);
   if (v8Type == spin::FastTypes::u64) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+    return new CTypeInfo(CTypeInfo::Type::kUint64);
   if (v8Type == spin::FastTypes::iSize) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kInt64);
+    return new CTypeInfo(CTypeInfo::Type::kInt64);
   if (v8Type == spin::FastTypes::uSize) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+    return new CTypeInfo(CTypeInfo::Type::kUint64);
   if (v8Type == spin::FastTypes::pointer) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+    return new CTypeInfo(CTypeInfo::Type::kUint64);
   if (v8Type == spin::FastTypes::function) 
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+    return new CTypeInfo(CTypeInfo::Type::kUint64);
   if (v8Type == spin::FastTypes::buffer) {
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, 
-      v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
+    return new CTypeInfo(CTypeInfo::Type::kUint8, 
+      CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   }
   if (v8Type == spin::FastTypes::u32array) {
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, 
-      v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
+    return new CTypeInfo(CTypeInfo::Type::kUint32, 
+      CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   }
-  return new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);  
+  return new CTypeInfo(CTypeInfo::Type::kVoid);  
 }
 
 void spin::SET_PROP(Isolate *isolate, Local<ObjectTemplate> 
   recv, const char *name, FunctionCallback getter,
   FunctionCallback setter) {
-  enum v8::PropertyAttribute attributes =
-      static_cast<v8::PropertyAttribute>(v8::PropertyAttribute::None | 
-      v8::PropertyAttribute::DontDelete);
+  enum PropertyAttribute attributes =
+      static_cast<PropertyAttribute>(PropertyAttribute::None | 
+      PropertyAttribute::DontDelete);
   recv->SetAccessorProperty(
     String::NewFromUtf8(isolate, name).ToLocalChecked(),
     FunctionTemplate::New(isolate, getter),
@@ -109,52 +166,52 @@ void spin::SET_VALUE(Isolate *isolate, Local<ObjectTemplate>
     value);
 }
 
-void spin::SET_FAST_METHOD(Isolate* isolate, v8::Local<v8::ObjectTemplate> 
-  exports, const char * name, v8::CFunction* fastCFunc, v8::FunctionCallback slowFunc) {
-  v8::Local<v8::FunctionTemplate> funcTemplate = v8::FunctionTemplate::New(
+void spin::SET_FAST_METHOD(Isolate* isolate, Local<ObjectTemplate> 
+  exports, const char * name, CFunction* fastCFunc, FunctionCallback slowFunc) {
+  Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(
     isolate,
     slowFunc,
-    v8::Local<v8::Value>(),
-    v8::Local<v8::Signature>(),
+    Local<Value>(),
+    Local<Signature>(),
     0,
-    v8::ConstructorBehavior::kThrow,
-    v8::SideEffectType::kHasSideEffect,
+    ConstructorBehavior::kThrow,
+    SideEffectType::kHasSideEffect,
     fastCFunc
   );
   exports->Set(
-    v8::String::NewFromUtf8(isolate, name).ToLocalChecked(),
+    String::NewFromUtf8(isolate, name).ToLocalChecked(),
     funcTemplate
   );
 }
 
-void spin::SET_FAST_PROP(Isolate* isolate, v8::Local<v8::ObjectTemplate> 
-  exports, const char * name, v8::CFunction* fastGetter, v8::FunctionCallback slowGetter,
-  v8::CFunction* fastSetter, v8::FunctionCallback slowSetter) {
-  v8::Local<v8::FunctionTemplate> getter = v8::FunctionTemplate::New(
+void spin::SET_FAST_PROP(Isolate* isolate, Local<ObjectTemplate> 
+  exports, const char * name, CFunction* fastGetter, FunctionCallback slowGetter,
+  CFunction* fastSetter, FunctionCallback slowSetter) {
+  Local<FunctionTemplate> getter = FunctionTemplate::New(
     isolate,
     slowGetter,
-    v8::Local<v8::Value>(),
-    v8::Local<v8::Signature>(),
+    Local<Value>(),
+    Local<Signature>(),
     0,
-    v8::ConstructorBehavior::kThrow,
-    v8::SideEffectType::kHasNoSideEffect,
+    ConstructorBehavior::kThrow,
+    SideEffectType::kHasNoSideEffect,
     fastGetter
   );
-  v8::Local<v8::FunctionTemplate> setter = v8::FunctionTemplate::New(
+  Local<FunctionTemplate> setter = FunctionTemplate::New(
     isolate,
     slowSetter,
-    v8::Local<v8::Value>(),
-    v8::Local<v8::Signature>(),
+    Local<Value>(),
+    Local<Signature>(),
     0,
-    v8::ConstructorBehavior::kThrow,
-    v8::SideEffectType::kHasNoSideEffect,
+    ConstructorBehavior::kThrow,
+    SideEffectType::kHasNoSideEffect,
     fastSetter
   );
-  enum v8::PropertyAttribute attributes =
-      static_cast<v8::PropertyAttribute>(v8::PropertyAttribute::None | 
-      v8::PropertyAttribute::DontDelete);
+  enum PropertyAttribute attributes =
+      static_cast<PropertyAttribute>(PropertyAttribute::None | 
+      PropertyAttribute::DontDelete);
   exports->SetAccessorProperty(
-    v8::String::NewFromUtf8(isolate, name).ToLocalChecked(),
+    String::NewFromUtf8(isolate, name).ToLocalChecked(),
     getter,
     setter,
     attributes
@@ -168,7 +225,7 @@ void spin::PrintStackTrace(Isolate* isolate, const TryCatch& try_catch) {
   String::Utf8Value scriptname(isolate, scriptName);
   Local<Context> context = isolate->GetCurrentContext();
   int linenum = message->GetLineNumber(context).FromJust();
-  v8::String::Utf8Value err_message(isolate, message->Get().As<String>());
+  String::Utf8Value err_message(isolate, message->Get().As<String>());
   fprintf(stderr, "%s in %s on line %i\n", *err_message, *scriptname, linenum);
   if (stack.IsEmpty()) return;
   for (int i = 0; i < stack->GetFrameCount(); i++) {
@@ -199,24 +256,24 @@ void spin::PrintStackTrace(Isolate* isolate, const TryCatch& try_catch) {
 }
 
 void spin::PromiseRejectCallback(PromiseRejectMessage data) {
-  if (data.GetEvent() == v8::kPromiseRejectAfterResolved ||
-      data.GetEvent() == v8::kPromiseResolveAfterResolved) {
+  if (data.GetEvent() == kPromiseRejectAfterResolved ||
+      data.GetEvent() == kPromiseResolveAfterResolved) {
     return;
   }
   Local<Promise> promise = data.GetPromise();
   Isolate* isolate = promise->GetIsolate();
-  if (data.GetEvent() == v8::kPromiseHandlerAddedAfterReject) {
+  if (data.GetEvent() == kPromiseHandlerAddedAfterReject) {
     return;
   }
   Local<Value> exception = data.GetValue();
-  v8::Local<Message> message;
+  Local<Message> message;
   if (exception->IsObject()) {
-    message = v8::Exception::CreateMessage(isolate, exception);
+    message = Exception::CreateMessage(isolate, exception);
   }
   if (!exception->IsNativeError() &&
       (message.IsEmpty() || message->GetStackTrace().IsEmpty())) {
-    exception = v8::Exception::Error(
-        v8::String::NewFromUtf8Literal(isolate, "Unhandled Promise."));
+    exception = Exception::Error(
+        String::NewFromUtf8Literal(isolate, "Unhandled Promise."));
     message = Exception::CreateMessage(isolate, exception);
   }
   Local<Context> context = isolate->GetCurrentContext();
@@ -241,34 +298,34 @@ void spin::PromiseRejectCallback(PromiseRejectMessage data) {
   }
 }
 
-v8::MaybeLocal<v8::Module> spin::OnModuleInstantiate(Local<v8::Context> context,
-  v8::Local<v8::String> specifier,
-  v8::Local<v8::FixedArray> import_assertions, 
-  v8::Local<v8::Module> referrer) {
-  v8::Isolate* isolate = context->GetIsolate();
-  v8::String::Utf8Value str(isolate, specifier);
-  v8::Local<v8::Function> callback = 
-    context->GetEmbedderData(2).As<v8::Function>();
-  v8::Local<v8::Value> argv[1] = { specifier };
-  v8::MaybeLocal<v8::Value> result = callback->Call(context, 
+MaybeLocal<Module> spin::OnModuleInstantiate(Local<Context> context,
+  Local<String> specifier,
+  Local<FixedArray> import_assertions, 
+  Local<Module> referrer) {
+  Isolate* isolate = context->GetIsolate();
+  String::Utf8Value str(isolate, specifier);
+  Local<Function> callback = 
+    context->GetEmbedderData(2).As<Function>();
+  Local<Value> argv[1] = { specifier };
+  MaybeLocal<Value> result = callback->Call(context, 
     context->Global(), 1, argv);
   int scriptId = result.ToLocalChecked()->Uint32Value(context).ToChecked();
-  Local<Module> module = spin::module_map[scriptId].Get(context->GetIsolate());
+  Local<Module> module = module_map[scriptId].Get(context->GetIsolate());
   return module;
 }
 
-v8::MaybeLocal<v8::Promise> OnDynamicImport(v8::Local<v8::Context> context,
-  v8::Local<v8::Data> host_defined_options, v8::Local<v8::Value> resource_name,
-  v8::Local<v8::String> specifier,v8::Local<v8::FixedArray> import_assertions) {
-  v8::Local<v8::Promise::Resolver> resolver =
-      v8::Promise::Resolver::New(context).ToLocalChecked();
-  v8::MaybeLocal<v8::Promise> promise(resolver->GetPromise());
-  v8::Local<v8::Function> callback = 
-    context->GetEmbedderData(1).As<v8::Function>();
-  v8::Local<v8::Value> argv[2] = { specifier, resource_name };
-  v8::MaybeLocal<v8::Value> result = callback->Call(context, 
+MaybeLocal<Promise> OnDynamicImport(Local<Context> context,
+  Local<Data> host_defined_options, Local<Value> resource_name,
+  Local<String> specifier,Local<FixedArray> import_assertions) {
+  Local<Promise::Resolver> resolver =
+      Promise::Resolver::New(context).ToLocalChecked();
+  MaybeLocal<Promise> promise(resolver->GetPromise());
+  Local<Function> callback = 
+    context->GetEmbedderData(1).As<Function>();
+  Local<Value> argv[2] = { specifier, resource_name };
+  MaybeLocal<Value> result = callback->Call(context, 
     context->Global(), 2, argv);
-  return v8::Local<v8::Promise>::Cast(result.ToLocalChecked());
+  return Local<Promise>::Cast(result.ToLocalChecked());
 }
 
 int spin::CreateIsolate(int argc, char** argv, 
@@ -339,10 +396,10 @@ int spin::CreateIsolate(int argc, char** argv,
         js_len).ToLocalChecked()).Check();
     }
     TryCatch try_catch(isolate);
-    Local<v8::PrimitiveArray> opts =
-        v8::PrimitiveArray::New(isolate, spin::HostDefinedOptions::kLength);
+    Local<PrimitiveArray> opts =
+        PrimitiveArray::New(isolate, spin::HostDefinedOptions::kLength);
     opts->Set(isolate, spin::HostDefinedOptions::kType, 
-      v8::Number::New(isolate, spin::ScriptType::kModule));
+      Number::New(isolate, spin::ScriptType::kModule));
     ScriptOrigin baseorigin(
       isolate,
       String::NewFromUtf8(isolate, scriptname, NewStringType::kInternalized, 
@@ -455,8 +512,8 @@ void spin::Library(const FunctionCallbackInfo<Value> &args) {
   Local<ObjectTemplate> exports = ObjectTemplate::New(isolate);
   if (args[0]->IsString()) {
     String::Utf8Value name(isolate, args[0]);
-    auto iter = spin::modules.find(*name);
-    if (iter == spin::modules.end()) {
+    auto iter = modules.find(*name);
+    if (iter == modules.end()) {
       return;
     } else {
       register_plugin _init = (*iter->second);
@@ -503,6 +560,22 @@ void spin::NextTick(const FunctionCallbackInfo<Value>& args) {
   args.GetIsolate()->EnqueueMicrotask(args[0].As<Function>());
 }
 
+void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
+  Isolate* isolate = args.GetIsolate();
+  uint64_t addr = (uint64_t)args[0]->IntegerValue(
+    isolate->GetCurrentContext()).ToChecked();
+  char* str = reinterpret_cast<char*>(addr);
+  // we could encode length into first 4 bytes of the buffer
+  int read = 0;
+  int written = args[1].As<String>()->WriteUtf8(isolate, 
+    str, -1, &read, 
+    String::HINT_MANY_WRITES_EXPECTED | 
+    String::REPLACE_INVALID_UTF8 |
+    String::NO_NULL_TERMINATION
+  );
+  args.GetReturnValue().Set(Integer::New(isolate, written));
+}
+
 void spin::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
@@ -514,7 +587,7 @@ void spin::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
     std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(chunk, 
       size, spin::FreeMemory, nullptr);
     Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-    Local<v8::TypedArray> u8 = v8::Uint8Array::New(ab, 0, size);
+    Local<TypedArray> u8 = Uint8Array::New(ab, 0, size);
     args.GetReturnValue().Set(u8);
     return;
   }
@@ -527,7 +600,7 @@ void spin::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(chunk, 
     size, spin::FreeMemory, nullptr);
   Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-  Local<v8::TypedArray> u8 = v8::Uint8Array::New(ab, 0, size);
+  Local<TypedArray> u8 = Uint8Array::New(ab, 0, size);
   args.GetReturnValue().Set(u8);
 }
 
@@ -544,20 +617,18 @@ void spin::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
   int scriptId = Local<Integer>::Cast(args[0])->Value();
-  Local<Module> module = spin::module_map[scriptId].Get(isolate);
-  v8::Maybe<bool> result = module->InstantiateModule(context, 
+  Local<Module> module = module_map[scriptId].Get(isolate);
+  Maybe<bool> result = module->InstantiateModule(context, 
     spin::OnModuleInstantiate);
   if (result.IsNothing()) {
     printf("\nCan't instantiate module.\n");
     exit(EXIT_FAILURE);
   }
-  v8::Local<v8::Value> retValue;
+  Local<Value> retValue;
   if (!module->Evaluate(context).ToLocal(&retValue)) {
     printf("Error evaluating module!\n");
     exit(EXIT_FAILURE);
   }
-  //Local<Promise> result_promise(retValue.As<Promise>());
-  //args.GetReturnValue().Set(result_promise);
   args.GetReturnValue().Set(module->GetModuleNamespace().As<Promise>());
 }
 
@@ -567,10 +638,10 @@ void spin::LoadModule(const FunctionCallbackInfo<Value> &args) {
   TryCatch try_catch(isolate);
   Local<String> source = args[0].As<String>();
   Local<String> path = args[1].As<String>();
-  Local<v8::PrimitiveArray> opts =
-      v8::PrimitiveArray::New(isolate, spin::HostDefinedOptions::kLength);
+  Local<PrimitiveArray> opts =
+      PrimitiveArray::New(isolate, spin::HostDefinedOptions::kLength);
   opts->Set(isolate, spin::HostDefinedOptions::kType,
-                            v8::Number::New(isolate, spin::ScriptType::kModule));
+                            Number::New(isolate, spin::ScriptType::kModule));
   ScriptOrigin baseorigin(isolate,
     path, // resource name
     0, // line offset
@@ -598,30 +669,30 @@ void spin::LoadModule(const FunctionCallbackInfo<Value> &args) {
   Local<FixedArray> module_requests = module->GetModuleRequests();
   int length = module_requests->Length();
   for (int i = 0; i < length; ++i) {
-    Local<v8::ModuleRequest> module_request =
-        module_requests->Get(context, i).As<v8::ModuleRequest>();
+    Local<ModuleRequest> module_request =
+        module_requests->Get(context, i).As<ModuleRequest>();
     requests->Set(context, i, module_request->GetSpecifier()).Check();
   }
   int scriptId = module->ScriptId();
-  spin::module_map.insert(std::make_pair(scriptId, 
-    v8::Global<v8::Module>(isolate, module)));
+  module_map.insert(std::make_pair(scriptId, 
+    Global<Module>(isolate, module)));
   data->Set(context, String::NewFromUtf8(isolate, "requests")
     .ToLocalChecked(), requests).Check();
   data->Set(context, String::NewFromUtf8(isolate, "isSourceTextModule")
-    .ToLocalChecked(), v8::Boolean::New(isolate, module->IsSourceTextModule()))
+    .ToLocalChecked(), Boolean::New(isolate, module->IsSourceTextModule()))
     .Check();
   data->Set(context, String::NewFromUtf8(isolate, "status")
-    .ToLocalChecked(), v8::Integer::New(isolate, module->GetStatus()))
+    .ToLocalChecked(), Integer::New(isolate, module->GetStatus()))
     .Check();
   data->Set(context, String::NewFromUtf8(isolate, "specifier")
     .ToLocalChecked(), path).Check();
   data->Set(context, String::NewFromUtf8(isolate, "src")
     .ToLocalChecked(), source).Check();
   data->Set(context, String::NewFromUtf8(isolate, "identity")
-    .ToLocalChecked(), v8::Integer::New(isolate, module->GetIdentityHash()))
+    .ToLocalChecked(), Integer::New(isolate, module->GetIdentityHash()))
     .Check();
   data->Set(context, String::NewFromUtf8(isolate, "scriptId")
-    .ToLocalChecked(), v8::Integer::New(isolate, scriptId)).Check();
+    .ToLocalChecked(), Integer::New(isolate, scriptId)).Check();
   args.GetReturnValue().Set(data);
   return;
 }
@@ -640,14 +711,14 @@ void spin::ReadMemory(const FunctionCallbackInfo<Value> &args) {
     std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
         start, size, [](void*, size_t, void*){}, nullptr);
     Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-    Local<v8::TypedArray> u8 = v8::Uint8Array::New(ab, 0, size);
+    Local<TypedArray> u8 = Uint8Array::New(ab, 0, size);
     args.GetReturnValue().Set(u8);
     return;
   }
   std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
       start, size, spin::FreeMemory, nullptr);
   Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-  Local<v8::TypedArray> u8 = v8::Uint8Array::New(ab, 0, size);
+  Local<TypedArray> u8 = Uint8Array::New(ab, 0, size);
   args.GetReturnValue().Set(u8);
 }
 
@@ -657,17 +728,17 @@ void spin::Utf8Length(const FunctionCallbackInfo<Value> &args) {
     args[0].As<String>()->Utf8Length(isolate)));
 }
 
-void SlowCallback(const v8::FunctionCallbackInfo<v8::Value> &args) {
-  v8::Isolate* isolate = args.GetIsolate();
-  v8::Local<v8::Object> data = args.Data().As<v8::Object>();
+void SlowCallback(const FunctionCallbackInfo<Value> &args) {
+  Isolate* isolate = args.GetIsolate();
+  Local<Object> data = args.Data().As<Object>();
   spin::foreignFunction* ffn = 
     (spin::foreignFunction*)data->GetAlignedPointerFromInternalField(1);
-  v8::Local<v8::Function> callback = v8::Local<v8::Function>::New(isolate, 
+  Local<Function> callback = Local<Function>::New(isolate, 
     ffn->callback);
   int argc = args.Length();
-  v8::Local<v8::Value>* fargs = new v8::Local<v8::Value> [argc];
+  Local<Value>* fargs = new Local<Value> [argc];
   for (int i = 0; i < argc; i++) fargs[i] = args[i];
-  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  Local<Context> context = isolate->GetCurrentContext();
   args.GetReturnValue().Set(callback->Call(context, context->Global(), argc, 
     fargs).ToLocalChecked());
 }
@@ -686,28 +757,28 @@ void spin::BindFastApi(const FunctionCallbackInfo<Value> &args) {
   ffn->fast = fn;
   data->SetAlignedPointerInInternalField(1, ffn);
   int len = params->Length();
-  v8::CTypeInfo* rc = CTypeFromV8(rtype);
-  v8::CTypeInfo* cargs = (v8::CTypeInfo*)calloc(len + 1, sizeof(v8::CTypeInfo));
-  cargs[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  CTypeInfo* rc = CTypeFromV8(rtype);
+  CTypeInfo* cargs = (CTypeInfo*)calloc(len + 1, sizeof(CTypeInfo));
+  cargs[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
   for (int i = 0; i < len; i++) {
     uint8_t ptype = Local<Integer>::Cast(
       params->Get(context, i).ToLocalChecked())->Value();
     cargs[i + 1] = *CTypeFromV8(ptype);
   }
-  v8::CFunctionInfo* info = new v8::CFunctionInfo(*rc, len + 1, cargs);
-  v8::CFunction* fastCFunc = new v8::CFunction(fn, info);
+  CFunctionInfo* info = new CFunctionInfo(*rc, len + 1, cargs);
+  CFunction* fastCFunc = new CFunction(fn, info);
   ffn->cfunc = fastCFunc;
-  v8::Local<v8::FunctionTemplate> funcTemplate = v8::FunctionTemplate::New(
+  Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(
     isolate,
     SlowCallback,
     data,
-    v8::Local<v8::Signature>(),
+    Local<Signature>(),
     0,
-    v8::ConstructorBehavior::kThrow,
-    v8::SideEffectType::kHasNoSideEffect,
+    ConstructorBehavior::kThrow,
+    SideEffectType::kHasNoSideEffect,
     fastCFunc
   );
-  v8::Local<v8::Function> fun = 
+  Local<Function> fun = 
     funcTemplate->GetFunction(context).ToLocalChecked();
   args.GetReturnValue().Set(fun);
 }
@@ -775,8 +846,8 @@ void spin::fastHRTime (void* p, struct FastApiTypedArray* const p_ret) {
 }
 
 void spin::GetAddress(const FunctionCallbackInfo<Value> &args) {
-  ((uint64_t*)args[1].As<v8::Uint32Array>()->Buffer()->Data())[0] = 
-    (uint64_t)args[0].As<v8::Uint8Array>()->Buffer()->Data();
+  ((uint64_t*)args[1].As<Uint32Array>()->Buffer()->Data())[0] = 
+    (uint64_t)args[0].As<Uint8Array>()->Buffer()->Data();
 }
 
 void spin::fastGetAddress(void* p, struct FastApiTypedArray* const p_buf, 
@@ -795,8 +866,9 @@ void fatalErrorcallback (const char* location, const char* message) {
   fprintf(stderr, "fatalErrorcallback\n%s\n%s\n", location, message);
 }
 
-void OOMErrorcallback (const char* location, const v8::OOMDetails& details) {
-  fprintf(stderr, "OOMErrorcallback\n%s\nis heap oom? %d\n%s\n", location, details.is_heap_oom, details.detail);
+void OOMErrorcallback (const char* location, const OOMDetails& details) {
+  fprintf(stderr, "OOMErrorcallback\n%s\nis heap oom? %d\n%s\n", location, 
+    details.is_heap_oom, details.detail);
 }
 
 void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
@@ -806,51 +878,51 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   isolate->SetFatalErrorHandler(fatalErrorcallback);
   isolate->SetOOMErrorHandler(OOMErrorcallback);
 
-  v8::CTypeInfo* cargserrnoset = (v8::CTypeInfo*)calloc(2, 
-    sizeof(v8::CTypeInfo));
-  cargserrnoset[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargserrnoset[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcerrnoset = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoerrnoset = new v8::CFunctionInfo(*rcerrnoset, 2, 
+  CTypeInfo* cargserrnoset = (CTypeInfo*)calloc(2, 
+    sizeof(CTypeInfo));
+  cargserrnoset[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargserrnoset[1] = CTypeInfo(CTypeInfo::Type::kInt32);
+  CTypeInfo* rcerrnoset = new CTypeInfo(CTypeInfo::Type::kVoid);
+  CFunctionInfo* infoerrnoset = new CFunctionInfo(*rcerrnoset, 2, 
     cargserrnoset);
-  v8::CFunction* pFerrnoset = new v8::CFunction((const void*)&fastSetErrno, 
+  CFunction* pFerrnoset = new CFunction((const void*)&fastSetErrno, 
     infoerrnoset);
-  v8::CTypeInfo* cargserrnoget = (v8::CTypeInfo*)calloc(1, 
-    sizeof(v8::CTypeInfo));
-  cargserrnoget[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  v8::CTypeInfo* rcerrnoget = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoerrnoget = new v8::CFunctionInfo(*rcerrnoget, 1, 
+  CTypeInfo* cargserrnoget = (CTypeInfo*)calloc(1, 
+    sizeof(CTypeInfo));
+  cargserrnoget[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  CTypeInfo* rcerrnoget = new CTypeInfo(CTypeInfo::Type::kInt32);
+  CFunctionInfo* infoerrnoget = new CFunctionInfo(*rcerrnoget, 1, 
     cargserrnoget);
-  v8::CFunction* pFerrnoget = new v8::CFunction((const void*)&fastGetErrno, 
+  CFunction* pFerrnoget = new CFunction((const void*)&fastGetErrno, 
     infoerrnoget);
 
-  v8::CTypeInfo* cargshrtime = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargshrtime[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargshrtime[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, 
-    v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rchrtime = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infohrtime = new v8::CFunctionInfo(*rchrtime, 2, 
+  CTypeInfo* cargshrtime = (CTypeInfo*)calloc(2, sizeof(CTypeInfo));
+  cargshrtime[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargshrtime[1] = CTypeInfo(CTypeInfo::Type::kUint32, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  CTypeInfo* rchrtime = new CTypeInfo(CTypeInfo::Type::kVoid);
+  CFunctionInfo* infohrtime = new CFunctionInfo(*rchrtime, 2, 
     cargshrtime);
-  v8::CFunction* pFhrtime = new v8::CFunction((const void*)&fastHRTime, 
+  CFunction* pFhrtime = new CFunction((const void*)&fastHRTime, 
     infohrtime);
 
-  v8::CTypeInfo* cargsgetaddress = (v8::CTypeInfo*)calloc(3, 
-    sizeof(v8::CTypeInfo));
-  cargsgetaddress[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsgetaddress[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, 
-    v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  cargsgetaddress[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, 
-    v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcgetaddress = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infogetaddress = new v8::CFunctionInfo(*rcgetaddress, 3, 
+  CTypeInfo* cargsgetaddress = (CTypeInfo*)calloc(3, 
+    sizeof(CTypeInfo));
+  cargsgetaddress[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargsgetaddress[1] = CTypeInfo(CTypeInfo::Type::kUint8, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargsgetaddress[2] = CTypeInfo(CTypeInfo::Type::kUint32, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  CTypeInfo* rcgetaddress = new CTypeInfo(CTypeInfo::Type::kVoid);
+  CFunctionInfo* infogetaddress = new CFunctionInfo(*rcgetaddress, 3, 
     cargsgetaddress);
-  v8::CFunction* pFgetaddress = new v8::CFunction((const void*)&fastGetAddress, 
+  CFunction* pFgetaddress = new CFunction((const void*)&fastGetAddress, 
     infogetaddress);
 
   SET_VALUE(isolate, version, GLOBALOBJ, String::NewFromUtf8Literal(isolate, 
     VERSION));
   SET_VALUE(isolate, version, "v8", String::NewFromUtf8(isolate, 
-    v8::V8::GetVersion()).ToLocalChecked());
+    V8::GetVersion()).ToLocalChecked());
   SET_MODULE(isolate, target, "version", version);
   SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);
   SET_METHOD(isolate, target, "nextTick", NextTick);
@@ -859,6 +931,7 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "readMemory", ReadMemory);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
   SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
+  SET_METHOD(isolate, target, "utf8EncodeInto", Utf8EncodeInto);
   SET_METHOD(isolate, target, "utf8Length", Utf8Length);
   SET_METHOD(isolate, target, "print", Print);
   SET_METHOD(isolate, target, "error", Error);

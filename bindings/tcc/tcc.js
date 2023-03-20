@@ -58,7 +58,7 @@ deps/tcc-${TCC_VERSION}/libtcc.a: ## dependencies
 `
 const name = 'tcc'
 const includes = ['libtcc.h']
-const libs = []
-const obj = []
+const libs = ['tcc']
+const obj = ['libtcc.a']
 
 export { api, includes, name, libs, obj, make }

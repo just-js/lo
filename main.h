@@ -4,24 +4,46 @@
 
 #include "spin.h"
 
-using v8::V8;
-using v8::Platform;
-
 extern char _binary_main_js_start[];
 extern char _binary_main_js_end[];
+extern char _binary_lib_ansi_js_start[];
+extern char _binary_lib_ansi_js_end[];
+extern char _binary_lib_bench_js_start[];
+extern char _binary_lib_bench_js_end[];
+extern char _binary_lib_binary_js_start[];
+extern char _binary_lib_binary_js_end[];
+extern char _binary_lib_ffi_js_start[];
+extern char _binary_lib_ffi_js_end[];
 extern char _binary_lib_gen_js_start[];
 extern char _binary_lib_gen_js_end[];
+extern char _binary_lib_packet_js_start[];
+extern char _binary_lib_packet_js_end[];
+extern char _binary_lib_path_js_start[];
+extern char _binary_lib_path_js_end[];
+extern char _binary_lib_stringify_js_start[];
+extern char _binary_lib_stringify_js_end[];
 
 extern "C" {
   extern void* _register_load();
   extern void* _register_fs();
+  extern void* _register_ffi();
+  extern void* _register_tcc();
 }
 
 void register_builtins() {
   spin::builtins_add("main.js", _binary_main_js_start, _binary_main_js_end - _binary_main_js_start);
+  spin::builtins_add("lib/ansi.js", _binary_lib_ansi_js_start, _binary_lib_ansi_js_end - _binary_lib_ansi_js_start);
+  spin::builtins_add("lib/bench.js", _binary_lib_bench_js_start, _binary_lib_bench_js_end - _binary_lib_bench_js_start);
+  spin::builtins_add("lib/binary.js", _binary_lib_binary_js_start, _binary_lib_binary_js_end - _binary_lib_binary_js_start);
+  spin::builtins_add("lib/ffi.js", _binary_lib_ffi_js_start, _binary_lib_ffi_js_end - _binary_lib_ffi_js_start);
   spin::builtins_add("lib/gen.js", _binary_lib_gen_js_start, _binary_lib_gen_js_end - _binary_lib_gen_js_start);
-  spin::modules["load"] = &_register_load;
-  spin::modules["fs"] = &_register_fs;
+  spin::builtins_add("lib/packet.js", _binary_lib_packet_js_start, _binary_lib_packet_js_end - _binary_lib_packet_js_start);
+  spin::builtins_add("lib/path.js", _binary_lib_path_js_start, _binary_lib_path_js_end - _binary_lib_path_js_start);
+  spin::builtins_add("lib/stringify.js", _binary_lib_stringify_js_start, _binary_lib_stringify_js_end - _binary_lib_stringify_js_start);
+  spin::modules_add("load", &_register_load);
+  spin::modules_add("fs", &_register_fs);
+  spin::modules_add("ffi", &_register_ffi);
+  spin::modules_add("tcc", &_register_tcc);
 }
 
 static unsigned int main_js_len = _binary_main_js_end - _binary_main_js_start;

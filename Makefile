@@ -2,21 +2,21 @@ CC=g++
 FLAGS=${CFLAGS}
 LFLAG=${LFLAGS}
 # v8 monolithic lib release (from just-js)
-RELEASE=0.1.14
+RELEASE=0.1.15
 # binary name
 TARGET=spin
 # name of runtime object on globalThis in JS
 GLOBALOBJ="spin"
 # we have to link dl as v8 requires it
-LIB=-ldl
+LIB=-ldl -lffi -ltcc
 # directory to look for c++ modules
 MODULE_DIR=module
 # passed to module makefile so they can acces headers
 SPIN_HOME=$(shell pwd)
 # list of c++ library archive (.a) files to link into runtime
-MODULES=module/load/load.a module/fs/fs.a
+MODULES=module/load/load.a module/fs/fs.a module/ffi/ffi.a module/tcc/tcc.a
 # list of JS modules to link into runtime
-LIBS="lib/gen.js"
+LIBS=lib/ansi.js lib/bench.js lib/binary.js lib/ffi.js lib/gen.js lib/packet.js lib/path.js lib/stringify.js
 # list of arbitrary assets to link into runtime
 ASSETS=
 # when initializing a module, the path to the api defintion
@@ -34,7 +34,7 @@ V8_FLAGS="-DV8_DEPRECATION_WARNINGS=1 -DV8_IMMINENT_DEPRECATION_WARNINGS=1 -DV8_
 help:
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_\.-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-deps: ## download v8 monolithic library for linking
+deps: ## download v8 headers and monolithic lib for compiling and linking
 	mkdir -p deps
 	curl -L -o v8lib-$(RELEASE).tar.gz https://raw.githubusercontent.com/just-js/libv8/$(RELEASE)/v8.tar.gz
 	tar -zxvf v8lib-$(RELEASE).tar.gz
@@ -70,6 +70,7 @@ ${MODULE_DIR}/${MODULE}: ## initialize a new module from an api definition
 
 libs:
 	${MAKE} MODULE=epoll gen library
+	${MAKE} MODULE=ffi gen library
 	${MAKE} MODULE=fs gen library
 	${MAKE} MODULE=libssl gen library
 	${MAKE} MODULE=load gen library
@@ -86,7 +87,7 @@ scc: ## generate report on lines of code, number of files, code complexity
 	${SCC_DIR}/scc --exclude-dir="deps,bench,test,.devcontainer,.git,.vscode,scratch,example,doc,docker,main.h,module/,test.js" --include-ext="cc,c,h,js,mk" --gen --wide --by-file ./ > scc.txt
 
 library: ## build a spin shared library
-	CFLAGS="$(FLAGS)" LFLAGS="${LFLAG}" SPIN_HOME="$(SPIN_HOME)" $(MAKE) -C ${MODULE_DIR}/${MODULE}/ library
+	CFLAGS="$(FLAGS)" LFLAGS="${LFLAG}" SPIN_HOME="$(SPIN_HOME)" $(MAKE) -C ${MODULE_DIR}/${MODULE}/ clean library
 
 clean: ## tidy up
 	rm -f *.o

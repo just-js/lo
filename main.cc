@@ -1,5 +1,8 @@
 #include "main.h"
 
+using v8::V8;
+using v8::Platform;
+
 /**
  * fill the provided buffer with random bytes
  * 

@@ -19,70 +19,6 @@ extern "C"
 
 namespace spin {
 
-using v8::String;
-using v8::NewStringType;
-using v8::Local;
-using v8::Isolate;
-using v8::Context;
-using v8::ObjectTemplate;
-using v8::FunctionCallbackInfo;
-using v8::Function;
-using v8::Object;
-using v8::Value;
-using v8::Module;
-using v8::TryCatch;
-using v8::Message;
-using v8::StackTrace;
-using v8::StackFrame;
-using v8::HandleScope;
-using v8::Integer;
-using v8::BigInt;
-using v8::FunctionTemplate;
-using v8::ScriptOrigin;
-using v8::True;
-using v8::False;
-using v8::ScriptCompiler;
-using v8::ArrayBuffer;
-using v8::Array;
-using v8::Maybe;
-using v8::HeapStatistics;
-using v8::Float64Array;
-using v8::HeapSpaceStatistics;
-using v8::BigUint64Array;
-using v8::Int32Array;
-using v8::Exception;
-using v8::FunctionCallback;
-using v8::Script;
-using v8::Platform;
-using v8::V8;
-using v8::BackingStore;
-using v8::SharedArrayBuffer;
-using v8::PromiseRejectMessage;
-using v8::Promise;
-using v8::PromiseRejectEvent;
-using v8::Uint32Array;
-using v8::BigUint64Array;
-using v8::FixedArray;
-using v8::Number;
-using v8::PrimitiveArray;
-using v8::FunctionCallbackInfo;
-using v8::ObjectTemplate;
-using v8::CFunction;
-using v8::PropertyAttribute;
-using v8::Signature;
-using v8::ConstructorBehavior;
-using v8::SideEffectType;
-using v8::kPromiseRejectAfterResolved;
-using v8::MaybeLocal;
-using v8::kPromiseResolveAfterResolved;
-using v8::kPromiseHandlerAddedAfterReject;
-using v8::CTypeInfo;
-using v8::CFunctionInfo;
-using v8::V8;
-using v8::Context;
-using v8::Data;
-using v8::Global;
-
 // struct for passing typed arrays in and out of v8 fast api calls
 struct FastApiTypedArray {
   uintptr_t length_;
@@ -111,19 +47,14 @@ enum HostDefinedOptions : int {
 
 // typedef and V8 callback for module registration
 typedef void *(*register_plugin)();
-using InitializerCallback = void (*)(Isolate* isolate, 
-  Local<ObjectTemplate> exports);
-
-// maps for storing builtins (JS/Text) and modules (JS/C++ apis)
-extern std::map<std::string, builtin*> builtins;
-extern std::map<std::string, register_plugin> modules;
-extern std::map<int, v8::Global<v8::Module>> module_map;
+using InitializerCallback = void (*)(v8::Isolate* isolate, 
+  v8::Local<v8::ObjectTemplate> exports);
 
 // struct to store callbacks for FFI bindings to fast api
 struct foreignFunction {
-  Global<Function> callback;
+  v8::Global<v8::Function> callback;
   void* fast;
-  CFunction* cfunc;
+  v8::CFunction* cfunc;
 };
 
 // v8 callbacks
@@ -132,9 +63,9 @@ size_t nearHeapLimitCallback(void* data, size_t current_heap_limit,
 
                                          size_t initial_heap_limit);
 // declare the callback function for loading ES modules
-MaybeLocal<Module> OnModuleInstantiate(Local<Context> context,
-  Local<String> specifier, Local<FixedArray> import_assertions, 
-  Local<Module> referrer);
+v8::MaybeLocal<v8::Module> OnModuleInstantiate(v8::Local<v8::Context> context,
+  v8::Local<v8::String> specifier, v8::Local<v8::FixedArray> import_assertions, 
+  v8::Local<v8::Module> referrer);
 
 // enum of v8 fast api parameter and return types
 enum FastTypes: int {
@@ -144,25 +75,27 @@ enum FastTypes: int {
 };
 
 // helpers for adding properties and methods to JS object templates
-void SET_PROP(Isolate *isolate, Local<ObjectTemplate> 
-  recv, const char *name, FunctionCallback getter,
-  FunctionCallback setter);
-void SET_METHOD(Isolate *isolate, Local<ObjectTemplate> 
-  recv, const char *name, FunctionCallback callback);
-void SET_MODULE(Isolate *isolate, Local<ObjectTemplate> 
-  recv, const char *name, Local<ObjectTemplate> module);
-void SET_VALUE(Isolate *isolate, Local<ObjectTemplate> 
-  recv, const char *name, Local<Value> value);
-void SET_FAST_METHOD(Isolate* isolate, Local<ObjectTemplate> exports, 
-  const char * name, v8::CFunction* fastCFunc, FunctionCallback slowFunc);
-void SET_FAST_PROP(Isolate* isolate, Local<ObjectTemplate> exports, 
-  const char * name, v8::CFunction* fastGetter, FunctionCallback slowGetter,
-  v8::CFunction* fastSetter, FunctionCallback slowSetter);
+void SET_PROP(v8::Isolate *isolate, v8::Local<v8::ObjectTemplate> 
+  recv, const char *name, v8::FunctionCallback getter,
+  v8::FunctionCallback setter);
+void SET_METHOD(v8::Isolate *isolate, v8::Local<v8::ObjectTemplate> 
+  recv, const char *name, v8::FunctionCallback callback);
+void SET_MODULE(v8::Isolate *isolate, v8::Local<v8::ObjectTemplate> 
+  recv, const char *name, v8::Local<v8::ObjectTemplate> module);
+void SET_VALUE(v8::Isolate *isolate, v8::Local<v8::ObjectTemplate> 
+  recv, const char *name, v8::Local<v8::Value> value);
+void SET_FAST_METHOD(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> exports, 
+  const char * name, v8::CFunction* fastCFunc, v8::FunctionCallback slowFunc);
+void SET_FAST_PROP(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> exports, 
+  const char * name, v8::CFunction* fastGetter, v8::FunctionCallback slowGetter,
+  v8::CFunction* fastSetter, v8::FunctionCallback slowSetter);
 
 // internal API - on the spin:: namespace so can be used from other modules
 uint64_t hrtime();
 void builtins_add (const char* name, const char* source, 
   unsigned int size);
+void modules_add (const char* name, register_plugin plugin_handler);
+
 int CreateIsolate(int argc, char** argv, 
   const char* main, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
@@ -171,46 +104,37 @@ int CreateIsolate(int argc, char** argv,
 int CreateIsolate(int argc, char** argv,
   const char* main, unsigned int main_len, uint64_t start,
   const char* globalobj, int cleanup, int onexit);
-void PrintStackTrace(Isolate* isolate, const TryCatch& try_catch);
-void PromiseRejectCallback(PromiseRejectMessage message);
+void PrintStackTrace(v8::Isolate* isolate, const v8::TryCatch& try_catch);
+void PromiseRejectCallback(v8::PromiseRejectMessage message);
 void FreeMemory(void* buf, size_t length, void* data);
-
 // external JS api - these are bound to the "spin" object on JS global
-void Print(const FunctionCallbackInfo<Value> &args);
-void Error(const FunctionCallbackInfo<Value> &args);
-
-void LoadModule(const FunctionCallbackInfo<Value> &args);
-void EvaluateModule(const FunctionCallbackInfo<Value> &args);
-void SetModuleCallbacks(const FunctionCallbackInfo<Value> &args);
-
-void Builtins(const FunctionCallbackInfo<Value> &args);
-void Modules(const FunctionCallbackInfo<Value> &args);
-void Builtin(const FunctionCallbackInfo<Value> &args);
-void Library(const FunctionCallbackInfo<Value> &args);
-void BindFastApi(const FunctionCallbackInfo<Value> &args);
-
-void NextTick(const FunctionCallbackInfo<Value> &args);
-void RunMicroTasks(const FunctionCallbackInfo<Value> &args);
-
-void ReadMemory(const FunctionCallbackInfo<Value> &args);
-
-void Utf8Length(const FunctionCallbackInfo<Value> &args);
-void Utf8Encode(const FunctionCallbackInfo<Value> &args);
-void Utf8Decode(const FunctionCallbackInfo<Value> &args);
-
+void Print(const v8::FunctionCallbackInfo<v8::Value> &args);
+void Error(const v8::FunctionCallbackInfo<v8::Value> &args);
+void LoadModule(const v8::FunctionCallbackInfo<v8::Value> &args);
+void EvaluateModule(const v8::FunctionCallbackInfo<v8::Value> &args);
+void SetModuleCallbacks(const v8::FunctionCallbackInfo<v8::Value> &args);
+void Builtins(const v8::FunctionCallbackInfo<v8::Value> &args);
+void Modules(const v8::FunctionCallbackInfo<v8::Value> &args);
+void Builtin(const v8::FunctionCallbackInfo<v8::Value> &args);
+void Library(const v8::FunctionCallbackInfo<v8::Value> &args);
+void BindFastApi(const v8::FunctionCallbackInfo<v8::Value> &args);
+void NextTick(const v8::FunctionCallbackInfo<v8::Value> &args);
+void RunMicroTasks(const v8::FunctionCallbackInfo<v8::Value> &args);
+void ReadMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
+void Utf8Length(const v8::FunctionCallbackInfo<v8::Value> &args);
+void Utf8Encode(const v8::FunctionCallbackInfo<v8::Value> &args);
+void Utf8EncodeInto(const v8::FunctionCallbackInfo<v8::Value> &args);
+void Utf8Decode(const v8::FunctionCallbackInfo<v8::Value> &args);
 // these can be fast api calls as they don't interact with JS heap
-void GetErrno(const FunctionCallbackInfo<Value> &args);
+void GetErrno(const v8::FunctionCallbackInfo<v8::Value> &args);
 int fastGetErrno(void* p);
-void SetErrno(const FunctionCallbackInfo<Value> &args);
+void SetErrno(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastSetErrno (void* p, int32_t e);
-
-void HRTime(const FunctionCallbackInfo<Value> &args);
+void HRTime(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastHRTime (void* p, struct FastApiTypedArray* const p_ret);
-
-void GetAddress(const FunctionCallbackInfo<Value> &args);
+void GetAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastGetAddress(void* p, struct FastApiTypedArray* const p_buf, 
   struct FastApiTypedArray* const p_ret);
-
 // Module Initialization
-void Init(Isolate* isolate, Local<ObjectTemplate> target);
+void Init(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> target);
 }

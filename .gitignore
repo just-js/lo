@@ -6,7 +6,7 @@ spin
 *.debug
 scratch
 deps
-module/*
-!module/fs
-!module/load
 .vscode
+.*_history
+tmp
+*.out

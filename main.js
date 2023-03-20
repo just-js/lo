@@ -49,14 +49,19 @@ function readFileBytes (path, flags = O_RDONLY) {
   return buf
 }
 
+const libCache = new Map()
+
 function load (name) {
-  const lib = spin.library(name)
+  if (libCache.has(name)) return libCache.get(name)
+  let lib = spin.library(name)
   if (lib) return lib
-  const handle = loader.load.dlopen(C(`module/${name}/${name}.so`).ptr, 1)
+  const handle = spin.dlopen(C(`module/${name}/${name}.so`).ptr, 1)
   if (!handle) return
-  const sym = loader.load.dlsym(handle, C(`_register_${name}`).ptr)
+  const sym = spin.dlsym(handle, C(`_register_${name}`).ptr)
   if (!sym) return
-  return spin.library(sym)
+  lib = spin.library(sym)
+  libCache.set(name, lib)
+  return lib
 }
 
 function assert (condition, message, ErrorType = Error) {
@@ -91,15 +96,21 @@ async function onModuleLoad (specifier, resource) {
     }
     return mod.namespace
   }
-  const buf = ptr(readFileBytes(specifier))
-  const src = spin.utf8Decode(buf.ptr, buf.byteLength)
+  let src = spin.builtin(specifier)
+  if (!src) {
+    const buf = ptr(readFileBytes(specifier))
+    src = spin.utf8Decode(buf.ptr, buf.byteLength)
+  }
   const mod = spin.loadModule(src, specifier)
   mod.resource = resource
   moduleCache.set(specifier, mod)
   const { requests } = mod
   for (const request of requests) {
-    const buf = ptr(readFileBytes(request))
-    const src = spin.utf8Decode(buf.ptr, buf.byteLength)
+    let src = spin.builtin(request)
+    if (!src) {
+      const buf = ptr(readFileBytes(request))
+      src = spin.utf8Decode(buf.ptr, buf.byteLength)
+    }
     const mod = spin.loadModule(src, request)
     moduleCache.set(request, mod)
   }
@@ -119,19 +130,17 @@ function onModuleInstantiate (specifier) {
 
 const O_RDONLY = 0
 const moduleCache = new Map()
-
 const { fs } = spin.library('fs')
-
+const loader = spin.library('load')
 spin.fs = fs
 spin.fs.readFileBytes = readFileBytes
-
-
-const loader = spin.library('load')
 spin.load = load
-spin.hrtime = wrap(new Uint32Array(2), spin.hrtime, [])
-spin.getAddress = wrap(new Uint32Array(2), spin.getAddress, ['buffer'])
-loader.load.dlopen = wrap(new Uint32Array(2), loader.load.dlopen, ['pointer', 'i32'])
-loader.load.dlsym = wrap(new Uint32Array(2), loader.load.dlsym, ['pointer', 'pointer'])
+const handle = new Uint32Array(2)
+spin.hrtime = wrap(handle, spin.hrtime, [])
+spin.getAddress = wrap(handle, spin.getAddress, ['buffer'])
+spin.dlopen = wrap(handle, loader.load.dlopen, ['pointer', 'i32'])
+spin.dlsym = wrap(handle, loader.load.dlsym, ['pointer', 'pointer'])
+spin.dlclose = loader.load.dlclose
 const stat = ptr(new Uint8Array(160))
 const st = new BigUint64Array(stat.buffer)
 spin.assert = assert
