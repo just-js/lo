@@ -1,14 +1,30 @@
-globalThis.console = { log: str => spin.print(str), error: str => spin.error(str) }
-globalThis.onUnhandledRejection = err => console.error(err.stack)
+const AD = '\u001b[0m' // ANSI Default
+const A0 = '\u001b[30m' // ANSI Black
+const AR = '\u001b[31m' // ANSI Red
+const AG = '\u001b[32m' // ANSI Green
+const AY = '\u001b[33m' // ANSI Yellow
+const AB = '\u001b[34m' // ANSI Blue
+const AM = '\u001b[35m' // ANSI Magenta
+const AC = '\u001b[36m' // ANSI Cyan
+const AW = '\u001b[37m' // ANSI White
 
-function wrap (h, fn, p = []) {
+spin.colors = { AD, A0, AR, AG, AY, AB, AM, AC, AW }
+
+globalThis.console = { log: str => spin.print(str), error: str => spin.error(str) }
+globalThis.onUnhandledRejection = err => {
+  console.error(`${AR}Unhandled Rejection${AD}`)
+  console.error(err.message)
+  console.error(err.stack)
+}
+
+function wrap (h, fn, plen = 0) {
   const call = fn
-  const params = p.map((_, i) => `p${i}`).join(', ')
+  const params = (new Array(plen)).fill(0).map((_, i) => `p${i}`).join(', ')
   const f = new Function(
     'h',
     'call',
-    `return function (${params}) {
-    call(${params}${p.length > 0 ? ', ' : ''}h);
+    `return function ${fn.name} (${params}) {
+    call(${params}${plen > 0 ? ', ' : ''}h);
     return h[0] + ((2 ** 32) * h[1]);
   }`,)
   return f(h, call)
@@ -54,12 +70,16 @@ const libCache = new Map()
 function load (name) {
   if (libCache.has(name)) return libCache.get(name)
   let lib = spin.library(name)
-  if (lib) return lib
+  if (lib) {
+    libCache.set(name, lib)
+    return lib
+  }
   const handle = spin.dlopen(C(`module/${name}/${name}.so`).ptr, 1)
   if (!handle) return
   const sym = spin.dlsym(handle, C(`_register_${name}`).ptr)
   if (!sym) return
   lib = spin.library(sym)
+  if (!lib) return
   libCache.set(name, lib)
   return lib
 }
@@ -71,7 +91,7 @@ function assert (condition, message, ErrorType = Error) {
 }
 
 async function main () {
-  if (spin.args[1] === 'eval') return (new Function(`return (${spin.args[2]})`)())()
+  if (spin.args[1] === 'eval') return (new Function(`return (${spin.args[2]})`))()
   const { main, serve, test, bench } = await import(spin.args[1])
   if (test) {
     await test(...spin.args.slice(2))
@@ -87,7 +107,10 @@ async function main () {
   }
 }
 
+// todo: strip out any command line switches
+// todo: handle errors
 async function onModuleLoad (specifier, resource) {
+  if (!specifier) return
   if (moduleCache.has(specifier)) {
     const mod = moduleCache.get(specifier)
     if (!mod.evaluated) {
@@ -136,10 +159,10 @@ spin.fs = fs
 spin.fs.readFileBytes = readFileBytes
 spin.load = load
 const handle = new Uint32Array(2)
-spin.hrtime = wrap(handle, spin.hrtime, [])
-spin.getAddress = wrap(handle, spin.getAddress, ['buffer'])
-spin.dlopen = wrap(handle, loader.load.dlopen, ['pointer', 'i32'])
-spin.dlsym = wrap(handle, loader.load.dlsym, ['pointer', 'pointer'])
+spin.hrtime = wrap(handle, spin.hrtime)
+spin.getAddress = wrap(handle, spin.getAddress, 1)
+spin.dlopen = wrap(handle, loader.load.dlopen, 2)
+spin.dlsym = wrap(handle, loader.load.dlsym, 2)
 spin.dlclose = loader.load.dlclose
 const stat = ptr(new Uint8Array(160))
 const st = new BigUint64Array(stat.buffer)
@@ -168,7 +191,7 @@ if (spin.args[1] === 'gen') {
   } else {
     source = await bindings(spin.args[2])
   }
-  console.log(source)  
+  console.log(source)
 } else {
-  await main(...spin.args.slice(1))
+  if (spin.args.length > 1) await main(...spin.args.slice(1))
 }

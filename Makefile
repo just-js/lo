@@ -15,12 +15,12 @@ MODULE_DIR=module
 SPIN_HOME=$(shell pwd)
 # list of c++ library archive (.a) files to link into runtime
 #MODULES=module/load/load.a module/fs/fs.a module/ffi/ffi.a module/tcc/tcc.a
-MODULES=module/load/load.a module/fs/fs.a module/ffi/ffi.a module/tcc/tcc.a ./ffiinfo.o
+MODULES=module/load/load.a module/fs/fs.a module/ffi/ffi.a module/tcc/tcc.a
 # list of JS modules to link into runtime
 #LIBS=lib/ansi.js lib/bench.js lib/binary.js lib/ffi.js lib/gen.js lib/packet.js lib/path.js lib/stringify.js
 LIBS=
 # list of arbitrary assets to link into runtime
-ASSETS=
+ASSETS=snapshot.bin
 # when initializing a module, the path to the api defintion
 MODULE_DEF=
 # directory to look for native api bindings
@@ -49,7 +49,7 @@ builtins.S: ## generate the assembly file for linking assets into runtime
 	./${TARGET} gen --link ${LIBS} ${ASSETS} > builtins.S
 
 main.h: ## generate the main.h to initialize libs and modules
-	./${TARGET} gen --header ${LIBS} ${MODULES} > main.h
+	./${TARGET} gen --header ${LIBS} ${MODULES} ${ASSETS} > main.h
 
 main.o: main.h ## compile the main app
 	$(CC) -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -march=native -mtune=native -Wpedantic -Wall -Wextra -Wno-unused-parameter main.cc

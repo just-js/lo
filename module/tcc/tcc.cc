@@ -75,6 +75,18 @@ void tcc_newFast(void* p, struct FastApiTypedArray* const p_ret) {
   ((void**)p_ret->data)[0] = r;
 
 }
+void tcc_deleteSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+
+  Local<Context> context = isolate->GetCurrentContext();
+  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  tcc_delete(v0);
+}
+
+void tcc_deleteFast(void* p, void* p0) {
+  TCCState* v0 = reinterpret_cast<TCCState*>(p0);
+  tcc_delete(v0);
+}
 void tcc_set_output_typeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
 
@@ -99,7 +111,7 @@ void tcc_set_optionsSlow(const FunctionCallbackInfo<Value> &args) {
   tcc_set_options(v0, v1);
 }
 
-void tcc_set_optionsFast(void* p, void* p0, void* p1, struct FastApiTypedArray* const p_ret) {
+void tcc_set_optionsFast(void* p, void* p0, void* p1) {
   TCCState* v0 = reinterpret_cast<TCCState*>(p0);
   const char* v1 = reinterpret_cast<const char*>(p1);
   tcc_set_options(v0, v1);
@@ -226,6 +238,14 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunction* pFtcc_new = new v8::CFunction((const void*)&tcc_newFast, infotcc_new);
   SET_FAST_METHOD(isolate, module, "tcc_new", pFtcc_new, tcc_newSlow);
 
+  v8::CTypeInfo* cargstcc_delete = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+  cargstcc_delete[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargstcc_delete[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  v8::CTypeInfo* rctcc_delete = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* infotcc_delete = new v8::CFunctionInfo(*rctcc_delete, 2, cargstcc_delete);
+  v8::CFunction* pFtcc_delete = new v8::CFunction((const void*)&tcc_deleteFast, infotcc_delete);
+  SET_FAST_METHOD(isolate, module, "tcc_delete", pFtcc_delete, tcc_deleteSlow);
+
   v8::CTypeInfo* cargstcc_set_output_type = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
   cargstcc_set_output_type[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargstcc_set_output_type[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
@@ -234,13 +254,13 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infotcc_set_output_type = new v8::CFunctionInfo(*rctcc_set_output_type, 3, cargstcc_set_output_type);
   v8::CFunction* pFtcc_set_output_type = new v8::CFunction((const void*)&tcc_set_output_typeFast, infotcc_set_output_type);
   SET_FAST_METHOD(isolate, module, "tcc_set_output_type", pFtcc_set_output_type, tcc_set_output_typeSlow);
-  v8::CTypeInfo* cargstcc_set_options = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
+
+  v8::CTypeInfo* cargstcc_set_options = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
   cargstcc_set_options[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargstcc_set_options[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
   cargstcc_set_options[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargstcc_set_options[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rctcc_set_options = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infotcc_set_options = new v8::CFunctionInfo(*rctcc_set_options, 4, cargstcc_set_options);
+  v8::CFunctionInfo* infotcc_set_options = new v8::CFunctionInfo(*rctcc_set_options, 3, cargstcc_set_options);
   v8::CFunction* pFtcc_set_options = new v8::CFunction((const void*)&tcc_set_optionsFast, infotcc_set_options);
   SET_FAST_METHOD(isolate, module, "tcc_set_options", pFtcc_set_options, tcc_set_optionsSlow);
 

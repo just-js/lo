@@ -3,6 +3,11 @@ const api = {
     parameters: [],
     result: 'pointer'
   },
+  tcc_delete: {
+    parameters: ['pointer'],
+    pointers: ['TCCState*'],
+    result: 'void'
+  },
   tcc_set_output_type: {
     parameters: ['pointer', 'i32'],
     pointers: ['TCCState*'],

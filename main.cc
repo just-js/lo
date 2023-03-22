@@ -52,8 +52,13 @@ int main(int argc, char** argv) {
   register_builtins();
   // create a new isolate on the main thread. this will block until the 
   // isolate exits
+  //spin::createSnapshot();
+  v8::StartupData startup_data;
+  //const v8::StartupData* startup_data = new v8::StartupData();
+  startup_data.data = _binary_snapshot_bin_start;
+  startup_data.raw_size = _binary_snapshot_bin_end - _binary_snapshot_bin_start;
   spin::CreateIsolate(argc, argv, main_js, main_js_len, starttime, 
-    GLOBALOBJ, _v8_cleanup, _on_exit);
+    GLOBALOBJ, _v8_cleanup, _on_exit, &startup_data);
   // if we have the cleanup flag set, clean up memory left behind when isolate
   // exits. this flag should be set if you want to spawn multiple isolates
   // in the same process without memory leaks.

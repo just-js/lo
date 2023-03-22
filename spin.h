@@ -4,6 +4,9 @@
 #include <libplatform/libplatform.h>
 #include <map>
 #include <v8-fast-api-calls.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -91,6 +94,7 @@ void SET_FAST_PROP(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> exports,
   v8::CFunction* fastSetter, v8::FunctionCallback slowSetter);
 
 // internal API - on the spin:: namespace so can be used from other modules
+void createSnapshot();
 uint64_t hrtime();
 void builtins_add (const char* name, const char* source, 
   unsigned int size);
@@ -100,10 +104,10 @@ int CreateIsolate(int argc, char** argv,
   const char* main, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname,
-  int cleanup, int onexit);
+  int cleanup, int onexit, const v8::StartupData* startup_data);
 int CreateIsolate(int argc, char** argv,
   const char* main, unsigned int main_len, uint64_t start,
-  const char* globalobj, int cleanup, int onexit);
+  const char* globalobj, int cleanup, int onexit, const v8::StartupData* startup_data);
 void PrintStackTrace(v8::Isolate* isolate, const v8::TryCatch& try_catch);
 void PromiseRejectCallback(v8::PromiseRejectMessage message);
 void FreeMemory(void* buf, size_t length, void* data);

@@ -337,9 +337,11 @@ int spin::CreateIsolate(int argc, char** argv,
   const char* main_src, unsigned int main_len, 
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname, int cleanup,
-  int onexit) {
+  int onexit, const v8::StartupData* startup_data) {
   Isolate::CreateParams create_params;
   int statusCode = 0;
+  //create_params.snapshot_blob = startup_data;
+  //fprintf(stderr, "snapshot size %u\n", startup_data->raw_size);
   create_params.array_buffer_allocator = 
     ArrayBuffer::Allocator::NewDefaultAllocator();
   create_params.embedder_wrapper_type_index = 0;
@@ -356,6 +358,7 @@ int spin::CreateIsolate(int argc, char** argv,
     global->Set(String::NewFromUtf8(isolate, globalobj, 
       NewStringType::kInternalized, strnlen(globalobj, 256)).ToLocalChecked(), 
       runtime);
+    //Local<Context> context = Context::FromSnapshot(isolate, 0).ToLocalChecked();
     Local<Context> context = Context::New(isolate, NULL, global);
     Context::Scope context_scope(context);
     isolate->SetPromiseRejectCallback(PromiseRejectCallback);
@@ -474,9 +477,9 @@ int spin::CreateIsolate(int argc, char** argv,
 
 int spin::CreateIsolate(int argc, char** argv, const char* main_src, 
   unsigned int main_len, uint64_t start, const char* globalobj, int cleanup,
-  int onexit) {
+  int onexit, const v8::StartupData* startup_data) {
   return CreateIsolate(argc, argv, main_src, main_len, NULL, 0, NULL, 0, 0, 
-    start, globalobj, "main.js", cleanup, onexit);
+    start, globalobj, "main.js", cleanup, onexit, startup_data);
 }
 
 void spin::Print(const FunctionCallbackInfo<Value> &args) {
@@ -574,8 +577,8 @@ void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   if (jstr->IsOneByte()) {
     uint8_t* str = reinterpret_cast<uint8_t*>(args[0]->IntegerValue(
       isolate->GetCurrentContext()).ToChecked());
-    written = str->WriteOneByte(isolate, 
-      str, 0, str->Length(), 
+    written = jstr->WriteOneByte(isolate, 
+      str, 0, jstr->Length(), 
       String::HINT_MANY_WRITES_EXPECTED | 
       String::NO_NULL_TERMINATION
     );
@@ -584,7 +587,7 @@ void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   }
   char* str = reinterpret_cast<char*>(args[0]->IntegerValue(
     isolate->GetCurrentContext()).ToChecked());
-  written = str->WriteUtf8(isolate, 
+  written = jstr->WriteUtf8(isolate, 
     str, -1, &read, 
     String::HINT_MANY_WRITES_EXPECTED | 
     String::REPLACE_INVALID_UTF8 |
@@ -797,6 +800,7 @@ void spin::BindFastApi(const FunctionCallbackInfo<Value> &args) {
   );
   Local<Function> fun = 
     funcTemplate->GetFunction(context).ToLocalChecked();
+  fun->SetName(args[3].As<Function>()->GetName().As<String>());
   args.GetReturnValue().Set(fun);
 }
 
@@ -832,10 +836,13 @@ void spin::SetModuleCallbacks(const FunctionCallbackInfo<Value> &args) {
 
 void spin::CreateSnapshot(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
-  const char* embedded_source = "spin.print('hello')";
-  //v8::StartupData result = i::CreateSnapshotDataBlobInternal(
-  //  v8::SnapshotCreator::FunctionCodeHandling::kClear, embedded_source,
-  //  isolate);
+  v8::SnapshotCreator snap = v8::SnapshotCreator(isolate);
+  v8::StartupData startup = snap.CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kClear);
+  std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
+      (void*)startup.data, startup.raw_size, [](void*, size_t, void*){}, nullptr);
+  Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
+  Local<TypedArray> u8 = Uint8Array::New(ab, 0, ab->ByteLength());
+  args.GetReturnValue().Set(u8);
 }
 
 // fast api calls
@@ -894,6 +901,32 @@ void fatalErrorcallback (const char* location, const char* message) {
 void OOMErrorcallback (const char* location, const OOMDetails& details) {
   fprintf(stderr, "OOMErrorcallback\n%s\nis heap oom? %d\n%s\n", location, 
     details.is_heap_oom, details.detail);
+}
+
+void spin::createSnapshot () {
+  v8::StartupData startup_data;
+  size_t index;
+  std::vector<intptr_t> external_references = { reinterpret_cast<intptr_t>(nullptr)};
+  {
+    Isolate* isolate = Isolate::Allocate();
+    // Create a new SnapshotCreator and notice that we are passing in the pointer
+    // to the external_references which only contains one function address in
+    // our case.
+    v8::SnapshotCreator snapshot_creator(isolate, external_references.data());
+    {
+      HandleScope scope(isolate);
+      snapshot_creator.SetDefaultContext(Context::New(isolate));
+      Local<Context> context = Context::New(isolate);
+      index = snapshot_creator.AddContext(context);
+      fprintf(stderr, "context index: %i\n", index);
+    }
+    startup_data = snapshot_creator.CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kKeep);
+    fprintf(stderr, "size of blob: %u\n", startup_data.raw_size);
+  }
+  int fd = open("snapshot.bin", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+  write(fd, startup_data.data, startup_data.raw_size);
+  close(fd);
+  //return startup_data.data;
 }
 
 void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
@@ -966,6 +999,7 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "bindFastApi", BindFastApi);
   SET_METHOD(isolate, target, "builtins", Builtins);
   SET_METHOD(isolate, target, "modules", Modules);
+  //SET_METHOD(isolate, target, "createSnapshot", CreateSnapshot);
   SET_FAST_METHOD(isolate, target, "hrtime", pFhrtime, HRTime);
   SET_FAST_METHOD(isolate, target, "getAddress", pFgetaddress, GetAddress);
   SET_FAST_PROP(isolate, target, "errno", pFerrnoget, GetErrno, pFerrnoset, 
