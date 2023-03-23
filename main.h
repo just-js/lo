@@ -6,8 +6,6 @@
 
 extern char _binary_main_js_start[];
 extern char _binary_main_js_end[];
-extern char _binary_snapshot_bin_start[];
-extern char _binary_snapshot_bin_end[];
 
 extern "C" {
   extern void* _register_load();
@@ -18,7 +16,6 @@ extern "C" {
 
 void register_builtins() {
   spin::builtins_add("main.js", _binary_main_js_start, _binary_main_js_end - _binary_main_js_start);
-  spin::builtins_add("snapshot.bin", _binary_snapshot_bin_start, _binary_snapshot_bin_end - _binary_snapshot_bin_start);
   spin::modules_add("load", &_register_load);
   spin::modules_add("fs", &_register_fs);
   spin::modules_add("ffi", &_register_ffi);

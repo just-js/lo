@@ -482,38 +482,6 @@ int spin::CreateIsolate(int argc, char** argv, const char* main_src,
     start, globalobj, "main.js", cleanup, onexit, startup_data);
 }
 
-void spin::Print(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  if (args[0].IsEmpty()) return;
-  String::Utf8Value str(args.GetIsolate(), args[0]);
-  int endline = 1;
-  if (args.Length() > 1) {
-    endline = static_cast<int>(args[1]->BooleanValue(isolate));
-  }
-  const char *cstr = *str;
-  if (endline == 1) {
-    fprintf(stdout, "%s\n", cstr);
-  } else {
-    fprintf(stdout, "%s", cstr);
-  }
-}
-
-void spin::Error(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  if (args[0].IsEmpty()) return;
-  String::Utf8Value str(args.GetIsolate(), args[0]);
-  int endline = 1;
-  if (args.Length() > 1) {
-    endline = static_cast<int>(args[1]->BooleanValue(isolate));
-  }
-  const char *cstr = *str;
-  if (endline == 1) {
-    fprintf(stderr, "%s\n", cstr);
-  } else {
-    fprintf(stderr, "%s", cstr);
-  }
-}
-
 void spin::Library(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
@@ -569,59 +537,52 @@ void spin::NextTick(const FunctionCallbackInfo<Value>& args) {
   args.GetIsolate()->EnqueueMicrotask(args[0].As<Function>());
 }
 
-void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
-  Isolate* isolate = args.GetIsolate();
-  int read = 0;
-  Local<String> jstr = args[1].As<String>();
-  int written = 0;
-  if (jstr->IsOneByte()) {
-    uint8_t* str = reinterpret_cast<uint8_t*>(args[0]->IntegerValue(
-      isolate->GetCurrentContext()).ToChecked());
-    written = jstr->WriteOneByte(isolate, 
-      str, 0, jstr->Length(), 
-      String::HINT_MANY_WRITES_EXPECTED | 
-      String::NO_NULL_TERMINATION
-    );
-    args.GetReturnValue().Set(Integer::New(isolate, written));
-    return;
-  }
-  char* str = reinterpret_cast<char*>(args[0]->IntegerValue(
-    isolate->GetCurrentContext()).ToChecked());
-  written = jstr->WriteUtf8(isolate, 
-    str, -1, &read, 
-    String::HINT_MANY_WRITES_EXPECTED | 
-    String::REPLACE_INVALID_UTF8 |
-    String::NO_NULL_TERMINATION
-  );
-  args.GetReturnValue().Set(Integer::New(isolate, written));
-}
-
+// for this, we could just return the address of the newly allocated
+// data and leave the wrapping of it in an array buffer to the caller
 void spin::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
   if (str->IsOneByte()) {
-    int size = str->Length();  
-    uint8_t* chunk = (uint8_t*)calloc(1, size);
-    str->WriteOneByte(isolate, chunk, 0, size, 
-      String::HINT_MANY_WRITES_EXPECTED | String::NO_NULL_TERMINATION);
-    std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(chunk, 
-      size, spin::FreeMemory, nullptr);
+    int size = str->Length();
+    std::unique_ptr<BackingStore> backing = 
+      ArrayBuffer::NewBackingStore(isolate, size);
+    str->WriteOneByte(isolate, static_cast<uint8_t*>(backing->Data()), 0, 
+      size, String::NO_NULL_TERMINATION);
     Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-    Local<TypedArray> u8 = Uint8Array::New(ab, 0, size);
-    args.GetReturnValue().Set(u8);
+    args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
     return;
   }
-  int size = str->Utf8Length(isolate);
-  char* chunk = (char*)calloc(1, size);
   int written = 0;
-  str->WriteUtf8(isolate, chunk, size, &written, 
-    String::HINT_MANY_WRITES_EXPECTED | String::NO_NULL_TERMINATION |
-    String::REPLACE_INVALID_UTF8);
-  std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(chunk, 
-    size, spin::FreeMemory, nullptr);
+  int size = str->Utf8Length(isolate);
+  std::unique_ptr<BackingStore> backing = 
+    ArrayBuffer::NewBackingStore(isolate, size);
+  str->WriteUtf8(isolate, static_cast<char*>(backing->Data()), size, &written, 
+    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
   Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-  Local<TypedArray> u8 = Uint8Array::New(ab, 0, size);
-  args.GetReturnValue().Set(u8);
+  args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
+}
+
+void spin::Utf8EncodeAddress(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<String> str = args[0].As<String>();
+  if (str->IsOneByte()) {
+    int size = str->Length();
+    std::unique_ptr<BackingStore> backing = 
+      ArrayBuffer::NewBackingStore(isolate, size);
+    str->WriteOneByte(isolate, static_cast<uint8_t*>(backing->Data()), 0, 
+      size, String::NO_NULL_TERMINATION);
+    Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
+    args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
+    return;
+  }
+  int written = 0;
+  int size = str->Utf8Length(isolate);
+  std::unique_ptr<BackingStore> backing = 
+    ArrayBuffer::NewBackingStore(isolate, size);
+  str->WriteUtf8(isolate, static_cast<char*>(backing->Data()), size, &written, 
+    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
+  Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
+  args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
 }
 
 void spin::Utf8Decode(const FunctionCallbackInfo<Value> &args) {
@@ -742,12 +703,6 @@ void spin::ReadMemory(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(u8);
 }
 
-void spin::Utf8Length(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  args.GetReturnValue().Set(Integer::New(isolate, 
-    args[0].As<String>()->Utf8Length(isolate)));
-}
-
 void SlowCallback(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
   Local<Object> data = args.Data().As<Object>();
@@ -804,6 +759,8 @@ void spin::BindFastApi(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(fun);
 }
 
+// todo: these could both be fast calls if we just wrote to a buffer
+// and parse on the other side - probably not any quicker though
 void spin::Builtins(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
@@ -832,17 +789,6 @@ void spin::SetModuleCallbacks(const FunctionCallbackInfo<Value> &args) {
   Local<Context> context = args.GetIsolate()->GetCurrentContext();
   context->SetEmbedderData(1, args[0].As<Function>()); // async resolver
   context->SetEmbedderData(2, args[1].As<Function>()); // sync resolver
-}
-
-void spin::CreateSnapshot(const FunctionCallbackInfo<Value> &args) {
-  Isolate* isolate = args.GetIsolate();
-  v8::SnapshotCreator snap = v8::SnapshotCreator(isolate);
-  v8::StartupData startup = snap.CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kClear);
-  std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
-      (void*)startup.data, startup.raw_size, [](void*, size_t, void*){}, nullptr);
-  Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-  Local<TypedArray> u8 = Uint8Array::New(ab, 0, ab->ByteLength());
-  args.GetReturnValue().Set(u8);
 }
 
 // fast api calls
@@ -887,6 +833,72 @@ void spin::fastGetAddress(void* p, struct FastApiTypedArray* const p_buf,
   ((uint64_t*)p_ret->data)[0] = (uint64_t)p_buf->data;
 }
 
+void spin::Utf8Length(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  args.GetReturnValue().Set(Integer::New(isolate, 
+    args[0].As<String>()->Utf8Length(isolate)));
+}
+
+int32_t spin::fastUtf8Length (void* p, struct FastOneByteString* const p_str) {
+  return strnlen(p_str->data, p_str->length);
+}
+
+void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
+  Isolate* isolate = args.GetIsolate();
+  int read = 0;
+  Local<String> jstr = args[1].As<String>();
+  int written = 0;
+  if (jstr->IsOneByte()) {
+    uint8_t* str = static_cast<uint8_t*>(args[0].As<Uint8Array>()->Buffer()->Data());
+    written = jstr->WriteOneByte(isolate, 
+      str, 0, jstr->Length(), 
+      String::HINT_MANY_WRITES_EXPECTED | 
+      String::NO_NULL_TERMINATION
+    );
+    args.GetReturnValue().Set(Integer::New(isolate, written));
+    return;
+  }
+  char* str = static_cast<char*>(args[0].As<Uint8Array>()->Buffer()->Data());
+  written = jstr->WriteUtf8(isolate, 
+    str, -1, &read, 
+    String::HINT_MANY_WRITES_EXPECTED | 
+    String::REPLACE_INVALID_UTF8 |
+    String::NO_NULL_TERMINATION
+  );
+  args.GetReturnValue().Set(Integer::New(isolate, written));
+}
+
+int32_t spin::fastUtf8EncodeInto (void* p, struct FastApiTypedArray* const p_buf, struct FastOneByteString* const p_str) {
+  memcpy(p_buf->data, p_str->data, p_str->length);
+  return p_str->length;
+}
+
+void spin::Print(const FunctionCallbackInfo<Value> &args) {
+  if (args[0].IsEmpty()) return;
+  String::Utf8Value str(args.GetIsolate(), args[0]);
+  fprintf(stdout, "%s", *str);
+}
+
+void spin::fastPrint(void* p, struct FastOneByteString* const p_str) {
+  fprintf(stdout, "%s", p_str->data);
+}
+
+void spin::Error(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  if (args[0].IsEmpty()) return;
+  String::Utf8Value str(args.GetIsolate(), args[0]);
+  int endline = 1;
+  if (args.Length() > 1) {
+    endline = static_cast<int>(args[1]->BooleanValue(isolate));
+  }
+  const char *cstr = *str;
+  if (endline == 1) {
+    fprintf(stderr, "%s\n", cstr);
+  } else {
+    fprintf(stderr, "%s", cstr);
+  }
+}
+
 // v8 callbacks
 size_t spin::nearHeapLimitCallback(void* data, size_t current_heap_limit,
   size_t initial_heap_limit) {
@@ -903,6 +915,7 @@ void OOMErrorcallback (const char* location, const OOMDetails& details) {
     details.is_heap_oom, details.detail);
 }
 
+/*
 void spin::createSnapshot () {
   v8::StartupData startup_data;
   size_t index;
@@ -928,10 +941,9 @@ void spin::createSnapshot () {
   close(fd);
   //return startup_data.data;
 }
+*/
 
 void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
-  Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
-
   isolate->AddNearHeapLimitCallback(spin::nearHeapLimitCallback, 0);
   isolate->SetFatalErrorHandler(fatalErrorcallback);
   isolate->SetOOMErrorHandler(OOMErrorcallback);
@@ -977,31 +989,67 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   CFunction* pFgetaddress = new CFunction((const void*)&fastGetAddress, 
     infogetaddress);
 
+  CTypeInfo* cargsutf8length = (CTypeInfo*)calloc(2, 
+    sizeof(CTypeInfo));
+  cargsutf8length[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargsutf8length[1] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
+  CTypeInfo* rcutf8length = new CTypeInfo(CTypeInfo::Type::kInt32);
+  CFunctionInfo* infoutf8length = new CFunctionInfo(*rcutf8length, 2, 
+    cargsutf8length);
+  CFunction* pFutf8length = new CFunction((const void*)&fastUtf8Length, 
+    infoutf8length);
+
+  CTypeInfo* cargsutf8encodeinto = (CTypeInfo*)calloc(2, 
+    sizeof(CTypeInfo));
+  cargsutf8encodeinto[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargsutf8encodeinto[1] = CTypeInfo(CTypeInfo::Type::kUint8, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargsutf8encodeinto[2] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
+  CTypeInfo* rcutf8encodeinto = new CTypeInfo(CTypeInfo::Type::kInt32);
+  CFunctionInfo* infoutf8encodeinto = new CFunctionInfo(*rcutf8encodeinto, 3, 
+    cargsutf8encodeinto);
+  CFunction* pFutf8encodeinto = new CFunction((const void*)&fastUtf8EncodeInto, 
+    infoutf8encodeinto);
+
+  CTypeInfo* cargsprint = (CTypeInfo*)calloc(2, 
+    sizeof(CTypeInfo));
+  cargsprint[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargsprint[1] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
+  CTypeInfo* rcprint = new CTypeInfo(CTypeInfo::Type::kVoid);
+  CFunctionInfo* infoprint = new CFunctionInfo(*rcprint, 2, 
+    cargsprint);
+  CFunction* pFprint = new CFunction((const void*)&fastPrint, 
+    infoprint);
+
+  Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
   SET_VALUE(isolate, version, GLOBALOBJ, String::NewFromUtf8Literal(isolate, 
     VERSION));
   SET_VALUE(isolate, version, "v8", String::NewFromUtf8(isolate, 
     V8::GetVersion()).ToLocalChecked());
   SET_MODULE(isolate, target, "version", version);
-  SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);
-  SET_METHOD(isolate, target, "nextTick", NextTick);
+
   SET_METHOD(isolate, target, "builtin", Builtin);
+  SET_METHOD(isolate, target, "builtins", Builtins);
+  SET_METHOD(isolate, target, "bindFastApi", BindFastApi);
+  SET_METHOD(isolate, target, "error", Error);
+  SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
   SET_METHOD(isolate, target, "library", Library);
+  SET_METHOD(isolate, target, "loadModule", LoadModule);
+  SET_METHOD(isolate, target, "modules", Modules);
+  SET_METHOD(isolate, target, "nextTick", NextTick);
+  SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);
   SET_METHOD(isolate, target, "readMemory", ReadMemory);
+  SET_METHOD(isolate, target, "setModuleCallbacks", SetModuleCallbacks);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
   SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
-  SET_METHOD(isolate, target, "utf8EncodeInto", Utf8EncodeInto);
-  SET_METHOD(isolate, target, "utf8Length", Utf8Length);
-  SET_METHOD(isolate, target, "print", Print);
-  SET_METHOD(isolate, target, "error", Error);
-  SET_METHOD(isolate, target, "setModuleCallbacks", SetModuleCallbacks);
-  SET_METHOD(isolate, target, "loadModule", LoadModule);
-  SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
-  SET_METHOD(isolate, target, "bindFastApi", BindFastApi);
-  SET_METHOD(isolate, target, "builtins", Builtins);
-  SET_METHOD(isolate, target, "modules", Modules);
-  //SET_METHOD(isolate, target, "createSnapshot", CreateSnapshot);
-  SET_FAST_METHOD(isolate, target, "hrtime", pFhrtime, HRTime);
+  SET_METHOD(isolate, target, "utf8EncodeAddress", Utf8EncodeAddress);
+
   SET_FAST_METHOD(isolate, target, "getAddress", pFgetaddress, GetAddress);
+  SET_FAST_METHOD(isolate, target, "hrtime", pFhrtime, HRTime);
+  SET_FAST_METHOD(isolate, target, "print", pFprint, Print);
+  SET_FAST_METHOD(isolate, target, "utf8EncodeInto", pFutf8encodeinto, Utf8EncodeInto);
+  SET_FAST_METHOD(isolate, target, "utf8Length", pFutf8length, Utf8Length);
+
   SET_FAST_PROP(isolate, target, "errno", pFerrnoget, GetErrno, pFerrnoset, 
     SetErrno);
 }

@@ -10,12 +10,32 @@ const AW = '\u001b[37m' // ANSI White
 
 spin.colors = { AD, A0, AR, AG, AY, AB, AM, AC, AW }
 
-globalThis.console = { log: str => spin.print(str), error: str => spin.error(str) }
+globalThis.console = { log: str => spin.print(`${str}\n`), error: str => spin.error(str) }
+
 globalThis.onUnhandledRejection = err => {
   console.error(`${AR}Unhandled Rejection${AD}`)
   console.error(err.message)
   console.error(err.stack)
 }
+
+const { utf8Length, utf8EncodeInto, utf8Encode } = spin
+
+class TextEncoder {
+  encoding = 'utf-8'
+
+  encode (input = '') {
+    const u8 = new Uint8Array(utf8Length(input))
+    utf8EncodeInto(u8, input)
+    return u8
+  }
+
+  encodeInto (src, dest) {
+    encodeInto(src, dest, handle)
+    return { read: handle[0], written: handle[1] }
+  }
+}
+
+globalThis.TextEncoder = TextEncoder
 
 function wrap (h, fn, plen = 0) {
   const call = fn
@@ -30,14 +50,18 @@ function wrap (h, fn, plen = 0) {
   return f(h, call)
 }
 
+// todo: this is going to be the address of the underlying arraybuffer data,
+// need to apply the u8 offset
 function ptr (u8) {
   u8.ptr = spin.getAddress(u8)
   u8.size = u8.byteLength
   return u8
 }
 
+const encoder = new TextEncoder()
+
 function C (str) {
-  return ptr(spin.utf8Encode(`${str}\0`))
+  return ptr(encoder.encode(`${str}\0`))
 }
 
 function addr (u32) {
