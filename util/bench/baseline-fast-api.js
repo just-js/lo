@@ -1,29 +1,23 @@
 import { run } from 'lib/bench.js'
 import { Library } from 'lib/ffi.js'
 
-const { assert, args } = spin
+const { assert } = spin
 
 const { baseline } = (new Library()).open().compile(`
-typedef int int32_t;
-
 int i = 0;
-int func_trampoline () {
+int baseline () {
   return i++;
 }
 `).bind({
-  func_trampoline: {
+  baseline: {
     result: 'i32',
     parameters: [],
-    internal: true,
-    name: 'baseline'
+    internal: true
   }
 })
 
-const repeat = Number(args[2] || 10)
 assert(baseline() === 0)
 assert(baseline() === 1)
 assert(baseline() === 2)
 
-while (1) {
-  run('baseline', baseline, 600000000, repeat)
-}
+run('baseline', baseline, 600000000, 10)

@@ -16,6 +16,12 @@ const api = {
     parameters: ['i32', 'u32', 'i32'],
     result: 'u32'
   },
+  write_string: {
+    parameters: ['i32', 'string', 'i32'],
+    pointers: [, 'const char*'],
+    result: 'i32',
+    name: 'write'
+  },
   write: {
     parameters: ['i32', 'pointer', 'i32'],
     result: 'i32'

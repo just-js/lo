@@ -59,10 +59,10 @@ const api = {
     parameters: ['i32'],
     result: 'u32'
   },
-  syscall: {
+  pidfd_open: {
     parameters: ['i32', 'i32', 'u32'],
     result: 'i32',
-    name: 'pidfd_open'
+    name: 'syscall'
   },
   getrlimit: {
     parameters: ['i32', 'pointer'],

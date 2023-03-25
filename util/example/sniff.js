@@ -4,7 +4,7 @@ import { colors } from 'lib/ansi.js'
 
 import { Parser, protocols, toMAC, htons16, tcpDump, udpDump } from 'lib/packet.js'
 
-const { assert, utf8EncodeInto, args, ptr } = spin
+const { assert, utf8EncodeInto, args } = spin
 const { AG, AD, AY } = colors
 
 const PF_PACKET = 17
@@ -38,9 +38,9 @@ int sizeof_sockaddr_ll () {
 }
 `).bind({
   socket: { parameters: ['i32', 'i32', 'i32'], result: 'i32' },
-  bind: { parameters: ['i32', 'pointer', 'i32'], result: 'i32' },
-  ioctl: { parameters: ['i32', 'i32', 'pointer'], result: 'i32' },
-  recv: { parameters: ['i32', 'pointer', 'u32', 'i32'], result: 'i32' },
+  bind: { parameters: ['i32', 'buffer', 'i32'], result: 'i32' },
+  ioctl: { parameters: ['i32', 'i32', 'buffer'], result: 'i32' },
+  recv: { parameters: ['i32', 'buffer', 'u32', 'i32'], result: 'i32' },
   sizeof_ifreq: { parameters: [], result: 'i32', internal: true },
   sizeof_sockaddr_ll: { parameters: [], result: 'i32', internal: true },
   close: { parameters: ['i32'], result: 'i32' }
@@ -48,15 +48,15 @@ int sizeof_sockaddr_ll () {
 
 const iff = args[2] || 'lo'
 
-const ifreq = ptr(new Uint8Array(sizeof_ifreq()))
-const sockaddr = ptr(new Uint8Array(sizeof_sockaddr_ll()))
+const ifreq = new Uint8Array(sizeof_ifreq())
+const sockaddr = new Uint8Array(sizeof_sockaddr_ll())
 
 const fd = socket(PF_PACKET, SOCK_RAW, htons16(ETH_P_ALL))
 assert(fd > 2)
-utf8EncodeInto(ifreq.ptr, iff)
-assert(ioctl(fd, SIOCGIFHWADDR, ifreq.ptr) === 0)
+utf8EncodeInto(ifreq, iff)
+assert(ioctl(fd, SIOCGIFHWADDR, ifreq) === 0)
 const mac = toMAC(ifreq.subarray(18, 24))
-assert(ioctl(fd, SIOCGIFINDEX, ifreq.ptr) === 0)
+assert(ioctl(fd, SIOCGIFINDEX, ifreq) === 0)
 const index = ifreq[16] + (ifreq[17] << 8)
 console.log(`listening to ${AG}interface${AD} ${iff} ${AY}mac${AD} ${mac} ${AY}index${AD} ${index}`)
 sockaddr[0] = PF_PACKET & 0xff // type
@@ -65,16 +65,16 @@ sockaddr[2] = htons16(ETH_P_ALL) & 0xff
 sockaddr[3] = (htons16(ETH_P_ALL) >> 8) & 0xff // protocol
 sockaddr[4] = index & 0xff
 sockaddr[5] = (index >> 8) & 0xff // index
-assert(bind(fd, sockaddr.ptr, sockaddr.length) === 0)
+assert(bind(fd, sockaddr, sockaddr.length) === 0)
 
-const rbuf = ptr(new Uint8Array(65536))
+const BUFSIZE = 65536
+const rbuf = new Uint8Array(BUFSIZE)
 const { parse } = new Parser(rbuf)
 
-let bytes = recv(fd, rbuf.ptr, rbuf.size, 0)
-
+let bytes = recv(fd, rbuf, BUFSIZE, 0)
 while (bytes > 0) {
   onPacket(parse(bytes, true), rbuf)
-  bytes = recv(fd, rbuf.ptr, rbuf.size, 0)
+  bytes = recv(fd, rbuf, BUFSIZE, 0)
 }
 
 close(fd)

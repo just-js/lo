@@ -3,21 +3,21 @@ const api = {
     parameters: ['pointer'], pointers: ['const char*'],
     result: 'pointer'
   },
-  bestlineClearScreen: {
+  cls: {
     parameters: ['i32'],
-    result: 'void', name: 'cls'
+    result: 'void', name: 'bestlineClearScreen'
   },
-  bestlineHistoryAdd: {
+  add: {
     parameters: ['pointer'], pointers: ['const char*'],
-    result: 'i32', name: 'add'
+    result: 'i32', name: 'bestlineHistoryAdd'
   },
-  bestlineHistorySave: {
+  save: {
     parameters: ['pointer'], pointers: ['const char*'],
-    result: 'i32', name: 'save'
+    result: 'i32', name: 'bestlineHistorySave'
   },
-  bestlineHistoryLoad: {
+  load: {
     parameters: ['pointer'], pointers: ['const char*'],
-    result: 'i32', name: 'load'
+    result: 'i32', name: 'bestlineHistoryLoad'
   }  
 }
 

@@ -242,12 +242,14 @@ const fast_string_arg_return_i32 = bind(string_arg_return_i32, Types.i32, [Types
 
 const addr = tcc.tcc_get_symbol(code, cstr('reset_counter').ptr)
 assert(addr)
+
 const reset_counter = wrapffi(addr, Types.u32, [])
+
 assert(fast_zero_args_return_i32() === zero_args_return_i32())
 assert(fast_zero_args_return_u32() === zero_args_return_u32())
 assert(fast_zero_args_return_u64() === wrapped_zero_args_return_u64())
 assert(fast_alltogether() === alltogether())
 
-bench()
+//bench()
 
 //tcc.tcc_delete(code)

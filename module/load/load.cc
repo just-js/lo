@@ -64,19 +64,17 @@ using v8::V8;
 
 void dlopenSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const char* v0 = reinterpret_cast<const char*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  String::Utf8Value v0(isolate, args[0]);
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  void* rc = dlopen(v0, v1);
+  void* rc = dlopen(*v0, v1);
   Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
   ((void**)ab->Data())[0] = rc;
 }
 
-void dlopenFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* const p_ret) {
-  const char* v0 = reinterpret_cast<const char*>(p0);
+void dlopenFast(void* p, struct FastOneByteString* const p0, int32_t p1, struct FastApiTypedArray* const p_ret) {
+  struct FastOneByteString* const v0 = p0;
   int32_t v1 = p1;
-  void* r = dlopen(v0, v1);
+  void* r = dlopen(v0->data, v1);
   ((void**)p_ret->data)[0] = r;
 
 }
@@ -85,16 +83,16 @@ void dlsymSlow(const FunctionCallbackInfo<Value> &args) {
 
   Local<Context> context = isolate->GetCurrentContext();
   void* v0 = reinterpret_cast<void*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  void* rc = dlsym(v0, v1);
+  String::Utf8Value v1(isolate, args[1]);
+  void* rc = dlsym(v0, *v1);
   Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
   ((void**)ab->Data())[0] = rc;
 }
 
-void dlsymFast(void* p, void* p0, void* p1, struct FastApiTypedArray* const p_ret) {
+void dlsymFast(void* p, void* p0, struct FastOneByteString* const p1, struct FastApiTypedArray* const p_ret) {
   void* v0 = reinterpret_cast<void*>(p0);
-  const char* v1 = reinterpret_cast<const char*>(p1);
-  void* r = dlsym(v0, v1);
+  struct FastOneByteString* const v1 = p1;
+  void* r = dlsym(v0, v1->data);
   ((void**)p_ret->data)[0] = r;
 
 }
@@ -116,7 +114,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
   v8::CTypeInfo* cargsdlopen = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargsdlopen[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsdlopen[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsdlopen[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
   cargsdlopen[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   cargsdlopen[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcdlopen = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
@@ -126,7 +124,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CTypeInfo* cargsdlsym = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargsdlsym[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsdlsym[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsdlsym[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsdlsym[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
   cargsdlsym[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcdlsym = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
   v8::CFunctionInfo* infodlsym = new v8::CFunctionInfo(*rcdlsym, 4, cargsdlsym);

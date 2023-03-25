@@ -1,15 +1,11 @@
 import { run } from 'lib/bench.js'
-import { wrapffi, Types } from 'lib/ffi.js'
+import { FFIFunction, Types, tcc } from 'lib/ffi.js'
 
-const { assert } = spin
-
-const { tcc } = spin.load('tcc')
+const { assert, ptr } = spin
 
 let source = spin.cstr(`
-typedef int int32_t;
-
 int i = 0;
-int func_trampoline (void* recv) {
+int func_baseline () {
   return i++;
 }
 `)
@@ -22,17 +18,22 @@ let rc = tcc.tcc_compile_string(code, source.ptr)
 spin.assert(rc === 0, `could not compile (${rc})`)
 rc = tcc.tcc_relocate(code, TCC_RELOCATE_AUTO)
 spin.assert(rc === 0, `could not relocate (${rc})`)
-const addr = tcc.tcc_get_symbol(code, spin.cstr('func_trampoline').ptr)
+const addr = tcc.tcc_get_symbol(code, spin.cstr('func_baseline').ptr)
 spin.assert(addr, `could not locate symbol`)
 
-const baseline = wrapffi(addr, Types.i32, [])
-const repeat = Number(spin.args[2] || 10)
+const baseline = (new FFIFunction(addr, Types.i32, [])).prepare().call
+const memcpy = spin.wrap(new Uint32Array(2), (new FFIFunction(spin.dlsym(0, 'memcpy'), Types.pointer, [Types.pointer, Types.string, Types.i32])).prepare().call, 3)
+
+const data = (new Array(8).fill(0)).map(v => '1').join('')
+const out = ptr(new Uint8Array(data.length))
+
 assert(baseline() === 0)
 assert(baseline() === 1)
 assert(baseline() === 2)
 
-console.log(baseline.toString())
+console.log(memcpy(out.ptr, data, data.length))
 
-while (1) {
-  run('baseline', baseline, 60000000, repeat)
-}
+const copy = () => memcpy(out.ptr, data, data.length)
+
+//run('baseline', baseline, 60000000, 5)
+run('memcpy', copy, 60000000, 5)

@@ -396,7 +396,7 @@ void freeSlow(const FunctionCallbackInfo<Value> &args) {
   free(v0);
 }
 
-void freeFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+void freeFast(void* p, void* p0) {
   void* v0 = reinterpret_cast<void*>(p0);
   free(v0);
 }
@@ -598,12 +598,12 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infocalloc = new v8::CFunctionInfo(*rccalloc, 4, cargscalloc);
   v8::CFunction* pFcalloc = new v8::CFunction((const void*)&callocFast, infocalloc);
   SET_FAST_METHOD(isolate, module, "calloc", pFcalloc, callocSlow);
-  v8::CTypeInfo* cargsfree = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+
+  v8::CTypeInfo* cargsfree = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsfree[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsfree[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsfree[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcfree = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infofree = new v8::CFunctionInfo(*rcfree, 3, cargsfree);
+  v8::CFunctionInfo* infofree = new v8::CFunctionInfo(*rcfree, 2, cargsfree);
   v8::CFunction* pFfree = new v8::CFunction((const void*)&freeFast, infofree);
   SET_FAST_METHOD(isolate, module, "free", pFfree, freeSlow);
 

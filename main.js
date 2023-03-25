@@ -10,7 +10,16 @@ const AW = '\u001b[37m' // ANSI White
 
 spin.colors = { AD, A0, AR, AG, AY, AB, AM, AC, AW }
 
-globalThis.console = { log: str => spin.print(`${str}\n`), error: str => spin.error(str) }
+const { fs } = spin.library('fs')
+
+const STDIN = 0
+const STDOUT = 1
+const STDERR = 2
+
+globalThis.console = {
+  log: str => fs.write_string(STDOUT, `${str}\n`),
+  error: str => fs.write_string(STDERR, `${str}\n`)
+}
 
 globalThis.onUnhandledRejection = err => {
   console.error(`${AR}Unhandled Rejection${AD}`)
@@ -30,8 +39,8 @@ class TextEncoder {
   }
 
   encodeInto (src, dest) {
-    encodeInto(src, dest, handle)
-    return { read: handle[0], written: handle[1] }
+    // todo: pass a u32array(2) handle in here so we can return read, written
+    return utf8EncodeInto(dest, src)
   }
 }
 
@@ -98,9 +107,9 @@ function load (name) {
     libCache.set(name, lib)
     return lib
   }
-  const handle = spin.dlopen(C(`module/${name}/${name}.so`).ptr, 1)
+  const handle = spin.dlopen(`module/${name}/${name}.so`, 1)
   if (!handle) return
-  const sym = spin.dlsym(handle, C(`_register_${name}`).ptr)
+  const sym = spin.dlsym(handle, `_register_${name}`)
   if (!sym) return
   lib = spin.library(sym)
   if (!lib) return
@@ -172,12 +181,11 @@ function onModuleInstantiate (specifier) {
   if (moduleCache.has(specifier)) {
     return moduleCache.get(specifier).scriptId
   }
-  throw new Error('oj')
+  throw new Error(`${specifier} not found`)
 }
 
 const O_RDONLY = 0
 const moduleCache = new Map()
-const { fs } = spin.library('fs')
 const loader = spin.library('load')
 spin.fs = fs
 spin.fs.readFileBytes = readFileBytes

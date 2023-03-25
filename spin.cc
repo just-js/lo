@@ -61,6 +61,22 @@ std::map<int, Global<Module>> module_map;
 clock_t clock_id = CLOCK_MONOTONIC;
 struct timespec t;
 
+// v8 isolate callbacks
+size_t spin::nearHeapLimitCallback(void* data, size_t current_heap_limit,
+  size_t initial_heap_limit) {
+  fprintf(stderr, "nearHeapLimitCallback\n");
+  return 0;
+}
+
+void fatalErrorcallback (const char* location, const char* message) {
+  fprintf(stderr, "fatalErrorcallback\n%s\n%s\n", location, message);
+}
+
+void OOMErrorcallback (const char* location, const OOMDetails& details) {
+  fprintf(stderr, "OOMErrorcallback\n%s\nis heap oom? %d\n%s\n", location, 
+    details.is_heap_oom, details.detail);
+}
+
 // it would be faster to just encode all the assets into a big bugger, with
 // length prefixes and just receive them in one call
 void spin::builtins_add (const char* name, const char* source, 
@@ -109,8 +125,6 @@ CTypeInfo* CTypeFromV8 (uint8_t v8Type) {
     return new CTypeInfo(CTypeInfo::Type::kFloat32);
   if (v8Type == spin::FastTypes::f64) 
     return new CTypeInfo(CTypeInfo::Type::kFloat64);
-  if (v8Type == spin::FastTypes::empty) 
-    return new CTypeInfo(CTypeInfo::Type::kVoid);
   if (v8Type == spin::FastTypes::i64) 
     return new CTypeInfo(CTypeInfo::Type::kInt64);
   if (v8Type == spin::FastTypes::u64) 
@@ -134,6 +148,46 @@ CTypeInfo* CTypeFromV8 (uint8_t v8Type) {
       CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   }
   return new CTypeInfo(CTypeInfo::Type::kVoid);  
+}
+
+ffi_type* FFITypeFromV8 (uint8_t v8Type) {
+  if (v8Type == spin::FastTypes::boolean) 
+    return &ffi_type_uint8;
+  if (v8Type == spin::FastTypes::i8) 
+    return &ffi_type_sint8;
+  if (v8Type == spin::FastTypes::i16) 
+    return &ffi_type_sint16;
+  if (v8Type == spin::FastTypes::i32) 
+    return &ffi_type_sint32;
+  if (v8Type == spin::FastTypes::u8) 
+    return &ffi_type_uint8;
+  if (v8Type == spin::FastTypes::u16) 
+    return &ffi_type_uint16;
+  if (v8Type == spin::FastTypes::u32) 
+    return &ffi_type_uint32;
+  if (v8Type == spin::FastTypes::f32) 
+    return &ffi_type_float;
+  if (v8Type == spin::FastTypes::f64) 
+    return &ffi_type_double;
+  if (v8Type == spin::FastTypes::i64) 
+    return &ffi_type_sint64;
+  if (v8Type == spin::FastTypes::u64) 
+    return &ffi_type_uint64;
+  if (v8Type == spin::FastTypes::iSize) 
+    return &ffi_type_sint64;
+  if (v8Type == spin::FastTypes::uSize) 
+    return &ffi_type_uint64;
+  if (v8Type == spin::FastTypes::pointer) 
+    return &ffi_type_pointer;
+  if (v8Type == spin::FastTypes::function) 
+    return &ffi_type_pointer;
+  if (v8Type == spin::FastTypes::string) 
+    return &ffi_type_pointer;
+  if (v8Type == spin::FastTypes::buffer)
+    return &ffi_type_pointer;
+  if (v8Type == spin::FastTypes::u32array)
+    return &ffi_type_pointer;
+  return &ffi_type_void;  
 }
 
 void spin::SET_PROP(Isolate *isolate, Local<ObjectTemplate> 
@@ -340,8 +394,6 @@ int spin::CreateIsolate(int argc, char** argv,
   int onexit, const v8::StartupData* startup_data) {
   Isolate::CreateParams create_params;
   int statusCode = 0;
-  //create_params.snapshot_blob = startup_data;
-  //fprintf(stderr, "snapshot size %u\n", startup_data->raw_size);
   create_params.array_buffer_allocator = 
     ArrayBuffer::Allocator::NewDefaultAllocator();
   create_params.embedder_wrapper_type_index = 0;
@@ -352,13 +404,15 @@ int spin::CreateIsolate(int argc, char** argv,
     HandleScope handle_scope(isolate);
     isolate->SetCaptureStackTraceForUncaughtExceptions(true, 1000, 
       StackTrace::kDetailed);
+    isolate->AddNearHeapLimitCallback(spin::nearHeapLimitCallback, 0);
+    isolate->SetFatalErrorHandler(fatalErrorcallback);
+    isolate->SetOOMErrorHandler(OOMErrorcallback);
     Local<ObjectTemplate> global = ObjectTemplate::New(isolate);
     Local<ObjectTemplate> runtime = ObjectTemplate::New(isolate);
     spin::Init(isolate, runtime);
     global->Set(String::NewFromUtf8(isolate, globalobj, 
       NewStringType::kInternalized, strnlen(globalobj, 256)).ToLocalChecked(), 
       runtime);
-    //Local<Context> context = Context::FromSnapshot(isolate, 0).ToLocalChecked();
     Local<Context> context = Context::New(isolate, NULL, global);
     Context::Scope context_scope(context);
     isolate->SetPromiseRejectCallback(PromiseRejectCallback);
@@ -427,7 +481,6 @@ int spin::CreateIsolate(int argc, char** argv,
       main_len).ToLocalChecked();
     ScriptCompiler::Source basescript(base, baseorigin);
     Local<Module> module;
-    //fprintf(stderr, "compile3 %s\n", scriptname);
     if (!ScriptCompiler::CompileModule(isolate, &basescript).ToLocal(&module)) {
       PrintStackTrace(isolate, try_catch);
       return 1;
@@ -703,45 +756,127 @@ void spin::ReadMemory(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(u8);
 }
 
+inline uint8_t needsunwrap (spin::FastTypes t) {
+  if (t == spin::FastTypes::buffer) return 1;
+  if (t == spin::FastTypes::u32array) return 1;
+  if (t == spin::FastTypes::pointer) return 1;
+  if (t == spin::FastTypes::u64) return 1;
+  if (t == spin::FastTypes::i64) return 1;
+  return 0;
+}
+
 void SlowCallback(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
-  Local<Object> data = args.Data().As<Object>();
-  spin::foreignFunction* ffn = 
-    (spin::foreignFunction*)data->GetAlignedPointerFromInternalField(1);
-  Local<Function> callback = Local<Function>::New(isolate, 
-    ffn->callback);
-  int argc = args.Length();
-  Local<Value>* fargs = new Local<Value> [argc];
-  for (int i = 0; i < argc; i++) fargs[i] = args[i];
   Local<Context> context = isolate->GetCurrentContext();
-  args.GetReturnValue().Set(callback->Call(context, context->Global(), argc, 
-    fargs).ToLocalChecked());
+  spin::foreignFunction* ffn = (spin::foreignFunction*)args.Data()
+    .As<Object>()->GetAlignedPointerFromInternalField(1);
+  ffi_cif* cif = ffn->cif;
+  ffi_arg result;
+  void* values[ffn->nargs];
+  // todo: optimize this
+  for (int i = 0; i < ffn->nargs; i++) {
+    if (ffn->params[i] == spin::FastTypes::i32) {
+      int32_t v = (int32_t)Local<Integer>::Cast(args[i])->Value();
+      values[i] = &v;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::u32) {
+      uint32_t v = (uint32_t)Local<Integer>::Cast(args[i])->Value();
+      values[i] = &v;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::u64) {
+      uint64_t v = (uint64_t)args[i]->IntegerValue(context).ToChecked();
+      values[i] = &v;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::pointer) {
+      uint64_t v = (uint64_t)args[i]->IntegerValue(context).ToChecked();
+      values[i] = &v;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::buffer) {
+      uint64_t v = (uint64_t)args[i].As<Uint8Array>()->Buffer()->Data();
+      values[i] = &v;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::u32array) {
+      uint64_t v = (uint64_t)args[i].As<Uint32Array>()->Buffer()->Data();
+      values[i] = &v;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::string) {
+      String::Utf8Value arg0(isolate, args[i]);
+      char* v = *arg0;
+      values[i] = &v;
+      continue;
+    }
+  }
+  ffi_call(cif, FFI_FN(ffn->ffi), &result, values);
+  if (args.Length() > ffn->nargs) {
+    uint64_t* res = (uint64_t*)args[ffn->nargs].As<Uint32Array>()->Buffer()->Data();
+    *res = (uint64_t)result;
+    return;
+  }
+  if (ffn->rc == spin::FastTypes::i32) {
+    args.GetReturnValue().Set(Integer::New(isolate, (int32_t)result));
+    return;
+  }
+  if (ffn->rc == spin::FastTypes::u32) {
+    args.GetReturnValue().Set(Integer::New(isolate, (uint32_t)result));
+    return;
+  }
 }
 
 void spin::BindFastApi(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
+  void* fn = reinterpret_cast<void*>(Local<Integer>::Cast(args[0])->Value());
+  void* wrapped = reinterpret_cast<void*>(Local<Integer>::Cast(args[1])->Value());
+  int rtype = Local<Integer>::Cast(args[2])->Value();
+  Local<Array> params = args[3].As<Array>();
+
   Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
   tpl->SetInternalFieldCount(2);
   Local<Object> data = tpl->NewInstance(context).ToLocalChecked();
-  void* fn = reinterpret_cast<void*>(Local<Integer>::Cast(args[0])->Value());
-  int rtype = Local<Integer>::Cast(args[1])->Value();
-  Local<Array> params = args[2].As<Array>();
+  ffi_cif* cif = (ffi_cif*)calloc(1, sizeof(ffi_cif));
   spin::foreignFunction* ffn = new spin::foreignFunction();
-  ffn->callback.Reset(isolate, args[3].As<Function>());
-  ffn->fast = fn;
+  ffn->fast = wrapped;
+  ffn->ffi = fn;
+  ffn->cif = cif;
   data->SetAlignedPointerInInternalField(1, ffn);
+
   int len = params->Length();
-  CTypeInfo* rc = CTypeFromV8(rtype);
-  CTypeInfo* cargs = (CTypeInfo*)calloc(len + 1, sizeof(CTypeInfo));
+  ffi_type* ffirc = FFITypeFromV8(rtype);
+  CTypeInfo* rc;
+  if (needsunwrap((FastTypes)rtype)) {
+    rc = CTypeFromV8(FastTypes::empty);
+  } else {
+    rc = CTypeFromV8((FastTypes)rtype);
+  }
+  ffn->rc = (FastTypes)rtype;
+  ffi_type** ffiargs = (ffi_type**)calloc(len, sizeof(ffi_type*));
+  ffn->params = (FastTypes*)calloc(len, sizeof(FastTypes));
+  ffn->nargs = len;
+  // the fast api fn gets an extra argument as the first one
+  // this is the data object we created above
+  // in the slowcallback this is embedded in the args passed to the callback
+  int fastlen = len + 1 + needsunwrap((FastTypes)rtype);
+  CTypeInfo* cargs = (CTypeInfo*)calloc(fastlen, sizeof(CTypeInfo));
   cargs[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
   for (int i = 0; i < len; i++) {
     uint8_t ptype = Local<Integer>::Cast(
       params->Get(context, i).ToLocalChecked())->Value();
     cargs[i + 1] = *CTypeFromV8(ptype);
+    ffiargs[i] = FFITypeFromV8(ptype);
+    ffn->params[i] = (FastTypes)ptype;
   }
-  CFunctionInfo* info = new CFunctionInfo(*rc, len + 1, cargs);
-  CFunction* fastCFunc = new CFunction(fn, info);
+  if (fastlen - 1 > len) {
+    cargs[fastlen - 1] = *CTypeFromV8(FastTypes::u32array);
+  }
+  ffi_status status = ffi_prep_cif(cif, FFI_DEFAULT_ABI, len, ffirc, ffiargs);
+  CFunctionInfo* info = new CFunctionInfo(*rc, fastlen, cargs);
+  CFunction* fastCFunc = new CFunction(wrapped, info);
   ffn->cfunc = fastCFunc;
   Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(
     isolate,
@@ -753,9 +888,10 @@ void spin::BindFastApi(const FunctionCallbackInfo<Value> &args) {
     SideEffectType::kHasNoSideEffect,
     fastCFunc
   );
+  // TODO: figure out how to handle side-effect flag:
+  // https://github.com/nodejs/node/pull/46619
   Local<Function> fun = 
     funcTemplate->GetFunction(context).ToLocalChecked();
-  fun->SetName(args[3].As<Function>()->GetName().As<String>());
   args.GetReturnValue().Set(fun);
 }
 
@@ -852,7 +988,6 @@ void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
     uint8_t* str = static_cast<uint8_t*>(args[0].As<Uint8Array>()->Buffer()->Data());
     written = jstr->WriteOneByte(isolate, 
       str, 0, jstr->Length(), 
-      String::HINT_MANY_WRITES_EXPECTED | 
       String::NO_NULL_TERMINATION
     );
     args.GetReturnValue().Set(Integer::New(isolate, written));
@@ -861,7 +996,6 @@ void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   char* str = static_cast<char*>(args[0].As<Uint8Array>()->Buffer()->Data());
   written = jstr->WriteUtf8(isolate, 
     str, -1, &read, 
-    String::HINT_MANY_WRITES_EXPECTED | 
     String::REPLACE_INVALID_UTF8 |
     String::NO_NULL_TERMINATION
   );
@@ -873,81 +1007,7 @@ int32_t spin::fastUtf8EncodeInto (void* p, struct FastApiTypedArray* const p_buf
   return p_str->length;
 }
 
-void spin::Print(const FunctionCallbackInfo<Value> &args) {
-  if (args[0].IsEmpty()) return;
-  String::Utf8Value str(args.GetIsolate(), args[0]);
-  fprintf(stdout, "%s", *str);
-}
-
-void spin::fastPrint(void* p, struct FastOneByteString* const p_str) {
-  fprintf(stdout, "%s", p_str->data);
-}
-
-void spin::Error(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  if (args[0].IsEmpty()) return;
-  String::Utf8Value str(args.GetIsolate(), args[0]);
-  int endline = 1;
-  if (args.Length() > 1) {
-    endline = static_cast<int>(args[1]->BooleanValue(isolate));
-  }
-  const char *cstr = *str;
-  if (endline == 1) {
-    fprintf(stderr, "%s\n", cstr);
-  } else {
-    fprintf(stderr, "%s", cstr);
-  }
-}
-
-// v8 callbacks
-size_t spin::nearHeapLimitCallback(void* data, size_t current_heap_limit,
-  size_t initial_heap_limit) {
-  fprintf(stderr, "nearHeapLimitCallback\n");
-  return 0;
-}
-
-void fatalErrorcallback (const char* location, const char* message) {
-  fprintf(stderr, "fatalErrorcallback\n%s\n%s\n", location, message);
-}
-
-void OOMErrorcallback (const char* location, const OOMDetails& details) {
-  fprintf(stderr, "OOMErrorcallback\n%s\nis heap oom? %d\n%s\n", location, 
-    details.is_heap_oom, details.detail);
-}
-
-/*
-void spin::createSnapshot () {
-  v8::StartupData startup_data;
-  size_t index;
-  std::vector<intptr_t> external_references = { reinterpret_cast<intptr_t>(nullptr)};
-  {
-    Isolate* isolate = Isolate::Allocate();
-    // Create a new SnapshotCreator and notice that we are passing in the pointer
-    // to the external_references which only contains one function address in
-    // our case.
-    v8::SnapshotCreator snapshot_creator(isolate, external_references.data());
-    {
-      HandleScope scope(isolate);
-      snapshot_creator.SetDefaultContext(Context::New(isolate));
-      Local<Context> context = Context::New(isolate);
-      index = snapshot_creator.AddContext(context);
-      fprintf(stderr, "context index: %i\n", index);
-    }
-    startup_data = snapshot_creator.CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kKeep);
-    fprintf(stderr, "size of blob: %u\n", startup_data.raw_size);
-  }
-  int fd = open("snapshot.bin", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-  write(fd, startup_data.data, startup_data.raw_size);
-  close(fd);
-  //return startup_data.data;
-}
-*/
-
 void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
-  isolate->AddNearHeapLimitCallback(spin::nearHeapLimitCallback, 0);
-  isolate->SetFatalErrorHandler(fatalErrorcallback);
-  isolate->SetOOMErrorHandler(OOMErrorcallback);
-
   CTypeInfo* cargserrnoset = (CTypeInfo*)calloc(2, 
     sizeof(CTypeInfo));
   cargserrnoset[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
@@ -957,6 +1017,7 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
     cargserrnoset);
   CFunction* pFerrnoset = new CFunction((const void*)&fastSetErrno, 
     infoerrnoset);
+
   CTypeInfo* cargserrnoget = (CTypeInfo*)calloc(1, 
     sizeof(CTypeInfo));
   cargserrnoget[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
@@ -1011,16 +1072,6 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   CFunction* pFutf8encodeinto = new CFunction((const void*)&fastUtf8EncodeInto, 
     infoutf8encodeinto);
 
-  CTypeInfo* cargsprint = (CTypeInfo*)calloc(2, 
-    sizeof(CTypeInfo));
-  cargsprint[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargsprint[1] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
-  CTypeInfo* rcprint = new CTypeInfo(CTypeInfo::Type::kVoid);
-  CFunctionInfo* infoprint = new CFunctionInfo(*rcprint, 2, 
-    cargsprint);
-  CFunction* pFprint = new CFunction((const void*)&fastPrint, 
-    infoprint);
-
   Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
   SET_VALUE(isolate, version, GLOBALOBJ, String::NewFromUtf8Literal(isolate, 
     VERSION));
@@ -1031,7 +1082,6 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "builtin", Builtin);
   SET_METHOD(isolate, target, "builtins", Builtins);
   SET_METHOD(isolate, target, "bindFastApi", BindFastApi);
-  SET_METHOD(isolate, target, "error", Error);
   SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
   SET_METHOD(isolate, target, "library", Library);
   SET_METHOD(isolate, target, "loadModule", LoadModule);
@@ -1046,7 +1096,6 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
 
   SET_FAST_METHOD(isolate, target, "getAddress", pFgetaddress, GetAddress);
   SET_FAST_METHOD(isolate, target, "hrtime", pFhrtime, HRTime);
-  SET_FAST_METHOD(isolate, target, "print", pFprint, Print);
   SET_FAST_METHOD(isolate, target, "utf8EncodeInto", pFutf8encodeinto, Utf8EncodeInto);
   SET_FAST_METHOD(isolate, target, "utf8Length", pFutf8length, Utf8Length);
 

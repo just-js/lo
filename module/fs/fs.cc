@@ -124,6 +124,19 @@ uint32_t lseekFast(void* p, int32_t p0, uint32_t p1, int32_t p2) {
   int32_t v2 = p2;
   return lseek(v0, v1, v2);
 }
+void write_stringSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  String::Utf8Value v1(isolate, args[1]);
+  int32_t rc = write(v0, *v1, v1.length());
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1, int32_t p2) {
+  int32_t v0 = p0;
+  struct FastOneByteString* const v1 = p1;
+  return write(v0, v1, v1->length);
+}
 void writeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
 
@@ -197,6 +210,15 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infolseek = new v8::CFunctionInfo(*rclseek, 4, cargslseek);
   v8::CFunction* pFlseek = new v8::CFunction((const void*)&lseekFast, infolseek);
   SET_FAST_METHOD(isolate, module, "lseek", pFlseek, lseekSlow);
+
+  v8::CTypeInfo* cargswrite_string = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+  cargswrite_string[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargswrite_string[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargswrite_string[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
+  v8::CTypeInfo* rcwrite_string = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infowrite_string = new v8::CFunctionInfo(*rcwrite_string, 3, cargswrite_string);
+  v8::CFunction* pFwrite_string = new v8::CFunction((const void*)&write_stringFast, infowrite_string);
+  SET_FAST_METHOD(isolate, module, "write_string", pFwrite_string, write_stringSlow);
 
   v8::CTypeInfo* cargswrite = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargswrite[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);

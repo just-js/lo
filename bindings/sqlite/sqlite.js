@@ -1,106 +1,106 @@
 const api = {
-  sqlite3_libversion: {
+  version: {
     parameters: [],
     pointers: [],
     rpointer: 'const char*',
     result: 'pointer',
-    name: 'version'
+    name: 'sqlite3_libversion'
   },
-  sqlite3_open: {
-    name: 'open',
+  open: {
+    name: 'sqlite3_open',
     parameters: ['pointer', 'pointer'],
     pointers: ['const char*', 'sqlite3 **'],
     result: 'i32'
   },
-  sqlite3_open_v2: {
-    name: 'open2',
+  open2: {
+    name: 'sqlite3_open_v2',
     parameters: ['pointer', 'pointer', 'i32', 'pointer'],
     pointers: ['const char*', 'sqlite3 **', , 'const char*'],
     result: 'i32'
   },
-  sqlite3_exec: {
-    name: 'exec',
+  exec: {
+    name: 'sqlite3_exec',
     parameters: ['pointer', 'pointer', 'pointer', 'pointer', 'pointer'],
     pointers: ['sqlite3*', 'const char*', 'callback',, 'char**'],
     result: 'i32'
   },
-  sqlite3_errmsg: {
-    name: 'errmsg',
+  errmsg: {
+    name: 'sqlite3_errmsg',
     parameters: ['pointer'],
     pointers: ['sqlite3*'],
     rpointer: 'const char*',
     result: 'pointer'
   },
-  sqlite3_close_v2: {
-    name: 'close2',
+  close2: {
+    name: 'sqlite3_close_v2',
     parameters: ['pointer'],
     pointers: ['sqlite3*'],
     result: 'i32'
   },
-  sqlite3_prepare_v2: {
-    name: 'prepare2',
+  prepare2: {
+    name: 'sqlite3_prepare_v2',
     parameters: ['pointer', 'pointer', 'i32', 'pointer', 'pointer'],
     pointers: ['sqlite3*', 'const char*', ,'sqlite3_stmt **', 'const char**'],
     result: 'i32'
   },
-  sqlite3_finalize: {
-    name: 'finalize',
+  finalize: {
+    name: 'sqlite3_finalize',
     parameters: ['pointer'],
     pointers: ['sqlite3_stmt*'],
     result: 'i32'
   },
-  sqlite3_column_count: {
-    name: 'column_count',
+  column_count: {
+    name: 'sqlite3_column_count',
     parameters: ['pointer'],
     pointers: ['sqlite3_stmt*'],
     result: 'i32'
   },
-  sqlite3_column_type: {
-    name: 'column_type',
+  column_type: {
+    name: 'sqlite3_column_type',
     parameters: ['pointer', 'i32'],
     pointers: ['sqlite3_stmt*'],
     result: 'i32'
   },
-  sqlite3_column_name: {
-    name: 'column_name',
+  column_name: {
+    name: 'sqlite3_column_name',
     parameters: ['pointer', 'i32'],
     pointers: ['sqlite3_stmt*'],
     rpointer: 'const char*',
     result: 'pointer'
   },
-  sqlite3_step: {
-    name: 'step',
+  step: {
+    name: 'sqlite3_step',
     parameters: ['pointer'],
     pointers: ['sqlite3_stmt*'],
     result: 'i32'
   },
-  sqlite3_reset: {
-    name: 'reset',
+  reset: {
+    name: 'sqlite3_reset',
     parameters: ['pointer'],
     pointers: ['sqlite3_stmt*'],
     result: 'i32'
   },
-  sqlite3_column_int: {
-    name: 'column_int',
+  column_int: {
+    name: 'sqlite3_column_int',
     parameters: ['pointer', 'i32'],
     pointers: ['sqlite3_stmt*'],
     result: 'i32'
   },
-  sqlite3_column_double: {
-    name: 'column_double',
+  column_double: {
+    name: 'sqlite3_column_double',
     parameters: ['pointer', 'i32'],
     pointers: ['sqlite3_stmt*'],
     result: 'f32'
   },
-  sqlite3_column_text: {
-    name: 'column_text',
+  column_text: {
+    name: 'sqlite3_column_text',
     parameters: ['pointer', 'i32'],
     rpointer: 'const unsigned char*',
     pointers: ['sqlite3_stmt*'],
     result: 'pointer'
   },
-  sqlite3_column_bytes: {
-    name: 'column_bytes',
+  column_bytes: {
+    name: 'sqlite3_column_bytes',
     parameters: ['pointer', 'i32'],
     pointers: ['sqlite3_stmt*'],
     result: 'i32'

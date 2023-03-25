@@ -1,11 +1,11 @@
 const api = {
   dlopen: {
-    parameters: ['pointer', 'i32'],
+    parameters: ['string', 'i32'],
     pointers: ['const char*'],
     result: 'pointer'
   },
   dlsym: {
-    parameters: ['pointer', 'pointer'],
+    parameters: ['pointer', 'string'],
     pointers: ['void*', 'const char*'],
     result: 'pointer'
   },
