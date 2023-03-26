@@ -41,9 +41,6 @@ using v8::PropertyAttribute;
 using v8::Signature;
 using v8::ConstructorBehavior;
 using v8::SideEffectType;
-using v8::kPromiseRejectAfterResolved;
-using v8::kPromiseResolveAfterResolved;
-using v8::kPromiseHandlerAddedAfterReject;
 using v8::Data;
 using v8::PrimitiveArray;
 using v8::TypedArray;
@@ -53,6 +50,9 @@ using v8::ModuleRequest;
 using v8::CFunctionInfo;
 using v8::OOMDetails;
 using v8::V8;
+using v8::kPromiseRejectAfterResolved;
+using v8::kPromiseResolveAfterResolved;
+using v8::kPromiseHandlerAddedAfterReject;
 
 std::map<std::string, spin::builtin*> builtins;
 std::map<std::string, spin::register_plugin> modules;
@@ -77,7 +77,7 @@ void OOMErrorcallback (const char* location, const OOMDetails& details) {
     details.is_heap_oom, details.detail);
 }
 
-// it would be faster to just encode all the assets into a big bugger, with
+// TODO: it would be faster to just encode all the assets into a big buffer, with
 // length prefixes and just receive them in one call
 void spin::builtins_add (const char* name, const char* source, 
   unsigned int size) {
@@ -485,7 +485,6 @@ int spin::CreateIsolate(int argc, char** argv,
       PrintStackTrace(isolate, try_catch);
       return 1;
     }
-
     Maybe<bool> ok2 = module->InstantiateModule(context, 
       spin::OnModuleInstantiate);
     if (ok2.IsNothing()) {
@@ -494,7 +493,6 @@ int spin::CreateIsolate(int argc, char** argv,
       }
       return 1;
     }
-
     module->Evaluate(context).ToLocalChecked();
     if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
       try_catch.ReThrow();
@@ -550,7 +548,7 @@ void spin::Library(const FunctionCallbackInfo<Value> &args) {
       _register(isolate, exports);
     }
   } else {
-    uint64_t start64 = (uint64_t)args[0]->IntegerValue(context).ToChecked();
+    uint64_t start64 = (uint64_t)Local<Integer>::Cast(args[0])->Value();
     void* ptr = reinterpret_cast<void*>(start64);
     register_plugin _init = reinterpret_cast<register_plugin>(ptr);
     auto _register = reinterpret_cast<InitializerCallback>(_init());
@@ -573,8 +571,7 @@ void spin::Builtin(const FunctionCallbackInfo<Value> &args) {
       NewStringType::kNormal, b->size).ToLocalChecked());
     return;
   }
-  // does it need to be a shared buffer? we don't ever pass it across 
-  // isolates.
+  // TODO: does it need to be a shared buffer?
   std::unique_ptr<BackingStore> backing = SharedArrayBuffer::NewBackingStore(
       (void*)b->source, b->size, [](void*, size_t, void*){}, nullptr);
   Local<SharedArrayBuffer> ab = SharedArrayBuffer::New(isolate, 
@@ -590,61 +587,11 @@ void spin::NextTick(const FunctionCallbackInfo<Value>& args) {
   args.GetIsolate()->EnqueueMicrotask(args[0].As<Function>());
 }
 
-// for this, we could just return the address of the newly allocated
-// data and leave the wrapping of it in an array buffer to the caller
-void spin::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  Local<String> str = args[0].As<String>();
-  if (str->IsOneByte()) {
-    int size = str->Length();
-    std::unique_ptr<BackingStore> backing = 
-      ArrayBuffer::NewBackingStore(isolate, size);
-    str->WriteOneByte(isolate, static_cast<uint8_t*>(backing->Data()), 0, 
-      size, String::NO_NULL_TERMINATION);
-    Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-    args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
-    return;
-  }
-  int written = 0;
-  int size = str->Utf8Length(isolate);
-  std::unique_ptr<BackingStore> backing = 
-    ArrayBuffer::NewBackingStore(isolate, size);
-  str->WriteUtf8(isolate, static_cast<char*>(backing->Data()), size, &written, 
-    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
-  Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-  args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
-}
-
-void spin::Utf8EncodeAddress(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  Local<String> str = args[0].As<String>();
-  if (str->IsOneByte()) {
-    int size = str->Length();
-    std::unique_ptr<BackingStore> backing = 
-      ArrayBuffer::NewBackingStore(isolate, size);
-    str->WriteOneByte(isolate, static_cast<uint8_t*>(backing->Data()), 0, 
-      size, String::NO_NULL_TERMINATION);
-    Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-    args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
-    return;
-  }
-  int written = 0;
-  int size = str->Utf8Length(isolate);
-  std::unique_ptr<BackingStore> backing = 
-    ArrayBuffer::NewBackingStore(isolate, size);
-  str->WriteUtf8(isolate, static_cast<char*>(backing->Data()), size, &written, 
-    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
-  Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-  args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
-}
-
 void spin::Utf8Decode(const FunctionCallbackInfo<Value> &args) {
-  Isolate* isolate = args.GetIsolate();
-  char* str = reinterpret_cast<char*>((uint64_t)args[0]->IntegerValue(
-    isolate->GetCurrentContext()).ToChecked());
-  size_t len = Local<Integer>::Cast(args[1])->Value();
-  args.GetReturnValue().Set(String::NewFromUtf8(isolate, 
-    str, NewStringType::kNormal, len).ToLocalChecked());
+  int size = Local<Integer>::Cast(args[1])->Value();
+  char* str = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  args.GetReturnValue().Set(String::NewFromUtf8(args.GetIsolate(), 
+    str, NewStringType::kNormal, size).ToLocalChecked());
 }
 
 void spin::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
@@ -731,31 +678,6 @@ void spin::LoadModule(const FunctionCallbackInfo<Value> &args) {
   return;
 }
 
-// this could be a fast call - don't think so
-void spin::ReadMemory(const FunctionCallbackInfo<Value> &args) {
-  Isolate* isolate = args.GetIsolate();
-  Local<Context> context = isolate->GetCurrentContext();
-  uint64_t start64 = (uint64_t)args[0]->IntegerValue(context).ToChecked();
-  uint64_t end64 = (uint64_t)args[1]->IntegerValue(context).ToChecked();
-  const uint64_t size = end64 - start64;
-  void* start = reinterpret_cast<void*>(start64);
-  int free = 0;
-  if (args.Length() > 2) free = Local<Integer>::Cast(args[2])->Value();
-  if (free == 0) {
-    std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
-        start, size, [](void*, size_t, void*){}, nullptr);
-    Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-    Local<TypedArray> u8 = Uint8Array::New(ab, 0, size);
-    args.GetReturnValue().Set(u8);
-    return;
-  }
-  std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
-      start, size, spin::FreeMemory, nullptr);
-  Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-  Local<TypedArray> u8 = Uint8Array::New(ab, 0, size);
-  args.GetReturnValue().Set(u8);
-}
-
 inline uint8_t needsunwrap (spin::FastTypes t) {
   if (t == spin::FastTypes::buffer) return 1;
   if (t == spin::FastTypes::u32array) return 1;
@@ -767,13 +689,12 @@ inline uint8_t needsunwrap (spin::FastTypes t) {
 
 void SlowCallback(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
-  Local<Context> context = isolate->GetCurrentContext();
   spin::foreignFunction* ffn = (spin::foreignFunction*)args.Data()
     .As<Object>()->GetAlignedPointerFromInternalField(1);
   ffi_cif* cif = ffn->cif;
   ffi_arg result;
-  void* values[ffn->nargs];
-  // todo: optimize this
+  void** values = ffn->values;
+  // TODO: optimize this
   for (int i = 0; i < ffn->nargs; i++) {
     if (ffn->params[i] == spin::FastTypes::i32) {
       int32_t v = (int32_t)Local<Integer>::Cast(args[i])->Value();
@@ -786,12 +707,12 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
       continue;
     }
     if (ffn->params[i] == spin::FastTypes::u64) {
-      uint64_t v = (uint64_t)args[i]->IntegerValue(context).ToChecked();
+      uint64_t v = (uint64_t)Local<Integer>::Cast(args[i])->Value();
       values[i] = &v;
       continue;
     }
     if (ffn->params[i] == spin::FastTypes::pointer) {
-      uint64_t v = (uint64_t)args[i]->IntegerValue(context).ToChecked();
+      uint64_t v = (uint64_t)Local<Integer>::Cast(args[i])->Value();
       values[i] = &v;
       continue;
     }
@@ -835,7 +756,6 @@ void spin::BindFastApi(const FunctionCallbackInfo<Value> &args) {
   void* wrapped = reinterpret_cast<void*>(Local<Integer>::Cast(args[1])->Value());
   int rtype = Local<Integer>::Cast(args[2])->Value();
   Local<Array> params = args[3].As<Array>();
-
   Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
   tpl->SetInternalFieldCount(2);
   Local<Object> data = tpl->NewInstance(context).ToLocalChecked();
@@ -845,7 +765,6 @@ void spin::BindFastApi(const FunctionCallbackInfo<Value> &args) {
   ffn->ffi = fn;
   ffn->cif = cif;
   data->SetAlignedPointerInInternalField(1, ffn);
-
   int len = params->Length();
   ffi_type* ffirc = FFITypeFromV8(rtype);
   CTypeInfo* rc;
@@ -858,9 +777,7 @@ void spin::BindFastApi(const FunctionCallbackInfo<Value> &args) {
   ffi_type** ffiargs = (ffi_type**)calloc(len, sizeof(ffi_type*));
   ffn->params = (FastTypes*)calloc(len, sizeof(FastTypes));
   ffn->nargs = len;
-  // the fast api fn gets an extra argument as the first one
-  // this is the data object we created above
-  // in the slowcallback this is embedded in the args passed to the callback
+  ffn->values = (void**)calloc(ffn->nargs, sizeof(void*));
   int fastlen = len + 1 + needsunwrap((FastTypes)rtype);
   CTypeInfo* cargs = (CTypeInfo*)calloc(fastlen, sizeof(CTypeInfo));
   cargs[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
@@ -875,6 +792,10 @@ void spin::BindFastApi(const FunctionCallbackInfo<Value> &args) {
     cargs[fastlen - 1] = *CTypeFromV8(FastTypes::u32array);
   }
   ffi_status status = ffi_prep_cif(cif, FFI_DEFAULT_ABI, len, ffirc, ffiargs);
+  if (status != FFI_OK) {
+    // TODO: fix this api
+    return;
+  }
   CFunctionInfo* info = new CFunctionInfo(*rc, fastlen, cargs);
   CFunction* fastCFunc = new CFunction(wrapped, info);
   ffn->cfunc = fastCFunc;
@@ -895,7 +816,7 @@ void spin::BindFastApi(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(fun);
 }
 
-// todo: these could both be fast calls if we just wrote to a buffer
+// TODO: these could both be fast calls if we just wrote to a buffer
 // and parse on the other side - probably not any quicker though
 void spin::Builtins(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -922,6 +843,7 @@ void spin::Modules(const FunctionCallbackInfo<Value> &args) {
 }
 
 void spin::SetModuleCallbacks(const FunctionCallbackInfo<Value> &args) {
+  // todo: is putting this in context correct?
   Local<Context> context = args.GetIsolate()->GetCurrentContext();
   context->SetEmbedderData(1, args[0].As<Function>()); // async resolver
   context->SetEmbedderData(2, args[1].As<Function>()); // sync resolver
@@ -976,33 +898,39 @@ void spin::Utf8Length(const FunctionCallbackInfo<Value> &args) {
 }
 
 int32_t spin::fastUtf8Length (void* p, struct FastOneByteString* const p_str) {
-  return strnlen(p_str->data, p_str->length);
+  return p_str->length;
+}
+
+void spin::ReadMemory(const FunctionCallbackInfo<Value> &args) {
+  uint8_t* dest = static_cast<uint8_t*>(args[0].As<Uint8Array>()->Buffer()->Data());
+  void* start = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  uint32_t size = Local<Integer>::Cast(args[2])->Value();
+  memcpy(dest, start, size);
+}
+
+void spin::fastReadMemory (void* p, struct FastApiTypedArray* const p_buf, void* start, uint32_t size) {
+  memcpy(p_buf->data, start, size);
 }
 
 void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
-  Isolate* isolate = args.GetIsolate();
-  int read = 0;
-  Local<String> jstr = args[1].As<String>();
-  int written = 0;
-  if (jstr->IsOneByte()) {
-    uint8_t* str = static_cast<uint8_t*>(args[0].As<Uint8Array>()->Buffer()->Data());
-    written = jstr->WriteOneByte(isolate, 
-      str, 0, jstr->Length(), 
-      String::NO_NULL_TERMINATION
-    );
+  Isolate *isolate = args.GetIsolate();
+  Local<String> str = args[0].As<String>();
+  if (str->IsOneByte()) {
+    int size = str->Length();
+    uint8_t* dest = static_cast<uint8_t*>(args[1].As<Uint8Array>()->Buffer()->Data());
+    int written = str->WriteOneByte(isolate, dest, 0, size, String::NO_NULL_TERMINATION);
     args.GetReturnValue().Set(Integer::New(isolate, written));
     return;
   }
-  char* str = static_cast<char*>(args[0].As<Uint8Array>()->Buffer()->Data());
-  written = jstr->WriteUtf8(isolate, 
-    str, -1, &read, 
-    String::REPLACE_INVALID_UTF8 |
-    String::NO_NULL_TERMINATION
-  );
+  int written = 0;
+  int size = str->Utf8Length(isolate);
+  char* dest = static_cast<char*>(args[1].As<Uint8Array>()->Buffer()->Data());
+  str->WriteUtf8(isolate, dest, size, &written, 
+    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
   args.GetReturnValue().Set(Integer::New(isolate, written));
 }
 
-int32_t spin::fastUtf8EncodeInto (void* p, struct FastApiTypedArray* const p_buf, struct FastOneByteString* const p_str) {
+int32_t spin::fastUtf8EncodeInto (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf) {
   memcpy(p_buf->data, p_str->data, p_str->length);
   return p_str->length;
 }
@@ -1060,17 +988,30 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   CFunction* pFutf8length = new CFunction((const void*)&fastUtf8Length, 
     infoutf8length);
 
-  CTypeInfo* cargsutf8encodeinto = (CTypeInfo*)calloc(2, 
+  CTypeInfo* cargsutf8encodeinto = (CTypeInfo*)calloc(3, 
     sizeof(CTypeInfo));
   cargsutf8encodeinto[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargsutf8encodeinto[1] = CTypeInfo(CTypeInfo::Type::kUint8, 
+  cargsutf8encodeinto[1] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
+  cargsutf8encodeinto[2] = CTypeInfo(CTypeInfo::Type::kUint8, 
     CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsutf8encodeinto[2] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
   CTypeInfo* rcutf8encodeinto = new CTypeInfo(CTypeInfo::Type::kInt32);
   CFunctionInfo* infoutf8encodeinto = new CFunctionInfo(*rcutf8encodeinto, 3, 
     cargsutf8encodeinto);
   CFunction* pFutf8encodeinto = new CFunction((const void*)&fastUtf8EncodeInto, 
     infoutf8encodeinto);
+
+  CTypeInfo* cargsreadmemory = (CTypeInfo*)calloc(4, 
+    sizeof(CTypeInfo));
+  cargsreadmemory[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargsreadmemory[1] = CTypeInfo(CTypeInfo::Type::kUint8, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargsreadmemory[2] = CTypeInfo(CTypeInfo::Type::kUint64);
+  cargsreadmemory[3] = CTypeInfo(CTypeInfo::Type::kUint32);
+  CTypeInfo* rcreadmemory = new CTypeInfo(CTypeInfo::Type::kVoid);
+  CFunctionInfo* inforeadmemory = new CFunctionInfo(*rcreadmemory, 4, 
+    cargsreadmemory);
+  CFunction* pFreadmemory = new CFunction((const void*)&fastReadMemory, 
+    inforeadmemory);
 
   Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
   SET_VALUE(isolate, version, GLOBALOBJ, String::NewFromUtf8Literal(isolate, 
@@ -1079,25 +1020,23 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
     V8::GetVersion()).ToLocalChecked());
   SET_MODULE(isolate, target, "version", version);
 
-  SET_METHOD(isolate, target, "builtin", Builtin);
-  SET_METHOD(isolate, target, "builtins", Builtins);
   SET_METHOD(isolate, target, "bindFastApi", BindFastApi);
-  SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
-  SET_METHOD(isolate, target, "library", Library);
-  SET_METHOD(isolate, target, "loadModule", LoadModule);
-  SET_METHOD(isolate, target, "modules", Modules);
   SET_METHOD(isolate, target, "nextTick", NextTick);
   SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);
-  SET_METHOD(isolate, target, "readMemory", ReadMemory);
+  SET_METHOD(isolate, target, "builtin", Builtin);
+  SET_METHOD(isolate, target, "library", Library);
+  SET_METHOD(isolate, target, "builtins", Builtins);
+  SET_METHOD(isolate, target, "modules", Modules);
   SET_METHOD(isolate, target, "setModuleCallbacks", SetModuleCallbacks);
+  SET_METHOD(isolate, target, "loadModule", LoadModule);
+  SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
-  SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
-  SET_METHOD(isolate, target, "utf8EncodeAddress", Utf8EncodeAddress);
 
-  SET_FAST_METHOD(isolate, target, "getAddress", pFgetaddress, GetAddress);
   SET_FAST_METHOD(isolate, target, "hrtime", pFhrtime, HRTime);
-  SET_FAST_METHOD(isolate, target, "utf8EncodeInto", pFutf8encodeinto, Utf8EncodeInto);
   SET_FAST_METHOD(isolate, target, "utf8Length", pFutf8length, Utf8Length);
+  SET_FAST_METHOD(isolate, target, "utf8EncodeInto", pFutf8encodeinto, Utf8EncodeInto);
+  SET_FAST_METHOD(isolate, target, "getAddress", pFgetaddress, GetAddress);
+  SET_FAST_METHOD(isolate, target, "readMemory", pFreadmemory, ReadMemory);
 
   SET_FAST_PROP(isolate, target, "errno", pFerrnoget, GetErrno, pFerrnoset, 
     SetErrno);

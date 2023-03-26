@@ -87,7 +87,7 @@ gen: ${TARGET} ${MODULE_DIR}/${MODULE} ## generate source and Makefile from defi
 	./${TARGET} gen ${BINDINGS_DIR}/${MODULE}/${MODULE}.js > ${MODULE_DIR}/${MODULE}/${MODULE}.cc
 
 scc: ## generate report on lines of code, number of files, code complexity
-	${SCC_DIR}/scc --exclude-dir="deps,bench,test,.devcontainer,.git,.vscode,scratch,example,doc,docker,main.h,module/,test.js" --include-ext="cc,c,h,js,mk" --gen --wide --by-file ./ > scc.txt
+	${SCC_DIR}/scc --exclude-dir="util,deps,bench,test,.devcontainer,.git,.vscode,scratch,example,doc,docker,main.h,module/,test.js" --include-ext="cc,c,h,js,mk" --gen --wide --by-file ./ > scc.txt
 
 library: ## build a spin shared library
 	CFLAGS="$(FLAGS)" LFLAGS="${LFLAG}" SPIN_HOME="$(SPIN_HOME)" $(MAKE) -C ${MODULE_DIR}/${MODULE}/ clean library

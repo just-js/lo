@@ -67,6 +67,7 @@ enum FastTypes: int {
 struct foreignFunction {
   void* fast;
   void* ffi;
+  void** values;
   v8::CFunction* cfunc;
   ffi_cif* cif;
   FastTypes rc;
@@ -127,11 +128,8 @@ void LoadModule(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Modules(const v8::FunctionCallbackInfo<v8::Value> &args);
 void NextTick(const v8::FunctionCallbackInfo<v8::Value> &args);
 void RunMicroTasks(const v8::FunctionCallbackInfo<v8::Value> &args);
-void ReadMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
 void SetModuleCallbacks(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Utf8Decode(const v8::FunctionCallbackInfo<v8::Value> &args);
-void Utf8Encode(const v8::FunctionCallbackInfo<v8::Value> &args);
-void Utf8EncodeAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
 
 // fast api methods
 void GetAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
@@ -140,9 +138,11 @@ void fastGetAddress(void* p, struct FastApiTypedArray* const p_buf,
 void HRTime(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastHRTime (void* p, struct FastApiTypedArray* const p_ret);
 void Utf8EncodeInto(const v8::FunctionCallbackInfo<v8::Value> &args);
-int32_t fastUtf8EncodeInto (void* p, struct FastApiTypedArray* const p_buf, struct FastOneByteString* const p_str);
+int32_t fastUtf8EncodeInto (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf);
 void Utf8Length(const v8::FunctionCallbackInfo<v8::Value> &args);
 int32_t fastUtf8Length (void* p, struct FastOneByteString* const p_ret);
+void ReadMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
+void fastReadMemory (void* p, struct FastApiTypedArray* const p_buf, void* start, uint32_t size);
 
 // fast api properties
 void GetErrno(const v8::FunctionCallbackInfo<v8::Value> &args);

@@ -27,24 +27,35 @@ globalThis.onUnhandledRejection = err => {
   console.error(err.stack)
 }
 
-const { utf8Length, utf8EncodeInto, utf8Encode } = spin
+const { utf8Length, utf8EncodeInto } = spin
 
 class TextEncoder {
   encoding = 'utf-8'
 
   encode (input = '') {
     const u8 = new Uint8Array(utf8Length(input))
-    utf8EncodeInto(u8, input)
+    utf8EncodeInto(input, u8)
     return u8
   }
 
   encodeInto (src, dest) {
     // todo: pass a u32array(2) handle in here so we can return read, written
-    return utf8EncodeInto(dest, src)
+    return utf8EncodeInto(src, dest)
   }
 }
 
 globalThis.TextEncoder = TextEncoder
+
+class TextDecoder {
+  encoding = 'utf-8'
+
+  decode (u8) {
+    if (!u8.ptr) ptr(u8)
+    return spin.utf8Decode(u8.ptr, u8.size)
+  }
+}
+
+globalThis.TextDecoder = TextDecoder
 
 function wrap (h, fn, plen = 0) {
   const call = fn
@@ -140,6 +151,7 @@ async function main () {
   }
 }
 
+const decoder = new TextDecoder()
 // todo: strip out any command line switches
 // todo: handle errors
 async function onModuleLoad (specifier, resource) {
@@ -154,8 +166,7 @@ async function onModuleLoad (specifier, resource) {
   }
   let src = spin.builtin(specifier)
   if (!src) {
-    const buf = ptr(readFileBytes(specifier))
-    src = spin.utf8Decode(buf.ptr, buf.byteLength)
+    src = decoder.decode(readFileBytes(specifier))
   }
   const mod = spin.loadModule(src, specifier)
   mod.resource = resource
@@ -164,8 +175,7 @@ async function onModuleLoad (specifier, resource) {
   for (const request of requests) {
     let src = spin.builtin(request)
     if (!src) {
-      const buf = ptr(readFileBytes(request))
-      src = spin.utf8Decode(buf.ptr, buf.byteLength)
+      src = decoder.decode(readFileBytes(request))
     }
     const mod = spin.loadModule(src, request)
     moduleCache.set(request, mod)
