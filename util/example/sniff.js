@@ -1,11 +1,9 @@
 import { Library } from 'lib/ffi.js'
 import { dump } from 'lib/binary.js'
-import { colors } from 'lib/ansi.js'
-
 import { Parser, protocols, toMAC, htons16, tcpDump, udpDump } from 'lib/packet.js'
 
 const { assert, utf8EncodeInto, args } = spin
-const { AG, AD, AY } = colors
+const { AG, AD, AY } = spin.colors
 
 const PF_PACKET = 17
 const SOCK_RAW = 3
@@ -53,7 +51,7 @@ const sockaddr = new Uint8Array(sizeof_sockaddr_ll())
 
 const fd = socket(PF_PACKET, SOCK_RAW, htons16(ETH_P_ALL))
 assert(fd > 2)
-utf8EncodeInto(ifreq, iff)
+utf8EncodeInto(iff, ifreq)
 assert(ioctl(fd, SIOCGIFHWADDR, ifreq) === 0)
 const mac = toMAC(ifreq.subarray(18, 24))
 assert(ioctl(fd, SIOCGIFINDEX, ifreq) === 0)
