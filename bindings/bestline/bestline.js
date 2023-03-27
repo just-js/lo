@@ -1,6 +1,7 @@
 const api = {
   bestline: {
-    parameters: ['pointer'], pointers: ['const char*'],
+    parameters: ['buffer'], 
+    pointers: ['const char*'],
     result: 'pointer'
   },
   cls: {
@@ -12,11 +13,13 @@ const api = {
     result: 'i32', name: 'bestlineHistoryAdd'
   },
   save: {
-    parameters: ['pointer'], pointers: ['const char*'],
+    parameters: ['string'], 
+    pointers: ['const char*'],
     result: 'i32', name: 'bestlineHistorySave'
   },
   load: {
-    parameters: ['pointer'], pointers: ['const char*'],
+    parameters: ['string'], 
+    pointers: ['const char*'],
     result: 'i32', name: 'bestlineHistoryLoad'
   }  
 }
