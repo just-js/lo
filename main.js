@@ -1,3 +1,4 @@
+// @ts-nocheck
 const AD = '\u001b[0m' // ANSI Default
 const A0 = '\u001b[30m' // ANSI Black
 const AR = '\u001b[31m' // ANSI Red
@@ -89,18 +90,18 @@ function addr (u32) {
 }
 
 function readFileBytes (path, flags = O_RDONLY) {
-  const fd = fs.open(C(path).ptr, flags)
+  const fd = fs.open(path, flags)
   spin.assert(fd > 0)
-  let r = fs.fstat(fd, stat.ptr)
+  let r = fs.fstat(fd, stat)
   spin.assert(r === 0)
   const size = Number(st[6])
-  const buf = ptr(new Uint8Array(size))
+  const buf = new Uint8Array(size)
   let off = 0
-  let len = fs.read(fd, buf.ptr, buf.byteLength)
+  let len = fs.read(fd, buf, size)
   while (len > 0) {
     off += len
     if (off === size) break
-    len = fs.read(fd, buf.ptr, buf.byteLength)
+    len = fs.read(fd, buf, size)
   }
   off += len
   r = fs.close(fd)
@@ -206,7 +207,7 @@ spin.getAddress = wrap(handle, spin.getAddress, 1)
 spin.dlopen = wrap(handle, loader.load.dlopen, 2)
 spin.dlsym = wrap(handle, loader.load.dlsym, 2)
 spin.dlclose = loader.load.dlclose
-const stat = ptr(new Uint8Array(160))
+const stat = new Uint8Array(160)
 const st = new BigUint64Array(stat.buffer)
 spin.assert = assert
 spin.moduleCache = moduleCache
@@ -237,3 +238,5 @@ if (spin.args[1] === 'gen') {
 } else {
   if (spin.args.length > 1) await main(...spin.args.slice(1))
 }
+
+export {}

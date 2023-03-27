@@ -1,11 +1,11 @@
 const api = {
   LZ4_compress_default: {
-    parameters: ['pointer', 'pointer', 'i32', 'i32'],
+    parameters: ['buffer', 'buffer', 'i32', 'i32'],
     pointers: ['const char*', 'char*'],
     result: 'i32'
   },
   LZ4_compress_HC: {
-    parameters: ['pointer', 'pointer', 'i32', 'i32', 'i32'],
+    parameters: ['buffer', 'buffer', 'i32', 'i32', 'i32'],
     pointers: ['const char*', 'char*'],
     result: 'i32'
   }

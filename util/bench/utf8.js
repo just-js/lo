@@ -35,5 +35,5 @@ const out = ptr(new Uint8Array(data.length))
 const writeString = () => encoder.encodeInto(data, out)
 const writeString2 = () => encoder.encodeInto2(data, out)
 
-run('writeString', writeString, 180000000, 10)
+//run('writeString', writeString, 180000000, 10)
 //run('writeString2', writeString2, 180000000, 10)

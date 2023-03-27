@@ -68,6 +68,7 @@ struct foreignFunction {
   void* fast;
   void* ffi;
   void** values;
+  void* start;
   v8::CFunction* cfunc;
   ffi_cif* cif;
   FastTypes rc;

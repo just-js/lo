@@ -77,35 +77,31 @@ int32_t closeFast(void* p, int32_t p0) {
 }
 void openSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const char* v0 = reinterpret_cast<const char*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  String::Utf8Value v0(isolate, args[0]);
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
-  int32_t rc = open(v0, v1, v2);
+  int32_t rc = open(*v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t openFast(void* p, void* p0, int32_t p1, int32_t p2) {
-  const char* v0 = reinterpret_cast<const char*>(p0);
+int32_t openFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2) {
+  const char* v0 = reinterpret_cast<const char*>(p0->data);
   int32_t v1 = p1;
   int32_t v2 = p2;
   return open(v0, v1, v2);
 }
 void readSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  void* v1 = reinterpret_cast<void*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  void* v1 = reinterpret_cast<void*>(args[1].As<Uint8Array>()->Buffer()->Data());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = read(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t readFast(void* p, int32_t p0, void* p1, int32_t p2) {
+int32_t readFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2) {
   int32_t v0 = p0;
-  void* v1 = reinterpret_cast<void*>(p1);
+  void* v1 = reinterpret_cast<void*>(p1->data);
   int32_t v2 = p2;
   return read(v0, v1, v2);
 }
@@ -128,45 +124,43 @@ void write_stringSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   String::Utf8Value v1(isolate, args[1]);
-  int32_t rc = write(v0, *v1, v1.length());
+  int32_t v2 = v1.length();
+  int32_t rc = write(v0, *v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1, int32_t p2) {
+int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1) {
   int32_t v0 = p0;
-  struct FastOneByteString* const v1 = p1;
-  return write(v0, v1, v1->length);
+  const char* v1 = reinterpret_cast<const char*>(p1->data);
+  int32_t v2 = p1->length;
+  return write(v0, v1, v2);
 }
 void writeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  void* v1 = reinterpret_cast<void*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  void* v1 = reinterpret_cast<void*>(args[1].As<Uint8Array>()->Buffer()->Data());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = write(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t writeFast(void* p, int32_t p0, void* p1, int32_t p2) {
+int32_t writeFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2) {
   int32_t v0 = p0;
-  void* v1 = reinterpret_cast<void*>(p1);
+  void* v1 = reinterpret_cast<void*>(p1->data);
   int32_t v2 = p2;
   return write(v0, v1, v2);
 }
 void fstatSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  struct stat * v1 = reinterpret_cast<struct stat *>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  struct stat * v1 = reinterpret_cast<struct stat *>(args[1].As<Uint8Array>()->Buffer()->Data());
   int32_t rc = fstat(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t fstatFast(void* p, int32_t p0, void* p1) {
+int32_t fstatFast(void* p, int32_t p0, struct FastApiTypedArray* const p1) {
   int32_t v0 = p0;
-  struct stat * v1 = reinterpret_cast<struct stat *>(p1);
+  struct stat * v1 = reinterpret_cast<struct stat *>(p1->data);
   return fstat(v0, v1);
 }
 
@@ -183,7 +177,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 
   v8::CTypeInfo* cargsopen = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargsopen[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsopen[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsopen[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
   cargsopen[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   cargsopen[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CTypeInfo* rcopen = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
@@ -194,7 +188,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CTypeInfo* cargsread = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargsread[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsread[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsread[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsread[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   cargsread[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CTypeInfo* rcread = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CFunctionInfo* inforead = new v8::CFunctionInfo(*rcread, 4, cargsread);
@@ -211,19 +205,20 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunction* pFlseek = new v8::CFunction((const void*)&lseekFast, infolseek);
   SET_FAST_METHOD(isolate, module, "lseek", pFlseek, lseekSlow);
 
-  v8::CTypeInfo* cargswrite_string = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+  v8::CTypeInfo* cargswrite_string = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargswrite_string[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargswrite_string[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   cargswrite_string[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
+  cargswrite_string[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CTypeInfo* rcwrite_string = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infowrite_string = new v8::CFunctionInfo(*rcwrite_string, 3, cargswrite_string);
+  v8::CFunctionInfo* infowrite_string = new v8::CFunctionInfo(*rcwrite_string, 4, cargswrite_string);
   v8::CFunction* pFwrite_string = new v8::CFunction((const void*)&write_stringFast, infowrite_string);
   SET_FAST_METHOD(isolate, module, "write_string", pFwrite_string, write_stringSlow);
 
   v8::CTypeInfo* cargswrite = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargswrite[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargswrite[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargswrite[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargswrite[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   cargswrite[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CTypeInfo* rcwrite = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CFunctionInfo* infowrite = new v8::CFunctionInfo(*rcwrite, 4, cargswrite);
@@ -233,7 +228,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CTypeInfo* cargsfstat = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
   cargsfstat[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsfstat[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsfstat[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsfstat[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcfstat = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CFunctionInfo* infofstat = new v8::CFunctionInfo(*rcfstat, 3, cargsfstat);
   v8::CFunction* pFfstat = new v8::CFunction((const void*)&fstatFast, infofstat);

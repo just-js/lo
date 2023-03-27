@@ -17,7 +17,7 @@ while (line) {
   try {
     const command = utf8Decode(line, -1)
     if (!command) {
-      ptr = bestline.bestline(prompt.ptr)
+      line = bestline.bestline(prompt.ptr)
       continue
     } 
     if (command === '.exit') break

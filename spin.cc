@@ -693,47 +693,47 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
     .As<Object>()->GetAlignedPointerFromInternalField(1);
   ffi_cif* cif = ffn->cif;
   ffi_arg result;
-  void** values = ffn->values;
-  // TODO: optimize this
+  uint8_t* start = (uint8_t*)ffn->start;
   for (int i = 0; i < ffn->nargs; i++) {
     if (ffn->params[i] == spin::FastTypes::i32) {
-      int32_t v = (int32_t)Local<Integer>::Cast(args[i])->Value();
-      values[i] = &v;
+      *(int32_t*)start = (int32_t)Local<Integer>::Cast(args[i])->Value();
+      start += 4;
       continue;
     }
     if (ffn->params[i] == spin::FastTypes::u32) {
-      uint32_t v = (uint32_t)Local<Integer>::Cast(args[i])->Value();
-      values[i] = &v;
+      *(uint32_t*)start = (uint32_t)Local<Integer>::Cast(args[i])->Value();
+      start += 4;
       continue;
     }
     if (ffn->params[i] == spin::FastTypes::u64) {
-      uint64_t v = (uint64_t)Local<Integer>::Cast(args[i])->Value();
-      values[i] = &v;
+      *(uint64_t*)start = (uint64_t)Local<Integer>::Cast(args[i])->Value();
+      start += 8;
       continue;
     }
     if (ffn->params[i] == spin::FastTypes::pointer) {
-      uint64_t v = (uint64_t)Local<Integer>::Cast(args[i])->Value();
-      values[i] = &v;
+      *(uint64_t*)start = (uint64_t)Local<Integer>::Cast(args[i])->Value();
+      start += 8;
       continue;
     }
     if (ffn->params[i] == spin::FastTypes::buffer) {
-      uint64_t v = (uint64_t)args[i].As<Uint8Array>()->Buffer()->Data();
-      values[i] = &v;
+      *(uint64_t*)start = (uint64_t)args[i].As<Uint8Array>()->Buffer()->Data();
+      start += 8;
       continue;
     }
     if (ffn->params[i] == spin::FastTypes::u32array) {
-      uint64_t v = (uint64_t)args[i].As<Uint32Array>()->Buffer()->Data();
-      values[i] = &v;
+      *(uint64_t*)start = (uint64_t)args[i].As<Uint32Array>()->Buffer()->Data();
+      start += 8;
       continue;
     }
     if (ffn->params[i] == spin::FastTypes::string) {
       String::Utf8Value arg0(isolate, args[i]);
       char* v = *arg0;
-      values[i] = &v;
+      *(uint64_t*)start = (uint64_t)v;
+      start += 8;
       continue;
     }
   }
-  ffi_call(cif, FFI_FN(ffn->ffi), &result, values);
+  ffi_call(cif, FFI_FN(ffn->ffi), &result, ffn->values);
   if (args.Length() > ffn->nargs) {
     uint64_t* res = (uint64_t*)args[ffn->nargs].As<Uint32Array>()->Buffer()->Data();
     *res = (uint64_t)result;
@@ -756,6 +756,7 @@ void spin::BindFastApi(const FunctionCallbackInfo<Value> &args) {
   void* wrapped = reinterpret_cast<void*>(Local<Integer>::Cast(args[1])->Value());
   int rtype = Local<Integer>::Cast(args[2])->Value();
   Local<Array> params = args[3].As<Array>();
+
   Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
   tpl->SetInternalFieldCount(2);
   Local<Object> data = tpl->NewInstance(context).ToLocalChecked();
@@ -781,14 +782,40 @@ void spin::BindFastApi(const FunctionCallbackInfo<Value> &args) {
   int fastlen = len + 1 + needsunwrap((FastTypes)rtype);
   CTypeInfo* cargs = (CTypeInfo*)calloc(fastlen, sizeof(CTypeInfo));
   cargs[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  int size = 0;
   for (int i = 0; i < len; i++) {
     uint8_t ptype = Local<Integer>::Cast(
       params->Get(context, i).ToLocalChecked())->Value();
     cargs[i + 1] = *CTypeFromV8(ptype);
     ffiargs[i] = FFITypeFromV8(ptype);
     ffn->params[i] = (FastTypes)ptype;
+    if (ffn->params[i] == spin::FastTypes::i32) {
+      size += 4;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::u32) {
+      size += 4;
+      continue;
+    }
+    size += 8;
   }
-  if (fastlen - 1 > len) {
+  ffn->start = calloc(1, size);
+  uint8_t* start = (uint8_t*)ffn->start;
+  for (int i = 0; i < ffn->nargs; i++) {
+    if (ffn->params[i] == spin::FastTypes::i32) {
+      ffn->values[i] = start;
+      start += 4;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::u32) {
+      ffn->values[i] = start;
+      start += 4;
+      continue;
+    }
+    ffn->values[i] = start;
+    start += 8;
+  }
+ if (fastlen - 1 > len) {
     cargs[fastlen - 1] = *CTypeFromV8(FastTypes::u32array);
   }
   ffi_status status = ffi_prep_cif(cif, FFI_DEFAULT_ABI, len, ffirc, ffiargs);
