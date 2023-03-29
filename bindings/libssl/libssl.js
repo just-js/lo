@@ -77,7 +77,7 @@ const api = {
     rpointer: 'const EVP_MD*'
   },
   EVP_Digest: {
-    parameters: ['pointer', 'u32', 'pointer', 'pointer', 'pointer', 'pointer'],
+    parameters: ['buffer', 'u32', 'buffer', 'buffer', 'pointer', 'pointer'],
     result: 'i32',
     pointers: [,, 'unsigned char*', 'unsigned int*', 'const EVP_MD*', 'ENGINE*']
   },
@@ -86,10 +86,17 @@ const api = {
     pointers: ['EVP_MD_CTX*', 'EVP_MD*', 'ENGINE*'],
     result: 'i32'
   },
-  EVP_DigestUpdate: {
+  EVP_DigestUpdateBuffer: {
     parameters: ['pointer', 'buffer', 'u32'],
     pointers: ['EVP_MD_CTX*'],
-    result: 'i32'
+    result: 'i32',
+    name: 'EVP_DigestUpdate'
+  },
+  EVP_DigestUpdateString: {
+    parameters: ['pointer', 'string', 'u32'],
+    pointers: ['EVP_MD_CTX*'],
+    result: 'i32',
+    name: 'EVP_DigestUpdate'
   },
   EVP_DigestVerifyFinal: {
     parameters: ['pointer', 'pointer', 'u32'],
@@ -472,5 +479,13 @@ const includes = [
 
 const libs = ['ssl', 'crypto']
 const obj = []
+const make = `
+curl -L -o openssl-1.1.1t.tar.gz https://www.openssl.org/source/openssl-1.1.1t.tar.gz
+tar -zxvf openssl-1.1.1t.tar.gz 
+cd openssl-1.1.1t/
+CFLAGS='-fPIC -mtune=native -m64 -O3' ./config shared zlib no-ssl no-tls1 no-dtls no-aria no-bf no-blake2 no-camellia no-cast no-chacha no-cmac no-des no-idea no-mdc2 no-ocb no-poly1305 no-rc2 no-scrypt no-seed no-siphash no-sm3 no-sm4 no-whirlpool no-afalgeng no-deprecated no-capieng no-cms no-comp no-dgram no-threads
+make clean build_generated
+make -j 6
+`
 
 export { api, name, includes, libs, obj }

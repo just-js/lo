@@ -267,21 +267,21 @@ void EVP_get_digestbynameFast(void* p, struct FastOneByteString* const p0, struc
 }
 void EVP_DigestSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  void* v0 = reinterpret_cast<void*>(args[0].As<Uint8Array>()->Buffer()->Data());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  unsigned char* v2 = reinterpret_cast<unsigned char*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
-  unsigned int* v3 = reinterpret_cast<unsigned int*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
+  unsigned char* v2 = reinterpret_cast<unsigned char*>(args[2].As<Uint8Array>()->Buffer()->Data());
+  unsigned int* v3 = reinterpret_cast<unsigned int*>(args[3].As<Uint8Array>()->Buffer()->Data());
   const EVP_MD* v4 = reinterpret_cast<const EVP_MD*>((uint64_t)Local<Integer>::Cast(args[4])->Value());
   ENGINE* v5 = reinterpret_cast<ENGINE*>((uint64_t)Local<Integer>::Cast(args[5])->Value());
   int32_t rc = EVP_Digest(v0, v1, v2, v3, v4, v5);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t EVP_DigestFast(void* p, void* p0, uint32_t p1, void* p2, void* p3, void* p4, void* p5) {
-  void* v0 = reinterpret_cast<void*>(p0);
+int32_t EVP_DigestFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, struct FastApiTypedArray* const p3, void* p4, void* p5) {
+  void* v0 = reinterpret_cast<void*>(p0->data);
   uint32_t v1 = p1;
-  unsigned char* v2 = reinterpret_cast<unsigned char*>(p2);
-  unsigned int* v3 = reinterpret_cast<unsigned int*>(p3);
+  unsigned char* v2 = reinterpret_cast<unsigned char*>(p2->data);
+  unsigned int* v3 = reinterpret_cast<unsigned int*>(p3->data);
   const EVP_MD* v4 = reinterpret_cast<const EVP_MD*>(p4);
   ENGINE* v5 = reinterpret_cast<ENGINE*>(p5);
   return EVP_Digest(v0, v1, v2, v3, v4, v5);
@@ -301,7 +301,7 @@ int32_t EVP_DigestInit_exFast(void* p, void* p0, void* p1, void* p2) {
   ENGINE* v2 = reinterpret_cast<ENGINE*>(p2);
   return EVP_DigestInit_ex(v0, v1, v2);
 }
-void EVP_DigestUpdateSlow(const FunctionCallbackInfo<Value> &args) {
+void EVP_DigestUpdateBufferSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   void* v1 = reinterpret_cast<void*>(args[1].As<Uint8Array>()->Buffer()->Data());
@@ -310,11 +310,26 @@ void EVP_DigestUpdateSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t EVP_DigestUpdateFast(void* p, void* p0, struct FastApiTypedArray* const p1, uint32_t p2) {
+int32_t EVP_DigestUpdateBufferFast(void* p, void* p0, struct FastApiTypedArray* const p1, uint32_t p2) {
   EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>(p0);
   void* v1 = reinterpret_cast<void*>(p1->data);
   uint32_t v2 = p2;
   return EVP_DigestUpdate(v0, v1, v2);
+}
+void EVP_DigestUpdateStringSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  String::Utf8Value v1(isolate, args[1]);
+  uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = EVP_DigestUpdate(v0, *v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t EVP_DigestUpdateStringFast(void* p, void* p0, struct FastOneByteString* const p1, uint32_t p2) {
+  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>(p0);
+  struct FastOneByteString* const v1 = p1;
+  uint32_t v2 = p2;
+  return EVP_DigestUpdate(v0, v1->data, v2);
 }
 void EVP_DigestVerifyFinalSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -1370,10 +1385,10 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 
   v8::CTypeInfo* cargsEVP_Digest = (v8::CTypeInfo*)calloc(7, sizeof(v8::CTypeInfo));
   cargsEVP_Digest[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_Digest[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsEVP_Digest[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   cargsEVP_Digest[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsEVP_Digest[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_Digest[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsEVP_Digest[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargsEVP_Digest[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   cargsEVP_Digest[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
   cargsEVP_Digest[6] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
   v8::CTypeInfo* rcEVP_Digest = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
@@ -1391,15 +1406,25 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunction* pFEVP_DigestInit_ex = new v8::CFunction((const void*)&EVP_DigestInit_exFast, infoEVP_DigestInit_ex);
   SET_FAST_METHOD(isolate, module, "EVP_DigestInit_ex", pFEVP_DigestInit_ex, EVP_DigestInit_exSlow);
 
-  v8::CTypeInfo* cargsEVP_DigestUpdate = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsEVP_DigestUpdate[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_DigestUpdate[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestUpdate[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsEVP_DigestUpdate[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rcEVP_DigestUpdate = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_DigestUpdate = new v8::CFunctionInfo(*rcEVP_DigestUpdate, 4, cargsEVP_DigestUpdate);
-  v8::CFunction* pFEVP_DigestUpdate = new v8::CFunction((const void*)&EVP_DigestUpdateFast, infoEVP_DigestUpdate);
-  SET_FAST_METHOD(isolate, module, "EVP_DigestUpdate", pFEVP_DigestUpdate, EVP_DigestUpdateSlow);
+  v8::CTypeInfo* cargsEVP_DigestUpdateBuffer = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
+  cargsEVP_DigestUpdateBuffer[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsEVP_DigestUpdateBuffer[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsEVP_DigestUpdateBuffer[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargsEVP_DigestUpdateBuffer[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+  v8::CTypeInfo* rcEVP_DigestUpdateBuffer = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infoEVP_DigestUpdateBuffer = new v8::CFunctionInfo(*rcEVP_DigestUpdateBuffer, 4, cargsEVP_DigestUpdateBuffer);
+  v8::CFunction* pFEVP_DigestUpdateBuffer = new v8::CFunction((const void*)&EVP_DigestUpdateBufferFast, infoEVP_DigestUpdateBuffer);
+  SET_FAST_METHOD(isolate, module, "EVP_DigestUpdateBuffer", pFEVP_DigestUpdateBuffer, EVP_DigestUpdateBufferSlow);
+
+  v8::CTypeInfo* cargsEVP_DigestUpdateString = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
+  cargsEVP_DigestUpdateString[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsEVP_DigestUpdateString[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsEVP_DigestUpdateString[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
+  cargsEVP_DigestUpdateString[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+  v8::CTypeInfo* rcEVP_DigestUpdateString = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infoEVP_DigestUpdateString = new v8::CFunctionInfo(*rcEVP_DigestUpdateString, 4, cargsEVP_DigestUpdateString);
+  v8::CFunction* pFEVP_DigestUpdateString = new v8::CFunction((const void*)&EVP_DigestUpdateStringFast, infoEVP_DigestUpdateString);
+  SET_FAST_METHOD(isolate, module, "EVP_DigestUpdateString", pFEVP_DigestUpdateString, EVP_DigestUpdateStringSlow);
 
   v8::CTypeInfo* cargsEVP_DigestVerifyFinal = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargsEVP_DigestVerifyFinal[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
