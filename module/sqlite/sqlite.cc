@@ -100,11 +100,11 @@ void open2Slow(const FunctionCallbackInfo<Value> &args) {
 }
 
 int32_t open2Fast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1, int32_t p2, void* p3) {
-  const char* v0 = reinterpret_cast<const char*>(p0->data);
+  struct FastOneByteString* const v0 = p0;
   sqlite3 ** v1 = reinterpret_cast<sqlite3 **>(p1->data);
   int32_t v2 = p2;
   const char* v3 = reinterpret_cast<const char*>(p3);
-  return sqlite3_open_v2(v0, v1, v2, v3);
+  return sqlite3_open_v2(v0->data, v1, v2, v3);
 }
 void execSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -119,11 +119,11 @@ void execSlow(const FunctionCallbackInfo<Value> &args) {
 
 int32_t execFast(void* p, void* p0, struct FastOneByteString* const p1, void* p2, void* p3, struct FastApiTypedArray* const p4) {
   sqlite3* v0 = reinterpret_cast<sqlite3*>(p0);
-  const char* v1 = reinterpret_cast<const char*>(p1->data);
+  struct FastOneByteString* const v1 = p1;
   callback v2 = reinterpret_cast<callback>(p2);
   void* v3 = reinterpret_cast<void*>(p3);
   char** v4 = reinterpret_cast<char**>(p4->data);
-  return sqlite3_exec(v0, v1, v2, v3, v4);
+  return sqlite3_exec(v0, v1->data, v2, v3, v4);
 }
 void errmsgSlow(const FunctionCallbackInfo<Value> &args) {
   sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -162,11 +162,11 @@ void prepare2Slow(const FunctionCallbackInfo<Value> &args) {
 
 int32_t prepare2Fast(void* p, void* p0, struct FastOneByteString* const p1, int32_t p2, struct FastApiTypedArray* const p3, void* p4) {
   sqlite3* v0 = reinterpret_cast<sqlite3*>(p0);
-  const char* v1 = reinterpret_cast<const char*>(p1->data);
+  struct FastOneByteString* const v1 = p1;
   int32_t v2 = p2;
   sqlite3_stmt ** v3 = reinterpret_cast<sqlite3_stmt **>(p3->data);
   const char** v4 = reinterpret_cast<const char**>(p4);
-  return sqlite3_prepare_v2(v0, v1, v2, v3, v4);
+  return sqlite3_prepare_v2(v0, v1->data, v2, v3, v4);
 }
 void finalizeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
