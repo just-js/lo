@@ -106,6 +106,7 @@ void cleanupIsolate (Isolate* isolate) {
   isolate->Dispose();
 }
 
+// todo: these could just be a simple lookup table
 CTypeInfo* CTypeFromV8 (uint8_t v8Type) {
   if (v8Type == spin::FastTypes::boolean) 
     return new CTypeInfo(CTypeInfo::Type::kBool);
@@ -727,8 +728,7 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
     }
     if (ffn->params[i] == spin::FastTypes::string) {
       String::Utf8Value arg0(isolate, args[i]);
-      char* v = *arg0;
-      *(uint64_t*)start = (uint64_t)v;
+      *(uint64_t*)start = (uint64_t)strdup(*arg0);
       start += 8;
       continue;
     }

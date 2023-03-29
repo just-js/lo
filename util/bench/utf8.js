@@ -3,7 +3,7 @@ import { Library } from 'lib/ffi.js'
 
 const { ptr } = spin
 
-const { memcpy, memcpy2 } = new Library()
+const { memcpy, memcpy2 } = (new Library())
   .open()
   .bind({
     memcpy: {

@@ -71,7 +71,7 @@ const api = {
     rpointer: 'const EVP_MD*'
   },
   EVP_get_digestbyname: {
-    parameters: ['pointer'],
+    parameters: ['string'],
     pointers: ['const char*'],
     result: 'pointer',
     rpointer: 'const EVP_MD*'
@@ -87,7 +87,7 @@ const api = {
     result: 'i32'
   },
   EVP_DigestUpdate: {
-    parameters: ['pointer', 'pointer', 'u32'],
+    parameters: ['pointer', 'buffer', 'u32'],
     pointers: ['EVP_MD_CTX*'],
     result: 'i32'
   },
@@ -102,7 +102,7 @@ const api = {
     result: 'i32'
   },
   EVP_DigestFinal: {
-    parameters: ['pointer', 'pointer', 'pointer'],
+    parameters: ['pointer', 'buffer', 'u32array'],
     pointers: ['EVP_MD_CTX*', 'unsigned char*', 'unsigned int*'],
     result: 'i32'
   },

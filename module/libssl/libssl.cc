@@ -86,11 +86,8 @@ void OpenSSL_versionFast(void* p, int32_t p0, struct FastApiTypedArray* const p_
 
 }
 void EVP_PKEY_CTX_new_idSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  ENGINE* v1 = reinterpret_cast<ENGINE*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  ENGINE* v1 = reinterpret_cast<ENGINE*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   EVP_PKEY_CTX* rc = EVP_PKEY_CTX_new_id(v0, v1);
   Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
   ((EVP_PKEY_CTX**)ab->Data())[0] = rc;
@@ -105,9 +102,7 @@ void EVP_PKEY_CTX_new_idFast(void* p, int32_t p0, void* p1, struct FastApiTypedA
 }
 void EVP_PKEY_keygen_initSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_PKEY_CTX* v0 = reinterpret_cast<EVP_PKEY_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  EVP_PKEY_CTX* v0 = reinterpret_cast<EVP_PKEY_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = EVP_PKEY_keygen_init(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -118,10 +113,8 @@ int32_t EVP_PKEY_keygen_initFast(void* p, void* p0) {
 }
 void EVP_PKEY_keygenSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_PKEY_CTX* v0 = reinterpret_cast<EVP_PKEY_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  EVP_PKEY** v1 = reinterpret_cast<EVP_PKEY**>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  EVP_PKEY_CTX* v0 = reinterpret_cast<EVP_PKEY_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  EVP_PKEY** v1 = reinterpret_cast<EVP_PKEY**>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = EVP_PKEY_keygen(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -146,11 +139,9 @@ void EVP_PKEY_newFast(void* p, struct FastApiTypedArray* const p_ret) {
 }
 void EVP_PKEY_assignSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_PKEY* v0 = reinterpret_cast<EVP_PKEY*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  EVP_PKEY* v0 = reinterpret_cast<EVP_PKEY*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  void* v2 = reinterpret_cast<void*>((uint64_t)args[2]->NumberValue(context).ToChecked());
+  void* v2 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
   int32_t rc = EVP_PKEY_assign(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -163,9 +154,7 @@ int32_t EVP_PKEY_assignFast(void* p, void* p0, int32_t p1, void* p2) {
 }
 void EVP_PKEY_idSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_PKEY* v0 = reinterpret_cast<EVP_PKEY*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  EVP_PKEY* v0 = reinterpret_cast<EVP_PKEY*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = EVP_PKEY_id(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -186,10 +175,7 @@ int32_t EVP_PKEY_typeFast(void* p, int32_t p0) {
   return EVP_PKEY_type(v0);
 }
 void EVP_PKEY_get1_RSASlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_PKEY* v0 = reinterpret_cast<EVP_PKEY*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  EVP_PKEY* v0 = reinterpret_cast<EVP_PKEY*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   RSA* rc = EVP_PKEY_get1_RSA(v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((RSA**)ab->Data())[0] = rc;
@@ -202,26 +188,20 @@ void EVP_PKEY_get1_RSAFast(void* p, void* p0, struct FastApiTypedArray* const p_
 
 }
 void EVP_PKEY_freeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_PKEY* v0 = reinterpret_cast<EVP_PKEY*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  EVP_PKEY* v0 = reinterpret_cast<EVP_PKEY*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   EVP_PKEY_free(v0);
 }
 
-void EVP_PKEY_freeFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+void EVP_PKEY_freeFast(void* p, void* p0) {
   EVP_PKEY* v0 = reinterpret_cast<EVP_PKEY*>(p0);
   EVP_PKEY_free(v0);
 }
 void EVP_PKEY_CTX_freeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_PKEY_CTX* v0 = reinterpret_cast<EVP_PKEY_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  EVP_PKEY_CTX* v0 = reinterpret_cast<EVP_PKEY_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   EVP_PKEY_CTX_free(v0);
 }
 
-void EVP_PKEY_CTX_freeFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+void EVP_PKEY_CTX_freeFast(void* p, void* p0) {
   EVP_PKEY_CTX* v0 = reinterpret_cast<EVP_PKEY_CTX*>(p0);
   EVP_PKEY_CTX_free(v0);
 }
@@ -240,9 +220,7 @@ void EVP_MD_CTX_newFast(void* p, struct FastApiTypedArray* const p_ret) {
 }
 void EVP_MD_CTX_resetSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = EVP_MD_CTX_reset(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -252,14 +230,11 @@ int32_t EVP_MD_CTX_resetFast(void* p, void* p0) {
   return EVP_MD_CTX_reset(v0);
 }
 void EVP_MD_CTX_freeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   EVP_MD_CTX_free(v0);
 }
 
-void EVP_MD_CTX_freeFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+void EVP_MD_CTX_freeFast(void* p, void* p0) {
   EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>(p0);
   EVP_MD_CTX_free(v0);
 }
@@ -278,30 +253,26 @@ void EVP_get_digestbynidFast(void* p, int32_t p0, struct FastApiTypedArray* cons
 }
 void EVP_get_digestbynameSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const char* v0 = reinterpret_cast<const char*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const EVP_MD* rc = EVP_get_digestbyname(v0);
+  String::Utf8Value v0(isolate, args[0]);
+  const EVP_MD* rc = EVP_get_digestbyname(*v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((const EVP_MD**)ab->Data())[0] = rc;
 }
 
-void EVP_get_digestbynameFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
-  const char* v0 = reinterpret_cast<const char*>(p0);
-  const EVP_MD* r = EVP_get_digestbyname(v0);
+void EVP_get_digestbynameFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p_ret) {
+  struct FastOneByteString* const v0 = p0;
+  const EVP_MD* r = EVP_get_digestbyname(v0->data);
   ((const EVP_MD**)p_ret->data)[0] = r;
 
 }
 void EVP_DigestSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  void* v0 = reinterpret_cast<void*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  unsigned char* v2 = reinterpret_cast<unsigned char*>((uint64_t)args[2]->NumberValue(context).ToChecked());
-  unsigned int* v3 = reinterpret_cast<unsigned int*>((uint64_t)args[3]->NumberValue(context).ToChecked());
-  const EVP_MD* v4 = reinterpret_cast<const EVP_MD*>((uint64_t)args[4]->NumberValue(context).ToChecked());
-  ENGINE* v5 = reinterpret_cast<ENGINE*>((uint64_t)args[5]->NumberValue(context).ToChecked());
+  unsigned char* v2 = reinterpret_cast<unsigned char*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  unsigned int* v3 = reinterpret_cast<unsigned int*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
+  const EVP_MD* v4 = reinterpret_cast<const EVP_MD*>((uint64_t)Local<Integer>::Cast(args[4])->Value());
+  ENGINE* v5 = reinterpret_cast<ENGINE*>((uint64_t)Local<Integer>::Cast(args[5])->Value());
   int32_t rc = EVP_Digest(v0, v1, v2, v3, v4, v5);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -317,11 +288,9 @@ int32_t EVP_DigestFast(void* p, void* p0, uint32_t p1, void* p2, void* p3, void*
 }
 void EVP_DigestInit_exSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  EVP_MD* v1 = reinterpret_cast<EVP_MD*>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  ENGINE* v2 = reinterpret_cast<ENGINE*>((uint64_t)args[2]->NumberValue(context).ToChecked());
+  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  EVP_MD* v1 = reinterpret_cast<EVP_MD*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  ENGINE* v2 = reinterpret_cast<ENGINE*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
   int32_t rc = EVP_DigestInit_ex(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -334,27 +303,23 @@ int32_t EVP_DigestInit_exFast(void* p, void* p0, void* p1, void* p2) {
 }
 void EVP_DigestUpdateSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  void* v1 = reinterpret_cast<void*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  void* v1 = reinterpret_cast<void*>(args[1].As<Uint8Array>()->Buffer()->Data());
   uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = EVP_DigestUpdate(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t EVP_DigestUpdateFast(void* p, void* p0, void* p1, uint32_t p2) {
+int32_t EVP_DigestUpdateFast(void* p, void* p0, struct FastApiTypedArray* const p1, uint32_t p2) {
   EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>(p0);
-  void* v1 = reinterpret_cast<void*>(p1);
+  void* v1 = reinterpret_cast<void*>(p1->data);
   uint32_t v2 = p2;
   return EVP_DigestUpdate(v0, v1, v2);
 }
 void EVP_DigestVerifyFinalSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const unsigned char* v1 = reinterpret_cast<const unsigned char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const unsigned char* v1 = reinterpret_cast<const unsigned char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = EVP_DigestVerifyFinal(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -368,11 +333,9 @@ int32_t EVP_DigestVerifyFinalFast(void* p, void* p0, void* p1, uint32_t p2) {
 }
 void EVP_DigestSignFinalSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  unsigned char* v1 = reinterpret_cast<unsigned char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  size_t* v2 = reinterpret_cast<size_t*>((uint64_t)args[2]->NumberValue(context).ToChecked());
+  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  unsigned char* v1 = reinterpret_cast<unsigned char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  size_t* v2 = reinterpret_cast<size_t*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
   int32_t rc = EVP_DigestSignFinal(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -385,19 +348,17 @@ int32_t EVP_DigestSignFinalFast(void* p, void* p0, void* p1, void* p2) {
 }
 void EVP_DigestFinalSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  unsigned char* v1 = reinterpret_cast<unsigned char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  unsigned int* v2 = reinterpret_cast<unsigned int*>((uint64_t)args[2]->NumberValue(context).ToChecked());
+  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  unsigned char* v1 = reinterpret_cast<unsigned char*>(args[1].As<Uint8Array>()->Buffer()->Data());
+  unsigned int* v2 = reinterpret_cast<unsigned int*>(args[2].As<Uint32Array>()->Buffer()->Data());
   int32_t rc = EVP_DigestFinal(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t EVP_DigestFinalFast(void* p, void* p0, void* p1, void* p2) {
+int32_t EVP_DigestFinalFast(void* p, void* p0, struct FastApiTypedArray* const p1, struct FastApiTypedArray* const p2) {
   EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>(p0);
-  unsigned char* v1 = reinterpret_cast<unsigned char*>(p1);
-  unsigned int* v2 = reinterpret_cast<unsigned int*>(p2);
+  unsigned char* v1 = reinterpret_cast<unsigned char*>(p1->data);
+  unsigned int* v2 = reinterpret_cast<unsigned int*>(p2->data);
   return EVP_DigestFinal(v0, v1, v2);
 }
 void EVP_sha1Slow(const FunctionCallbackInfo<Value> &args) {
@@ -480,13 +441,11 @@ void EVP_sha512_256Fast(void* p, struct FastApiTypedArray* const p_ret) {
 }
 void EVP_DigestVerifyInitSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  EVP_PKEY_CTX** v1 = reinterpret_cast<EVP_PKEY_CTX**>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  EVP_MD* v2 = reinterpret_cast<EVP_MD*>((uint64_t)args[2]->NumberValue(context).ToChecked());
-  ENGINE* v3 = reinterpret_cast<ENGINE*>((uint64_t)args[3]->NumberValue(context).ToChecked());
-  EVP_PKEY* v4 = reinterpret_cast<EVP_PKEY*>((uint64_t)args[4]->NumberValue(context).ToChecked());
+  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  EVP_PKEY_CTX** v1 = reinterpret_cast<EVP_PKEY_CTX**>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  EVP_MD* v2 = reinterpret_cast<EVP_MD*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  ENGINE* v3 = reinterpret_cast<ENGINE*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
+  EVP_PKEY* v4 = reinterpret_cast<EVP_PKEY*>((uint64_t)Local<Integer>::Cast(args[4])->Value());
   int32_t rc = EVP_DigestVerifyInit(v0, v1, v2, v3, v4);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -501,13 +460,11 @@ int32_t EVP_DigestVerifyInitFast(void* p, void* p0, void* p1, void* p2, void* p3
 }
 void EVP_DigestSignInitSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  EVP_PKEY_CTX** v1 = reinterpret_cast<EVP_PKEY_CTX**>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  EVP_MD* v2 = reinterpret_cast<EVP_MD*>((uint64_t)args[2]->NumberValue(context).ToChecked());
-  ENGINE* v3 = reinterpret_cast<ENGINE*>((uint64_t)args[3]->NumberValue(context).ToChecked());
-  EVP_PKEY* v4 = reinterpret_cast<EVP_PKEY*>((uint64_t)args[4]->NumberValue(context).ToChecked());
+  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  EVP_PKEY_CTX** v1 = reinterpret_cast<EVP_PKEY_CTX**>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  EVP_MD* v2 = reinterpret_cast<EVP_MD*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  ENGINE* v3 = reinterpret_cast<ENGINE*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
+  EVP_PKEY* v4 = reinterpret_cast<EVP_PKEY*>((uint64_t)Local<Integer>::Cast(args[4])->Value());
   int32_t rc = EVP_DigestSignInit(v0, v1, v2, v3, v4);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -534,10 +491,7 @@ void BIO_s_memFast(void* p, struct FastApiTypedArray* const p_ret) {
 
 }
 void BIO_newSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  BIO_METHOD* v0 = reinterpret_cast<BIO_METHOD*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  BIO_METHOD* v0 = reinterpret_cast<BIO_METHOD*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   BIO * rc = BIO_new(v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((BIO **)ab->Data())[0] = rc;
@@ -550,10 +504,7 @@ void BIO_newFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
 
 }
 void BIO_new_mem_bufSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const void* v0 = reinterpret_cast<const void*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  const void* v0 = reinterpret_cast<const void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   BIO* rc = BIO_new_mem_buf(v0, v1);
   Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
@@ -569,12 +520,10 @@ void BIO_new_mem_bufFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray
 }
 void BIO_ctrlSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   uint64_t v2 = Local<Integer>::Cast(args[2])->Value();
-  void* v3 = reinterpret_cast<void*>((uint64_t)args[3]->NumberValue(context).ToChecked());
+  void* v3 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
   int32_t rc = BIO_ctrl(v0, v1, v2, v3);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -588,10 +537,8 @@ int32_t BIO_ctrlFast(void* p, void* p0, int32_t p1, uint64_t p2, void* p3) {
 }
 void BIO_readSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  void* v1 = reinterpret_cast<void*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = BIO_read(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -605,15 +552,13 @@ int32_t BIO_readFast(void* p, void* p0, void* p1, int32_t p2) {
 }
 void PEM_write_bio_PrivateKeySlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  EVP_PKEY* v1 = reinterpret_cast<EVP_PKEY*>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  EVP_CIPHER* v2 = reinterpret_cast<EVP_CIPHER*>((uint64_t)args[2]->NumberValue(context).ToChecked());
-  unsigned char* v3 = reinterpret_cast<unsigned char*>((uint64_t)args[3]->NumberValue(context).ToChecked());
+  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  EVP_PKEY* v1 = reinterpret_cast<EVP_PKEY*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  EVP_CIPHER* v2 = reinterpret_cast<EVP_CIPHER*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  unsigned char* v3 = reinterpret_cast<unsigned char*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
   int32_t v4 = Local<Integer>::Cast(args[4])->Value();
-  pem_password_cb* v5 = reinterpret_cast<pem_password_cb*>((uint64_t)args[5]->NumberValue(context).ToChecked());
-  void* v6 = reinterpret_cast<void*>((uint64_t)args[6]->NumberValue(context).ToChecked());
+  pem_password_cb* v5 = reinterpret_cast<pem_password_cb*>((uint64_t)Local<Integer>::Cast(args[5])->Value());
+  void* v6 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[6])->Value());
   int32_t rc = PEM_write_bio_PrivateKey(v0, v1, v2, v3, v4, v5, v6);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -630,10 +575,8 @@ int32_t PEM_write_bio_PrivateKeyFast(void* p, void* p0, void* p1, void* p2, void
 }
 void PEM_write_bio_PUBKEYSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  EVP_PKEY* v1 = reinterpret_cast<EVP_PKEY*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  EVP_PKEY* v1 = reinterpret_cast<EVP_PKEY*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = PEM_write_bio_PUBKEY(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -645,10 +588,8 @@ int32_t PEM_write_bio_PUBKEYFast(void* p, void* p0, void* p1) {
 }
 void PEM_write_bio_X509_REQSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  X509_REQ* v1 = reinterpret_cast<X509_REQ*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  X509_REQ* v1 = reinterpret_cast<X509_REQ*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = PEM_write_bio_X509_REQ(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -659,13 +600,10 @@ int32_t PEM_write_bio_X509_REQFast(void* p, void* p0, void* p1) {
   return PEM_write_bio_X509_REQ(v0, v1);
 }
 void PEM_read_bio_RSA_PUBKEYSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  RSA** v1 = reinterpret_cast<RSA**>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  pem_password_cb* v2 = reinterpret_cast<pem_password_cb*>((uint64_t)args[2]->NumberValue(context).ToChecked());
-  void* v3 = reinterpret_cast<void*>((uint64_t)args[3]->NumberValue(context).ToChecked());
+  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  RSA** v1 = reinterpret_cast<RSA**>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  pem_password_cb* v2 = reinterpret_cast<pem_password_cb*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  void* v3 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
   RSA* rc = PEM_read_bio_RSA_PUBKEY(v0, v1, v2, v3);
   Local<ArrayBuffer> ab = args[4].As<Uint32Array>()->Buffer();
   ((RSA**)ab->Data())[0] = rc;
@@ -681,13 +619,10 @@ void PEM_read_bio_RSA_PUBKEYFast(void* p, void* p0, void* p1, void* p2, void* p3
 
 }
 void PEM_read_bio_RSAPrivateKeySlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  RSA** v1 = reinterpret_cast<RSA**>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  pem_password_cb* v2 = reinterpret_cast<pem_password_cb*>((uint64_t)args[2]->NumberValue(context).ToChecked());
-  void* v3 = reinterpret_cast<void*>((uint64_t)args[3]->NumberValue(context).ToChecked());
+  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  RSA** v1 = reinterpret_cast<RSA**>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  pem_password_cb* v2 = reinterpret_cast<pem_password_cb*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  void* v3 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
   RSA* rc = PEM_read_bio_RSAPrivateKey(v0, v1, v2, v3);
   Local<ArrayBuffer> ab = args[4].As<Uint32Array>()->Buffer();
   ((RSA**)ab->Data())[0] = rc;
@@ -703,13 +638,10 @@ void PEM_read_bio_RSAPrivateKeyFast(void* p, void* p0, void* p1, void* p2, void*
 
 }
 void PEM_read_bio_X509Slow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  X509** v1 = reinterpret_cast<X509**>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  pem_password_cb* v2 = reinterpret_cast<pem_password_cb*>((uint64_t)args[2]->NumberValue(context).ToChecked());
-  void* v3 = reinterpret_cast<void*>((uint64_t)args[3]->NumberValue(context).ToChecked());
+  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  X509** v1 = reinterpret_cast<X509**>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  pem_password_cb* v2 = reinterpret_cast<pem_password_cb*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  void* v3 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
   X509* rc = PEM_read_bio_X509(v0, v1, v2, v3);
   Local<ArrayBuffer> ab = args[4].As<Uint32Array>()->Buffer();
   ((X509**)ab->Data())[0] = rc;
@@ -725,10 +657,7 @@ void PEM_read_bio_X509Fast(void* p, void* p0, void* p1, void* p2, void* p3, stru
 
 }
 void X509_get_subject_nameSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const X509* v0 = reinterpret_cast<const X509*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  const X509* v0 = reinterpret_cast<const X509*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   X509_NAME* rc = X509_get_subject_name(v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((X509_NAME**)ab->Data())[0] = rc;
@@ -741,10 +670,7 @@ void X509_get_subject_nameFast(void* p, void* p0, struct FastApiTypedArray* cons
 
 }
 void X509_get_pubkeySlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  X509* v0 = reinterpret_cast<X509*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  X509* v0 = reinterpret_cast<X509*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   EVP_PKEY* rc = X509_get_pubkey(v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((EVP_PKEY**)ab->Data())[0] = rc;
@@ -757,11 +683,8 @@ void X509_get_pubkeyFast(void* p, void* p0, struct FastApiTypedArray* const p_re
 
 }
 void X509_NAME_onelineSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const X509_NAME* v0 = reinterpret_cast<const X509_NAME*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  char* v1 = reinterpret_cast<char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  const X509_NAME* v0 = reinterpret_cast<const X509_NAME*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  char* v1 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   char* rc = X509_NAME_oneline(v0, v1, v2);
   Local<ArrayBuffer> ab = args[3].As<Uint32Array>()->Buffer();
@@ -777,10 +700,7 @@ void X509_NAME_onelineFast(void* p, void* p0, void* p1, int32_t p2, struct FastA
 
 }
 void X509_get_issuer_nameSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const X509* v0 = reinterpret_cast<const X509*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  const X509* v0 = reinterpret_cast<const X509*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   X509_NAME* rc = X509_get_issuer_name(v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((X509_NAME**)ab->Data())[0] = rc;
@@ -793,14 +713,11 @@ void X509_get_issuer_nameFast(void* p, void* p0, struct FastApiTypedArray* const
 
 }
 void X509_freeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  X509* v0 = reinterpret_cast<X509*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  X509* v0 = reinterpret_cast<X509*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   X509_free(v0);
 }
 
-void X509_freeFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+void X509_freeFast(void* p, void* p0) {
   X509* v0 = reinterpret_cast<X509*>(p0);
   X509_free(v0);
 }
@@ -819,9 +736,7 @@ void X509_REQ_newFast(void* p, struct FastApiTypedArray* const p_ret) {
 }
 void X509_REQ_set_versionSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  X509_REQ* v0 = reinterpret_cast<X509_REQ*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  X509_REQ* v0 = reinterpret_cast<X509_REQ*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = X509_REQ_set_version(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -833,10 +748,7 @@ int32_t X509_REQ_set_versionFast(void* p, void* p0, uint32_t p1) {
   return X509_REQ_set_version(v0, v1);
 }
 void X509_REQ_get_subject_nameSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  X509_REQ* v0 = reinterpret_cast<X509_REQ*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  X509_REQ* v0 = reinterpret_cast<X509_REQ*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   X509_NAME* rc = X509_REQ_get_subject_name(v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((X509_NAME**)ab->Data())[0] = rc;
@@ -850,12 +762,10 @@ void X509_REQ_get_subject_nameFast(void* p, void* p0, struct FastApiTypedArray* 
 }
 void X509_NAME_add_entry_by_txtSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  X509_NAME* v0 = reinterpret_cast<X509_NAME*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  X509_NAME* v0 = reinterpret_cast<X509_NAME*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const char* v1 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
-  const unsigned char* v3 = reinterpret_cast<const unsigned char*>((uint64_t)args[3]->NumberValue(context).ToChecked());
+  const unsigned char* v3 = reinterpret_cast<const unsigned char*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
   int32_t v4 = Local<Integer>::Cast(args[4])->Value();
   int32_t v5 = Local<Integer>::Cast(args[5])->Value();
   int32_t v6 = Local<Integer>::Cast(args[6])->Value();
@@ -875,10 +785,8 @@ int32_t X509_NAME_add_entry_by_txtFast(void* p, void* p0, void* p1, int32_t p2, 
 }
 void X509_REQ_set_pubkeySlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  X509_REQ* v0 = reinterpret_cast<X509_REQ*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  EVP_PKEY* v1 = reinterpret_cast<EVP_PKEY*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  X509_REQ* v0 = reinterpret_cast<X509_REQ*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  EVP_PKEY* v1 = reinterpret_cast<EVP_PKEY*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = X509_REQ_set_pubkey(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -890,11 +798,9 @@ int32_t X509_REQ_set_pubkeyFast(void* p, void* p0, void* p1) {
 }
 void X509_REQ_signSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  X509_REQ* v0 = reinterpret_cast<X509_REQ*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  EVP_PKEY* v1 = reinterpret_cast<EVP_PKEY*>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  const EVP_MD* v2 = reinterpret_cast<const EVP_MD*>((uint64_t)args[2]->NumberValue(context).ToChecked());
+  X509_REQ* v0 = reinterpret_cast<X509_REQ*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  EVP_PKEY* v1 = reinterpret_cast<EVP_PKEY*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  const EVP_MD* v2 = reinterpret_cast<const EVP_MD*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
   int32_t rc = X509_REQ_sign(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -907,9 +813,7 @@ int32_t X509_REQ_signFast(void* p, void* p0, void* p1, void* p2) {
 }
 void OBJ_txt2nidSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const char* v0 = reinterpret_cast<const char*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  const char* v0 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = OBJ_txt2nid(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -920,9 +824,7 @@ int32_t OBJ_txt2nidFast(void* p, void* p0) {
 }
 void SSL_get_errorSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const SSL* v0 = reinterpret_cast<const SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  const SSL* v0 = reinterpret_cast<const SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = SSL_get_error(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -935,9 +837,7 @@ int32_t SSL_get_errorFast(void* p, void* p0, int32_t p1) {
 }
 void SSL_shutdownSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = SSL_shutdown(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -947,10 +847,7 @@ int32_t SSL_shutdownFast(void* p, void* p0) {
   return SSL_shutdown(v0);
 }
 void SSL_get_servernameSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const SSL* v0 = reinterpret_cast<const SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  const SSL* v0 = reinterpret_cast<const SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   const char* rc = SSL_get_servername(v0, v1);
   Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
@@ -966,9 +863,7 @@ void SSL_get_servernameFast(void* p, void* p0, int32_t p1, struct FastApiTypedAr
 }
 void SSL_get_servername_typeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const SSL* v0 = reinterpret_cast<const SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  const SSL* v0 = reinterpret_cast<const SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = SSL_get_servername_type(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -978,23 +873,18 @@ int32_t SSL_get_servername_typeFast(void* p, void* p0) {
   return SSL_get_servername_type(v0);
 }
 void SSL_freeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   SSL_free(v0);
 }
 
-void SSL_freeFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+void SSL_freeFast(void* p, void* p0) {
   SSL* v0 = reinterpret_cast<SSL*>(p0);
   SSL_free(v0);
 }
 void SSL_readSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  void* v1 = reinterpret_cast<void*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = SSL_read(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -1008,10 +898,8 @@ int32_t SSL_readFast(void* p, void* p0, void* p1, int32_t p2) {
 }
 void SSL_writeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  void* v1 = reinterpret_cast<void*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = SSL_write(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -1024,10 +912,7 @@ int32_t SSL_writeFast(void* p, void* p0, void* p1, int32_t p2) {
   return SSL_write(v0, v1, v2);
 }
 void SSL_get_versionSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const SSL* v0 = reinterpret_cast<const SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  const SSL* v0 = reinterpret_cast<const SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   const char* rc = SSL_get_version(v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((const char**)ab->Data())[0] = rc;
@@ -1040,10 +925,7 @@ void SSL_get_versionFast(void* p, void* p0, struct FastApiTypedArray* const p_re
 
 }
 void SSL_CIPHER_get_nameSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const SSL_CIPHER* v0 = reinterpret_cast<const SSL_CIPHER*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  const SSL_CIPHER* v0 = reinterpret_cast<const SSL_CIPHER*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   const char* rc = SSL_CIPHER_get_name(v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((const char**)ab->Data())[0] = rc;
@@ -1056,10 +938,7 @@ void SSL_CIPHER_get_nameFast(void* p, void* p0, struct FastApiTypedArray* const 
 
 }
 void SSL_get_current_cipherSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const SSL* v0 = reinterpret_cast<const SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  const SSL* v0 = reinterpret_cast<const SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   const SSL_CIPHER* rc = SSL_get_current_cipher(v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((const SSL_CIPHER**)ab->Data())[0] = rc;
@@ -1072,10 +951,7 @@ void SSL_get_current_cipherFast(void* p, void* p0, struct FastApiTypedArray* con
 
 }
 void SSL_get_peer_certificateSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const SSL* v0 = reinterpret_cast<const SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  const SSL* v0 = reinterpret_cast<const SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   X509* rc = SSL_get_peer_certificate(v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((X509**)ab->Data())[0] = rc;
@@ -1089,9 +965,7 @@ void SSL_get_peer_certificateFast(void* p, void* p0, struct FastApiTypedArray* c
 }
 void SSL_do_handshakeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = SSL_do_handshake(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -1101,11 +975,8 @@ int32_t SSL_do_handshakeFast(void* p, void* p0) {
   return SSL_do_handshake(v0);
 }
 void SSL_set_SSL_CTXSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  SSL_CTX* v1 = reinterpret_cast<SSL_CTX*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  SSL_CTX* v1 = reinterpret_cast<SSL_CTX*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   SSL_CTX* rc = SSL_set_SSL_CTX(v0, v1);
   Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
   ((SSL_CTX**)ab->Data())[0] = rc;
@@ -1119,10 +990,7 @@ void SSL_set_SSL_CTXFast(void* p, void* p0, void* p1, struct FastApiTypedArray* 
 
 }
 void SSL_newSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   SSL* rc = SSL_new(v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((SSL**)ab->Data())[0] = rc;
@@ -1136,9 +1004,7 @@ void SSL_newFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
 }
 void SSL_set_fdSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = SSL_set_fd(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -1150,22 +1016,17 @@ int32_t SSL_set_fdFast(void* p, void* p0, int32_t p1) {
   return SSL_set_fd(v0, v1);
 }
 void SSL_set_accept_stateSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   SSL_set_accept_state(v0);
 }
 
-void SSL_set_accept_stateFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+void SSL_set_accept_stateFast(void* p, void* p0) {
   SSL* v0 = reinterpret_cast<SSL*>(p0);
   SSL_set_accept_state(v0);
 }
 void SSL_acceptSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = SSL_accept(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -1175,22 +1036,16 @@ int32_t SSL_acceptFast(void* p, void* p0) {
   return SSL_accept(v0);
 }
 void SSL_set_connect_stateSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   SSL_set_connect_state(v0);
 }
 
-void SSL_set_connect_stateFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+void SSL_set_connect_stateFast(void* p, void* p0) {
   SSL* v0 = reinterpret_cast<SSL*>(p0);
   SSL_set_connect_state(v0);
 }
 void SSL_CTX_newSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL_METHOD* v0 = reinterpret_cast<SSL_METHOD*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  SSL_METHOD* v0 = reinterpret_cast<SSL_METHOD*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   SSL_CTX* rc = SSL_CTX_new(v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((SSL_CTX**)ab->Data())[0] = rc;
@@ -1204,10 +1059,8 @@ void SSL_CTX_newFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
 }
 void SSL_CTX_use_certificate_fileSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const char* v1 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = SSL_CTX_use_certificate_file(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -1221,10 +1074,8 @@ int32_t SSL_CTX_use_certificate_fileFast(void* p, void* p0, void* p1, int32_t p2
 }
 void SSL_CTX_use_certificate_chain_fileSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const char* v1 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = SSL_CTX_use_certificate_chain_file(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -1236,10 +1087,8 @@ int32_t SSL_CTX_use_certificate_chain_fileFast(void* p, void* p0, void* p1) {
 }
 void SSL_CTX_use_PrivateKey_fileSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const char* v1 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = SSL_CTX_use_PrivateKey_file(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -1253,9 +1102,7 @@ int32_t SSL_CTX_use_PrivateKey_fileFast(void* p, void* p0, void* p1, int32_t p2)
 }
 void SSL_CTX_set_optionsSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint64_t v1 = Local<Integer>::Cast(args[1])->Value();
   uint64_t rc = SSL_CTX_set_options(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, static_cast<uint64_t>(rc)));
@@ -1270,10 +1117,8 @@ void SSL_CTX_set_optionsFast(void* p, void* p0, uint64_t p1, struct FastApiTyped
 }
 void SSL_CTX_set_cipher_listSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const char* v1 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = SSL_CTX_set_cipher_list(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -1285,10 +1130,8 @@ int32_t SSL_CTX_set_cipher_listFast(void* p, void* p0, void* p1) {
 }
 void SSL_set_cipher_listSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const char* v1 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = SSL_set_cipher_list(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -1299,14 +1142,11 @@ int32_t SSL_set_cipher_listFast(void* p, void* p0, void* p1) {
   return SSL_set_cipher_list(v0, v1);
 }
 void SSL_CTX_freeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   SSL_CTX_free(v0);
 }
 
-void SSL_CTX_freeFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+void SSL_CTX_freeFast(void* p, void* p0) {
   SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>(p0);
   SSL_CTX_free(v0);
 }
@@ -1315,7 +1155,7 @@ void TLS_server_methodSlow(const FunctionCallbackInfo<Value> &args) {
   TLS_server_method();
 }
 
-void TLS_server_methodFast(void* p, struct FastApiTypedArray* const p_ret) {
+void TLS_server_methodFast(void* p) {
 
   TLS_server_method();
 }
@@ -1324,16 +1164,14 @@ void TLS_client_methodSlow(const FunctionCallbackInfo<Value> &args) {
   TLS_client_method();
 }
 
-void TLS_client_methodFast(void* p, struct FastApiTypedArray* const p_ret) {
+void TLS_client_methodFast(void* p) {
 
   TLS_client_method();
 }
 void SSL_CTX_set_ciphersuitesSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  SSL_CTX* v0 = reinterpret_cast<SSL_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const char* v1 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = SSL_CTX_set_ciphersuites(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -1345,12 +1183,10 @@ int32_t SSL_CTX_set_ciphersuitesFast(void* p, void* p0, void* p1) {
 }
 void SSL_ctrlSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   uint64_t v2 = Local<Integer>::Cast(args[2])->Value();
-  void* v3 = reinterpret_cast<void*>((uint64_t)args[3]->NumberValue(context).ToChecked());
+  void* v3 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
   uint64_t rc = SSL_ctrl(v0, v1, v2, v3);
   args.GetReturnValue().Set(Number::New(isolate, static_cast<uint64_t>(rc)));
 }
@@ -1366,13 +1202,11 @@ void SSL_ctrlFast(void* p, void* p0, int32_t p1, uint64_t p2, void* p3, struct F
 }
 void RSA_pkey_ctx_ctrlSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  EVP_PKEY_CTX* v0 = reinterpret_cast<EVP_PKEY_CTX*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  EVP_PKEY_CTX* v0 = reinterpret_cast<EVP_PKEY_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t v3 = Local<Integer>::Cast(args[3])->Value();
-  void* v4 = reinterpret_cast<void*>((uint64_t)args[4]->NumberValue(context).ToChecked());
+  void* v4 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[4])->Value());
   int32_t rc = RSA_pkey_ctx_ctrl(v0, v1, v2, v3, v4);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -1477,20 +1311,20 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoEVP_PKEY_get1_RSA = new v8::CFunctionInfo(*rcEVP_PKEY_get1_RSA, 3, cargsEVP_PKEY_get1_RSA);
   v8::CFunction* pFEVP_PKEY_get1_RSA = new v8::CFunction((const void*)&EVP_PKEY_get1_RSAFast, infoEVP_PKEY_get1_RSA);
   SET_FAST_METHOD(isolate, module, "EVP_PKEY_get1_RSA", pFEVP_PKEY_get1_RSA, EVP_PKEY_get1_RSASlow);
-  v8::CTypeInfo* cargsEVP_PKEY_free = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+
+  v8::CTypeInfo* cargsEVP_PKEY_free = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsEVP_PKEY_free[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsEVP_PKEY_free[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_PKEY_free[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcEVP_PKEY_free = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_PKEY_free = new v8::CFunctionInfo(*rcEVP_PKEY_free, 3, cargsEVP_PKEY_free);
+  v8::CFunctionInfo* infoEVP_PKEY_free = new v8::CFunctionInfo(*rcEVP_PKEY_free, 2, cargsEVP_PKEY_free);
   v8::CFunction* pFEVP_PKEY_free = new v8::CFunction((const void*)&EVP_PKEY_freeFast, infoEVP_PKEY_free);
   SET_FAST_METHOD(isolate, module, "EVP_PKEY_free", pFEVP_PKEY_free, EVP_PKEY_freeSlow);
-  v8::CTypeInfo* cargsEVP_PKEY_CTX_free = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+
+  v8::CTypeInfo* cargsEVP_PKEY_CTX_free = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsEVP_PKEY_CTX_free[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsEVP_PKEY_CTX_free[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_PKEY_CTX_free[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcEVP_PKEY_CTX_free = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_PKEY_CTX_free = new v8::CFunctionInfo(*rcEVP_PKEY_CTX_free, 3, cargsEVP_PKEY_CTX_free);
+  v8::CFunctionInfo* infoEVP_PKEY_CTX_free = new v8::CFunctionInfo(*rcEVP_PKEY_CTX_free, 2, cargsEVP_PKEY_CTX_free);
   v8::CFunction* pFEVP_PKEY_CTX_free = new v8::CFunction((const void*)&EVP_PKEY_CTX_freeFast, infoEVP_PKEY_CTX_free);
   SET_FAST_METHOD(isolate, module, "EVP_PKEY_CTX_free", pFEVP_PKEY_CTX_free, EVP_PKEY_CTX_freeSlow);
   v8::CTypeInfo* cargsEVP_MD_CTX_new = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
@@ -1509,12 +1343,12 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoEVP_MD_CTX_reset = new v8::CFunctionInfo(*rcEVP_MD_CTX_reset, 2, cargsEVP_MD_CTX_reset);
   v8::CFunction* pFEVP_MD_CTX_reset = new v8::CFunction((const void*)&EVP_MD_CTX_resetFast, infoEVP_MD_CTX_reset);
   SET_FAST_METHOD(isolate, module, "EVP_MD_CTX_reset", pFEVP_MD_CTX_reset, EVP_MD_CTX_resetSlow);
-  v8::CTypeInfo* cargsEVP_MD_CTX_free = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+
+  v8::CTypeInfo* cargsEVP_MD_CTX_free = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsEVP_MD_CTX_free[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsEVP_MD_CTX_free[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_MD_CTX_free[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcEVP_MD_CTX_free = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_MD_CTX_free = new v8::CFunctionInfo(*rcEVP_MD_CTX_free, 3, cargsEVP_MD_CTX_free);
+  v8::CFunctionInfo* infoEVP_MD_CTX_free = new v8::CFunctionInfo(*rcEVP_MD_CTX_free, 2, cargsEVP_MD_CTX_free);
   v8::CFunction* pFEVP_MD_CTX_free = new v8::CFunction((const void*)&EVP_MD_CTX_freeFast, infoEVP_MD_CTX_free);
   SET_FAST_METHOD(isolate, module, "EVP_MD_CTX_free", pFEVP_MD_CTX_free, EVP_MD_CTX_freeSlow);
   v8::CTypeInfo* cargsEVP_get_digestbynid = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
@@ -1527,7 +1361,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "EVP_get_digestbynid", pFEVP_get_digestbynid, EVP_get_digestbynidSlow);
   v8::CTypeInfo* cargsEVP_get_digestbyname = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
   cargsEVP_get_digestbyname[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_get_digestbyname[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsEVP_get_digestbyname[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
   cargsEVP_get_digestbyname[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcEVP_get_digestbyname = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
   v8::CFunctionInfo* infoEVP_get_digestbyname = new v8::CFunctionInfo(*rcEVP_get_digestbyname, 3, cargsEVP_get_digestbyname);
@@ -1560,7 +1394,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CTypeInfo* cargsEVP_DigestUpdate = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargsEVP_DigestUpdate[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsEVP_DigestUpdate[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestUpdate[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsEVP_DigestUpdate[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   cargsEVP_DigestUpdate[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
   v8::CTypeInfo* rcEVP_DigestUpdate = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CFunctionInfo* infoEVP_DigestUpdate = new v8::CFunctionInfo(*rcEVP_DigestUpdate, 4, cargsEVP_DigestUpdate);
@@ -1590,8 +1424,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CTypeInfo* cargsEVP_DigestFinal = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargsEVP_DigestFinal[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsEVP_DigestFinal[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestFinal[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestFinal[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsEVP_DigestFinal[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargsEVP_DigestFinal[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcEVP_DigestFinal = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CFunctionInfo* infoEVP_DigestFinal = new v8::CFunctionInfo(*rcEVP_DigestFinal, 4, cargsEVP_DigestFinal);
   v8::CFunction* pFEVP_DigestFinal = new v8::CFunction((const void*)&EVP_DigestFinalFast, infoEVP_DigestFinal);
@@ -1813,12 +1647,12 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoX509_get_issuer_name = new v8::CFunctionInfo(*rcX509_get_issuer_name, 3, cargsX509_get_issuer_name);
   v8::CFunction* pFX509_get_issuer_name = new v8::CFunction((const void*)&X509_get_issuer_nameFast, infoX509_get_issuer_name);
   SET_FAST_METHOD(isolate, module, "X509_get_issuer_name", pFX509_get_issuer_name, X509_get_issuer_nameSlow);
-  v8::CTypeInfo* cargsX509_free = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+
+  v8::CTypeInfo* cargsX509_free = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsX509_free[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsX509_free[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_free[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcX509_free = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoX509_free = new v8::CFunctionInfo(*rcX509_free, 3, cargsX509_free);
+  v8::CFunctionInfo* infoX509_free = new v8::CFunctionInfo(*rcX509_free, 2, cargsX509_free);
   v8::CFunction* pFX509_free = new v8::CFunction((const void*)&X509_freeFast, infoX509_free);
   SET_FAST_METHOD(isolate, module, "X509_free", pFX509_free, X509_freeSlow);
   v8::CTypeInfo* cargsX509_REQ_new = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
@@ -1921,12 +1755,12 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoSSL_get_servername_type = new v8::CFunctionInfo(*rcSSL_get_servername_type, 2, cargsSSL_get_servername_type);
   v8::CFunction* pFSSL_get_servername_type = new v8::CFunction((const void*)&SSL_get_servername_typeFast, infoSSL_get_servername_type);
   SET_FAST_METHOD(isolate, module, "SSL_get_servername_type", pFSSL_get_servername_type, SSL_get_servername_typeSlow);
-  v8::CTypeInfo* cargsSSL_free = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+
+  v8::CTypeInfo* cargsSSL_free = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsSSL_free[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsSSL_free[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_free[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcSSL_free = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_free = new v8::CFunctionInfo(*rcSSL_free, 3, cargsSSL_free);
+  v8::CFunctionInfo* infoSSL_free = new v8::CFunctionInfo(*rcSSL_free, 2, cargsSSL_free);
   v8::CFunction* pFSSL_free = new v8::CFunction((const void*)&SSL_freeFast, infoSSL_free);
   SET_FAST_METHOD(isolate, module, "SSL_free", pFSSL_free, SSL_freeSlow);
 
@@ -2015,12 +1849,12 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoSSL_set_fd = new v8::CFunctionInfo(*rcSSL_set_fd, 3, cargsSSL_set_fd);
   v8::CFunction* pFSSL_set_fd = new v8::CFunction((const void*)&SSL_set_fdFast, infoSSL_set_fd);
   SET_FAST_METHOD(isolate, module, "SSL_set_fd", pFSSL_set_fd, SSL_set_fdSlow);
-  v8::CTypeInfo* cargsSSL_set_accept_state = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+
+  v8::CTypeInfo* cargsSSL_set_accept_state = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsSSL_set_accept_state[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsSSL_set_accept_state[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_set_accept_state[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcSSL_set_accept_state = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_set_accept_state = new v8::CFunctionInfo(*rcSSL_set_accept_state, 3, cargsSSL_set_accept_state);
+  v8::CFunctionInfo* infoSSL_set_accept_state = new v8::CFunctionInfo(*rcSSL_set_accept_state, 2, cargsSSL_set_accept_state);
   v8::CFunction* pFSSL_set_accept_state = new v8::CFunction((const void*)&SSL_set_accept_stateFast, infoSSL_set_accept_state);
   SET_FAST_METHOD(isolate, module, "SSL_set_accept_state", pFSSL_set_accept_state, SSL_set_accept_stateSlow);
 
@@ -2031,12 +1865,12 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoSSL_accept = new v8::CFunctionInfo(*rcSSL_accept, 2, cargsSSL_accept);
   v8::CFunction* pFSSL_accept = new v8::CFunction((const void*)&SSL_acceptFast, infoSSL_accept);
   SET_FAST_METHOD(isolate, module, "SSL_accept", pFSSL_accept, SSL_acceptSlow);
-  v8::CTypeInfo* cargsSSL_set_connect_state = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+
+  v8::CTypeInfo* cargsSSL_set_connect_state = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsSSL_set_connect_state[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsSSL_set_connect_state[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_set_connect_state[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcSSL_set_connect_state = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_set_connect_state = new v8::CFunctionInfo(*rcSSL_set_connect_state, 3, cargsSSL_set_connect_state);
+  v8::CFunctionInfo* infoSSL_set_connect_state = new v8::CFunctionInfo(*rcSSL_set_connect_state, 2, cargsSSL_set_connect_state);
   v8::CFunction* pFSSL_set_connect_state = new v8::CFunction((const void*)&SSL_set_connect_stateFast, infoSSL_set_connect_state);
   SET_FAST_METHOD(isolate, module, "SSL_set_connect_state", pFSSL_set_connect_state, SSL_set_connect_stateSlow);
   v8::CTypeInfo* cargsSSL_CTX_new = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
@@ -2103,28 +1937,28 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoSSL_set_cipher_list = new v8::CFunctionInfo(*rcSSL_set_cipher_list, 3, cargsSSL_set_cipher_list);
   v8::CFunction* pFSSL_set_cipher_list = new v8::CFunction((const void*)&SSL_set_cipher_listFast, infoSSL_set_cipher_list);
   SET_FAST_METHOD(isolate, module, "SSL_set_cipher_list", pFSSL_set_cipher_list, SSL_set_cipher_listSlow);
-  v8::CTypeInfo* cargsSSL_CTX_free = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+
+  v8::CTypeInfo* cargsSSL_CTX_free = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsSSL_CTX_free[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsSSL_CTX_free[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_CTX_free[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcSSL_CTX_free = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_CTX_free = new v8::CFunctionInfo(*rcSSL_CTX_free, 3, cargsSSL_CTX_free);
+  v8::CFunctionInfo* infoSSL_CTX_free = new v8::CFunctionInfo(*rcSSL_CTX_free, 2, cargsSSL_CTX_free);
   v8::CFunction* pFSSL_CTX_free = new v8::CFunction((const void*)&SSL_CTX_freeFast, infoSSL_CTX_free);
   SET_FAST_METHOD(isolate, module, "SSL_CTX_free", pFSSL_CTX_free, SSL_CTX_freeSlow);
-  v8::CTypeInfo* cargsTLS_server_method = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+
+  v8::CTypeInfo* cargsTLS_server_method = (v8::CTypeInfo*)calloc(1, sizeof(v8::CTypeInfo));
   cargsTLS_server_method[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
 
-  cargsTLS_server_method[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcTLS_server_method = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoTLS_server_method = new v8::CFunctionInfo(*rcTLS_server_method, 2, cargsTLS_server_method);
+  v8::CFunctionInfo* infoTLS_server_method = new v8::CFunctionInfo(*rcTLS_server_method, 1, cargsTLS_server_method);
   v8::CFunction* pFTLS_server_method = new v8::CFunction((const void*)&TLS_server_methodFast, infoTLS_server_method);
   SET_FAST_METHOD(isolate, module, "TLS_server_method", pFTLS_server_method, TLS_server_methodSlow);
-  v8::CTypeInfo* cargsTLS_client_method = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+
+  v8::CTypeInfo* cargsTLS_client_method = (v8::CTypeInfo*)calloc(1, sizeof(v8::CTypeInfo));
   cargsTLS_client_method[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
 
-  cargsTLS_client_method[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcTLS_client_method = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoTLS_client_method = new v8::CFunctionInfo(*rcTLS_client_method, 2, cargsTLS_client_method);
+  v8::CFunctionInfo* infoTLS_client_method = new v8::CFunctionInfo(*rcTLS_client_method, 1, cargsTLS_client_method);
   v8::CFunction* pFTLS_client_method = new v8::CFunction((const void*)&TLS_client_methodFast, infoTLS_client_method);
   SET_FAST_METHOD(isolate, module, "TLS_client_method", pFTLS_client_method, TLS_client_methodSlow);
 

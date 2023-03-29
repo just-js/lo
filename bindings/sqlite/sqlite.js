@@ -14,13 +14,13 @@ const api = {
   },
   open2: {
     name: 'sqlite3_open_v2',
-    parameters: ['pointer', 'pointer', 'i32', 'pointer'],
+    parameters: ['string', 'u32array', 'i32', 'pointer'],
     pointers: ['const char*', 'sqlite3 **', , 'const char*'],
     result: 'i32'
   },
   exec: {
     name: 'sqlite3_exec',
-    parameters: ['pointer', 'pointer', 'pointer', 'pointer', 'pointer'],
+    parameters: ['pointer', 'string', 'pointer', 'pointer', 'u32array'],
     pointers: ['sqlite3*', 'const char*', 'callback',, 'char**'],
     result: 'i32'
   },
@@ -39,7 +39,7 @@ const api = {
   },
   prepare2: {
     name: 'sqlite3_prepare_v2',
-    parameters: ['pointer', 'pointer', 'i32', 'pointer', 'pointer'],
+    parameters: ['pointer', 'string', 'i32', 'u32array', 'pointer'],
     pointers: ['sqlite3*', 'const char*', ,'sqlite3_stmt **', 'const char**'],
     result: 'i32'
   },

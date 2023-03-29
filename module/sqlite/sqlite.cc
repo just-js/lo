@@ -78,10 +78,8 @@ void versionFast(void* p, struct FastApiTypedArray* const p_ret) {
 }
 void openSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const char* v0 = reinterpret_cast<const char*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  sqlite3 ** v1 = reinterpret_cast<sqlite3 **>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  const char* v0 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  sqlite3 ** v1 = reinterpret_cast<sqlite3 **>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = sqlite3_open(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -93,49 +91,42 @@ int32_t openFast(void* p, void* p0, void* p1) {
 }
 void open2Slow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const char* v0 = reinterpret_cast<const char*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  sqlite3 ** v1 = reinterpret_cast<sqlite3 **>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  String::Utf8Value v0(isolate, args[0]);
+  sqlite3 ** v1 = reinterpret_cast<sqlite3 **>(args[1].As<Uint32Array>()->Buffer()->Data());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
-  const char* v3 = reinterpret_cast<const char*>((uint64_t)args[3]->NumberValue(context).ToChecked());
-  int32_t rc = sqlite3_open_v2(v0, v1, v2, v3);
+  const char* v3 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
+  int32_t rc = sqlite3_open_v2(*v0, v1, v2, v3);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t open2Fast(void* p, void* p0, void* p1, int32_t p2, void* p3) {
-  const char* v0 = reinterpret_cast<const char*>(p0);
-  sqlite3 ** v1 = reinterpret_cast<sqlite3 **>(p1);
+int32_t open2Fast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1, int32_t p2, void* p3) {
+  const char* v0 = reinterpret_cast<const char*>(p0->data);
+  sqlite3 ** v1 = reinterpret_cast<sqlite3 **>(p1->data);
   int32_t v2 = p2;
   const char* v3 = reinterpret_cast<const char*>(p3);
   return sqlite3_open_v2(v0, v1, v2, v3);
 }
 void execSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  callback v2 = reinterpret_cast<callback>((uint64_t)args[2]->NumberValue(context).ToChecked());
-  void* v3 = reinterpret_cast<void*>((uint64_t)args[3]->NumberValue(context).ToChecked());
-  char** v4 = reinterpret_cast<char**>((uint64_t)args[4]->NumberValue(context).ToChecked());
-  int32_t rc = sqlite3_exec(v0, v1, v2, v3, v4);
+  sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  String::Utf8Value v1(isolate, args[1]);
+  callback v2 = reinterpret_cast<callback>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  void* v3 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
+  char** v4 = reinterpret_cast<char**>(args[4].As<Uint32Array>()->Buffer()->Data());
+  int32_t rc = sqlite3_exec(v0, *v1, v2, v3, v4);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t execFast(void* p, void* p0, void* p1, void* p2, void* p3, void* p4) {
+int32_t execFast(void* p, void* p0, struct FastOneByteString* const p1, void* p2, void* p3, struct FastApiTypedArray* const p4) {
   sqlite3* v0 = reinterpret_cast<sqlite3*>(p0);
-  const char* v1 = reinterpret_cast<const char*>(p1);
+  const char* v1 = reinterpret_cast<const char*>(p1->data);
   callback v2 = reinterpret_cast<callback>(p2);
   void* v3 = reinterpret_cast<void*>(p3);
-  char** v4 = reinterpret_cast<char**>(p4);
+  char** v4 = reinterpret_cast<char**>(p4->data);
   return sqlite3_exec(v0, v1, v2, v3, v4);
 }
 void errmsgSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   const char* rc = sqlite3_errmsg(v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((const char**)ab->Data())[0] = rc;
@@ -149,9 +140,7 @@ void errmsgFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
 }
 void close2Slow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = sqlite3_close_v2(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -162,30 +151,26 @@ int32_t close2Fast(void* p, void* p0) {
 }
 void prepare2Slow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  String::Utf8Value v1(isolate, args[1]);
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
-  sqlite3_stmt ** v3 = reinterpret_cast<sqlite3_stmt **>((uint64_t)args[3]->NumberValue(context).ToChecked());
-  const char** v4 = reinterpret_cast<const char**>((uint64_t)args[4]->NumberValue(context).ToChecked());
-  int32_t rc = sqlite3_prepare_v2(v0, v1, v2, v3, v4);
+  sqlite3_stmt ** v3 = reinterpret_cast<sqlite3_stmt **>(args[3].As<Uint32Array>()->Buffer()->Data());
+  const char** v4 = reinterpret_cast<const char**>((uint64_t)Local<Integer>::Cast(args[4])->Value());
+  int32_t rc = sqlite3_prepare_v2(v0, *v1, v2, v3, v4);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t prepare2Fast(void* p, void* p0, void* p1, int32_t p2, void* p3, void* p4) {
+int32_t prepare2Fast(void* p, void* p0, struct FastOneByteString* const p1, int32_t p2, struct FastApiTypedArray* const p3, void* p4) {
   sqlite3* v0 = reinterpret_cast<sqlite3*>(p0);
-  const char* v1 = reinterpret_cast<const char*>(p1);
+  const char* v1 = reinterpret_cast<const char*>(p1->data);
   int32_t v2 = p2;
-  sqlite3_stmt ** v3 = reinterpret_cast<sqlite3_stmt **>(p3);
+  sqlite3_stmt ** v3 = reinterpret_cast<sqlite3_stmt **>(p3->data);
   const char** v4 = reinterpret_cast<const char**>(p4);
   return sqlite3_prepare_v2(v0, v1, v2, v3, v4);
 }
 void finalizeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = sqlite3_finalize(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -196,9 +181,7 @@ int32_t finalizeFast(void* p, void* p0) {
 }
 void column_countSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = sqlite3_column_count(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -209,9 +192,7 @@ int32_t column_countFast(void* p, void* p0) {
 }
 void column_typeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = sqlite3_column_type(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -223,10 +204,7 @@ int32_t column_typeFast(void* p, void* p0, int32_t p1) {
   return sqlite3_column_type(v0, v1);
 }
 void column_nameSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   const char* rc = sqlite3_column_name(v0, v1);
   Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
@@ -242,9 +220,7 @@ void column_nameFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* co
 }
 void stepSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = sqlite3_step(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -255,9 +231,7 @@ int32_t stepFast(void* p, void* p0) {
 }
 void resetSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = sqlite3_reset(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -268,9 +242,7 @@ int32_t resetFast(void* p, void* p0) {
 }
 void column_intSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = sqlite3_column_int(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -283,9 +255,7 @@ int32_t column_intFast(void* p, void* p0, int32_t p1) {
 }
 void column_doubleSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   float rc = sqlite3_column_double(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -297,10 +267,7 @@ float column_doubleFast(void* p, void* p0, int32_t p1) {
   return sqlite3_column_double(v0, v1);
 }
 void column_textSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   const unsigned char* rc = sqlite3_column_text(v0, v1);
   Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
@@ -316,9 +283,7 @@ void column_textFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* co
 }
 void column_bytesSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = sqlite3_column_bytes(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -352,8 +317,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 
   v8::CTypeInfo* cargsopen2 = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
   cargsopen2[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsopen2[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsopen2[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsopen2[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
+  cargsopen2[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   cargsopen2[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   cargsopen2[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
   v8::CTypeInfo* rcopen2 = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
@@ -364,10 +329,10 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CTypeInfo* cargsexec = (v8::CTypeInfo*)calloc(6, sizeof(v8::CTypeInfo));
   cargsexec[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsexec[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsexec[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsexec[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
   cargsexec[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
   cargsexec[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsexec[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsexec[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcexec = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CFunctionInfo* infoexec = new v8::CFunctionInfo(*rcexec, 6, cargsexec);
   v8::CFunction* pFexec = new v8::CFunction((const void*)&execFast, infoexec);
@@ -392,9 +357,9 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CTypeInfo* cargsprepare2 = (v8::CTypeInfo*)calloc(6, sizeof(v8::CTypeInfo));
   cargsprepare2[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsprepare2[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsprepare2[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsprepare2[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
   cargsprepare2[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsprepare2[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsprepare2[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   cargsprepare2[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
   v8::CTypeInfo* rcprepare2 = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CFunctionInfo* infoprepare2 = new v8::CFunctionInfo(*rcprepare2, 6, cargsprepare2);

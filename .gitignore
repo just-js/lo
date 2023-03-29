@@ -10,3 +10,4 @@ deps
 .*_history
 tmp
 *.out
+node_modules
