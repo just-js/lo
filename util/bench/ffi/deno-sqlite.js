@@ -1,4 +1,4 @@
-import { run } from './lib/bench.js'
+import { run } from '../../../lib/bench.js'
 
 const { dlopen, UnsafePointer } = Deno
 
@@ -73,7 +73,7 @@ const {
 const db = open()
 exec('PRAGMA user_version = 100')
 const stmt = prepare('pragma user_version')
-//run('pragma user_version', get, 15000000, 10)
-run('sqlite3_version', () => (new Deno.UnsafePointerView(sqlite3_libversion())).getCString(), 30000000, 10)
+run('pragma user_version', get, 15000000, 10)
+//run('sqlite3_version', () => (new Deno.UnsafePointerView(sqlite3_libversion())).getCString(), 30000000, 10)
 
 //console.log((new Deno.UnsafePointerView(sqlite3_libversion())).getCString())

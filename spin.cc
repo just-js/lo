@@ -717,12 +717,16 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
       continue;
     }
     if (ffn->params[i] == spin::FastTypes::buffer) {
-      *(uint64_t*)start = (uint64_t)args[i].As<Uint8Array>()->Buffer()->Data();
+      Local<Uint8Array> u8 = args[i].As<Uint8Array>();
+      uint8_t* ptr = (uint8_t*)u8->Buffer()->Data() + u8->ByteOffset();
+      *(uint64_t*)start = (uint64_t)ptr;
       start += 8;
       continue;
     }
     if (ffn->params[i] == spin::FastTypes::u32array) {
-      *(uint64_t*)start = (uint64_t)args[i].As<Uint32Array>()->Buffer()->Data();
+      Local<Uint32Array> u32 = args[i].As<Uint32Array>();
+      uint8_t* ptr = (uint8_t*)u32->Buffer()->Data() + u32->ByteOffset();
+      *(uint64_t*)start = (uint64_t)ptr;
       start += 8;
       continue;
     }
@@ -909,8 +913,9 @@ void spin::fastHRTime (void* p, struct FastApiTypedArray* const p_ret) {
 }
 
 void spin::GetAddress(const FunctionCallbackInfo<Value> &args) {
-  ((uint64_t*)args[1].As<Uint32Array>()->Buffer()->Data())[0] = 
-    (uint64_t)args[0].As<Uint8Array>()->Buffer()->Data();
+  Local<Uint8Array> u8 = args[0].As<Uint8Array>();
+  uint8_t* ptr = (uint8_t*)u8->Buffer()->Data() + u8->ByteOffset();
+  ((uint64_t*)args[1].As<Uint32Array>()->Buffer()->Data())[0] = (uint64_t)ptr;
 }
 
 void spin::fastGetAddress(void* p, struct FastApiTypedArray* const p_buf, 

@@ -45,7 +45,7 @@ const stmt = prepare('pragma user_version')
 console.log(get())
 console.log(utf8Decode(version(), -1))
 
-run('pragma user_version', get, 10000000, 20)
+run('pragma user_version', get, 15000000, 20)
 //run('sqlite3_version', () => utf8Decode(version(), -1), 30000000, 10)
 
 //const p = version()

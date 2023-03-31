@@ -221,10 +221,6 @@ const api = {
     result: 'pointer',
     rpointer: 'X509_NAME*'
   },
-  X509_get_pubkey: {
-    parameters: ['pointer'], pointers: ['const char*'],
-    result: 'pointer'
-  },
   X509_NAME_oneline: {
     parameters: ['pointer', 'pointer', 'i32'],
     pointers: ['const X509_NAME*', 'char*'],
@@ -344,11 +340,6 @@ const api = {
     result: 'pointer',
     rpointer: 'X509*'
   },
-  SSL_do_handshake: {
-    parameters: ['pointer'],
-    result: 'i32',
-    pointers: ['SSL*']
-  },
   SSL_set_SSL_CTX: {
     parameters: ['pointer', 'pointer'],
     result: 'pointer',
@@ -430,14 +421,12 @@ const api = {
   TLS_server_method: {
     parameters: [],
     result: 'pointer',
-    rpointer: 'SSL_METHOD*',
-    result: 'void'
+    rpointer: 'SSL_METHOD*'
   },
   TLS_client_method: {
     parameters: [],
     result: 'pointer',
-    rpointer: 'SSL_METHOD*',
-    result: 'void'
+    rpointer: 'SSL_METHOD*'
   },
   SSL_CTX_set_ciphersuites: {
     parameters: ['pointer', 'pointer'],

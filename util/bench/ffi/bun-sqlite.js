@@ -1,5 +1,5 @@
-import { run } from './lib/bench.js'
 import { dlopen, CString, ptr } from 'bun:ffi'
+import { run } from '../../../lib/bench.js'
 
 function open (path = ':memory:', flags = defaultFlags) {
   sqlite3_open_v2(ptr(encoder.encode(`${path}\0`)), ptr(pHandle), flags, 0)
@@ -76,8 +76,8 @@ const stmt = prepare('pragma user_version')
 console.log(get())
 console.log(new CString(sqlite3_libversion()))
 
-//run('pragma user_version', get, 10000000, 20)
-run('sqlite3_version', () => new CString(sqlite3_libversion()), 30000000, 10)
+run('pragma user_version', get, 10000000, 20)
+//run('sqlite3_version', () => new CString(sqlite3_libversion()), 30000000, 10)
 
 //const p = sqlite3_libversion()
 //console.log(p)
