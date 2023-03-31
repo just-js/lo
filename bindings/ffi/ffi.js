@@ -2,7 +2,7 @@ const api = {
   ffi_prep_cif: {
     parameters: ['pointer', 'u32', 'u32', 'pointer', 'pointer'],
     pointers: ['ffi_cif*', , , 'ffi_type*', 'ffi_type**'],
-    casts: [, 'ffi_abi'],
+    casts: [, '(ffi_abi)'],
     result: 'i32'
   },
   ffi_call: {

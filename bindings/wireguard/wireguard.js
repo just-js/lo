@@ -38,18 +38,21 @@ const api = {
   genpubKey: {
     parameters: ['buffer', 'buffer'],
     pointers: ['wg_key*', 'const wg_key*'],
+    casts: ['*', '*'],
     result: 'void',
     name: 'wg_generate_public_key'
   },
   genprivKey: {
     parameters: ['buffer'],
     pointers: ['wg_key*'],
+    casts: ['*'],
     result: 'void',
     name: 'wg_generate_private_key'
   },
   genpresharedKey: {
     parameters: ['buffer'],
     pointers: ['wg_key*'],
+    casts: ['*'],
     result: 'void',
     name: 'wg_generate_preshared_key'
   }
