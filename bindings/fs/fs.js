@@ -31,10 +31,27 @@ const api = {
     parameters: ['i32', 'buffer'],
     pointers: [, 'struct stat *'],
     result: 'i32'
+  },
+  readdir: {
+    parameters: ['pointer'],
+    result: 'pointer',
+    pointers: ['DIR*'],
+    rpointer: 'dirent*'
+  },
+  opendir: {
+    parameters: ['string'],
+    result: 'pointer',
+    pointers: ['const char*'],
+    rpointer: 'DIR*'
+  },
+  closedir: {
+    parameters: ['pointer'],
+    pointers: ['DIR*'],
+    result: 'i32'
   }
 }
 
-const includes = ['unistd.h', 'sys/stat.h', 'fcntl.h']
+const includes = ['unistd.h', 'sys/stat.h', 'fcntl.h', 'dirent.h']
 const name = 'fs'
 
 export { api, includes, name }

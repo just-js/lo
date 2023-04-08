@@ -8,5 +8,5 @@ Bun.MD5.hash(hello).some((v, i) => assert(v === expected[i]))
 
 const { hash } = Bun.MD5
 
-//run('md5-string', () => hash('hello'), 4000000, 5)
-run('md5-buffer', () => hash(hello), 12000000, 20)
+run('md5-string', () => hash('hello'), 12000000, 20)
+//run('md5-buffer', () => hash(hello), 12000000, 20)

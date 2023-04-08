@@ -48,5 +48,5 @@ while (np) {
   console.log(`peer ${p.pubkey}`)
   np = p.next
 }
-system.sleep(600)
+system.sleep(10)
 assert(wireguard.delete('wgtest0') === 0)

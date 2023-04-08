@@ -88,11 +88,24 @@ function addr (u32) {
   return u32[0] + ((2 ** 32) * u32[1])  
 }
 
-function readFileBytes (path, flags = O_RDONLY) {
+const O_RDONLY = 0
+const O_WRONLY = 1
+const O_CREAT = 64
+const O_TRUNC = 512
+
+const S_IRUSR = 256
+const S_IWUSR = 128
+const S_IRGRP = S_IRUSR >> 3
+const S_IROTH = S_IRGRP >> 3
+
+const defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC
+const defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
+
+function readFile (path, flags = O_RDONLY) {
   const fd = fs.open(path, flags)
-  spin.assert(fd > 0)
+  assert(fd > 0)
   let r = fs.fstat(fd, stat)
-  spin.assert(r === 0)
+  assert(r === 0)
   const size = Number(st[6])
   const buf = new Uint8Array(size)
   let off = 0
@@ -104,9 +117,28 @@ function readFileBytes (path, flags = O_RDONLY) {
   }
   off += len
   r = fs.close(fd)
-  spin.assert(r === 0)
-  spin.assert(off >= size)
+  assert(r === 0)
+  assert(off >= size)
   return buf
+}
+
+function writeFile (path, u8, flags = defaultWriteFlags, mode = defaultWriteMode) {
+  const len = u8.length
+  if (!len) return -1
+  const fd = fs.open(path, flags, mode)
+  assert(fd > 0)
+  const chunks = Math.ceil(len / 4096)
+  let total = 0
+  let bytes = 0
+  for (let i = 0, off = 0; i < chunks; ++i, off += 4096) {
+    const towrite = Math.min(len - off, 4096)
+    bytes = fs.write(fd, u8.subarray(off, off + towrite), towrite)
+    if (bytes <= 0) break
+    total += bytes
+  }
+  assert(bytes > 0)
+  fs.close(fd)
+  return total
 }
 
 const libCache = new Map()
@@ -166,7 +198,7 @@ async function onModuleLoad (specifier, resource) {
   }
   let src = spin.builtin(specifier)
   if (!src) {
-    src = decoder.decode(readFileBytes(specifier))
+    src = decoder.decode(readFile(specifier))
   }
   const mod = spin.loadModule(src, specifier)
   mod.resource = resource
@@ -175,7 +207,7 @@ async function onModuleLoad (specifier, resource) {
   for (const request of requests) {
     let src = spin.builtin(request)
     if (!src) {
-      src = decoder.decode(readFileBytes(request))
+      src = decoder.decode(readFile(request))
     }
     const mod = spin.loadModule(src, request)
     moduleCache.set(request, mod)
@@ -194,11 +226,11 @@ function onModuleInstantiate (specifier) {
   throw new Error(`${specifier} not found`)
 }
 
-const O_RDONLY = 0
 const moduleCache = new Map()
 const loader = spin.library('load')
 spin.fs = fs
-spin.fs.readFileBytes = readFileBytes
+spin.fs.readFile = readFile
+spin.fs.writeFile = writeFile
 spin.load = load
 const handle = new Uint32Array(2)
 spin.hrtime = wrap(handle, spin.hrtime)

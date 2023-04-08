@@ -706,6 +706,16 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
       start += 4;
       continue;
     }
+    if (ffn->params[i] == spin::FastTypes::u16) {
+      *(uint16_t*)start = (uint16_t)Local<Integer>::Cast(args[i])->Value();
+      start += 2;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::u8) {
+      *(uint8_t*)start = (uint8_t)Local<Integer>::Cast(args[i])->Value();
+      start += 1;
+      continue;
+    }
     if (ffn->params[i] == spin::FastTypes::u64) {
       *(uint64_t*)start = (uint64_t)Local<Integer>::Cast(args[i])->Value();
       start += 8;
@@ -793,6 +803,14 @@ void spin::BindFastApi(const FunctionCallbackInfo<Value> &args) {
     cargs[i + 1] = *CTypeFromV8(ptype);
     ffiargs[i] = FFITypeFromV8(ptype);
     ffn->params[i] = (FastTypes)ptype;
+    if (ffn->params[i] == spin::FastTypes::u8) {
+      size += 1;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::u16) {
+      size += 2;
+      continue;
+    }
     if (ffn->params[i] == spin::FastTypes::i32) {
       size += 4;
       continue;
@@ -806,6 +824,16 @@ void spin::BindFastApi(const FunctionCallbackInfo<Value> &args) {
   ffn->start = calloc(1, size);
   uint8_t* start = (uint8_t*)ffn->start;
   for (int i = 0; i < ffn->nargs; i++) {
+    if (ffn->params[i] == spin::FastTypes::u8) {
+      ffn->values[i] = start;
+      start += 1;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::u16) {
+      ffn->values[i] = start;
+      start += 2;
+      continue;
+    }
     if (ffn->params[i] == spin::FastTypes::i32) {
       ffn->values[i] = start;
       start += 4;
@@ -934,7 +962,8 @@ int32_t spin::fastUtf8Length (void* p, struct FastOneByteString* const p_str) {
 }
 
 void spin::ReadMemory(const FunctionCallbackInfo<Value> &args) {
-  uint8_t* dest = static_cast<uint8_t*>(args[0].As<Uint8Array>()->Buffer()->Data());
+  Local<Uint8Array> u8 = args[0].As<Uint8Array>();
+  uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + u8->ByteOffset();
   void* start = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   uint32_t size = Local<Integer>::Cast(args[2])->Value();
   memcpy(dest, start, size);
@@ -949,14 +978,16 @@ void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   Local<String> str = args[0].As<String>();
   if (str->IsOneByte()) {
     int size = str->Length();
-    uint8_t* dest = static_cast<uint8_t*>(args[1].As<Uint8Array>()->Buffer()->Data());
+    Local<Uint8Array> u8 = args[1].As<Uint8Array>();
+    uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + u8->ByteOffset();
     int written = str->WriteOneByte(isolate, dest, 0, size, String::NO_NULL_TERMINATION);
     args.GetReturnValue().Set(Integer::New(isolate, written));
     return;
   }
   int written = 0;
   int size = str->Utf8Length(isolate);
-  char* dest = static_cast<char*>(args[1].As<Uint8Array>()->Buffer()->Data());
+  Local<Uint8Array> u8 = args[1].As<Uint8Array>();
+  char* dest = (char*)u8->Buffer()->Data() + u8->ByteOffset();
   str->WriteUtf8(isolate, dest, size, &written, 
     String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
   args.GetReturnValue().Set(Integer::New(isolate, written));

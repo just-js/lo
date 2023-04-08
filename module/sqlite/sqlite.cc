@@ -92,7 +92,9 @@ int32_t openFast(void* p, void* p0, void* p1) {
 void open2Slow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
-  sqlite3 ** v1 = reinterpret_cast<sqlite3 **>(args[1].As<Uint32Array>()->Buffer()->Data());
+  Local<Uint32Array> u321 = args[1].As<Uint32Array>();
+  uint8_t* ptr1 = (uint8_t*)u321->Buffer()->Data() + u321->ByteOffset();
+  sqlite3 ** v1 = reinterpret_cast<sqlite3 **>(ptr1);
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   const char* v3 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
   int32_t rc = sqlite3_open_v2(*v0, v1, v2, v3);
@@ -112,7 +114,9 @@ void execSlow(const FunctionCallbackInfo<Value> &args) {
   String::Utf8Value v1(isolate, args[1]);
   callback v2 = reinterpret_cast<callback>((uint64_t)Local<Integer>::Cast(args[2])->Value());
   void* v3 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
-  char** v4 = reinterpret_cast<char**>(args[4].As<Uint32Array>()->Buffer()->Data());
+  Local<Uint32Array> u324 = args[4].As<Uint32Array>();
+  uint8_t* ptr4 = (uint8_t*)u324->Buffer()->Data() + u324->ByteOffset();
+  char** v4 = reinterpret_cast<char**>(ptr4);
   int32_t rc = sqlite3_exec(v0, *v1, v2, v3, v4);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -154,7 +158,9 @@ void prepare2Slow(const FunctionCallbackInfo<Value> &args) {
   sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   String::Utf8Value v1(isolate, args[1]);
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
-  sqlite3_stmt ** v3 = reinterpret_cast<sqlite3_stmt **>(args[3].As<Uint32Array>()->Buffer()->Data());
+  Local<Uint32Array> u323 = args[3].As<Uint32Array>();
+  uint8_t* ptr3 = (uint8_t*)u323->Buffer()->Data() + u323->ByteOffset();
+  sqlite3_stmt ** v3 = reinterpret_cast<sqlite3_stmt **>(ptr3);
   const char** v4 = reinterpret_cast<const char**>((uint64_t)Local<Integer>::Cast(args[4])->Value());
   int32_t rc = sqlite3_prepare_v2(v0, *v1, v2, v3, v4);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -240,6 +246,91 @@ int32_t resetFast(void* p, void* p0) {
   sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>(p0);
   return sqlite3_reset(v0);
 }
+void bind_intSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = sqlite3_bind_int(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t bind_intFast(void* p, void* p0, int32_t p1, int32_t p2) {
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>(p0);
+  int32_t v1 = p1;
+  int32_t v2 = p2;
+  return sqlite3_bind_int(v0, v1, v2);
+}
+void bind_int64Slow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  uint64_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = sqlite3_bind_int64(v0, v1, (sqlite3_int64)v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t bind_int64Fast(void* p, void* p0, int32_t p1, uint64_t p2) {
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>(p0);
+  int32_t v1 = p1;
+  uint64_t v2 = p2;
+  return sqlite3_bind_int64(v0, v1, (sqlite3_int64)v2);
+}
+void bind_doubleSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  double v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = sqlite3_bind_double(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t bind_doubleFast(void* p, void* p0, int32_t p1, double p2) {
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>(p0);
+  int32_t v1 = p1;
+  double v2 = p2;
+  return sqlite3_bind_double(v0, v1, v2);
+}
+void bind_textSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  String::Utf8Value v2(isolate, args[2]);
+  int32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  int32_t v4 = Local<Integer>::Cast(args[4])->Value();
+  int32_t rc = sqlite3_bind_text(v0, v1, *v2, v3, (sqlite3_destructor_type)v4);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t bind_textFast(void* p, void* p0, int32_t p1, struct FastOneByteString* const p2, int32_t p3, int32_t p4) {
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>(p0);
+  int32_t v1 = p1;
+  struct FastOneByteString* const v2 = p2;
+  int32_t v3 = p3;
+  int32_t v4 = p4;
+  return sqlite3_bind_text(v0, v1, v2->data, v3, (sqlite3_destructor_type)v4);
+}
+void bind_blobSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  Local<Uint8Array> u82 = args[2].As<Uint8Array>();
+  uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
+  const void* v2 = reinterpret_cast<const void*>(ptr2);
+  int32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  int32_t v4 = Local<Integer>::Cast(args[4])->Value();
+  int32_t rc = sqlite3_bind_blob(v0, v1, v2, v3, (sqlite3_destructor_type)v4);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t bind_blobFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* const p2, int32_t p3, int32_t p4) {
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>(p0);
+  int32_t v1 = p1;
+  const void* v2 = reinterpret_cast<const void*>(p2->data);
+  int32_t v3 = p3;
+  int32_t v4 = p4;
+  return sqlite3_bind_blob(v0, v1, v2, v3, (sqlite3_destructor_type)v4);
+}
 void column_intSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -281,6 +372,21 @@ void column_textFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* co
   ((const unsigned char**)p_ret->data)[0] = r;
 
 }
+void column_blobSlow(const FunctionCallbackInfo<Value> &args) {
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  const void* rc = sqlite3_column_blob(v0, v1);
+  Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
+  ((const void**)ab->Data())[0] = rc;
+}
+
+void column_blobFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* const p_ret) {
+  sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>(p0);
+  int32_t v1 = p1;
+  const void* r = sqlite3_column_blob(v0, v1);
+  ((const void**)p_ret->data)[0] = r;
+
+}
 void column_bytesSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -293,6 +399,91 @@ int32_t column_bytesFast(void* p, void* p0, int32_t p1) {
   sqlite3_stmt* v0 = reinterpret_cast<sqlite3_stmt*>(p0);
   int32_t v1 = p1;
   return sqlite3_column_bytes(v0, v1);
+}
+void blob_openSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  String::Utf8Value v1(isolate, args[1]);
+  String::Utf8Value v2(isolate, args[2]);
+  String::Utf8Value v3(isolate, args[3]);
+  int64_t v4 = Local<Integer>::Cast(args[4])->Value();
+  int32_t v5 = Local<Integer>::Cast(args[5])->Value();
+  Local<Uint32Array> u326 = args[6].As<Uint32Array>();
+  uint8_t* ptr6 = (uint8_t*)u326->Buffer()->Data() + u326->ByteOffset();
+  sqlite3_blob** v6 = reinterpret_cast<sqlite3_blob**>(ptr6);
+  int32_t rc = sqlite3_blob_open(v0, *v1, *v2, *v3, v4, v5, v6);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t blob_openFast(void* p, void* p0, struct FastOneByteString* const p1, struct FastOneByteString* const p2, struct FastOneByteString* const p3, int64_t p4, int32_t p5, struct FastApiTypedArray* const p6) {
+  sqlite3* v0 = reinterpret_cast<sqlite3*>(p0);
+  struct FastOneByteString* const v1 = p1;
+  struct FastOneByteString* const v2 = p2;
+  struct FastOneByteString* const v3 = p3;
+  int64_t v4 = p4;
+  int32_t v5 = p5;
+  sqlite3_blob** v6 = reinterpret_cast<sqlite3_blob**>(p6->data);
+  return sqlite3_blob_open(v0, v1->data, v2->data, v3->data, v4, v5, v6);
+}
+void blob_bytesSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  sqlite3_blob* v0 = reinterpret_cast<sqlite3_blob*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t rc = sqlite3_blob_bytes(v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t blob_bytesFast(void* p, void* p0) {
+  sqlite3_blob* v0 = reinterpret_cast<sqlite3_blob*>(p0);
+  return sqlite3_blob_bytes(v0);
+}
+void blob_readSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  sqlite3_blob* v0 = reinterpret_cast<sqlite3_blob*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  void* v1 = reinterpret_cast<void*>(ptr1);
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  int32_t rc = sqlite3_blob_read(v0, v1, v2, v3);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t blob_readFast(void* p, void* p0, struct FastApiTypedArray* const p1, int32_t p2, int32_t p3) {
+  sqlite3_blob* v0 = reinterpret_cast<sqlite3_blob*>(p0);
+  void* v1 = reinterpret_cast<void*>(p1->data);
+  int32_t v2 = p2;
+  int32_t v3 = p3;
+  return sqlite3_blob_read(v0, v1, v2, v3);
+}
+void blob_closeSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  sqlite3_blob* v0 = reinterpret_cast<sqlite3_blob*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t rc = sqlite3_blob_close(v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t blob_closeFast(void* p, void* p0) {
+  sqlite3_blob* v0 = reinterpret_cast<sqlite3_blob*>(p0);
+  return sqlite3_blob_close(v0);
+}
+void blob_writeSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  sqlite3_blob* v0 = reinterpret_cast<sqlite3_blob*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  void* v1 = reinterpret_cast<void*>(ptr1);
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  int32_t rc = sqlite3_blob_write(v0, v1, v2, v3);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t blob_writeFast(void* p, void* p0, struct FastApiTypedArray* const p1, int32_t p2, int32_t p3) {
+  sqlite3_blob* v0 = reinterpret_cast<sqlite3_blob*>(p0);
+  void* v1 = reinterpret_cast<void*>(p1->data);
+  int32_t v2 = p2;
+  int32_t v3 = p3;
+  return sqlite3_blob_write(v0, v1, v2, v3);
 }
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
@@ -416,6 +607,60 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunction* pFreset = new v8::CFunction((const void*)&resetFast, inforeset);
   SET_FAST_METHOD(isolate, module, "reset", pFreset, resetSlow);
 
+  v8::CTypeInfo* cargsbind_int = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
+  cargsbind_int[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsbind_int[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsbind_int[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsbind_int[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CTypeInfo* rcbind_int = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infobind_int = new v8::CFunctionInfo(*rcbind_int, 4, cargsbind_int);
+  v8::CFunction* pFbind_int = new v8::CFunction((const void*)&bind_intFast, infobind_int);
+  SET_FAST_METHOD(isolate, module, "bind_int", pFbind_int, bind_intSlow);
+
+  v8::CTypeInfo* cargsbind_int64 = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
+  cargsbind_int64[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsbind_int64[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsbind_int64[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsbind_int64[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  v8::CTypeInfo* rcbind_int64 = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infobind_int64 = new v8::CFunctionInfo(*rcbind_int64, 4, cargsbind_int64);
+  v8::CFunction* pFbind_int64 = new v8::CFunction((const void*)&bind_int64Fast, infobind_int64);
+  SET_FAST_METHOD(isolate, module, "bind_int64", pFbind_int64, bind_int64Slow);
+
+  v8::CTypeInfo* cargsbind_double = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
+  cargsbind_double[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsbind_double[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsbind_double[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsbind_double[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kFloat64);
+  v8::CTypeInfo* rcbind_double = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infobind_double = new v8::CFunctionInfo(*rcbind_double, 4, cargsbind_double);
+  v8::CFunction* pFbind_double = new v8::CFunction((const void*)&bind_doubleFast, infobind_double);
+  SET_FAST_METHOD(isolate, module, "bind_double", pFbind_double, bind_doubleSlow);
+
+  v8::CTypeInfo* cargsbind_text = (v8::CTypeInfo*)calloc(6, sizeof(v8::CTypeInfo));
+  cargsbind_text[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsbind_text[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsbind_text[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsbind_text[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
+  cargsbind_text[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsbind_text[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CTypeInfo* rcbind_text = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infobind_text = new v8::CFunctionInfo(*rcbind_text, 6, cargsbind_text);
+  v8::CFunction* pFbind_text = new v8::CFunction((const void*)&bind_textFast, infobind_text);
+  SET_FAST_METHOD(isolate, module, "bind_text", pFbind_text, bind_textSlow);
+
+  v8::CTypeInfo* cargsbind_blob = (v8::CTypeInfo*)calloc(6, sizeof(v8::CTypeInfo));
+  cargsbind_blob[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsbind_blob[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsbind_blob[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsbind_blob[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargsbind_blob[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsbind_blob[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CTypeInfo* rcbind_blob = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infobind_blob = new v8::CFunctionInfo(*rcbind_blob, 6, cargsbind_blob);
+  v8::CFunction* pFbind_blob = new v8::CFunction((const void*)&bind_blobFast, infobind_blob);
+  SET_FAST_METHOD(isolate, module, "bind_blob", pFbind_blob, bind_blobSlow);
+
   v8::CTypeInfo* cargscolumn_int = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
   cargscolumn_int[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargscolumn_int[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
@@ -442,6 +687,15 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infocolumn_text = new v8::CFunctionInfo(*rccolumn_text, 4, cargscolumn_text);
   v8::CFunction* pFcolumn_text = new v8::CFunction((const void*)&column_textFast, infocolumn_text);
   SET_FAST_METHOD(isolate, module, "column_text", pFcolumn_text, column_textSlow);
+  v8::CTypeInfo* cargscolumn_blob = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
+  cargscolumn_blob[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargscolumn_blob[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargscolumn_blob[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargscolumn_blob[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
+  v8::CTypeInfo* rccolumn_blob = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* infocolumn_blob = new v8::CFunctionInfo(*rccolumn_blob, 4, cargscolumn_blob);
+  v8::CFunction* pFcolumn_blob = new v8::CFunction((const void*)&column_blobFast, infocolumn_blob);
+  SET_FAST_METHOD(isolate, module, "column_blob", pFcolumn_blob, column_blobSlow);
 
   v8::CTypeInfo* cargscolumn_bytes = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
   cargscolumn_bytes[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
@@ -451,6 +705,58 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infocolumn_bytes = new v8::CFunctionInfo(*rccolumn_bytes, 3, cargscolumn_bytes);
   v8::CFunction* pFcolumn_bytes = new v8::CFunction((const void*)&column_bytesFast, infocolumn_bytes);
   SET_FAST_METHOD(isolate, module, "column_bytes", pFcolumn_bytes, column_bytesSlow);
+
+  v8::CTypeInfo* cargsblob_open = (v8::CTypeInfo*)calloc(8, sizeof(v8::CTypeInfo));
+  cargsblob_open[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsblob_open[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsblob_open[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
+  cargsblob_open[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
+  cargsblob_open[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
+  cargsblob_open[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt64);
+  cargsblob_open[6] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsblob_open[7] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  v8::CTypeInfo* rcblob_open = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infoblob_open = new v8::CFunctionInfo(*rcblob_open, 8, cargsblob_open);
+  v8::CFunction* pFblob_open = new v8::CFunction((const void*)&blob_openFast, infoblob_open);
+  SET_FAST_METHOD(isolate, module, "blob_open", pFblob_open, blob_openSlow);
+
+  v8::CTypeInfo* cargsblob_bytes = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+  cargsblob_bytes[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsblob_bytes[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  v8::CTypeInfo* rcblob_bytes = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infoblob_bytes = new v8::CFunctionInfo(*rcblob_bytes, 2, cargsblob_bytes);
+  v8::CFunction* pFblob_bytes = new v8::CFunction((const void*)&blob_bytesFast, infoblob_bytes);
+  SET_FAST_METHOD(isolate, module, "blob_bytes", pFblob_bytes, blob_bytesSlow);
+
+  v8::CTypeInfo* cargsblob_read = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
+  cargsblob_read[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsblob_read[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsblob_read[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargsblob_read[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsblob_read[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CTypeInfo* rcblob_read = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infoblob_read = new v8::CFunctionInfo(*rcblob_read, 5, cargsblob_read);
+  v8::CFunction* pFblob_read = new v8::CFunction((const void*)&blob_readFast, infoblob_read);
+  SET_FAST_METHOD(isolate, module, "blob_read", pFblob_read, blob_readSlow);
+
+  v8::CTypeInfo* cargsblob_close = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+  cargsblob_close[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsblob_close[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  v8::CTypeInfo* rcblob_close = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infoblob_close = new v8::CFunctionInfo(*rcblob_close, 2, cargsblob_close);
+  v8::CFunction* pFblob_close = new v8::CFunction((const void*)&blob_closeFast, infoblob_close);
+  SET_FAST_METHOD(isolate, module, "blob_close", pFblob_close, blob_closeSlow);
+
+  v8::CTypeInfo* cargsblob_write = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
+  cargsblob_write[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsblob_write[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsblob_write[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargsblob_write[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsblob_write[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CTypeInfo* rcblob_write = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infoblob_write = new v8::CFunctionInfo(*rcblob_write, 5, cargsblob_write);
+  v8::CFunction* pFblob_write = new v8::CFunction((const void*)&blob_writeFast, infoblob_write);
+  SET_FAST_METHOD(isolate, module, "blob_write", pFblob_write, blob_writeSlow);
 
   SET_MODULE(isolate, target, "sqlite", module);
 }

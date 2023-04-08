@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <dirent.h>
 #include <spin.h>
 
 namespace spin {
@@ -85,15 +86,17 @@ void openSlow(const FunctionCallbackInfo<Value> &args) {
 }
 
 int32_t openFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2) {
-  const char* v0 = reinterpret_cast<const char*>(p0->data);
+  struct FastOneByteString* const v0 = p0;
   int32_t v1 = p1;
   int32_t v2 = p2;
-  return open(v0, v1, v2);
+  return open(v0->data, v1, v2);
 }
 void readSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  void* v1 = reinterpret_cast<void*>(args[1].As<Uint8Array>()->Buffer()->Data());
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  void* v1 = reinterpret_cast<void*>(ptr1);
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = read(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -131,14 +134,16 @@ void write_stringSlow(const FunctionCallbackInfo<Value> &args) {
 
 int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1) {
   int32_t v0 = p0;
-  const char* v1 = reinterpret_cast<const char*>(p1->data);
+  struct FastOneByteString* const v1 = p1;
   int32_t v2 = p1->length;
-  return write(v0, v1, v2);
+  return write(v0, v1->data, v2);
 }
 void writeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  void* v1 = reinterpret_cast<void*>(args[1].As<Uint8Array>()->Buffer()->Data());
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  void* v1 = reinterpret_cast<void*>(ptr1);
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = write(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -153,7 +158,9 @@ int32_t writeFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32
 void fstatSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  struct stat * v1 = reinterpret_cast<struct stat *>(args[1].As<Uint8Array>()->Buffer()->Data());
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  struct stat * v1 = reinterpret_cast<struct stat *>(ptr1);
   int32_t rc = fstat(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -162,6 +169,44 @@ int32_t fstatFast(void* p, int32_t p0, struct FastApiTypedArray* const p1) {
   int32_t v0 = p0;
   struct stat * v1 = reinterpret_cast<struct stat *>(p1->data);
   return fstat(v0, v1);
+}
+void readdirSlow(const FunctionCallbackInfo<Value> &args) {
+  DIR* v0 = reinterpret_cast<DIR*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  dirent* rc = readdir(v0);
+  Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
+  ((dirent**)ab->Data())[0] = rc;
+}
+
+void readdirFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+  DIR* v0 = reinterpret_cast<DIR*>(p0);
+  dirent* r = readdir(v0);
+  ((dirent**)p_ret->data)[0] = r;
+
+}
+void opendirSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  DIR* rc = opendir(*v0);
+  Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
+  ((DIR**)ab->Data())[0] = rc;
+}
+
+void opendirFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p_ret) {
+  struct FastOneByteString* const v0 = p0;
+  DIR* r = opendir(v0->data);
+  ((DIR**)p_ret->data)[0] = r;
+
+}
+void closedirSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  DIR* v0 = reinterpret_cast<DIR*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t rc = closedir(v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t closedirFast(void* p, void* p0) {
+  DIR* v0 = reinterpret_cast<DIR*>(p0);
+  return closedir(v0);
 }
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
@@ -233,6 +278,30 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infofstat = new v8::CFunctionInfo(*rcfstat, 3, cargsfstat);
   v8::CFunction* pFfstat = new v8::CFunction((const void*)&fstatFast, infofstat);
   SET_FAST_METHOD(isolate, module, "fstat", pFfstat, fstatSlow);
+  v8::CTypeInfo* cargsreaddir = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+  cargsreaddir[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsreaddir[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsreaddir[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
+  v8::CTypeInfo* rcreaddir = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* inforeaddir = new v8::CFunctionInfo(*rcreaddir, 3, cargsreaddir);
+  v8::CFunction* pFreaddir = new v8::CFunction((const void*)&readdirFast, inforeaddir);
+  SET_FAST_METHOD(isolate, module, "readdir", pFreaddir, readdirSlow);
+  v8::CTypeInfo* cargsopendir = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+  cargsopendir[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsopendir[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
+  cargsopendir[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
+  v8::CTypeInfo* rcopendir = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* infoopendir = new v8::CFunctionInfo(*rcopendir, 3, cargsopendir);
+  v8::CFunction* pFopendir = new v8::CFunction((const void*)&opendirFast, infoopendir);
+  SET_FAST_METHOD(isolate, module, "opendir", pFopendir, opendirSlow);
+
+  v8::CTypeInfo* cargsclosedir = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+  cargsclosedir[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsclosedir[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  v8::CTypeInfo* rcclosedir = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infoclosedir = new v8::CFunctionInfo(*rcclosedir, 2, cargsclosedir);
+  v8::CFunction* pFclosedir = new v8::CFunction((const void*)&closedirFast, infoclosedir);
+  SET_FAST_METHOD(isolate, module, "closedir", pFclosedir, closedirSlow);
 
   SET_MODULE(isolate, target, "fs", module);
 }

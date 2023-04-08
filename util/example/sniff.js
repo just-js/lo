@@ -8,6 +8,7 @@ const { AG, AD, AY } = spin.colors
 const PF_PACKET = 17
 const SOCK_RAW = 3
 const ETH_P_ALL = 3
+const ETH_P_ARP = 0x0806
 const SIOCGIFHWADDR = 0x8927
 const SIOCGIFINDEX = 0x8933
 
@@ -20,6 +21,8 @@ function onPacket (packet, u8) {
   } else if (frame.protocol === 'IPv4' && header.protocol === protocols.UDP) {
     console.log(`\n${udpDump(packet)}`)
     if (bytes > offset) console.log(dump(u8.slice(offset, bytes)), false)
+  } else {
+    console.log(dump(u8.slice(offset, bytes)), false)
   }
 }
 
@@ -49,7 +52,8 @@ const iff = args[2] || 'lo'
 const ifreq = new Uint8Array(sizeof_ifreq())
 const sockaddr = new Uint8Array(sizeof_sockaddr_ll())
 
-const fd = socket(PF_PACKET, SOCK_RAW, htons16(ETH_P_ALL))
+const type = htons16(ETH_P_ALL)
+const fd = socket(PF_PACKET, SOCK_RAW, type)
 assert(fd > 2)
 utf8EncodeInto(iff, ifreq)
 assert(ioctl(fd, SIOCGIFHWADDR, ifreq) === 0)
@@ -59,8 +63,8 @@ const index = ifreq[16] + (ifreq[17] << 8)
 console.log(`listening to ${AG}interface${AD} ${iff} ${AY}mac${AD} ${mac} ${AY}index${AD} ${index}`)
 sockaddr[0] = PF_PACKET & 0xff // type
 sockaddr[1] = (PF_PACKET >> 8) & 0xff // family
-sockaddr[2] = htons16(ETH_P_ALL) & 0xff
-sockaddr[3] = (htons16(ETH_P_ALL) >> 8) & 0xff // protocol
+sockaddr[2] = type & 0xff
+sockaddr[3] = (type >> 8) & 0xff // protocol
 sockaddr[4] = index & 0xff
 sockaddr[5] = (index >> 8) & 0xff // index
 assert(bind(fd, sockaddr, sockaddr.length) === 0)
@@ -71,6 +75,7 @@ const { parse } = new Parser(rbuf)
 
 let bytes = recv(fd, rbuf, BUFSIZE, 0)
 while (bytes > 0) {
+  console.log(bytes)
   onPacket(parse(bytes, true), rbuf)
   bytes = recv(fd, rbuf, BUFSIZE, 0)
 }
