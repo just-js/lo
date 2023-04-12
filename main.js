@@ -267,7 +267,7 @@ if (spin.args[1] === 'gen') {
   }
   console.log(source)
 } else {
-  if (spin.args.length > 1) await main(...spin.args.slice(1))
+  if (spin.args.length > 1) await main()
 }
 
 export {}

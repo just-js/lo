@@ -1,12 +1,12 @@
 const api = {
   ffi_prep_cif: {
-    parameters: ['pointer', 'u32', 'u32', 'pointer', 'pointer'],
+    parameters: ['buffer', 'u32', 'u32', 'buffer', 'buffer'],
     pointers: ['ffi_cif*', , , 'ffi_type*', 'ffi_type**'],
     casts: [, '(ffi_abi)'],
     result: 'i32'
   },
   ffi_call: {
-    parameters: ['pointer', 'pointer', 'pointer', 'pointer'],
+    parameters: ['buffer', 'pointer', 'u32array', 'buffer'],
     pointers: ['ffi_cif*', 'callback', , 'void**'],
     result: 'void'
   }

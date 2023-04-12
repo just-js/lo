@@ -5,13 +5,13 @@ const api = {
     name: 'epoll_create1'
   },
   modify: {
-    parameters: ['i32', 'i32', 'i32', 'pointer'],
+    parameters: ['i32', 'i32', 'i32', 'buffer'],
     pointers: [, , , 'struct epoll_event *'],
     result: 'i32',
     name: 'epoll_ctl'
   },
   wait: {
-    parameters: ['i32', 'pointer', 'i32', 'i32'],
+    parameters: ['i32', 'buffer', 'i32', 'i32'],
     pointers: [, 'struct epoll_event *'],
     result: 'i32',
     name: 'epoll_wait'

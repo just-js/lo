@@ -4,16 +4,16 @@ const api = {
     result: 'i32'
   },
   setsockopt: {
-    parameters: ['i32', 'i32', 'i32', 'pointer', 'i32'],
+    parameters: ['i32', 'i32', 'i32', 'buffer', 'i32'],
     result: 'i32'
   },
   bind: {
-    parameters: ['i32', 'pointer', 'i32'],
+    parameters: ['i32', 'buffer', 'i32'],
     pointers: [, 'const sockaddr*'],
     result: 'i32'
   },
   connect: {
-    parameters: ['i32', 'pointer', 'i32'],
+    parameters: ['i32', 'buffer', 'i32'],
     pointers: [, 'const sockaddr*'],
     result: 'i32'
   },
@@ -31,15 +31,15 @@ const api = {
     result: 'i32'
   },
   send: {
-    parameters: ['i32', 'pointer', 'i32', 'u32'],
+    parameters: ['i32', 'buffer', 'i32', 'u32'],
     result: 'i32'
   },
   recv: {
-    parameters: ['i32', 'pointer', 'u32', 'i32'],
+    parameters: ['i32', 'buffer', 'u32', 'i32'],
     result: 'i32'
   },
   read: {
-    parameters: ['i32', 'pointer', 'i32'],
+    parameters: ['i32', 'buffer', 'i32'],
     result: 'i32'
   },
   write_string: {
@@ -48,7 +48,7 @@ const api = {
     name: 'write'
   },
   write: {
-    parameters: ['i32', 'pointer', 'i32'],
+    parameters: ['i32', 'buffer', 'i32'],
     result: 'i32'
   },
   pipe2: {

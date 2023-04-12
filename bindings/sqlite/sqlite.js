@@ -174,7 +174,22 @@ const api = {
     parameters: ['pointer', 'buffer', 'i32', 'i32'],
     pointers: ['sqlite3_blob*'],
     result: 'i32'
+  },
+/*
+  serialize: {
+    name: 'sqlite3_serialize',
+    parameters: ['pointer', 'string', 'u32array', 'u32'],
+    pointers: ['sqlite3*', , 'sqlite3_int64*'],
+    result: 'pointer',
+    rpointer: 'unsigned char*'
+  },
+  deserialize: {
+    name: 'sqlite3_deserialize',
+    parameters: ['pointer', 'string', 'buffer', 'u64', 'u64', 'u32'],
+    pointers: ['sqlite3*', , 'unsigned char*'],
+    result: 'i32'
   }
+*/
 }
 
 /*

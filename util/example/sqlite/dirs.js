@@ -1,5 +1,19 @@
 import { Database } from 'lib/sqlite.js'
 import { join } from 'lib/path.js'
+import { Library } from 'lib/ffi.js'
+
+const libc = (new Library()).open().bind({
+  getcwd: {
+    parameters: ['buffer', 'i32'],
+    pointers: ['char*'],
+    result: 'void'
+  }
+})
+
+const u82 = new Uint8Array(1024)
+const size = u82.length
+const ptr = spin.getAddress(u82)
+const { getcwd } = libc
 
 const { fs, readMemory, utf8Decode, assert, wrap } = spin
 const { readFile } = spin.fs
@@ -11,6 +25,11 @@ const readdir = wrap(handle, fs.readdir, 1)
 const dir = opendir('./')
 const u8 = new Uint8Array(19)
 const view = new DataView(u8.buffer)
+
+function cwd () {
+  getcwd(u82, size)
+  return utf8Decode(ptr, size)
+}
 
 function readEntry (handle) {
   readMemory(u8, handle, 19)
@@ -41,7 +60,9 @@ db.exec('PRAGMA auto_vacuum = none');
 db.exec('PRAGMA temp_store = memory');
 db.exec('PRAGMA locking_mode = exclusive');
 db.exec('create table if not exists asset (path TEXT PRIMARY KEY, payload BLOB)')
-const createAsset = db.prepare('insert or ignore into asset (path, payload) values (@path, @payload)')
+const createAsset = db.prepare('insert or replace into asset (path, payload) values (@path, @payload)')
+//const createAsset = db.prepare('insert or ignore into asset (path, payload) values (@path, @payload)')
+// store a checksum/hash of the file so we can compare
 
 const addPath = spin.args[2] || './lib'
 const entries = readDir(addPath).filter(e => e.d_type === 8)
@@ -55,8 +76,10 @@ for (const entry of entries) {
   assert(createAsset.reset() === 0)
 }
 
-//db.exec('vacuum')
 assert(createAsset.finalize() === 0)
+//console.error(`vacuum into '${cwd()}/new.db'`)
+//db.exec(`vacuum into '${cwd()}/new.db'`)
+db.exec('vacuum')
 db.close()
 
 
