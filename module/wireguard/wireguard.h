@@ -13,6 +13,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C"
+    {
+#endif
+
 typedef uint8_t wg_key[32];
 typedef char wg_key_b64_string[((sizeof(wg_key) + 2) / 3) * 4 + 1];
 
@@ -101,5 +106,9 @@ bool wg_key_is_zero(const wg_key key);
 void wg_generate_public_key(wg_key public_key, const wg_key private_key);
 void wg_generate_private_key(wg_key private_key);
 void wg_generate_preshared_key(wg_key preshared_key);
+
+#ifdef __cplusplus
+    }
+#endif
 
 #endif

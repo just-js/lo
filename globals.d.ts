@@ -28,9 +28,15 @@ declare class TextEncoder {
   encodeInto(src?: string, dest?: BufferSource): EncodeIntoResult;
 }
 
+interface RuntimeVersion {
+  spin: number,
+  v8: number
+}
+
 interface Runtime {
   errno: number;
-  assert(expression: any): void;
+  assert(expression: any, message?: String | Function): void;
+  cstr(str: String): Uint8Array;
   load(name: String): any;
   library(name: String): any;
   runMicroTasks(): void;
@@ -38,6 +44,7 @@ interface Runtime {
   getAddress(buf: TypedArray): number;
   utf8Length(str: String): number;
   utf8EncodeInto(str: String, buf: TypedArray): number;
+  version: RuntimeVersion;
   args: Array<String>;
 }
 

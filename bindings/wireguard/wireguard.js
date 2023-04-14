@@ -35,6 +35,20 @@ const api = {
     result: 'pointer',
     name: 'wg_list_device_names'
   },
+  keytobase64: {
+    parameters: ['buffer', 'buffer'],
+    pointers: ['wg_key_b64_string*', 'const wg_key*'],
+    casts: ['*', '*'],
+    result: 'void',
+    name: 'wg_key_to_base64'
+  },
+  keyfrombase64: {
+    parameters: ['buffer', 'buffer'],
+    pointers: ['wg_key*', 'const wg_key_b64_string*'],
+    casts: ['*', '*'],
+    result: 'i32',
+    name: 'wg_key_from_base64'
+  },
   genpubKey: {
     parameters: ['buffer', 'buffer'],
     pointers: ['wg_key*', 'const wg_key*'],

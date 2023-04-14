@@ -4,5 +4,5 @@
     "module": "ES2022",
     "target": "ES2022"
   },
-  "exclude": ["node_modules", "**/node_modules/*", "scratch"]
+  "exclude": ["node_modules", "**/node_modules/*", "scratch", "util"]
 }

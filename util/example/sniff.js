@@ -11,6 +11,7 @@ const ETH_P_ALL = 3
 const ETH_P_ARP = 0x0806
 const SIOCGIFHWADDR = 0x8927
 const SIOCGIFINDEX = 0x8933
+const SIOCGIFADDR = 0x8915
 
 function onPacket (packet, u8) {
   const { offset, bytes, frame, header } = packet
@@ -18,11 +19,14 @@ function onPacket (packet, u8) {
   if (frame.protocol === 'IPv4' && header.protocol === protocols.TCP) {
     console.log(`\n${tcpDump(packet)}`)
     if (bytes > offset) console.log(dump(u8.slice(offset, bytes)), false)
+    return true
   } else if (frame.protocol === 'IPv4' && header.protocol === protocols.UDP) {
     console.log(`\n${udpDump(packet)}`)
     if (bytes > offset) console.log(dump(u8.slice(offset, bytes)), false)
+    return true
   } else {
     console.log(dump(u8.slice(offset, bytes)), false)
+    return true
   }
 }
 
@@ -60,7 +64,11 @@ assert(ioctl(fd, SIOCGIFHWADDR, ifreq) === 0)
 const mac = toMAC(ifreq.subarray(18, 24))
 assert(ioctl(fd, SIOCGIFINDEX, ifreq) === 0)
 const index = ifreq[16] + (ifreq[17] << 8)
-console.log(`listening to ${AG}interface${AD} ${iff} ${AY}mac${AD} ${mac} ${AY}index${AD} ${index}`)
+assert(ioctl(fd, SIOCGIFADDR, ifreq) === 0)
+const ip = ifreq.subarray(20, 24).join('.')
+const ipb = ifreq.slice(20, 24)
+
+console.log(`${AG}interface${AD} ${iff} ${AY}mac${AD} ${mac} ${AY}index${AD} ${index} ${AY}ip${AD} ${ip}`)
 sockaddr[0] = PF_PACKET & 0xff // type
 sockaddr[1] = (PF_PACKET >> 8) & 0xff // family
 sockaddr[2] = type & 0xff
@@ -76,7 +84,9 @@ const { parse } = new Parser(rbuf)
 let bytes = recv(fd, rbuf, BUFSIZE, 0)
 while (bytes > 0) {
   console.log(bytes)
-  onPacket(parse(bytes, true), rbuf)
+  console.log(dump(rbuf.slice(0, bytes)), false)
+  //if (!onPacket(parse(bytes, true), rbuf)) {
+  //}
   bytes = recv(fd, rbuf, BUFSIZE, 0)
 }
 

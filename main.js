@@ -162,6 +162,9 @@ function load (name) {
 
 function assert (condition, message, ErrorType = Error) {
   if (!condition) {
+    if (message && message.constructor.name === 'Function') {
+      throw new ErrorType(message())
+    }
     throw new ErrorType(message || "Assertion failed")
   }
 }

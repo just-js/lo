@@ -38,6 +38,16 @@ const api = {
     parameters: ['i32', 'buffer', 'u32', 'i32'],
     result: 'i32'
   },
+  sendmsg: {
+    parameters: ['i32', 'buffer', 'i32'],
+    pointers: [, 'const msghdr*'],
+    result: 'i32'
+  },
+  recvmsg: {
+    parameters: ['i32', 'buffer', 'u32'],
+    pointers: [, 'msghdr*'],
+    result: 'i32'
+  },
   read: {
     parameters: ['i32', 'buffer', 'i32'],
     result: 'i32'

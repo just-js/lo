@@ -37,7 +37,7 @@ const api = {
     result: 'u32'
   },
   timerfd_settime: {
-    parameters: ['i32', 'i32', 'pointer', 'pointer'],
+    parameters: ['i32', 'i32', 'buffer', 'pointer'],
     pointers: [, , 'const struct itimerspec*', 'struct itimerspec*'],
     result: 'i32'
   },
@@ -75,7 +75,7 @@ const api = {
     result: 'i32'
   },
   strerror_r: {
-    parameters: ['i32', 'pointer', 'u32'],
+    parameters: ['i32', 'buffer', 'u32'],
     pointers: [, 'char*'],
     result: 'i32'
   },
