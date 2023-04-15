@@ -48,6 +48,10 @@ const api = {
     parameters: ['pointer'],
     pointers: ['DIR*'],
     result: 'i32'
+  },
+  fcntl: {
+    parameters: ['i32', 'i32', 'i32'],
+    result: 'i32'
   }
 }
 

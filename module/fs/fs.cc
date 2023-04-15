@@ -208,6 +208,21 @@ int32_t closedirFast(void* p, void* p0) {
   DIR* v0 = reinterpret_cast<DIR*>(p0);
   return closedir(v0);
 }
+void fcntlSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = fcntl(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t fcntlFast(void* p, int32_t p0, int32_t p1, int32_t p2) {
+  int32_t v0 = p0;
+  int32_t v1 = p1;
+  int32_t v2 = p2;
+  return fcntl(v0, v1, v2);
+}
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
@@ -302,6 +317,16 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoclosedir = new v8::CFunctionInfo(*rcclosedir, 2, cargsclosedir);
   v8::CFunction* pFclosedir = new v8::CFunction((const void*)&closedirFast, infoclosedir);
   SET_FAST_METHOD(isolate, module, "closedir", pFclosedir, closedirSlow);
+
+  v8::CTypeInfo* cargsfcntl = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
+  cargsfcntl[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsfcntl[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsfcntl[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsfcntl[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CTypeInfo* rcfcntl = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infofcntl = new v8::CFunctionInfo(*rcfcntl, 4, cargsfcntl);
+  v8::CFunction* pFfcntl = new v8::CFunction((const void*)&fcntlFast, infofcntl);
+  SET_FAST_METHOD(isolate, module, "fcntl", pFfcntl, fcntlSlow);
 
   SET_MODULE(isolate, target, "fs", module);
 }

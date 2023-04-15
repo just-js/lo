@@ -9,7 +9,7 @@ const api = {
   },
   bind: {
     parameters: ['i32', 'buffer', 'i32'],
-    pointers: [, 'const sockaddr*'],
+    pointers: [, 'const struct sockaddr*'],
     result: 'i32'
   },
   connect: {
@@ -36,6 +36,11 @@ const api = {
   },
   recv: {
     parameters: ['i32', 'buffer', 'u32', 'i32'],
+    result: 'i32'
+  },
+  recvfrom: {
+    parameters: ['i32', 'buffer', 'u32', 'i32', 'buffer', 'buffer'],
+    pointers: [, , , , 'struct sockaddr*', 'socklen_t*'],
     result: 'i32'
   },
   sendmsg: {
@@ -71,8 +76,13 @@ const api = {
     result: 'i32'
   },
   ioctl: {
-    parameters: ['i32', 'i32', 'pointer'],
+    parameters: ['i32', 'i32', 'buffer'],
     result: 'i32'
+  },
+  ioctl2: {
+    parameters: ['i32', 'i32', 'i32'],
+    result: 'i32',
+    name: 'ioctl'
   }
 }
 

@@ -69,10 +69,7 @@ using v8::V8;
 
 
 void getcwdSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  char* v0 = reinterpret_cast<char*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  char* v0 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   char* rc = getcwd(v0, v1);
   Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
@@ -88,10 +85,8 @@ void getcwdFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* const p
 }
 void clock_gettimeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  timespec* v1 = reinterpret_cast<timespec*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  timespec* v1 = reinterpret_cast<timespec*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = clock_gettime(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -130,10 +125,8 @@ int32_t getpidFast(void* p) {
 }
 void getrusageSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  struct rusage* v1 = reinterpret_cast<struct rusage*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  struct rusage* v1 = reinterpret_cast<struct rusage*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = getrusage(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -169,20 +162,20 @@ uint32_t sleepFast(void* p, uint32_t p0) {
 }
 void timerfd_settimeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  const struct itimerspec* v2 = reinterpret_cast<const struct itimerspec*>((uint64_t)args[2]->NumberValue(context).ToChecked());
-  struct itimerspec* v3 = reinterpret_cast<struct itimerspec*>((uint64_t)args[3]->NumberValue(context).ToChecked());
+  Local<Uint8Array> u82 = args[2].As<Uint8Array>();
+  uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
+  const struct itimerspec* v2 = reinterpret_cast<const struct itimerspec*>(ptr2);
+  struct itimerspec* v3 = reinterpret_cast<struct itimerspec*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
   int32_t rc = timerfd_settime(v0, v1, v2, v3);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t timerfd_settimeFast(void* p, int32_t p0, int32_t p1, void* p2, void* p3) {
+int32_t timerfd_settimeFast(void* p, int32_t p0, int32_t p1, struct FastApiTypedArray* const p2, void* p3) {
   int32_t v0 = p0;
   int32_t v1 = p1;
-  const struct itimerspec* v2 = reinterpret_cast<const struct itimerspec*>(p2);
+  const struct itimerspec* v2 = reinterpret_cast<const struct itimerspec*>(p2->data);
   struct itimerspec* v3 = reinterpret_cast<struct itimerspec*>(p3);
   return timerfd_settime(v0, v1, v2, v3);
 }
@@ -199,10 +192,8 @@ int32_t forkFast(void* p) {
 }
 void waitpidSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  int* v1 = reinterpret_cast<int*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  int* v1 = reinterpret_cast<int*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = waitpid(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -216,10 +207,8 @@ int32_t waitpidFast(void* p, int32_t p0, void* p1, int32_t p2) {
 }
 void execvpSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  char* v0 = reinterpret_cast<char*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  char* const* v1 = reinterpret_cast<char* const*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  char* v0 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  char* const* v1 = reinterpret_cast<char* const*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = execvp(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -257,10 +246,8 @@ int32_t pidfd_openFast(void* p, int32_t p0, int32_t p1, uint32_t p2) {
 }
 void getrlimitSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  struct rlimit* v1 = reinterpret_cast<struct rlimit*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  struct rlimit* v1 = reinterpret_cast<struct rlimit*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = getrlimit(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -272,10 +259,8 @@ int32_t getrlimitFast(void* p, int32_t p0, void* p1) {
 }
 void setrlimitSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  const struct rlimit* v1 = reinterpret_cast<const struct rlimit*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  const struct rlimit* v1 = reinterpret_cast<const struct rlimit*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = setrlimit(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -287,26 +272,24 @@ int32_t setrlimitFast(void* p, int32_t p0, void* p1) {
 }
 void strerror_rSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  char* v1 = reinterpret_cast<char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  char* v1 = reinterpret_cast<char*>(ptr1);
   uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = strerror_r(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t strerror_rFast(void* p, int32_t p0, void* p1, uint32_t p2) {
+int32_t strerror_rFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, uint32_t p2) {
   int32_t v0 = p0;
-  char* v1 = reinterpret_cast<char*>(p1);
+  char* v1 = reinterpret_cast<char*>(p1->data);
   uint32_t v2 = p2;
   return strerror_r(v0, v1, v2);
 }
 void timesSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  struct tms* v0 = reinterpret_cast<struct tms*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  struct tms* v0 = reinterpret_cast<struct tms*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = times(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -317,9 +300,7 @@ int32_t timesFast(void* p, void* p0) {
 }
 void sysinfoSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  struct sysinfo* v0 = reinterpret_cast<struct sysinfo*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  struct sysinfo* v0 = reinterpret_cast<struct sysinfo*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t rc = sysinfo(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -340,11 +321,8 @@ uint32_t get_avphys_pagesFast(void* p) {
   return get_avphys_pages();
 }
 void signalSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  sighandler_t v1 = reinterpret_cast<sighandler_t>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  sighandler_t v1 = reinterpret_cast<sighandler_t>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   sighandler_t rc = signal(v0, v1);
   Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
   ((sighandler_t*)ab->Data())[0] = rc;
@@ -358,10 +336,7 @@ void signalFast(void* p, int32_t p0, void* p1, struct FastApiTypedArray* const p
 
 }
 void getenvSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  const char* v0 = reinterpret_cast<const char*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  const char* v0 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   char* rc = getenv(v0);
   Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
   ((char**)ab->Data())[0] = rc;
@@ -389,10 +364,7 @@ void callocFast(void* p, uint32_t p0, uint32_t p1, struct FastApiTypedArray* con
 
 }
 void freeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  void* v0 = reinterpret_cast<void*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   free(v0);
 }
 
@@ -469,7 +441,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   cargstimerfd_settime[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargstimerfd_settime[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   cargstimerfd_settime[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargstimerfd_settime[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargstimerfd_settime[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   cargstimerfd_settime[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
   v8::CTypeInfo* rctimerfd_settime = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CFunctionInfo* infotimerfd_settime = new v8::CFunctionInfo(*rctimerfd_settime, 5, cargstimerfd_settime);
@@ -542,7 +514,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CTypeInfo* cargsstrerror_r = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargsstrerror_r[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsstrerror_r[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsstrerror_r[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsstrerror_r[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   cargsstrerror_r[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
   v8::CTypeInfo* rcstrerror_r = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CFunctionInfo* infostrerror_r = new v8::CFunctionInfo(*rcstrerror_r, 4, cargsstrerror_r);
