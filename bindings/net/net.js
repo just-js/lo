@@ -48,9 +48,19 @@ const api = {
     pointers: [, 'const msghdr*'],
     result: 'i32'
   },
+  sendmmsg: {
+    parameters: ['i32', 'buffer', 'i32', 'i32'],
+    pointers: [, 'struct mmsghdr*'],
+    result: 'i32'
+  },
   recvmsg: {
     parameters: ['i32', 'buffer', 'u32'],
     pointers: [, 'msghdr*'],
+    result: 'i32'
+  },
+  recvmmsg: {
+    parameters: ['i32', 'buffer', 'i32', 'i32', 'buffer'],
+    pointers: [, 'struct mmsghdr*', , , 'struct timespec*'],
     result: 'i32'
   },
   read: {

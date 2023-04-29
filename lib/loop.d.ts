@@ -9,6 +9,7 @@ declare class Loop {
   static readonly Writable: number;
   static readonly EdgeTriggered: number;
   static readonly Readable: number;
+  static readonly Blocked: number;
 
   /**
    * Add a system resource file descriptor to the event loop with a related callback
@@ -18,6 +19,7 @@ declare class Loop {
    * @param errHandler optional callback called when we get ERR or HUP on fd
    */
   add(fd: number, callback: eventCallback, flags?: EPOLLIN, errHandler?: function): number;
+  modify(fd: number, flags?: EPOLLIN, callback: eventCallback, errHandler?: function): number;
   remove(fd: number): number;
   poll(timeout?: number): number;
 };
