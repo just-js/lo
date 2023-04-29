@@ -80,16 +80,39 @@ class Response {
       }
       if (end > size) end = size
       this.status = 206
-      const headers = encoder.encode(`${contentType[this.status]}${end - start}\r\nContent-Range: bytes ${start}-${end - 1}/${size}\r\nCache-Control: max-age=0${END}`)
+      const headers = encoder.encode(`${contentType[this.status]}${end - start}\r\nContent-Range: bytes ${start}-${end - 1}/${size}\r\nCache-Control: max-age=${cacheMaxAge}${END}`)
       // todo: wait for writable if we fill the tcp buffers
       assert(send(this.fd, headers, headers.length, 0) === headers.length)
       const buf = new Uint8Array(end - start)
       assert(fs.lseek(fd, start, SEEK_SET) === start)
       const len = fs.read(fd, buf, end - start)
       assert(len === end - start)
-      const written = send(this.fd, buf, len, 0)
-      assert(written === len)
-      assert(fs.close(fd) === 0)
+
+      let done = 0
+      while (done < len) {
+        const written = send(this.fd, done === 0 ? buf : buf.subarray(done, len), len - done, 0)
+        if (written < (len - done)) {
+          if (written === -1) {
+            if (spin.errno === 11) {
+              await writable(this.fd)
+            } else {
+              close(fd)
+              console.log('ass')
+              throw new Error('foo')
+            }
+          } else {
+            done += written
+            await writable(this.fd)
+          }
+        } else {
+          done += written
+        }
+      }
+
+
+      //const written = send(this.fd, buf, len, 0)
+      assert(done === len)
+      assert(close(fd) === 0)
       return
     }
     const headers = encoder.encode(`${contentType[this.status]}${size}${END}`)
@@ -145,7 +168,7 @@ class Response {
       }
       if (end > size) end = size
       this.status = 206
-      const headers = encoder.encode(`${contentType[this.status]}${end - start}\r\nContent-Range: bytes ${start}-${end - 1}/${size}\r\nCache-Control: max-age=0${END}`)
+      const headers = encoder.encode(`${contentType[this.status]}${end - start}\r\nContent-Range: bytes ${start}-${end - 1}/${size}\r\nCache-Control: max-age=${cacheMaxAge}${END}`)
       // todo: wait for writable if we fill the tcp buffers
       assert(send(this.fd, headers, headers.length, 0) === headers.length)
       return
@@ -246,6 +269,7 @@ const contentTypes = {
   default: 'application/octet-stream',
 }
 
+const cacheMaxAge = 3600
 const SEEK_SET = 0
 const chunkSize = 16384
 const HTTP_CTX_SZ = 32
