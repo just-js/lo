@@ -136,12 +136,13 @@ void Utf8Decode(const v8::FunctionCallbackInfo<v8::Value> &args);
 void GetAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastGetAddress(void* p, struct FastApiTypedArray* const p_buf, 
   struct FastApiTypedArray* const p_ret);
-void HRTime(const v8::FunctionCallbackInfo<v8::Value> &args);
-void fastHRTime (void* p, struct FastApiTypedArray* const p_ret);
 void Utf8EncodeInto(const v8::FunctionCallbackInfo<v8::Value> &args);
 int32_t fastUtf8EncodeInto (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf);
 void Utf8Length(const v8::FunctionCallbackInfo<v8::Value> &args);
 int32_t fastUtf8Length (void* p, struct FastOneByteString* const p_ret);
+
+void HRTime(const v8::FunctionCallbackInfo<v8::Value> &args);
+void fastHRTime (void* p, struct FastApiTypedArray* const p_ret);
 void ReadMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastReadMemory (void* p, struct FastApiTypedArray* const p_buf, void* start, uint32_t size);
 
@@ -154,3 +155,93 @@ void fastSetErrno (void* p, int32_t e);
 // Module Initialization
 void Init(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> target);
 }
+
+#ifdef __cplusplus
+extern "C"
+    {
+#endif
+
+struct isolate_context {
+  int rc;
+  int argc;
+  int fd;
+  int buflen;
+  int cleanup;
+  int onexit;
+  unsigned int main_len;
+  unsigned int js_len;
+  uint64_t start;
+  char** argv;
+  char* main;
+  char* js;
+  char* buf;
+  char* globalobj;
+  char* scriptname;
+  void* startup_data;
+};
+
+int spin_create_isolate (int argc, char** argv, 
+  const char* main, unsigned int main_len,
+  const char* js, unsigned int js_len, char* buf, int buflen, int fd,
+  uint64_t start, const char* globalobj, const char* scriptname,
+  int cleanup, int onexit, void* startup_data) {
+  const v8::StartupData* data = (const v8::StartupData*) startup_data;
+  return spin::CreateIsolate(argc, argv, main, main_len, js, js_len, 
+  buf, buflen, fd, start, globalobj, scriptname, cleanup, onexit, data);
+}
+
+int spin_context_size () {
+  return sizeof(struct isolate_context);
+}
+
+void spin_create_isolate_context (int argc, char** argv, 
+  const char* main, unsigned int main_len,
+  const char* js, unsigned int js_len, char* buf, int buflen, int fd,
+  uint64_t start, const char* globalobj, const char* scriptname,
+  int cleanup, int onexit, void* startup_data, struct isolate_context* ctx) {
+  ctx->argc = argc;
+  ctx->argv = argv;
+  ctx->argv = (char**)calloc(argc + 1, sizeof(char*));
+  for (int i = 0; i < argc; i++) {
+    ctx->argv[i] = (char*)calloc(1, strnlen(argv[i], 4096));
+    memcpy(ctx->argv[i], argv[i], strnlen(argv[i], 4096));
+    //ctx->argv[i] = strdup(argv[i]);
+  }
+  ctx->argv[argc] = NULL;
+  ctx->main = (char*)calloc(1, main_len);
+  memcpy(ctx->main, main, main_len);
+  //ctx->main = strdup(main);
+  ctx->main_len = main_len;
+  ctx->js = (char*)calloc(1, js_len);
+  memcpy(ctx->js, js, js_len);
+  //ctx->js = strdup(js);
+  ctx->js_len = js_len;
+  ctx->buf = buf;
+  ctx->buflen = buflen;
+  ctx->fd = fd;
+  ctx->start = start;
+  //ctx->globalobj = strdup(globalobj);
+  ctx->globalobj = (char*)calloc(1, strnlen(globalobj, 4096));
+  memcpy(ctx->globalobj, globalobj, strnlen(globalobj, 4096));
+  //ctx->scriptname = strdup(scriptname);
+  ctx->scriptname = (char*)calloc(1, strnlen(scriptname, 4096));
+  memcpy(ctx->scriptname, scriptname, strnlen(scriptname, 4096));
+  ctx->cleanup = cleanup;
+  ctx->onexit = onexit;
+  ctx->startup_data = startup_data;
+}
+
+// todo: spin_destroy_isolate_context
+
+void* spin_start_isolate (void* ptr) {
+  struct isolate_context* ctx = (struct isolate_context*)ptr;
+  ctx->rc = spin_create_isolate(ctx->argc, ctx->argv, ctx->main, ctx->main_len,
+    ctx->js, ctx->js_len, ctx->buf, ctx->buflen, ctx->fd, ctx->start,
+    ctx->globalobj, ctx->scriptname, ctx->cleanup, ctx->onexit, 
+    ctx->startup_data);
+  return 0;
+}
+
+#ifdef __cplusplus
+    }
+#endif

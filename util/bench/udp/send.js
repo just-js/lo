@@ -8,6 +8,8 @@ const { AF_INET, SOCK_DGRAM, SOCK_NONBLOCK } = net.constants
 
 const eb = new Uint8Array(1024)
 
+const decoder = new TextDecoder()
+
 function strerror (errnum = spin.errno) {
   const rc = system.strerror_r(errnum, eb, 1024)
   if (rc !== 0) return ''
@@ -57,7 +59,6 @@ class MsgHdr {
   }
 }
 
-const MAX_UDP_SIZE = 65507
 const fd = net.socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0)
 assert(fd > 2)
 const src = net.types.sockaddr_in('127.0.0.1', 0)
@@ -72,7 +73,7 @@ msghdr.payload = iov
 assert(net.sendmsg(fd, msghdr.raw, 0) === payload.length, strerror)
 
 for (let i = 0; i < 10000000; i++) {
-  assert(net.sendmsg(fd, msghdr.raw, 0) === payload.length, strerror)
+  net.sendmsg(fd, msghdr.raw, 0)
 }
 
 console.log('done')

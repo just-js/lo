@@ -5,6 +5,10 @@ const api = {
     result: 'pointer',
     rpointer: ['char*']
   },
+  eventfd: {
+    parameters: ['u32', 'i32'],
+    result: 'i32'
+  },
   clock_gettime: {
     parameters: ['i32', 'pointer'],
     pointers: [, 'timespec*'],
@@ -121,7 +125,7 @@ const api = {
   }
 }
 
-const includes = ['sys/times.h', 'sys/resource.h', 'unistd.h', 'sys/timerfd.h', 'sys/wait.h', 'sys/sysinfo.h', 'signal.h']
+const includes = ['sys/eventfd.h', 'sys/times.h', 'sys/resource.h', 'unistd.h', 'sys/timerfd.h', 'sys/wait.h', 'sys/sysinfo.h', 'signal.h']
 const name = 'system'
 const libs = []
 const obj = ['system.a']

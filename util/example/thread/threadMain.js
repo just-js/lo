@@ -15,14 +15,15 @@ const { fs } = spin.library('fs')
 const STDIN = 0
 const STDOUT = 1
 const STDERR = 2
+const handle = new Uint32Array(2)
 
 globalThis.console = {
-  log: str => fs.write_string(STDOUT, `${str}\n`),
-  error: str => fs.write_string(STDERR, `${str}\n`)
+  log: str => fs.write_string(1, `${str}\n`),
+  error: str => fs.write_string(2, `${str}\n`)
 }
 
 globalThis.onUnhandledRejection = err => {
-  console.error(`${AR}Unhandled Rejection${AD}`)
+  console.error(AR + 'Unhandled Rejection' + AD)
   console.error(err.message)
   console.error(err.stack)
 }
@@ -39,7 +40,6 @@ class TextEncoder {
   }
 
   encodeInto (src, dest) {
-    // todo: pass a u32array(2) handle in here so we can return read, written
     return utf8EncodeInto(src, dest)
   }
 }
@@ -70,23 +70,27 @@ function wrap (h, fn, plen = 0) {
   return f(h, call)
 }
 
-// todo: this is going to be the address of the underlying arraybuffer data,
-// need to apply the u8 offset
+const _getAddress = spin.getAddress
+spin.getAddress = (...args) => {
+  _getAddress(...args, handle)
+  return addr(handle)
+}
+
 function ptr (u8) {
   u8.ptr = spin.getAddress(u8)
   u8.size = u8.byteLength
   return u8
 }
 
-const encoder = new TextEncoder()
+function addr (u32) {
+  return u32[0] + ((2 ** 32) * u32[1])  
+}
 
 function C (str) {
   return ptr(encoder.encode(`${str}\0`))
 }
 
-function addr (u32) {
-  return u32[0] + ((2 ** 32) * u32[1])  
-}
+const encoder = new TextEncoder()
 
 const O_RDONLY = 0
 const O_WRONLY = 1
@@ -165,30 +169,7 @@ function assert (condition, message, ErrorType = Error) {
     if (message && message.constructor.name === 'Function') {
       throw new ErrorType(message())
     }
-    throw new ErrorType(message || "Assertion failed")
-  }
-}
-
-async function globalMain () {
-  if (spin.args[1] === 'eval') return (new Function(`return (${spin.args[2]})`))()
-  let filePath = spin.args[1]
-  if (spin.workerSource) filePath = 'thread.js'
-  try {
-    const { main, serve, test, bench } = await import(filePath)
-    if (test) {
-      await test(...spin.args.slice(2))
-    }
-    if (bench) {
-      await bench(...spin.args.slice(2))
-    }
-    if (main) {
-      await main(...spin.args.slice(2))
-    }
-    if (serve) {
-      await serve(...spin.args.slice(2))
-    }
-  } catch (err) {
-    console.error(err.stack)
+    throw new ErrorType(message || 'Assertion failed')
   }
 }
 
@@ -231,42 +212,64 @@ function onModuleInstantiate (specifier) {
   if (moduleCache.has(specifier)) {
     return moduleCache.get(specifier).scriptId
   }
-  let src = spin.builtin(specifier)
-  if (!src) {
-    src = decoder.decode(readFile(specifier))
-  }
-  const mod = spin.loadModule(src, specifier)
-  moduleCache.set(specifier, mod)
-  return mod.scriptId
 }
 
 const _builtin = spin.builtin
+
 spin.builtin = fp => {
-  // todo - fix this hardcoding of name
   if (fp === 'thread.js') return spin.workerSource
-  return _builtin(fp)
+  return _builtin(fp, true)
 }
+
 const moduleCache = new Map()
 const loader = spin.library('load')
 spin.fs = fs
 spin.fs.readFile = readFile
 spin.fs.writeFile = writeFile
 spin.load = load
-const handle = new Uint32Array(2)
 spin.hrtime = wrap(handle, spin.hrtime)
-spin.getAddress = wrap(handle, spin.getAddress, 1)
-spin.dlopen = wrap(handle, loader.load.dlopen, 2)
-spin.dlsym = wrap(handle, loader.load.dlsym, 2)
+spin.dlopen = (...args) => {
+  loader.load.dlopen(...args, handle)
+  return addr(handle)
+}
+spin.dlsym = (...args) => {
+  loader.load.dlsym(...args, handle)
+  return addr(handle)
+}
 spin.dlclose = loader.load.dlclose
 const stat = new Uint8Array(160)
 const st = new BigUint64Array(stat.buffer)
 spin.assert = assert
-spin.moduleCache = moduleCache
+spin.load = load
 spin.wrap = wrap
+spin.moduleCache = moduleCache
 spin.cstr = C
 spin.ptr = ptr
 spin.addr = addr
 spin.setModuleCallbacks(onModuleLoad, onModuleInstantiate)
+
+async function globalMain () {
+  if (spin.args[1] === 'eval') return (new Function(`return (${spin.args[2]})`))()
+  let filePath = spin.args[1]
+  if (spin.workerSource) filePath = 'thread.js'
+  try {
+    const { main, serve, test, bench } = await import(filePath)
+    if (test) {
+      await test(...spin.args.slice(2))
+    }
+    if (bench) {
+      await bench(...spin.args.slice(2))
+    }
+    if (main) {
+      await main(...spin.args.slice(2))
+    }
+    if (serve) {
+      await serve(...spin.args.slice(2))
+    }
+  } catch (err) {
+    console.error(err.stack)
+  }
+}
 
 if (spin.args[1] === 'gen') {
   const {
@@ -289,7 +292,7 @@ if (spin.args[1] === 'gen') {
   if (spin.workerSource) {
     import('thread.js')
       .catch(err => console.error(err.stack))
-  } else {
+  } else if (spin.args.length > 1) {
     globalMain().catch(err => console.error(err.stack))
   }
 }

@@ -1,39 +1,9 @@
-import { Library } from 'lib/ffi.js'
-
 const { assert, utf8Decode } = spin
+const { seccomp } = spin.load('seccomp')
 
-const seccomp = (new Library()).open('libseccomp.so').bind({
-  seccomp_syscall_resolve_num_arch: {
-    parameters: ['i32', 'i32'],
-    result: 'pointer',
-    rpointer: 'const char*'
-  },
-  seccomp_init: {
-    parameters: ['u32'],
-    result: 'pointer',
-    rpointer: 'scmp_filter_ctx'
-  },
-  seccomp_rule_add_exact: {
-    parameters: ['pointer', 'u32', 'i32', 'u32'],
-    pointers: ['scmp_filter_ctx'],
-    result: 'i32'
-  },
-  seccomp_load: {
-    parameters: ['pointer'],
-    pointers: ['scmp_filter_ctx'],
-    result: 'i32'
-  },
-  seccomp_release: {
-    parameters: ['pointer'],
-    pointers: ['scmp_filter_ctx'],
-    result: 'void'
-  },
-  seccomp_syscall_resolve_name: {
-    parameters: ['string'],
-    pointers: ['const char*'],
-    result: 'i32'
-  }
-})
+const handle = new Uint32Array(2)
+seccomp.seccomp_syscall_resolve_num_arch = spin.wrap(handle, seccomp.seccomp_syscall_resolve_num_arch, 2)
+seccomp.seccomp_init = spin.wrap(handle, seccomp.seccomp_init, 1)
 
 const EM_X86_64 = 62
 const __AUDIT_ARCH_64BIT = 0x80000000

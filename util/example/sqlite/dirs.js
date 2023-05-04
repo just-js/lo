@@ -1,19 +1,5 @@
 import { Database } from 'lib/sqlite.js'
 import { join } from 'lib/path.js'
-import { Library } from 'lib/ffi.js'
-
-const libc = (new Library()).open().bind({
-  getcwd: {
-    parameters: ['buffer', 'i32'],
-    pointers: ['char*'],
-    result: 'void'
-  }
-})
-
-const u82 = new Uint8Array(1024)
-const size = u82.length
-const ptr = spin.getAddress(u82)
-const { getcwd } = libc
 
 const { fs, readMemory, utf8Decode, assert, wrap } = spin
 const { readFile } = spin.fs
@@ -22,14 +8,8 @@ const handle = new Uint32Array(2)
 const opendir = wrap(handle, fs.opendir, 1)
 const readdir = wrap(handle, fs.readdir, 1)
 
-const dir = opendir('./')
 const u8 = new Uint8Array(19)
 const view = new DataView(u8.buffer)
-
-function cwd () {
-  getcwd(u82, size)
-  return utf8Decode(ptr, size)
-}
 
 function readEntry (handle) {
   readMemory(u8, handle, 19)

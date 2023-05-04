@@ -54,6 +54,7 @@ using v8::kPromiseRejectAfterResolved;
 using v8::kPromiseResolveAfterResolved;
 using v8::kPromiseHandlerAddedAfterReject;
 
+// TODO: thread safety
 std::map<std::string, spin::builtin*> builtins;
 std::map<std::string, spin::register_plugin> modules;
 std::map<int, Global<Module>> module_map;
@@ -604,12 +605,16 @@ void spin::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
     spin::OnModuleInstantiate);
   if (result.IsNothing()) {
     printf("\nCan't instantiate module.\n");
-    exit(EXIT_FAILURE);
+    return;
   }
+  TryCatch try_catch(isolate);
   Local<Value> retValue;
   if (!module->Evaluate(context).ToLocal(&retValue)) {
     printf("Error evaluating module!\n");
-    exit(EXIT_FAILURE);
+    return;
+  }
+  if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
+    try_catch.ReThrow();
   }
   args.GetReturnValue().Set(module->GetModuleNamespace().As<Promise>());
 }
@@ -640,6 +645,7 @@ void spin::LoadModule(const FunctionCallbackInfo<Value> &args) {
   String::Utf8Value path2(isolate, args[1]);
   bool ok = ScriptCompiler::CompileModule(isolate, &base).ToLocal(&module);
   if (!ok) {
+    printf("Error compiling module!\n");
     if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
       try_catch.ReThrow();
     }
@@ -676,7 +682,6 @@ void spin::LoadModule(const FunctionCallbackInfo<Value> &args) {
   data->Set(context, String::NewFromUtf8(isolate, "scriptId")
     .ToLocalChecked(), Integer::New(isolate, scriptId)).Check();
   args.GetReturnValue().Set(data);
-  return;
 }
 
 inline uint8_t needsunwrap (spin::FastTypes t) {
@@ -1103,4 +1108,5 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
 
   SET_FAST_PROP(isolate, target, "errno", pFerrnoget, GetErrno, pFerrnoset, 
     SetErrno);
+  // TODO: free everything we allocated here on cleanup
 }

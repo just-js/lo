@@ -103,10 +103,10 @@ ether_arp.set(macb, 8) // set sender hw address/mac
 ether_arp.set(ipb, 14) // set sender protocol address
 
 // populate target ip address for which we need a mac address
-ipb[0] = 10
-ipb[1] = 0
-ipb[2] = 0
-ipb[3] = 2
+ipb[0] = 192
+ipb[1] = 168
+ipb[2] = 1
+ipb[3] = 4
 ether_arp.set(ipb, 24) // set target protocol address
 
 console.log(dump(ether_arp))

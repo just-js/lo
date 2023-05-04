@@ -41,6 +41,7 @@ interface Runtime {
   library(name: String): any;
   runMicroTasks(): void;
   hrtime(): number;
+  nextTick(callback: function): void;
   getAddress(buf: TypedArray): number;
   utf8Length(str: String): number;
   utf8EncodeInto(str: String, buf: TypedArray): number;
