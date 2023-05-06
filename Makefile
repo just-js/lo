@@ -30,7 +30,7 @@ SCC_DIR=/home/andrew/go/bin
 # flags for v8 compilation
 #V8_FLAGS="-DV8_DEPRECATION_WARNINGS=1 -DV8_IMMINENT_DEPRECATION_WARNINGS=1 -DV8_HAS_ATTRIBUTE_VISIBILITY=0"
 V8_FLAGS=
-DEPS=deps/v8/libv8_monolith.a module/ffi/libffi.a module/tcc/libtcc.a
+DEPS=deps/v8/libv8_monolith.a module/ffi/libffi.a module/tcc/libtcc.a librustls_ffi.a
 
 .PHONY: help clean
 

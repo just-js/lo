@@ -11,6 +11,11 @@ const api = {
     result: 'i32',
     name: 'pthread_cancel'
   },
+  self: {
+    parameters: [],
+    result: 'u64',
+    name: 'pthread_self'
+  },
   detach: {
     parameters: ['u64'],
     casts: ['(pthread_t)'],

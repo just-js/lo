@@ -95,6 +95,19 @@ int32_t cancelFast(void* p, uint64_t p0) {
   uint64_t v0 = p0;
   return pthread_cancel((pthread_t)v0);
 }
+void selfSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+
+  uint64_t rc = pthread_self();
+  args.GetReturnValue().Set(Number::New(isolate, static_cast<uint64_t>(rc)));
+}
+
+void selfFast(void* p, struct FastApiTypedArray* const p_ret) {
+
+  uint64_t r = pthread_self();
+  ((uint64_t*)p_ret->data)[0] = r;
+
+}
 void detachSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   uint64_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -216,6 +229,14 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infocancel = new v8::CFunctionInfo(*rccancel, 2, cargscancel);
   v8::CFunction* pFcancel = new v8::CFunction((const void*)&cancelFast, infocancel);
   SET_FAST_METHOD(isolate, module, "cancel", pFcancel, cancelSlow);
+  v8::CTypeInfo* cargsself = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+  cargsself[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+
+  cargsself[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
+  v8::CTypeInfo* rcself = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* infoself = new v8::CFunctionInfo(*rcself, 2, cargsself);
+  v8::CFunction* pFself = new v8::CFunction((const void*)&selfFast, infoself);
+  SET_FAST_METHOD(isolate, module, "self", pFself, selfSlow);
 
   v8::CTypeInfo* cargsdetach = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsdetach[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);

@@ -104,7 +104,8 @@ void cleanupIsolate (Isolate* isolate) {
   while(!stop) {
     stop = isolate->IdleNotificationDeadline(1);  
   }
-  isolate->Dispose();
+  // todo: we segfault when we clean up after launching a second isolate
+  //isolate->Dispose();
 }
 
 // todo: these could just be a simple lookup table
@@ -1004,83 +1005,6 @@ int32_t spin::fastUtf8EncodeInto (void* p, struct FastOneByteString* const p_str
 }
 
 void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
-  CTypeInfo* cargserrnoset = (CTypeInfo*)calloc(2, 
-    sizeof(CTypeInfo));
-  cargserrnoset[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargserrnoset[1] = CTypeInfo(CTypeInfo::Type::kInt32);
-  CTypeInfo* rcerrnoset = new CTypeInfo(CTypeInfo::Type::kVoid);
-  CFunctionInfo* infoerrnoset = new CFunctionInfo(*rcerrnoset, 2, 
-    cargserrnoset);
-  CFunction* pFerrnoset = new CFunction((const void*)&fastSetErrno, 
-    infoerrnoset);
-
-  CTypeInfo* cargserrnoget = (CTypeInfo*)calloc(1, 
-    sizeof(CTypeInfo));
-  cargserrnoget[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  CTypeInfo* rcerrnoget = new CTypeInfo(CTypeInfo::Type::kInt32);
-  CFunctionInfo* infoerrnoget = new CFunctionInfo(*rcerrnoget, 1, 
-    cargserrnoget);
-  CFunction* pFerrnoget = new CFunction((const void*)&fastGetErrno, 
-    infoerrnoget);
-
-  CTypeInfo* cargshrtime = (CTypeInfo*)calloc(2, sizeof(CTypeInfo));
-  cargshrtime[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargshrtime[1] = CTypeInfo(CTypeInfo::Type::kUint32, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  CTypeInfo* rchrtime = new CTypeInfo(CTypeInfo::Type::kVoid);
-  CFunctionInfo* infohrtime = new CFunctionInfo(*rchrtime, 2, 
-    cargshrtime);
-  CFunction* pFhrtime = new CFunction((const void*)&fastHRTime, 
-    infohrtime);
-
-  CTypeInfo* cargsgetaddress = (CTypeInfo*)calloc(3, 
-    sizeof(CTypeInfo));
-  cargsgetaddress[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargsgetaddress[1] = CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsgetaddress[2] = CTypeInfo(CTypeInfo::Type::kUint32, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  CTypeInfo* rcgetaddress = new CTypeInfo(CTypeInfo::Type::kVoid);
-  CFunctionInfo* infogetaddress = new CFunctionInfo(*rcgetaddress, 3, 
-    cargsgetaddress);
-  CFunction* pFgetaddress = new CFunction((const void*)&fastGetAddress, 
-    infogetaddress);
-
-  CTypeInfo* cargsutf8length = (CTypeInfo*)calloc(2, 
-    sizeof(CTypeInfo));
-  cargsutf8length[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargsutf8length[1] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
-  CTypeInfo* rcutf8length = new CTypeInfo(CTypeInfo::Type::kInt32);
-  CFunctionInfo* infoutf8length = new CFunctionInfo(*rcutf8length, 2, 
-    cargsutf8length);
-  CFunction* pFutf8length = new CFunction((const void*)&fastUtf8Length, 
-    infoutf8length);
-
-  CTypeInfo* cargsutf8encodeinto = (CTypeInfo*)calloc(3, 
-    sizeof(CTypeInfo));
-  cargsutf8encodeinto[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargsutf8encodeinto[1] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
-  cargsutf8encodeinto[2] = CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  CTypeInfo* rcutf8encodeinto = new CTypeInfo(CTypeInfo::Type::kInt32);
-  CFunctionInfo* infoutf8encodeinto = new CFunctionInfo(*rcutf8encodeinto, 3, 
-    cargsutf8encodeinto);
-  CFunction* pFutf8encodeinto = new CFunction((const void*)&fastUtf8EncodeInto, 
-    infoutf8encodeinto);
-
-  CTypeInfo* cargsreadmemory = (CTypeInfo*)calloc(4, 
-    sizeof(CTypeInfo));
-  cargsreadmemory[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargsreadmemory[1] = CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsreadmemory[2] = CTypeInfo(CTypeInfo::Type::kUint64);
-  cargsreadmemory[3] = CTypeInfo(CTypeInfo::Type::kUint32);
-  CTypeInfo* rcreadmemory = new CTypeInfo(CTypeInfo::Type::kVoid);
-  CFunctionInfo* inforeadmemory = new CFunctionInfo(*rcreadmemory, 4, 
-    cargsreadmemory);
-  CFunction* pFreadmemory = new CFunction((const void*)&fastReadMemory, 
-    inforeadmemory);
-
   Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
   SET_VALUE(isolate, version, GLOBALOBJ, String::NewFromUtf8Literal(isolate, 
     VERSION));
@@ -1100,13 +1024,88 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
 
-  SET_FAST_METHOD(isolate, target, "hrtime", pFhrtime, HRTime);
-  SET_FAST_METHOD(isolate, target, "utf8Length", pFutf8length, Utf8Length);
-  SET_FAST_METHOD(isolate, target, "utf8EncodeInto", pFutf8encodeinto, Utf8EncodeInto);
-  SET_FAST_METHOD(isolate, target, "getAddress", pFgetaddress, GetAddress);
-  SET_FAST_METHOD(isolate, target, "readMemory", pFreadmemory, ReadMemory);
-
+  CTypeInfo* cargserrnoset = (CTypeInfo*)calloc(2, 
+    sizeof(CTypeInfo));
+  cargserrnoset[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargserrnoset[1] = CTypeInfo(CTypeInfo::Type::kInt32);
+  CTypeInfo* rcerrnoset = new CTypeInfo(CTypeInfo::Type::kVoid);
+  CFunctionInfo* infoerrnoset = new CFunctionInfo(*rcerrnoset, 2, 
+    cargserrnoset);
+  CFunction* pFerrnoset = new CFunction((const void*)&fastSetErrno, 
+    infoerrnoset);
+  CTypeInfo* cargserrnoget = (CTypeInfo*)calloc(1, 
+    sizeof(CTypeInfo));
+  cargserrnoget[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  CTypeInfo* rcerrnoget = new CTypeInfo(CTypeInfo::Type::kInt32);
+  CFunctionInfo* infoerrnoget = new CFunctionInfo(*rcerrnoget, 1, 
+    cargserrnoget);
+  CFunction* pFerrnoget = new CFunction((const void*)&fastGetErrno, 
+    infoerrnoget);
   SET_FAST_PROP(isolate, target, "errno", pFerrnoget, GetErrno, pFerrnoset, 
     SetErrno);
+
+  CTypeInfo* cargshrtime = (CTypeInfo*)calloc(2, sizeof(CTypeInfo));
+  cargshrtime[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargshrtime[1] = CTypeInfo(CTypeInfo::Type::kUint32, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  CTypeInfo* rchrtime = new CTypeInfo(CTypeInfo::Type::kVoid);
+  CFunctionInfo* infohrtime = new CFunctionInfo(*rchrtime, 2, 
+    cargshrtime);
+  CFunction* pFhrtime = new CFunction((const void*)&fastHRTime, 
+    infohrtime);
+  SET_FAST_METHOD(isolate, target, "hrtime", pFhrtime, HRTime);
+
+  CTypeInfo* cargsgetaddress = (CTypeInfo*)calloc(3, 
+    sizeof(CTypeInfo));
+  cargsgetaddress[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargsgetaddress[1] = CTypeInfo(CTypeInfo::Type::kUint8, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargsgetaddress[2] = CTypeInfo(CTypeInfo::Type::kUint32, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  CTypeInfo* rcgetaddress = new CTypeInfo(CTypeInfo::Type::kVoid);
+  CFunctionInfo* infogetaddress = new CFunctionInfo(*rcgetaddress, 3, 
+    cargsgetaddress);
+  CFunction* pFgetaddress = new CFunction((const void*)&fastGetAddress, 
+    infogetaddress);
+  SET_FAST_METHOD(isolate, target, "getAddress", pFgetaddress, GetAddress);
+
+  CTypeInfo* cargsutf8length = (CTypeInfo*)calloc(2, 
+    sizeof(CTypeInfo));
+  cargsutf8length[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargsutf8length[1] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
+  CTypeInfo* rcutf8length = new CTypeInfo(CTypeInfo::Type::kInt32);
+  CFunctionInfo* infoutf8length = new CFunctionInfo(*rcutf8length, 2, 
+    cargsutf8length);
+  CFunction* pFutf8length = new CFunction((const void*)&fastUtf8Length, 
+    infoutf8length);
+  SET_FAST_METHOD(isolate, target, "utf8Length", pFutf8length, Utf8Length);
+
+  CTypeInfo* cargsutf8encodeinto = (CTypeInfo*)calloc(3, 
+    sizeof(CTypeInfo));
+  cargsutf8encodeinto[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargsutf8encodeinto[1] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
+  cargsutf8encodeinto[2] = CTypeInfo(CTypeInfo::Type::kUint8, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  CTypeInfo* rcutf8encodeinto = new CTypeInfo(CTypeInfo::Type::kInt32);
+  CFunctionInfo* infoutf8encodeinto = new CFunctionInfo(*rcutf8encodeinto, 3, 
+    cargsutf8encodeinto);
+  CFunction* pFutf8encodeinto = new CFunction((const void*)&fastUtf8EncodeInto, 
+    infoutf8encodeinto);
+  SET_FAST_METHOD(isolate, target, "utf8EncodeInto", pFutf8encodeinto, Utf8EncodeInto);
+
+  CTypeInfo* cargsreadmemory = (CTypeInfo*)calloc(4, 
+    sizeof(CTypeInfo));
+  cargsreadmemory[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargsreadmemory[1] = CTypeInfo(CTypeInfo::Type::kUint8, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargsreadmemory[2] = CTypeInfo(CTypeInfo::Type::kUint64);
+  cargsreadmemory[3] = CTypeInfo(CTypeInfo::Type::kUint32);
+  CTypeInfo* rcreadmemory = new CTypeInfo(CTypeInfo::Type::kVoid);
+  CFunctionInfo* inforeadmemory = new CFunctionInfo(*rcreadmemory, 4, 
+    cargsreadmemory);
+  CFunction* pFreadmemory = new CFunction((const void*)&fastReadMemory, 
+    inforeadmemory);
+  SET_FAST_METHOD(isolate, target, "readMemory", pFreadmemory, ReadMemory);
+
   // TODO: free everything we allocated here on cleanup
 }

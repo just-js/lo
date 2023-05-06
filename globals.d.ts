@@ -3,9 +3,7 @@ declare class TextEncoder {
    * The encoding supported by the `TextEncoder` instance. Always set to `'utf-8'`.
    */
   readonly encoding: "utf-8";
-
   constructor(encoding?: "utf-8");
-
   /**
    * UTF-8 encodes the `input` string and returns a `Uint8Array` containing the
    * encoded bytes.
@@ -45,6 +43,9 @@ interface Runtime {
   getAddress(buf: TypedArray): number;
   utf8Length(str: String): number;
   utf8EncodeInto(str: String, buf: TypedArray): number;
+  utf8Decode(buf: TypedArray, len: number): string;
+  wrap(handle: TypedArray, fn: Function, plen: number): void;
+  addr(handle: TypedArray): number;
   version: RuntimeVersion;
   args: Array<String>;
 }

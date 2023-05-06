@@ -140,14 +140,16 @@ int32_t getpidFast(void* p) {
 void getrusageSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  struct rusage* v1 = reinterpret_cast<struct rusage*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  struct rusage* v1 = reinterpret_cast<struct rusage*>(ptr1);
   int32_t rc = getrusage(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t getrusageFast(void* p, int32_t p0, void* p1) {
+int32_t getrusageFast(void* p, int32_t p0, struct FastApiTypedArray* const p1) {
   int32_t v0 = p0;
-  struct rusage* v1 = reinterpret_cast<struct rusage*>(p1);
+  struct rusage* v1 = reinterpret_cast<struct rusage*>(p1->data);
   return getrusage(v0, v1);
 }
 void timerfd_createSlow(const FunctionCallbackInfo<Value> &args) {
@@ -258,6 +260,17 @@ int32_t pidfd_openFast(void* p, int32_t p0, int32_t p1, uint32_t p2) {
   uint32_t v2 = p2;
   return syscall(v0, v1, v2);
 }
+void gettidSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t rc = syscall(v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t gettidFast(void* p, int32_t p0) {
+  int32_t v0 = p0;
+  return syscall(v0);
+}
 void getrlimitSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -303,13 +316,15 @@ int32_t strerror_rFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, 
 }
 void timesSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-  struct tms* v0 = reinterpret_cast<struct tms*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
+  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
+  struct tms* v0 = reinterpret_cast<struct tms*>(ptr0);
   int32_t rc = times(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t timesFast(void* p, void* p0) {
-  struct tms* v0 = reinterpret_cast<struct tms*>(p0);
+int32_t timesFast(void* p, struct FastApiTypedArray* const p0) {
+  struct tms* v0 = reinterpret_cast<struct tms*>(p0->data);
   return times(v0);
 }
 void sysinfoSlow(const FunctionCallbackInfo<Value> &args) {
@@ -437,7 +452,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CTypeInfo* cargsgetrusage = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
   cargsgetrusage[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsgetrusage[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsgetrusage[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsgetrusage[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcgetrusage = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CFunctionInfo* infogetrusage = new v8::CFunctionInfo(*rcgetrusage, 3, cargsgetrusage);
   v8::CFunction* pFgetrusage = new v8::CFunction((const void*)&getrusageFast, infogetrusage);
@@ -516,6 +531,14 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunction* pFpidfd_open = new v8::CFunction((const void*)&pidfd_openFast, infopidfd_open);
   SET_FAST_METHOD(isolate, module, "pidfd_open", pFpidfd_open, pidfd_openSlow);
 
+  v8::CTypeInfo* cargsgettid = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+  cargsgettid[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsgettid[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CTypeInfo* rcgettid = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infogettid = new v8::CFunctionInfo(*rcgettid, 2, cargsgettid);
+  v8::CFunction* pFgettid = new v8::CFunction((const void*)&gettidFast, infogettid);
+  SET_FAST_METHOD(isolate, module, "gettid", pFgettid, gettidSlow);
+
   v8::CTypeInfo* cargsgetrlimit = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
   cargsgetrlimit[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsgetrlimit[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
@@ -546,7 +569,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 
   v8::CTypeInfo* cargstimes = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargstimes[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargstimes[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargstimes[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rctimes = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CFunctionInfo* infotimes = new v8::CFunctionInfo(*rctimes, 2, cargstimes);
   v8::CFunction* pFtimes = new v8::CFunction((const void*)&timesFast, infotimes);

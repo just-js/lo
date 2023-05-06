@@ -28,7 +28,7 @@ const api = {
     result: 'i32'
   },
   getrusage: {
-    parameters: ['i32', 'pointer'],
+    parameters: ['i32', 'buffer'],
     pointers: [, 'struct rusage*'],
     result: 'i32'
   },
@@ -68,6 +68,11 @@ const api = {
     result: 'i32',
     name: 'syscall'
   },
+  gettid: {
+    parameters: ['i32'],
+    result: 'i32',
+    name: 'syscall'
+  },
   getrlimit: {
     parameters: ['i32', 'pointer'],
     pointers: [, 'struct rlimit*'],
@@ -84,14 +89,9 @@ const api = {
     result: 'i32'
   },
   times: {
-    parameters: ['pointer'],
+    parameters: ['buffer'],
     pointers: ['struct tms*'],
     result: 'i32'
-  },
-  sysconf: {
-    parameters: ['i32'],
-    pointers: [],
-    result: 'u32'
   },
   sysinfo: {
     parameters: ['pointer'],

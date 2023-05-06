@@ -2,7 +2,7 @@ deps/*
 *.o
 *.so
 *.a
-spin
+./spin
 *.debug
 scratch
 deps
