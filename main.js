@@ -285,6 +285,7 @@ if (spin.args[1] === 'gen') {
   } else {
     source = await bindings(spin.args[2])
   }
+  console.log(source)
 } else {
   if (spin.workerSource) {
     import('thread.js')

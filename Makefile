@@ -78,9 +78,17 @@ libs:
 	${MAKE} MODULE=libssl gen library
 	${MAKE} MODULE=load gen library
 	${MAKE} MODULE=net gen library
+	${MAKE} MODULE=pico gen library
+	${MAKE} MODULE=rocksdb gen library
+	${MAKE} MODULE=rsync gen library
+	${MAKE} MODULE=rustls gen library
+	${MAKE} MODULE=seccomp gen library
+	${MAKE} MODULE=spin gen library
 	${MAKE} MODULE=sqlite gen library
 	${MAKE} MODULE=system gen library
 	${MAKE} MODULE=tcc gen library
+	${MAKE} MODULE=thread gen library
+	${MAKE} MODULE=wireguard gen library
 
 gen: ${TARGET} ${MODULE_DIR}/${MODULE} ## generate source and Makefile from definitions for a library
 	./${TARGET} gen --make ${BINDINGS_DIR}/${MODULE}/${MODULE}.js > ${MODULE_DIR}/${MODULE}/Makefile

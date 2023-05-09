@@ -77,7 +77,7 @@ const alpn = byteSlice('http/1.1')
 spin.assert(alpn.u8.length === 16)
 spin.assert(alpn.slice.length === 8)
 // cacert.pem from here https://curl.se/ca/cacert.pem
-spin.assert(rustls.client_config_builder_load_roots_from_file(config, 'cacert.pem') === RUSTLS_RESULT_OK)
+spin.assert(rustls.client_config_builder_load_roots_from_file(config, 'util/example/cacert.pem') === RUSTLS_RESULT_OK)
 spin.assert(rustls.client_config_builder_set_alpn_protocols(config, alpn.u8, 1) === RUSTLS_RESULT_OK)
 const client_config = rustls.client_config_builder_build(config)
 spin.assert(client_config)

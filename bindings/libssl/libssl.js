@@ -86,6 +86,12 @@ const api = {
     pointers: ['EVP_MD_CTX*', 'EVP_MD*', 'ENGINE*'],
     result: 'i32'
   },
+  EVP_DigestUpdate: {
+    parameters: ['pointer', 'pointer', 'u32'],
+    pointers: ['EVP_MD_CTX*'],
+    result: 'i32',
+    name: 'EVP_DigestUpdate'
+  },
   EVP_DigestUpdateBuffer: {
     parameters: ['pointer', 'buffer', 'u32'],
     pointers: ['EVP_MD_CTX*'],
@@ -285,6 +291,11 @@ const api = {
     pointers: ['const SSL*'],
     result: 'i32'
   },
+  SSL_is_init_finished: {
+    parameters: ['pointer'],
+    pointers: ['const SSL*'],
+    result: 'i32'
+  },
   SSL_shutdown: {
     parameters: ['pointer'],
     pointers: ['SSL*'],
@@ -357,6 +368,11 @@ const api = {
     pointers: ['SSL*'],
     result: 'i32'
   },
+  SSL_set_bio: {
+    parameters: ['pointer', 'pointer', 'pointer'],
+    pointers: ['SSL*', 'BIO*', 'BIO*'],
+    result: 'void'
+  },
   SSL_set_accept_state: {
     parameters: ['pointer'],
     pointers: ['SSL*'],
@@ -421,12 +437,12 @@ const api = {
   TLS_server_method: {
     parameters: [],
     result: 'pointer',
-    rpointer: 'SSL_METHOD*'
+    rpointer: 'const SSL_METHOD*'
   },
   TLS_client_method: {
     parameters: [],
     result: 'pointer',
-    rpointer: 'SSL_METHOD*'
+    rpointer: 'const SSL_METHOD*'
   },
   SSL_CTX_set_ciphersuites: {
     parameters: ['pointer', 'pointer'],

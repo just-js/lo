@@ -12,30 +12,34 @@ function require (fileName) {
 
 const acorn = require('./lib/acorn.js')
 
-const src = decoder.decode(readFile('./util/example/sniproxy.js'))
+const scriptPath = spin.args[2] || './util/example/sniproxy.js'
+const src = decoder.decode(readFile(scriptPath))
 
 const tokens = []
+const imports = []
 
 acorn.parse(src, {
-  ecmaVersion: 2020,
+  ecmaVersion: 2022,
   sourceType: 'module',
   onToken: token => {
-    if (token.value === 'load') {
-      console.log(`${token.start}: ${tokens[tokens.length - 2].value}.${token.value}`)
-      const expr = acorn.parseExpressionAt(src, token.start)
-      console.log(JSON.stringify(expr))
-    }
-    if (token.value === 'library') {
-      console.log(`${token.start}: ${tokens[tokens.length - 2].value}.${token.value}`)
-      const expr = acorn.parseExpressionAt(src, token.start)
-      console.log(JSON.stringify(expr))
-    }
-    if (token.value === 'from') {
-      console.log(`${token.start}: ${token.value}`)
-      const expr = acorn.parseExpressionAt(src, token.start)
-      console.log(JSON.stringify(expr))
-    }
     tokens.push(token)
+    if (token.value === 'load' || token.value === 'library' || token.value === 'from') {
+      imports.push(tokens.length)
+    }
   }
 })
 
+
+for (const index of imports) {
+  const idx = index
+  const stmt = []
+  for (let i = 0; i < 100; i++) {
+    if (idx - i < 0) break
+    const { value } = tokens[idx - i]
+    if (value) stmt.unshift(value)
+    if (value === 'import' || value === 'const') {
+      break
+    }
+  }
+  console.log(stmt)
+}

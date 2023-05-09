@@ -1,9 +1,13 @@
+import { api } from 'bindings/libssl/libssl.js'
+
+const { cstr, assert, ptr, addr, utf8Decode } = spin
+
 function createKeypair (bits = 2048) {
   const keyCtx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, 0)
   assert(EVP_PKEY_keygen_init(keyCtx) === 1)
   assert(RSA_pkey_ctx_ctrl(keyCtx, EVP_PKEY_OP_KEYGEN, 
     EVP_PKEY_CTRL_RSA_KEYGEN_BITS, bits, 0) > 0)
-  const key = pointer(new Uint32Array(2))
+  const key = ptr(new Uint32Array(2))
   // generate key
   assert(EVP_PKEY_keygen(keyCtx, key.ptr) === 1)
   // create a place to dump the IO, in this case in memory
@@ -11,12 +15,12 @@ function createKeypair (bits = 2048) {
   const biopriv = BIO_new(BIO_s_mem())
   assert(biopriv)
   // dump key to IO
-  assert(PEM_write_bio_PrivateKey(biopriv, get(key), 0, 0, 0, 0, 0) === 1)
+  assert(PEM_write_bio_PrivateKey(biopriv, addr(key), 0, 0, 0, 0, 0) === 1)
   // get buffer length
   let size = BIO_ctrl(biopriv, BIO_CTRL_PENDING, 0, 0)
   assert(size > 0)
   // create char reference of private key length
-  const privkey = pointer(new Uint8Array(size))
+  const privkey = ptr(new Uint8Array(size))
   // read the key from the buffer and put it in the char reference
   assert(BIO_read(biopriv, privkey.ptr, size) > 0)
   // extract public key as string
@@ -24,12 +28,12 @@ function createKeypair (bits = 2048) {
   const biopub = BIO_new(BIO_s_mem())
   assert(biopub)
   // dump key to IO
-  assert(PEM_write_bio_PUBKEY(biopub, get(key)) === 1)
+  assert(PEM_write_bio_PUBKEY(biopub, addr(key)) === 1)
   // get buffer length
   size = BIO_ctrl(biopub, BIO_CTRL_PENDING, 0, 0)
   assert(size > 0)
   // create char reference of public key length
-  const pubkey = pointer(new Uint8Array(size))
+  const pubkey = ptr(new Uint8Array(size))
   // read the key from the buffer and put it in the char reference
   assert(BIO_read(biopub, pubkey.ptr, size) > 0)
   // at this point we can save the public somewhere
@@ -83,7 +87,7 @@ function extractRSAPublicKey (x509) {
   assert(PEM_write_bio_PUBKEY(biokey, key) === 1)
   let size = BIO_ctrl(biokey, BIO_CTRL_PENDING, 0, 0)
   assert(size > 0)
-  const pubkey = pointer(new Uint8Array(size))
+  const pubkey = ptr(new Uint8Array(size))
   assert(BIO_read(biokey, pubkey.ptr, size) > 0)
   return pubkey
 }
@@ -100,11 +104,11 @@ function generateCSR (privkey, pubkey, hostname, opts) {
   // set the name details on the csr
   const name = X509_REQ_get_subject_name(req)
   assert(name)
-  assert(X509_NAME_add_entry_by_txt(name, C.ptr, MBSTRING_ASC, CString(country).ptr, -1, -1, 0) === 1)
-  assert(X509_NAME_add_entry_by_txt(name, ST.ptr, MBSTRING_ASC, CString(province).ptr, -1, -1, 0) === 1)
-  assert(X509_NAME_add_entry_by_txt(name, L.ptr, MBSTRING_ASC, CString(city).ptr, -1, -1, 0) === 1)
-  assert(X509_NAME_add_entry_by_txt(name, O.ptr, MBSTRING_ASC, CString(org).ptr, -1, -1, 0) === 1)
-  assert(X509_NAME_add_entry_by_txt(name, CN.ptr, MBSTRING_ASC, CString(hostname).ptr, -1, -1, 0) === 1)
+  assert(X509_NAME_add_entry_by_txt(name, C.ptr, MBSTRING_ASC, cstr(country).ptr, -1, -1, 0) === 1)
+  assert(X509_NAME_add_entry_by_txt(name, ST.ptr, MBSTRING_ASC, cstr(province).ptr, -1, -1, 0) === 1)
+  assert(X509_NAME_add_entry_by_txt(name, L.ptr, MBSTRING_ASC, cstr(city).ptr, -1, -1, 0) === 1)
+  assert(X509_NAME_add_entry_by_txt(name, O.ptr, MBSTRING_ASC, cstr(org).ptr, -1, -1, 0) === 1)
+  assert(X509_NAME_add_entry_by_txt(name, CN.ptr, MBSTRING_ASC, cstr(hostname).ptr, -1, -1, 0) === 1)
   // set the public key on the csr
   assert(X509_REQ_set_pubkey(req, pubkey) === 1)
   // sign the csr with the private key
@@ -117,7 +121,7 @@ function generateCSR (privkey, pubkey, hostname, opts) {
   // write the csr to a buffer in pem format and return
   const pemsize = BIO_ctrl(biocsr, BIO_CTRL_PENDING, 0, 0)
   assert(pemsize > 0)
-  const csr = pointer(new Uint8Array(pemsize))
+  const csr = ptr(new Uint8Array(pemsize))
   assert(BIO_read(biocsr, csr.ptr, pemsize) > 0)
   return csr
 }
@@ -130,9 +134,9 @@ function sign (plaintext, pk) {
   assert(digest)
   assert(EVP_DigestSignInit(ctx, 0, digest, 0, pk) === 1)
   assert(EVP_DigestUpdate(ctx, plaintext.ptr, plaintext.byteLength) === 1)
-  const size = pointer(new Uint32Array(2))
+  const size = ptr(new Uint32Array(2))
   assert(EVP_DigestSignFinal(ctx, 0, size.ptr) === 1)
-  const sig = pointer(new Uint8Array(get(size)))
+  const sig = ptr(new Uint8Array(addr(size)))
   assert(EVP_DigestSignFinal(ctx, sig.ptr, size.ptr) === 1)
   return sig
 }
@@ -149,11 +153,11 @@ function verify (plaintext, pk, sig) {
   return true
 }
 
-const C = CString('C')
-const ST = CString('ST')
-const L = CString('L')
-const O = CString('O')
-const CN = CString('CN')
+const C = cstr('C')
+const ST = cstr('ST')
+const L = cstr('L')
+const O = cstr('O')
+const CN = cstr('CN')
 
 const BIO_CTRL_PENDING = 10
 const EVP_PKEY_OP_KEYGEN = 1 << 2
@@ -163,6 +167,15 @@ const MBSTRING_ASC = 0x1001
 // certificate types
 const EVP_PKEY_RSA = 6
 const EVP_PKEY_RSA2 = 19
+
+const handle = new Uint32Array(2)
+const { libssl } = spin.load('libssl')
+for (const name of Object.keys(api)) {
+  const def = api[name]
+  if (def.result === 'pointer' || def.result === 'u64') {
+    libssl[name] = spin.wrap(handle, libssl[name], def.parameters.length)
+  }
+}
 
 const {
   EVP_PKEY_CTX_new_id, EVP_PKEY_keygen_init, EVP_PKEY_keygen, 
@@ -176,33 +189,32 @@ const {
   X509_get_issuer_name, X509_free, X509_REQ_new, X509_REQ_set_version, 
   X509_REQ_get_subject_name, X509_NAME_add_entry_by_txt, X509_REQ_set_pubkey, 
   X509_REQ_sign, RSA_pkey_ctx_ctrl
-} = spin.load('libssl')
+} = libssl
 
 function test () {
+  const start = Date.now()
   // 01. GENERATE RSA KEYPAIR
   // create an RSA keypair and get them back in pem format
   const { pubkey, privkey } = createKeypair()
-  const pempub = readUtf8Address(privkey.ptr, privkey.byteLength)
-  const pempriv = readUtf8Address(pubkey.ptr, pubkey.byteLength)
-  //console.log(`RSA private key as PEM\n${dump(privkey)}\n${pempub}`)
-  //console.log(`RSA public key as PEM\n${dump(pubkey)}\n${pempriv}`)
-
+  const pempub = utf8Decode(privkey.ptr, privkey.byteLength)
+  const pempriv = utf8Decode(pubkey.ptr, pubkey.byteLength)
+  console.log(`RSA private key as PEM\n${pempub}`)
+  console.log(`RSA public key as PEM\n${pempriv}`)
   // 02. SIGNING AND VERIFYING
   // load RSA keys into memory from pem format
   const rsapubkey = loadPublicKey(pubkey)
   const rsaprivkey = loadPrivateKey(privkey)
   // create an empty buffer
-  const plaintext = pointer(new Uint8Array(4096))
+  const plaintext = ptr(new Uint8Array(4096))
   // sign the buffer content with the private key
   const sig = sign(plaintext, rsaprivkey)
   assert(sig.byteLength === 256)
   // verify the signature with the public key
   assert(verify(plaintext, rsapubkey, sig))
-  //console.log(`verified signature\n${dump(sig)}`)
 
   // 03. SIGNING AND VERIFYING WITH A LETSENCRYPT CERT AND KEY
   // extract a public key from an x509 cert in pem format
-  const certpem = CString(`-----BEGIN CERTIFICATE-----
+  const certpem = cstr(`-----BEGIN CERTIFICATE-----
 MIIFKjCCBBKgAwIBAgISBGnwmKhdv4E4p21hH+rAFX5yMA0GCSqGSIb3DQEBCwUA
 MDIxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQswCQYDVQQD
 EwJSMzAeFw0yMzAyMTUyMzUyMzlaFw0yMzA1MTYyMzUyMzhaMB0xGzAZBgNVBAMT
@@ -300,7 +312,7 @@ Dfvp7OOGAN6dEOM4+qR9sdjoSYKEBpsr6GtPAQw4dy753ec5
   // extracted public key in pem format
   const pubkeycert = extractRSAPublicKey(x509)
   // load the private key from pem
-  const privkeycert = CString(`-----BEGIN PRIVATE KEY-----
+  const privkeycert = cstr(`-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDC/DUId7zDmI/n
 Opi8aidkcEEkLUrHNoLA2p0TGXfNtpywcTdEBTz2e8pOaT3m6xB6wb/OoBHLBWQg
 /bZXYELMjKuQWE78WBMWlWtHpjA4Iy8McSsM62fSR83Wni7afISwzHl+zLm3c350
@@ -348,10 +360,9 @@ H++I5A5+51AgJ7Pz4snMu8M=
     org: 'billywhizz.io'
   }
   const csr = generateCSR(rsaprivkey, rsapubkey, 'home.billywhizz.io', opts)
-  const pemcsr = readUtf8Address(csr.ptr, csr.byteLength)
-  //console.log(`certificate signing request\n${dump(csr)}\n${pemcsr}`)
-
-  console.log('💩💩💩 yay! 💩💩💩')
+  const pemcsr = utf8Decode(csr.ptr, csr.byteLength)
+  console.log(`certificate signing request as PEM\n${pemcsr}`)
+  console.log(`💩💩💩 ${Date.now() - start} 💩💩💩`)
 }
 
 export { test }

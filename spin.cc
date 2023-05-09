@@ -1,5 +1,4 @@
 #include "spin.h"
-#include "src/common/globals.h"
 
 using v8::String;
 using v8::FunctionCallbackInfo;
@@ -401,6 +400,10 @@ int spin::CreateIsolate(int argc, char** argv,
     ArrayBuffer::Allocator::NewDefaultAllocator();
   create_params.embedder_wrapper_type_index = 0;
   create_params.embedder_wrapper_object_index = 1;
+  //create_params.allow_atomics_wait = false;
+  //create_params.fatal_error_callback
+  //create_params.oom_error_callback
+  create_params.snapshot_blob = startup_data;
   Isolate *isolate = Isolate::New(create_params);
   {
     Isolate::Scope isolate_scope(isolate);
@@ -967,6 +970,7 @@ int32_t spin::fastUtf8Length (void* p, struct FastOneByteString* const p_str) {
   return p_str->length;
 }
 
+// todo: version that wraps memory in place with an arraybuffer
 void spin::ReadMemory(const FunctionCallbackInfo<Value> &args) {
   Local<Uint8Array> u8 = args[0].As<Uint8Array>();
   uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + u8->ByteOffset();
@@ -1108,4 +1112,66 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, target, "readMemory", pFreadmemory, ReadMemory);
 
   // TODO: free everything we allocated here on cleanup
+}
+
+int spin_create_isolate (int argc, char** argv, 
+  const char* main, unsigned int main_len,
+  const char* js, unsigned int js_len, char* buf, int buflen, int fd,
+  uint64_t start, const char* globalobj, const char* scriptname,
+  int cleanup, int onexit, void* startup_data) {
+  const v8::StartupData* data = (const v8::StartupData*) startup_data;
+  return spin::CreateIsolate(argc, argv, main, main_len, js, js_len, 
+  buf, buflen, fd, start, globalobj, scriptname, cleanup, onexit, data);
+}
+
+int spin_context_size () {
+  return sizeof(struct isolate_context);
+}
+
+void spin_create_isolate_context (int argc, char** argv, 
+  const char* main, unsigned int main_len,
+  const char* js, unsigned int js_len, char* buf, int buflen, int fd,
+  uint64_t start, const char* globalobj, const char* scriptname,
+  int cleanup, int onexit, void* startup_data, struct isolate_context* ctx) {
+  ctx->argc = argc;
+  ctx->argv = argv;
+  ctx->argv = (char**)calloc(argc + 1, sizeof(char*));
+  for (int i = 0; i < argc; i++) {
+    ctx->argv[i] = (char*)calloc(1, strnlen(argv[i], 4096));
+    memcpy(ctx->argv[i], argv[i], strnlen(argv[i], 4096));
+    //ctx->argv[i] = strdup(argv[i]);
+  }
+  ctx->argv[argc] = NULL;
+  ctx->main = (char*)calloc(1, main_len);
+  memcpy(ctx->main, main, main_len);
+  //ctx->main = strdup(main);
+  ctx->main_len = main_len;
+  ctx->js = (char*)calloc(1, js_len);
+  memcpy(ctx->js, js, js_len);
+  //ctx->js = strdup(js);
+  ctx->js_len = js_len;
+  ctx->buf = buf;
+  ctx->buflen = buflen;
+  ctx->fd = fd;
+  ctx->start = start;
+  //ctx->globalobj = strdup(globalobj);
+  ctx->globalobj = (char*)calloc(1, strnlen(globalobj, 4096));
+  memcpy(ctx->globalobj, globalobj, strnlen(globalobj, 4096));
+  //ctx->scriptname = strdup(scriptname);
+  ctx->scriptname = (char*)calloc(1, strnlen(scriptname, 4096));
+  memcpy(ctx->scriptname, scriptname, strnlen(scriptname, 4096));
+  ctx->cleanup = cleanup;
+  ctx->onexit = onexit;
+  ctx->startup_data = startup_data;
+}
+
+// todo: spin_destroy_isolate_context
+
+void* spin_start_isolate (void* ptr) {
+  struct isolate_context* ctx = (struct isolate_context*)ptr;
+  ctx->rc = spin_create_isolate(ctx->argc, ctx->argv, ctx->main, ctx->main_len,
+    ctx->js, ctx->js_len, ctx->buf, ctx->buflen, ctx->fd, ctx->start,
+    ctx->globalobj, ctx->scriptname, ctx->cleanup, ctx->onexit, 
+    ctx->startup_data);
+  return 0;
 }

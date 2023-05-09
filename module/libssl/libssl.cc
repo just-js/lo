@@ -267,10 +267,16 @@ void EVP_get_digestbynameFast(void* p, struct FastOneByteString* const p0, struc
 }
 void EVP_DigestSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-  void* v0 = reinterpret_cast<void*>(args[0].As<Uint8Array>()->Buffer()->Data());
+  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
+  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
+  void* v0 = reinterpret_cast<void*>(ptr0);
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  unsigned char* v2 = reinterpret_cast<unsigned char*>(args[2].As<Uint8Array>()->Buffer()->Data());
-  unsigned int* v3 = reinterpret_cast<unsigned int*>(args[3].As<Uint8Array>()->Buffer()->Data());
+  Local<Uint8Array> u82 = args[2].As<Uint8Array>();
+  uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
+  unsigned char* v2 = reinterpret_cast<unsigned char*>(ptr2);
+  Local<Uint8Array> u83 = args[3].As<Uint8Array>();
+  uint8_t* ptr3 = (uint8_t*)u83->Buffer()->Data() + u83->ByteOffset();
+  unsigned int* v3 = reinterpret_cast<unsigned int*>(ptr3);
   const EVP_MD* v4 = reinterpret_cast<const EVP_MD*>((uint64_t)Local<Integer>::Cast(args[4])->Value());
   ENGINE* v5 = reinterpret_cast<ENGINE*>((uint64_t)Local<Integer>::Cast(args[5])->Value());
   int32_t rc = EVP_Digest(v0, v1, v2, v3, v4, v5);
@@ -301,10 +307,27 @@ int32_t EVP_DigestInit_exFast(void* p, void* p0, void* p1, void* p2) {
   ENGINE* v2 = reinterpret_cast<ENGINE*>(p2);
   return EVP_DigestInit_ex(v0, v1, v2);
 }
+void EVP_DigestUpdateSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = EVP_DigestUpdate(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t EVP_DigestUpdateFast(void* p, void* p0, void* p1, uint32_t p2) {
+  EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>(p0);
+  void* v1 = reinterpret_cast<void*>(p1);
+  uint32_t v2 = p2;
+  return EVP_DigestUpdate(v0, v1, v2);
+}
 void EVP_DigestUpdateBufferSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
-  void* v1 = reinterpret_cast<void*>(args[1].As<Uint8Array>()->Buffer()->Data());
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  void* v1 = reinterpret_cast<void*>(ptr1);
   uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = EVP_DigestUpdate(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -364,8 +387,12 @@ int32_t EVP_DigestSignFinalFast(void* p, void* p0, void* p1, void* p2) {
 void EVP_DigestFinalSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   EVP_MD_CTX* v0 = reinterpret_cast<EVP_MD_CTX*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
-  unsigned char* v1 = reinterpret_cast<unsigned char*>(args[1].As<Uint8Array>()->Buffer()->Data());
-  unsigned int* v2 = reinterpret_cast<unsigned int*>(args[2].As<Uint32Array>()->Buffer()->Data());
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  unsigned char* v1 = reinterpret_cast<unsigned char*>(ptr1);
+  Local<Uint32Array> u322 = args[2].As<Uint32Array>();
+  uint8_t* ptr2 = (uint8_t*)u322->Buffer()->Data() + u322->ByteOffset();
+  unsigned int* v2 = reinterpret_cast<unsigned int*>(ptr2);
   int32_t rc = EVP_DigestFinal(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -684,19 +711,6 @@ void X509_get_subject_nameFast(void* p, void* p0, struct FastApiTypedArray* cons
   ((X509_NAME**)p_ret->data)[0] = r;
 
 }
-void X509_get_pubkeySlow(const FunctionCallbackInfo<Value> &args) {
-  X509* v0 = reinterpret_cast<X509*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
-  EVP_PKEY* rc = X509_get_pubkey(v0);
-  Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
-  ((EVP_PKEY**)ab->Data())[0] = rc;
-}
-
-void X509_get_pubkeyFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
-  X509* v0 = reinterpret_cast<X509*>(p0);
-  EVP_PKEY* r = X509_get_pubkey(v0);
-  ((EVP_PKEY**)p_ret->data)[0] = r;
-
-}
 void X509_NAME_onelineSlow(const FunctionCallbackInfo<Value> &args) {
   const X509_NAME* v0 = reinterpret_cast<const X509_NAME*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   char* v1 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -735,6 +749,19 @@ void X509_freeSlow(const FunctionCallbackInfo<Value> &args) {
 void X509_freeFast(void* p, void* p0) {
   X509* v0 = reinterpret_cast<X509*>(p0);
   X509_free(v0);
+}
+void X509_get_pubkeySlow(const FunctionCallbackInfo<Value> &args) {
+  X509* v0 = reinterpret_cast<X509*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  EVP_PKEY* rc = X509_get_pubkey(v0);
+  Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
+  ((EVP_PKEY**)ab->Data())[0] = rc;
+}
+
+void X509_get_pubkeyFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+  X509* v0 = reinterpret_cast<X509*>(p0);
+  EVP_PKEY* r = X509_get_pubkey(v0);
+  ((EVP_PKEY**)p_ret->data)[0] = r;
+
 }
 void X509_REQ_newSlow(const FunctionCallbackInfo<Value> &args) {
 
@@ -849,6 +876,17 @@ int32_t SSL_get_errorFast(void* p, void* p0, int32_t p1) {
   const SSL* v0 = reinterpret_cast<const SSL*>(p0);
   int32_t v1 = p1;
   return SSL_get_error(v0, v1);
+}
+void SSL_is_init_finishedSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  const SSL* v0 = reinterpret_cast<const SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t rc = SSL_is_init_finished(v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t SSL_is_init_finishedFast(void* p, void* p0) {
+  const SSL* v0 = reinterpret_cast<const SSL*>(p0);
+  return SSL_is_init_finished(v0);
 }
 void SSL_shutdownSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -978,17 +1016,6 @@ void SSL_get_peer_certificateFast(void* p, void* p0, struct FastApiTypedArray* c
   ((X509**)p_ret->data)[0] = r;
 
 }
-void SSL_do_handshakeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
-  int32_t rc = SSL_do_handshake(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
-}
-
-int32_t SSL_do_handshakeFast(void* p, void* p0) {
-  SSL* v0 = reinterpret_cast<SSL*>(p0);
-  return SSL_do_handshake(v0);
-}
 void SSL_set_SSL_CTXSlow(const FunctionCallbackInfo<Value> &args) {
   SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   SSL_CTX* v1 = reinterpret_cast<SSL_CTX*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -1030,6 +1057,19 @@ int32_t SSL_set_fdFast(void* p, void* p0, int32_t p1) {
   int32_t v1 = p1;
   return SSL_set_fd(v0, v1);
 }
+void SSL_set_bioSlow(const FunctionCallbackInfo<Value> &args) {
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  BIO* v1 = reinterpret_cast<BIO*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  BIO* v2 = reinterpret_cast<BIO*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  SSL_set_bio(v0, v1, v2);
+}
+
+void SSL_set_bioFast(void* p, void* p0, void* p1, void* p2) {
+  SSL* v0 = reinterpret_cast<SSL*>(p0);
+  BIO* v1 = reinterpret_cast<BIO*>(p1);
+  BIO* v2 = reinterpret_cast<BIO*>(p2);
+  SSL_set_bio(v0, v1, v2);
+}
 void SSL_set_accept_stateSlow(const FunctionCallbackInfo<Value> &args) {
   SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   SSL_set_accept_state(v0);
@@ -1058,6 +1098,17 @@ void SSL_set_connect_stateSlow(const FunctionCallbackInfo<Value> &args) {
 void SSL_set_connect_stateFast(void* p, void* p0) {
   SSL* v0 = reinterpret_cast<SSL*>(p0);
   SSL_set_connect_state(v0);
+}
+void SSL_do_handshakeSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t rc = SSL_do_handshake(v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t SSL_do_handshakeFast(void* p, void* p0) {
+  SSL* v0 = reinterpret_cast<SSL*>(p0);
+  return SSL_do_handshake(v0);
 }
 void SSL_CTX_newSlow(const FunctionCallbackInfo<Value> &args) {
   SSL_METHOD* v0 = reinterpret_cast<SSL_METHOD*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -1167,21 +1218,29 @@ void SSL_CTX_freeFast(void* p, void* p0) {
 }
 void TLS_server_methodSlow(const FunctionCallbackInfo<Value> &args) {
 
-  TLS_server_method();
+  const SSL_METHOD* rc = TLS_server_method();
+  Local<ArrayBuffer> ab = args[0].As<Uint32Array>()->Buffer();
+  ((const SSL_METHOD**)ab->Data())[0] = rc;
 }
 
-void TLS_server_methodFast(void* p) {
+void TLS_server_methodFast(void* p, struct FastApiTypedArray* const p_ret) {
 
-  TLS_server_method();
+  const SSL_METHOD* r = TLS_server_method();
+  ((const SSL_METHOD**)p_ret->data)[0] = r;
+
 }
 void TLS_client_methodSlow(const FunctionCallbackInfo<Value> &args) {
 
-  TLS_client_method();
+  const SSL_METHOD* rc = TLS_client_method();
+  Local<ArrayBuffer> ab = args[0].As<Uint32Array>()->Buffer();
+  ((const SSL_METHOD**)ab->Data())[0] = rc;
 }
 
-void TLS_client_methodFast(void* p) {
+void TLS_client_methodFast(void* p, struct FastApiTypedArray* const p_ret) {
 
-  TLS_client_method();
+  const SSL_METHOD* r = TLS_client_method();
+  ((const SSL_METHOD**)p_ret->data)[0] = r;
+
 }
 void SSL_CTX_set_ciphersuitesSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -1405,6 +1464,16 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoEVP_DigestInit_ex = new v8::CFunctionInfo(*rcEVP_DigestInit_ex, 4, cargsEVP_DigestInit_ex);
   v8::CFunction* pFEVP_DigestInit_ex = new v8::CFunction((const void*)&EVP_DigestInit_exFast, infoEVP_DigestInit_ex);
   SET_FAST_METHOD(isolate, module, "EVP_DigestInit_ex", pFEVP_DigestInit_ex, EVP_DigestInit_exSlow);
+
+  v8::CTypeInfo* cargsEVP_DigestUpdate = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
+  cargsEVP_DigestUpdate[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsEVP_DigestUpdate[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsEVP_DigestUpdate[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsEVP_DigestUpdate[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+  v8::CTypeInfo* rcEVP_DigestUpdate = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infoEVP_DigestUpdate = new v8::CFunctionInfo(*rcEVP_DigestUpdate, 4, cargsEVP_DigestUpdate);
+  v8::CFunction* pFEVP_DigestUpdate = new v8::CFunction((const void*)&EVP_DigestUpdateFast, infoEVP_DigestUpdate);
+  SET_FAST_METHOD(isolate, module, "EVP_DigestUpdate", pFEVP_DigestUpdate, EVP_DigestUpdateSlow);
 
   v8::CTypeInfo* cargsEVP_DigestUpdateBuffer = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargsEVP_DigestUpdateBuffer[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
@@ -1646,14 +1715,6 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoX509_get_subject_name = new v8::CFunctionInfo(*rcX509_get_subject_name, 3, cargsX509_get_subject_name);
   v8::CFunction* pFX509_get_subject_name = new v8::CFunction((const void*)&X509_get_subject_nameFast, infoX509_get_subject_name);
   SET_FAST_METHOD(isolate, module, "X509_get_subject_name", pFX509_get_subject_name, X509_get_subject_nameSlow);
-  v8::CTypeInfo* cargsX509_get_pubkey = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsX509_get_pubkey[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsX509_get_pubkey[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_get_pubkey[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcX509_get_pubkey = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoX509_get_pubkey = new v8::CFunctionInfo(*rcX509_get_pubkey, 3, cargsX509_get_pubkey);
-  v8::CFunction* pFX509_get_pubkey = new v8::CFunction((const void*)&X509_get_pubkeyFast, infoX509_get_pubkey);
-  SET_FAST_METHOD(isolate, module, "X509_get_pubkey", pFX509_get_pubkey, X509_get_pubkeySlow);
   v8::CTypeInfo* cargsX509_NAME_oneline = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
   cargsX509_NAME_oneline[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsX509_NAME_oneline[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
@@ -1680,6 +1741,14 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoX509_free = new v8::CFunctionInfo(*rcX509_free, 2, cargsX509_free);
   v8::CFunction* pFX509_free = new v8::CFunction((const void*)&X509_freeFast, infoX509_free);
   SET_FAST_METHOD(isolate, module, "X509_free", pFX509_free, X509_freeSlow);
+  v8::CTypeInfo* cargsX509_get_pubkey = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
+  cargsX509_get_pubkey[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsX509_get_pubkey[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsX509_get_pubkey[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
+  v8::CTypeInfo* rcX509_get_pubkey = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* infoX509_get_pubkey = new v8::CFunctionInfo(*rcX509_get_pubkey, 3, cargsX509_get_pubkey);
+  v8::CFunction* pFX509_get_pubkey = new v8::CFunction((const void*)&X509_get_pubkeyFast, infoX509_get_pubkey);
+  SET_FAST_METHOD(isolate, module, "X509_get_pubkey", pFX509_get_pubkey, X509_get_pubkeySlow);
   v8::CTypeInfo* cargsX509_REQ_new = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsX509_REQ_new[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
 
@@ -1755,6 +1824,14 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoSSL_get_error = new v8::CFunctionInfo(*rcSSL_get_error, 3, cargsSSL_get_error);
   v8::CFunction* pFSSL_get_error = new v8::CFunction((const void*)&SSL_get_errorFast, infoSSL_get_error);
   SET_FAST_METHOD(isolate, module, "SSL_get_error", pFSSL_get_error, SSL_get_errorSlow);
+
+  v8::CTypeInfo* cargsSSL_is_init_finished = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+  cargsSSL_is_init_finished[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsSSL_is_init_finished[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  v8::CTypeInfo* rcSSL_is_init_finished = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infoSSL_is_init_finished = new v8::CFunctionInfo(*rcSSL_is_init_finished, 2, cargsSSL_is_init_finished);
+  v8::CFunction* pFSSL_is_init_finished = new v8::CFunction((const void*)&SSL_is_init_finishedFast, infoSSL_is_init_finished);
+  SET_FAST_METHOD(isolate, module, "SSL_is_init_finished", pFSSL_is_init_finished, SSL_is_init_finishedSlow);
 
   v8::CTypeInfo* cargsSSL_shutdown = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsSSL_shutdown[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
@@ -1840,14 +1917,6 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoSSL_get_peer_certificate = new v8::CFunctionInfo(*rcSSL_get_peer_certificate, 3, cargsSSL_get_peer_certificate);
   v8::CFunction* pFSSL_get_peer_certificate = new v8::CFunction((const void*)&SSL_get_peer_certificateFast, infoSSL_get_peer_certificate);
   SET_FAST_METHOD(isolate, module, "SSL_get_peer_certificate", pFSSL_get_peer_certificate, SSL_get_peer_certificateSlow);
-
-  v8::CTypeInfo* cargsSSL_do_handshake = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsSSL_do_handshake[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_do_handshake[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_do_handshake = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_do_handshake = new v8::CFunctionInfo(*rcSSL_do_handshake, 2, cargsSSL_do_handshake);
-  v8::CFunction* pFSSL_do_handshake = new v8::CFunction((const void*)&SSL_do_handshakeFast, infoSSL_do_handshake);
-  SET_FAST_METHOD(isolate, module, "SSL_do_handshake", pFSSL_do_handshake, SSL_do_handshakeSlow);
   v8::CTypeInfo* cargsSSL_set_SSL_CTX = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargsSSL_set_SSL_CTX[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsSSL_set_SSL_CTX[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
@@ -1875,6 +1944,16 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunction* pFSSL_set_fd = new v8::CFunction((const void*)&SSL_set_fdFast, infoSSL_set_fd);
   SET_FAST_METHOD(isolate, module, "SSL_set_fd", pFSSL_set_fd, SSL_set_fdSlow);
 
+  v8::CTypeInfo* cargsSSL_set_bio = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
+  cargsSSL_set_bio[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsSSL_set_bio[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsSSL_set_bio[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsSSL_set_bio[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  v8::CTypeInfo* rcSSL_set_bio = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* infoSSL_set_bio = new v8::CFunctionInfo(*rcSSL_set_bio, 4, cargsSSL_set_bio);
+  v8::CFunction* pFSSL_set_bio = new v8::CFunction((const void*)&SSL_set_bioFast, infoSSL_set_bio);
+  SET_FAST_METHOD(isolate, module, "SSL_set_bio", pFSSL_set_bio, SSL_set_bioSlow);
+
   v8::CTypeInfo* cargsSSL_set_accept_state = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsSSL_set_accept_state[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsSSL_set_accept_state[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
@@ -1898,6 +1977,14 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoSSL_set_connect_state = new v8::CFunctionInfo(*rcSSL_set_connect_state, 2, cargsSSL_set_connect_state);
   v8::CFunction* pFSSL_set_connect_state = new v8::CFunction((const void*)&SSL_set_connect_stateFast, infoSSL_set_connect_state);
   SET_FAST_METHOD(isolate, module, "SSL_set_connect_state", pFSSL_set_connect_state, SSL_set_connect_stateSlow);
+
+  v8::CTypeInfo* cargsSSL_do_handshake = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+  cargsSSL_do_handshake[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsSSL_do_handshake[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  v8::CTypeInfo* rcSSL_do_handshake = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infoSSL_do_handshake = new v8::CFunctionInfo(*rcSSL_do_handshake, 2, cargsSSL_do_handshake);
+  v8::CFunction* pFSSL_do_handshake = new v8::CFunction((const void*)&SSL_do_handshakeFast, infoSSL_do_handshake);
+  SET_FAST_METHOD(isolate, module, "SSL_do_handshake", pFSSL_do_handshake, SSL_do_handshakeSlow);
   v8::CTypeInfo* cargsSSL_CTX_new = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
   cargsSSL_CTX_new[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsSSL_CTX_new[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
@@ -1970,20 +2057,20 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoSSL_CTX_free = new v8::CFunctionInfo(*rcSSL_CTX_free, 2, cargsSSL_CTX_free);
   v8::CFunction* pFSSL_CTX_free = new v8::CFunction((const void*)&SSL_CTX_freeFast, infoSSL_CTX_free);
   SET_FAST_METHOD(isolate, module, "SSL_CTX_free", pFSSL_CTX_free, SSL_CTX_freeSlow);
-
-  v8::CTypeInfo* cargsTLS_server_method = (v8::CTypeInfo*)calloc(1, sizeof(v8::CTypeInfo));
+  v8::CTypeInfo* cargsTLS_server_method = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsTLS_server_method[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
 
+  cargsTLS_server_method[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcTLS_server_method = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoTLS_server_method = new v8::CFunctionInfo(*rcTLS_server_method, 1, cargsTLS_server_method);
+  v8::CFunctionInfo* infoTLS_server_method = new v8::CFunctionInfo(*rcTLS_server_method, 2, cargsTLS_server_method);
   v8::CFunction* pFTLS_server_method = new v8::CFunction((const void*)&TLS_server_methodFast, infoTLS_server_method);
   SET_FAST_METHOD(isolate, module, "TLS_server_method", pFTLS_server_method, TLS_server_methodSlow);
-
-  v8::CTypeInfo* cargsTLS_client_method = (v8::CTypeInfo*)calloc(1, sizeof(v8::CTypeInfo));
+  v8::CTypeInfo* cargsTLS_client_method = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsTLS_client_method[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
 
+  cargsTLS_client_method[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   v8::CTypeInfo* rcTLS_client_method = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoTLS_client_method = new v8::CFunctionInfo(*rcTLS_client_method, 1, cargsTLS_client_method);
+  v8::CFunctionInfo* infoTLS_client_method = new v8::CFunctionInfo(*rcTLS_client_method, 2, cargsTLS_client_method);
   v8::CFunction* pFTLS_client_method = new v8::CFunction((const void*)&TLS_client_methodFast, infoTLS_client_method);
   SET_FAST_METHOD(isolate, module, "TLS_client_method", pFTLS_client_method, TLS_client_methodSlow);
 
