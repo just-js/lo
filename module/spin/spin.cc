@@ -151,6 +151,17 @@ void createIsolateContextFast(void* p, int32_t p0, struct FastApiTypedArray* con
   struct isolate_context* v15 = reinterpret_cast<struct isolate_context*>(p15->data);
   spin_create_isolate_context(v0, v1, v2->data, v3, v4->data, v5, v6, v7, v8, v9, v10->data, v11->data, v12, v13, v14, v15);
 }
+void destroyIsolateContextSlow(const FunctionCallbackInfo<Value> &args) {
+  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
+  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
+  struct isolate_context* v0 = reinterpret_cast<struct isolate_context*>(ptr0);
+  spin_destroy_isolate_context(v0);
+}
+
+void destroyIsolateContextFast(void* p, struct FastApiTypedArray* const p0) {
+  struct isolate_context* v0 = reinterpret_cast<struct isolate_context*>(p0->data);
+  spin_destroy_isolate_context(v0);
+}
 void contextSizeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
 
@@ -161,6 +172,17 @@ void contextSizeSlow(const FunctionCallbackInfo<Value> &args) {
 int32_t contextSizeFast(void* p) {
 
   return spin_context_size();
+}
+void startIsolateSlow(const FunctionCallbackInfo<Value> &args) {
+  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
+  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
+  void* v0 = reinterpret_cast<void*>(ptr0);
+  spin_start_isolate(v0);
+}
+
+void startIsolateFast(void* p, struct FastApiTypedArray* const p0) {
+  void* v0 = reinterpret_cast<void*>(p0->data);
+  spin_start_isolate(v0);
 }
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
@@ -211,6 +233,14 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunction* pFcreateIsolateContext = new v8::CFunction((const void*)&createIsolateContextFast, infocreateIsolateContext);
   SET_FAST_METHOD(isolate, module, "createIsolateContext", pFcreateIsolateContext, createIsolateContextSlow);
 
+  v8::CTypeInfo* cargsdestroyIsolateContext = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+  cargsdestroyIsolateContext[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsdestroyIsolateContext[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  v8::CTypeInfo* rcdestroyIsolateContext = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* infodestroyIsolateContext = new v8::CFunctionInfo(*rcdestroyIsolateContext, 2, cargsdestroyIsolateContext);
+  v8::CFunction* pFdestroyIsolateContext = new v8::CFunction((const void*)&destroyIsolateContextFast, infodestroyIsolateContext);
+  SET_FAST_METHOD(isolate, module, "destroyIsolateContext", pFdestroyIsolateContext, destroyIsolateContextSlow);
+
   v8::CTypeInfo* cargscontextSize = (v8::CTypeInfo*)calloc(1, sizeof(v8::CTypeInfo));
   cargscontextSize[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
 
@@ -218,6 +248,14 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infocontextSize = new v8::CFunctionInfo(*rccontextSize, 1, cargscontextSize);
   v8::CFunction* pFcontextSize = new v8::CFunction((const void*)&contextSizeFast, infocontextSize);
   SET_FAST_METHOD(isolate, module, "contextSize", pFcontextSize, contextSizeSlow);
+
+  v8::CTypeInfo* cargsstartIsolate = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+  cargsstartIsolate[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsstartIsolate[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  v8::CTypeInfo* rcstartIsolate = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* infostartIsolate = new v8::CFunctionInfo(*rcstartIsolate, 2, cargsstartIsolate);
+  v8::CFunction* pFstartIsolate = new v8::CFunction((const void*)&startIsolateFast, infostartIsolate);
+  SET_FAST_METHOD(isolate, module, "startIsolate", pFstartIsolate, startIsolateSlow);
 
   SET_MODULE(isolate, target, "spin", module);
 }

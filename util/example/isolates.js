@@ -1,5 +1,6 @@
 import { Loop } from 'lib/loop.js'
 import { Timer } from 'lib/timer.js'
+import { system } from 'lib/system.js'
 
 const { assert } = spin
 
@@ -18,13 +19,13 @@ function spawn (code) {
   assert(spawnJS(code) === 0, 'could not run code')
 }
 
-const src = ''
+const src = '1'
 let done = 0
 
 const eventLoop = new Loop()
 
 const timer = new Timer(eventLoop, 1000, () => {
-  console.log(done)
+  console.log(`isolates ${done} rss ${system.getrusage()[0]}`)
   done = 0
 })
 

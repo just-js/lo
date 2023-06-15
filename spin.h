@@ -4,7 +4,6 @@
 #include <libplatform/libplatform.h>
 #include <map>
 #include <v8-fast-api-calls.h>
-#include <ffi.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -44,7 +43,7 @@ enum ScriptType : int {
   kFunction,
 };
 
-// struct used for passing options to V8 compiler when initialising modules
+// enum used for passing options to V8 compiler when initialising modules
 enum HostDefinedOptions : int {
   kType = 8,
   kID = 9,
@@ -63,18 +62,7 @@ enum FastTypes: int {
   buffer = 15, function = 16, u32array = 17, boolean = 18, string = 19
 };
 
-// struct to store callbacks for FFI bindings to fast api
-struct foreignFunction {
-  void* fast;
-  void* ffi;
-  void** values;
-  void* start;
-  v8::CFunction* cfunc;
-  ffi_cif* cif;
-  FastTypes rc;
-  FastTypes* params;
-  int nargs;
-};
+//v8::CTypeInfo* CTypeFromV8 (uint8_t v8Type);
 
 // v8 callbacks
 // callback for heap limit reached
@@ -122,11 +110,10 @@ void FreeMemory(void* buf, size_t length, void* data);
 // external JS api - these are bound to the "spin" object on JS global
 void Builtin(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Builtins(const v8::FunctionCallbackInfo<v8::Value> &args);
-void BindFastApi(const v8::FunctionCallbackInfo<v8::Value> &args);
 void EvaluateModule(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Library(const v8::FunctionCallbackInfo<v8::Value> &args);
+void Libraries(const v8::FunctionCallbackInfo<v8::Value> &args);
 void LoadModule(const v8::FunctionCallbackInfo<v8::Value> &args);
-void Modules(const v8::FunctionCallbackInfo<v8::Value> &args);
 void NextTick(const v8::FunctionCallbackInfo<v8::Value> &args);
 void RunMicroTasks(const v8::FunctionCallbackInfo<v8::Value> &args);
 void SetModuleCallbacks(const v8::FunctionCallbackInfo<v8::Value> &args);
@@ -145,6 +132,7 @@ void HRTime(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastHRTime (void* p, struct FastApiTypedArray* const p_ret);
 void ReadMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastReadMemory (void* p, struct FastApiTypedArray* const p_buf, void* start, uint32_t size);
+void WrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
 
 // fast api properties
 void GetErrno(const v8::FunctionCallbackInfo<v8::Value> &args);
@@ -191,8 +179,8 @@ void spin_create_isolate_context (int argc, char** argv,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname,
   int cleanup, int onexit, void* startup_data, struct isolate_context* ctx);
-void* spin_start_isolate (void* ptr);
-
+void spin_start_isolate (void* ptr);
+void spin_destroy_isolate_context (struct isolate_context* ctx);
 #ifdef __cplusplus
     }
 #endif

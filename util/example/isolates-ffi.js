@@ -1,6 +1,7 @@
 import { Loop } from 'lib/loop.js'
 import { Timer } from 'lib/timer.js'
 import { FFIFunction, Types } from 'lib/ffi.js'
+import { system } from 'lib/system.js'
 
 const { dlsym, assert } = spin
 
@@ -25,14 +26,14 @@ function spawn (code) {
   assert(spawnJS(code) === 0, 'could not run code')
 }
 
-//const src = `spin.library('fs').fs.write_string(1, 'hello\\n')`
+//const src = `spin.library('fs').fs.write_string(2, 'hello\\n')`
 const src = ''
 let done = 0
 
 const eventLoop = new Loop()
 
 const timer = new Timer(eventLoop, 1000, () => {
-  console.log(done)
+  console.log(`isolates ${done} rss ${system.getrusage()[0]}`)
   done = 0
 })
 

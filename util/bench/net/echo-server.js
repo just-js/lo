@@ -15,7 +15,6 @@ const { sockaddr_in } = net.types
 const EAGAIN = 11
 
 function onSocketEvent (fd) {
-  const u8 = new Uint8Array(BUFSIZE)
   const bytes = recv(fd, u8, BUFSIZE, 0)
   if (bytes > 0) {
     stats.recv += bytes
@@ -44,7 +43,7 @@ function onConnect (sfd) {
 
 const BUFSIZE = 65536
 const u8 = new Uint8Array(BUFSIZE)
-const address = '10.0.0.1'
+const address = '127.0.0.1'
 const port = 3000
 const fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0)
 assert(fd !== -1)

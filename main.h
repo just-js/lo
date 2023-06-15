@@ -6,25 +6,24 @@
 
 extern char _binary_main_js_start[];
 extern char _binary_main_js_end[];
+extern char _binary_lib_gen_js_start[];
+extern char _binary_lib_gen_js_end[];
 
 extern "C" {
   extern void* _register_load();
   extern void* _register_fs();
-  extern void* _register_ffi();
-  extern void* _register_tcc();
 }
 
 void register_builtins() {
   spin::builtins_add("main.js", _binary_main_js_start, _binary_main_js_end - _binary_main_js_start);
+  spin::builtins_add("lib/gen.js", _binary_lib_gen_js_start, _binary_lib_gen_js_end - _binary_lib_gen_js_start);
   spin::modules_add("load", &_register_load);
   spin::modules_add("fs", &_register_fs);
-  spin::modules_add("ffi", &_register_ffi);
-  spin::modules_add("tcc", &_register_tcc);
 }
 
 static unsigned int main_js_len = _binary_main_js_end - _binary_main_js_start;
 static const char* main_js = _binary_main_js_start;
-static const char* v8flags = "--no-verify-snapshot-checksum --stack-trace-limit=10 --use-strict --turbo-fast-api-calls";
+static const char* v8flags = "--stack-trace-limit=10 --use-strict --turbo-fast-api-calls";
 static unsigned int _v8flags_from_commandline = 1;
 static unsigned int _v8_threads = 2;
 static unsigned int _v8_cleanup = 0;

@@ -14,17 +14,17 @@ const api = {
     result: 'i32'
   },
   tcc_set_options: {
-    parameters: ['pointer', 'pointer'],
+    parameters: ['pointer', 'string'],
     pointers: ['TCCState*', 'const char*'],
     result: 'void'
   },
   tcc_add_include_path: {
-    parameters: ['pointer', 'pointer'],
+    parameters: ['pointer', 'string'],
     pointers: ['TCCState*', 'const char*'],
     result: 'i32'
   },
   tcc_add_file: {
-    parameters: ['pointer', 'pointer'],
+    parameters: ['pointer', 'string'],
     pointers: ['TCCState*', 'const char*'],
     result: 'i32'
   },

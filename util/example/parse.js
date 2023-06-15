@@ -23,23 +23,34 @@ acorn.parse(src, {
   sourceType: 'module',
   onToken: token => {
     tokens.push(token)
-    if (token.value === 'load' || token.value === 'library' || token.value === 'from') {
+    if (token.value === 'from') {
       imports.push(tokens.length)
+    } else if (token.value === 'load' || token.value === 'library') {
+      imports.push(tokens.length + 1)
     }
   }
 })
-
+console.log(JSON.stringify(tokens.map(t => t.value)))
 
 for (const index of imports) {
+  console.log(`${tokens[index].value}, ${tokens.slice(index - 10 < 0 ? 0 : index - 10, index).map(t => t.value)}`)
+/*
   const idx = index
   const stmt = []
   for (let i = 0; i < 100; i++) {
     if (idx - i < 0) break
     const { value } = tokens[idx - i]
     if (value) stmt.unshift(value)
-    if (value === 'import' || value === 'const') {
-      break
+    if (tokens[idx] === 'from') {
+      if (value === 'import' || value === 'const') {
+        break
+      }
+    } else if (tokens[idx] === 'load' || tokens[idx] === 'library') {
+      if (value === 'const') {
+        break
+      }
     }
   }
   console.log(stmt)
+*/
 }

@@ -1,4 +1,4 @@
-import { Library, Types, tcc } from 'lib/ffi.js'
+import { Library, Types, tcc, bindFastApi } from 'lib/ffi.js'
 
 // generate a fast api + ffi binding for a syscall we can look up with dlsym
 const libc = (new Library()).open().bind({
@@ -41,9 +41,7 @@ const asm = (new Library()).open().compile(CSource).bind({
 
 const CSource2 = `
 #include <unistd.h>
-#include <asm/unistd.h>
 #include <errno.h>
-#include <stdio.h>
 
 typedef int int32_t;
 
@@ -88,31 +86,30 @@ const addr = tcc.tcc_get_symbol(code, spin.cstr('ffi_read').ptr)
 spin.assert(addr, `could not locate symbol`)
 const sym = tcc.tcc_get_symbol(code, spin.cstr('ffi_read_slow').ptr)
 spin.assert(sym, `could not locate symbol`)
-const read3 = spin.bindFastApi(sym, addr, Types.i32, [Types.i32, Types.buffer])
+const read3 = bindFastApi(sym, addr, Types.i32, [Types.i32, Types.buffer])
 
 const u8 = new Uint8Array(65536)
 let total = 0
 
-const read = read3
-
-let bytes = read(0, u8)
-while (bytes > 0) {
-  total += bytes
-  bytes = read(0, u8)
+function ffi_read () {
+  const read = read3
+  let bytes = read(0, u8)
+  while (bytes > 0) {
+    total += bytes
+    bytes = read(0, u8)
+  }
+  console.log(total)
 }
 
-console.log(total)
-
-
-/*
-const size = u8.length
-const read = asm.read
-
-let bytes = read(0, u8, size)
-while (bytes > 0) {
-  total += bytes
-  bytes = read(0, u8, size)
+function asm_read () {
+  const size = u8.length
+  const read = asm.read  
+  let bytes = read(0, u8, size)
+  while (bytes > 0) {
+    total += bytes
+    bytes = read(0, u8, size)
+  }
+  console.log(total)  
 }
 
-console.log(total)
-*/
+ffi_read()

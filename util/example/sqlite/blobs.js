@@ -2,6 +2,8 @@ import { Database } from 'lib/sqlite.js'
 
 const { assert } = spin
 
+const start = Date.now()
+
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
@@ -62,3 +64,4 @@ const u83 = new Uint8Array(size2)
 blob.read(u83, size2)
 assert(decoder.decode(u83).length === 1124)
 blob.close()
+console.log(`💩💩💩 ${Date.now() - start} 💩💩💩`)

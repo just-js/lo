@@ -151,6 +151,7 @@ function load (name) {
   if (libCache.has(name)) return libCache.get(name)
   let lib = spin.library(name)
   if (lib) {
+    lib.internal = true
     libCache.set(name, lib)
     return lib
   }
@@ -160,6 +161,7 @@ function load (name) {
   if (!sym) return
   lib = spin.library(sym)
   if (!lib) return
+  lib.fileName = `module/${name}/${name}.so`
   libCache.set(name, lib)
   return lib
 }
@@ -180,7 +182,7 @@ async function onModuleLoad (specifier, resource) {
   if (moduleCache.has(specifier)) {
     const mod = moduleCache.get(specifier)
     if (!mod.evaluated) {
-      mod.namespace = await spin.evaluateModule(mod.scriptId)
+      mod.namespace = await spin.evaluateModule(mod.identity)
       mod.evaluated = true
     }
     return mod.namespace
@@ -202,7 +204,7 @@ async function onModuleLoad (specifier, resource) {
     moduleCache.set(request, mod)
   }
   if (!mod.evaluated) {
-    mod.namespace = await spin.evaluateModule(mod.scriptId)
+    mod.namespace = await spin.evaluateModule(mod.identity)
     mod.evaluated = true
   }
   return mod.namespace
@@ -210,8 +212,15 @@ async function onModuleLoad (specifier, resource) {
 
 function onModuleInstantiate (specifier) {
   if (moduleCache.has(specifier)) {
-    return moduleCache.get(specifier).scriptId
+    return moduleCache.get(specifier).identity
   }
+  let src = spin.builtin(specifier)
+  if (!src) {
+    src = decoder.decode(readFile(specifier))
+  }
+  const mod = spin.loadModule(src, specifier)
+  moduleCache.set(specifier, mod)
+  return mod.identity
 }
 
 const _builtin = spin.builtin

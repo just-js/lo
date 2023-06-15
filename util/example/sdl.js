@@ -1,4 +1,6 @@
 import { Library } from 'lib/ffi.js'
+import { Timer } from 'lib/timer.js'
+import { Loop } from 'lib/loop.js'
 
 const { assert } = spin
 
@@ -34,6 +36,12 @@ const SDL2 = (new Library()).open('./scratch/libSDL2.so').bind({
     pointers: ['SDLEvent*'],
     result: 'i32',
     name: 'SDL_WaitEvent'
+  },
+  pollEvent: {
+    parameters: ['u32array'],
+    pointers: ['SDLEvent*'],
+    result: 'i32',
+    name: 'SDL_PollEvent'
   },
   setRenderDrawColor: {
     parameters: ['pointer', 'u8', 'u8', 'u8', 'u8'],
@@ -90,21 +98,33 @@ rect[2] = 780 // width
 rect[3] = 580 // height
 const rectu8 = new Uint8Array(rect.buffer)
 
+const eventLoop = new Loop()
+
+const timer = new Timer(eventLoop, 1000, () => {
+  console.log('hello')
+})
+
 const event = new Uint32Array(14)
-let quit = false
-while (!quit) {
-  SDL2.waitEvent(event)
-  const [type] = event
-  if (type === SDL_QUIT) {
-    quit = true
+
+let ticks = 0
+
+while (1) {
+  spin.runMicroTasks()
+  if (SDL2.pollEvent(event) === 1) {
+    const [type] = event
+    if (type === SDL_QUIT) break
+    console.log(event)
+    SDL2.setRenderDrawColor(hRend, 0xff, 0xff, 0xff, 0xff)
+    SDL2.renderClear(hRend)
+    SDL2.setRenderDrawColor(hRend, 0xff, 0x00, 0x00, 0xff)
+    SDL2.renderFillRect(hRend, rectu8)
+    SDL2.renderPresent(hRend)  
   }
-  console.log(event)
-  SDL2.setRenderDrawColor(hRend, 0xff, 0xff, 0xff, 0xff)
-  SDL2.renderClear(hRend)
-  SDL2.setRenderDrawColor(hRend, 0xff, 0x00, 0x00, 0xff)
-  SDL2.renderFillRect(hRend, rectu8)
-  SDL2.renderPresent(hRend)
+  eventLoop.poll(0)
+  ticks++
 }
+
+timer.close()
 SDL2.destroyRenderer(hRend)
 SDL2.destroyWindow(hWnd)
 SDL2.quit()

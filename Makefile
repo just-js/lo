@@ -15,10 +15,10 @@ MODULE_DIR=module
 SPIN_HOME=$(shell pwd)
 # list of c++ library archive (.a) files to link into runtime
 #MODULES=module/load/load.a module/fs/fs.a module/ffi/ffi.a module/tcc/tcc.a
-MODULES=module/load/load.a module/fs/fs.a module/ffi/ffi.a module/tcc/tcc.a
+MODULES=module/load/load.a module/fs/fs.a
 # list of JS modules to link into runtime
 #LIBS=lib/ansi.js lib/bench.js lib/binary.js lib/ffi.js lib/gen.js lib/packet.js lib/path.js lib/stringify.js
-LIBS=
+LIBS=lib/gen.js
 # list of arbitrary assets to link into runtime
 ASSETS=
 # when initializing a module, the path to the api defintion
@@ -30,7 +30,7 @@ SCC_DIR=/home/andrew/go/bin
 # flags for v8 compilation
 #V8_FLAGS="-DV8_DEPRECATION_WARNINGS=1 -DV8_IMMINENT_DEPRECATION_WARNINGS=1 -DV8_HAS_ATTRIBUTE_VISIBILITY=0"
 V8_FLAGS=
-DEPS=deps/v8/libv8_monolith.a module/ffi/libffi.a module/tcc/libtcc.a librustls_ffi.a
+DEPS=deps/v8/libv8_monolith.a
 
 .PHONY: help clean
 
@@ -53,13 +53,13 @@ main.h: ## generate the main.h to initialize libs and modules
 	./${TARGET} gen --header ${LIBS} ${MODULES} ${ASSETS} > main.h
 
 main.o: main.h ## compile the main app
-	$(CC) -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native -Wpedantic -Wall -Wextra -Wno-unused-parameter main.cc
+	$(CC) -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native -Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter main.cc
 
 ${TARGET}.o: ${TARGET}.h ${TARGET}.cc ## compile the main library
-	$(CC) -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native -Wpedantic -Wall -Wextra -Wno-unused-parameter ${TARGET}.cc
+	$(CC) -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native -Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter ${TARGET}.cc
 
 ${TARGET}: ${TARGET}.o main.o builtins.o ## link the runtime
-	$(CC) -flto -g -O3 ${V8_FLAGS} -rdynamic -pthread -static-libstdc++ -static-libgcc -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
+	$(CC) -flto -g -O3 ${V8_FLAGS} -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 	objcopy --only-keep-debug ${TARGET} ${TARGET}.debug
 	strip --strip-debug --strip-unneeded ${TARGET}
 	objcopy --add-gnu-debuglink=${TARGET}.debug ${TARGET}

@@ -152,6 +152,7 @@ int32_t EVP_PKEY_assignFast(void* p, void* p0, int32_t p1, void* p2) {
   void* v2 = reinterpret_cast<void*>(p2);
   return EVP_PKEY_assign(v0, v1, v2);
 }
+/*
 void EVP_PKEY_idSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   EVP_PKEY* v0 = reinterpret_cast<EVP_PKEY*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -163,6 +164,7 @@ int32_t EVP_PKEY_idFast(void* p, void* p0) {
   EVP_PKEY* v0 = reinterpret_cast<EVP_PKEY*>(p0);
   return EVP_PKEY_id(v0);
 }
+*/
 void EVP_PKEY_typeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -1003,6 +1005,7 @@ void SSL_get_current_cipherFast(void* p, void* p0, struct FastApiTypedArray* con
   ((const SSL_CIPHER**)p_ret->data)[0] = r;
 
 }
+/*
 void SSL_get_peer_certificateSlow(const FunctionCallbackInfo<Value> &args) {
   const SSL* v0 = reinterpret_cast<const SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   X509* rc = SSL_get_peer_certificate(v0);
@@ -1016,6 +1019,8 @@ void SSL_get_peer_certificateFast(void* p, void* p0, struct FastApiTypedArray* c
   ((X509**)p_ret->data)[0] = r;
 
 }
+*/
+
 void SSL_set_SSL_CTXSlow(const FunctionCallbackInfo<Value> &args) {
   SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   SSL_CTX* v1 = reinterpret_cast<SSL_CTX*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -1362,6 +1367,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunction* pFEVP_PKEY_assign = new v8::CFunction((const void*)&EVP_PKEY_assignFast, infoEVP_PKEY_assign);
   SET_FAST_METHOD(isolate, module, "EVP_PKEY_assign", pFEVP_PKEY_assign, EVP_PKEY_assignSlow);
 
+/*
   v8::CTypeInfo* cargsEVP_PKEY_id = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsEVP_PKEY_id[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsEVP_PKEY_id[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
@@ -1369,6 +1375,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoEVP_PKEY_id = new v8::CFunctionInfo(*rcEVP_PKEY_id, 2, cargsEVP_PKEY_id);
   v8::CFunction* pFEVP_PKEY_id = new v8::CFunction((const void*)&EVP_PKEY_idFast, infoEVP_PKEY_id);
   SET_FAST_METHOD(isolate, module, "EVP_PKEY_id", pFEVP_PKEY_id, EVP_PKEY_idSlow);
+*/
 
   v8::CTypeInfo* cargsEVP_PKEY_type = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
   cargsEVP_PKEY_type[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
@@ -1909,6 +1916,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoSSL_get_current_cipher = new v8::CFunctionInfo(*rcSSL_get_current_cipher, 3, cargsSSL_get_current_cipher);
   v8::CFunction* pFSSL_get_current_cipher = new v8::CFunction((const void*)&SSL_get_current_cipherFast, infoSSL_get_current_cipher);
   SET_FAST_METHOD(isolate, module, "SSL_get_current_cipher", pFSSL_get_current_cipher, SSL_get_current_cipherSlow);
+/*
   v8::CTypeInfo* cargsSSL_get_peer_certificate = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
   cargsSSL_get_peer_certificate[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsSSL_get_peer_certificate[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
@@ -1917,6 +1925,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoSSL_get_peer_certificate = new v8::CFunctionInfo(*rcSSL_get_peer_certificate, 3, cargsSSL_get_peer_certificate);
   v8::CFunction* pFSSL_get_peer_certificate = new v8::CFunction((const void*)&SSL_get_peer_certificateFast, infoSSL_get_peer_certificate);
   SET_FAST_METHOD(isolate, module, "SSL_get_peer_certificate", pFSSL_get_peer_certificate, SSL_get_peer_certificateSlow);
+*/
   v8::CTypeInfo* cargsSSL_set_SSL_CTX = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargsSSL_set_SSL_CTX[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsSSL_set_SSL_CTX[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);

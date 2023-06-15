@@ -24,36 +24,60 @@ function strerror (errnum = spin.errno) {
   return decoder.decode(eb)
 }
 
+function onDrain (fd) {
+
+}
+
 function onSocketEvent (fd) {
-  const u8 = new Uint8Array(BUFSIZE)
   const bytes = recv(fd, u8, BUFSIZE, 0)
   if (bytes > 0) {
     stats.recv += bytes
     const written = send(fd, u8, bytes, 0)
-    if (written !== bytes) {
-      console.log('uhoh')
+    if (written === bytes) {
+      stats.send += written
+      return
     }
-    stats.send += written
+    if (written === -1) {
+      if (spin.errno === EAGAIN) {
+        console.log('send.EAGAIN')
+        return
+      }
+      console.log('send.error')
+      eventLoop.remove(fd)
+      close(fd)
+      return
+    }
+    assert(!eventLoop.modify(fd, Loop.Writable | Loop.EdgeTriggered, onDrain))
     return
   }
-  if (bytes < 0 && spin.errno === EAGAIN) return
-  if (bytes < 0) console.error('socket_error')
+  if (bytes < 0 && spin.errno === EAGAIN) {
+    console.log('recv.EAGAIN')
+    return
+  }
+  console.log('recv.error')
   eventLoop.remove(fd)
   close(fd)
 }
 
 function onConnect (fd) {
-  console.log('connect')
   assert(!eventLoop.modify(fd, Loop.Readable, onSocketEvent))
   const written = send(fd, u8, BUFSIZE, 0)
-  if (written !== BUFSIZE) {
-    console.log('uhoh')
+  if (written === BUFSIZE) {
+    stats.send += written
+    return
   }
+  if (written === -1) {
+    if (spin.errno === EAGAIN) return
+    eventLoop.remove(fd)
+    close(fd)
+    return
+  }
+  assert(!eventLoop.modify(fd, Loop.Writable | Loop.EdgeTriggered, onDrain))
 }
 
 const BUFSIZE = 65536
 const u8 = new Uint8Array(BUFSIZE)
-const address = '10.0.0.1'
+const address = '127.0.0.1'
 const port = 3000
 
 function client () {

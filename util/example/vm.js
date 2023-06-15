@@ -52,7 +52,7 @@ function spawnJS (main = '', js = '', args = []) {
     recv: 0,
     clock: currentTime
   }
-  threads[tid] = { tid, ctx, fd, buf, stats }
+  //threads[tid] = { tid, ctx, fd, buf, stats }
   const rc = thread.tryJoin(tid, rcbuf)
   spin.assert(rc === 0 || rc === EBUSY)
   return { tid, rc, ctx, fd, buf, stats }
@@ -97,6 +97,7 @@ const timer = new Timer(eventLoop, 1000, () => {
   console.log(stats.percentile(times, 90))
   console.log(stats.percentile(times, 99))
 */
+  const tids = Object.keys(threads)
   const log = [
     `${AG}pid${AD} ${pad(id, 6)} ${AY}rss${AD} ${pad(rss, 4)} ${AC}MB${AD} ${AM}thread${AD} ${pad(tids.length, 6)} ${AG}mem/t${AD} ${pad(rss / tids.length, 6)} ${AC}MB${AD} ${AY}%cpu${AD} ${pad(usr)} ${pad(sys)} ${AG}/${AD} ${pad(total)}`,
     //...tids.map(tid => {
@@ -110,15 +111,15 @@ const timer = new Timer(eventLoop, 1000, () => {
 let [lastUsr, lastSys, , , lastTicks] = system.cputime()
 let tids = []
 const threads = {}
-const count = parseInt(spin.args[2] || '8', 10)
+let count = parseInt(spin.args[2] || '1', 10)
+
+while (count--) {
+  args[1] = `thread ${count}`
+  const t = spawnJS(main, js, args)
+  threads[t.tid] = t
+}
 
 while (1) {
-  if (tids.length < count) {
-    args[1] = `thread ${count}`
-    const t = spawnJS(main, js, args)
-    threads[t.tid] = t
-    tids = Object.keys(threads)
-  }
   spin.runMicroTasks()
   eventLoop.poll(-1)
 }

@@ -2,8 +2,8 @@ import { Loop } from 'lib/loop.js'
 import { Timer } from 'lib/timer.js'
 import { WebSocket } from 'lib/websocket.js'
 
-function createSocket () {
-  const sock = new WebSocket(eventLoop)
+function createSocket (port = 3000, address = '127.0.0.1') {
+  const sock = new WebSocket(eventLoop, port, address)
 
   sock.onopen = () => {
     sock.send(msg)
@@ -33,7 +33,7 @@ const timer = new Timer(eventLoop, 1000, onTimer)
 const sockets = []
 
 for (let i = 0; i < 16; i++) {
-  sockets.push(createSocket())
+  sockets.push(createSocket(3000))
 }
 
 while (1) {

@@ -11,6 +11,7 @@ const AW = '\u001b[37m' // ANSI White
 spin.colors = { AD, A0, AR, AG, AY, AB, AM, AC, AW }
 
 const { fs } = spin.library('fs')
+const loader = spin.library('load')
 
 const STDIN = 0
 const STDOUT = 1
@@ -103,7 +104,7 @@ const defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 
 function readFile (path, flags = O_RDONLY) {
   const fd = fs.open(path, flags)
-  assert(fd > 0)
+  assert(fd > 0, `failed to open ${path} with flags ${flags}`)
   let r = fs.fstat(fd, stat)
   assert(r === 0)
   const size = Number(st[6])
@@ -147,6 +148,7 @@ function load (name) {
   if (libCache.has(name)) return libCache.get(name)
   let lib = spin.library(name)
   if (lib) {
+    lib.internal = true
     libCache.set(name, lib)
     return lib
   }
@@ -156,6 +158,7 @@ function load (name) {
   if (!sym) return
   lib = spin.library(sym)
   if (!lib) return
+  lib.fileName = `module/${name}/${name}.so`
   libCache.set(name, lib)
   return lib
 }
@@ -199,7 +202,8 @@ async function onModuleLoad (specifier, resource) {
   if (moduleCache.has(specifier)) {
     const mod = moduleCache.get(specifier)
     if (!mod.evaluated) {
-      mod.namespace = await spin.evaluateModule(mod.scriptId)
+      //console.log(`main.evaluateModule.1 ${mod.identity} ${specifier} ${resource}`)
+      mod.namespace = await spin.evaluateModule(mod.identity)
       mod.evaluated = true
     }
     return mod.namespace
@@ -221,7 +225,8 @@ async function onModuleLoad (specifier, resource) {
     moduleCache.set(request, mod)
   }
   if (!mod.evaluated) {
-    mod.namespace = await spin.evaluateModule(mod.scriptId)
+    //console.log(`main.evaluateModule.2 ${mod.identity} ${specifier} ${resource}`)
+    mod.namespace = await spin.evaluateModule(mod.identity)
     mod.evaluated = true
   }
   return mod.namespace
@@ -229,7 +234,7 @@ async function onModuleLoad (specifier, resource) {
 
 function onModuleInstantiate (specifier) {
   if (moduleCache.has(specifier)) {
-    return moduleCache.get(specifier).scriptId
+    return moduleCache.get(specifier).identity
   }
   let src = spin.builtin(specifier)
   if (!src) {
@@ -237,7 +242,7 @@ function onModuleInstantiate (specifier) {
   }
   const mod = spin.loadModule(src, specifier)
   moduleCache.set(specifier, mod)
-  return mod.scriptId
+  return mod.identity
 }
 
 const _builtin = spin.builtin
@@ -247,7 +252,6 @@ spin.builtin = fp => {
   return _builtin(fp)
 }
 const moduleCache = new Map()
-const loader = spin.library('load')
 spin.fs = fs
 spin.fs.readFile = readFile
 spin.fs.writeFile = writeFile
@@ -262,6 +266,7 @@ const stat = new Uint8Array(160)
 const st = new BigUint64Array(stat.buffer)
 spin.assert = assert
 spin.moduleCache = moduleCache
+spin.libCache = libCache
 spin.wrap = wrap
 spin.cstr = C
 spin.ptr = ptr

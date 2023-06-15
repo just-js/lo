@@ -1,6 +1,6 @@
 const api = {
   getcwd: {
-    parameters: ['pointer', 'i32'],
+    parameters: ['buffer', 'i32'],
     pointers: ['char*'],
     result: 'pointer',
     rpointer: ['char*']
@@ -49,20 +49,30 @@ const api = {
     parameters: [],
     result: 'i32'
   },
+  kill: {
+    parameters: ['i32', 'i32'],
+    result: 'i32'
+  },
   waitpid: {
-    parameters: ['i32', 'pointer', 'i32'],
+    parameters: ['i32', 'buffer', 'i32'],
     pointers: [, 'int*'],
     result: 'i32'
   },
   execvp: {
-    parameters: ['pointer', 'pointer'],
-    pointers: ['char*', 'char* const*'],
+    parameters: ['string', 'buffer'],
+    pointers: ['const char*', 'char* const*'],
     result: 'i32'
+  },
+  readlink: {
+    parameters: ['string', 'buffer', 'u32'],
+    pointers: ['const char*', 'char*'],
+    result: 'u32'
   },
   sysconf: {
     parameters: ['i32'],
     result: 'u32'
   },
+  // TODO: allow hardcoding a value as params here
   pidfd_open: {
     parameters: ['i32', 'i32', 'u32'],
     result: 'i32',
@@ -74,12 +84,12 @@ const api = {
     name: 'syscall'
   },
   getrlimit: {
-    parameters: ['i32', 'pointer'],
+    parameters: ['i32', 'u32array'],
     pointers: [, 'struct rlimit*'],
     result: 'i32'
   },
   setrlimit: {
-    parameters: ['i32', 'pointer'],
+    parameters: ['i32', 'u32array'],
     pointers: [, 'const struct rlimit*'],
     result: 'i32'
   },
@@ -94,7 +104,7 @@ const api = {
     result: 'i32'
   },
   sysinfo: {
-    parameters: ['pointer'],
+    parameters: ['buffer'],
     pointers: ['struct sysinfo*'],
     result: 'u32'
   },
@@ -110,7 +120,7 @@ const api = {
     result: 'pointer'
   },
   getenv: {
-    parameters: ['pointer'],
+    parameters: ['string'],
     pointers: ['const char*'],
     rpointer: 'char*',
     result: 'pointer'

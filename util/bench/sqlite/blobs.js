@@ -5,18 +5,21 @@ const { assert } = spin
 
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
-const db = (new Database()).open(':memory:')
+const db = (new Database()).open('foo.sqlite')
 db.exec("PRAGMA auto_vacuum = none");
 db.exec("PRAGMA temp_store = memory");
 db.exec("PRAGMA locking_mode = exclusive");
-db.exec('CREATE TABLE IF NOT EXISTS entry (payload BLOB)')
-const createAsset = db.prepare('INSERT OR IGNORE INTO entry (payload) values (@payload)')
+db.exec('CREATE TABLE IF NOT EXISTS entry (key TEXT PRIMARY KEY, payload BLOB)')
+const createAsset = db.prepare('INSERT OR IGNORE INTO entry (key, payload) values (@key, @payload)')
 
 const SIZE = 4096
 const src = new Uint8Array(SIZE)
+const key = 'hellobuffer'
 
-assert(createAsset.bindBlob(1, src) === 0, db.error)
+assert(createAsset.bindText(1, key) === 0, db.error)
+assert(createAsset.bindBlob(2, src) === 0, db.error)
 assert(createAsset.step() === 101, db.error)
+
 const blob = db.writableBlob('entry', 'payload', 1)
 const size = blob.bytes()
 assert(size > 0)
@@ -32,7 +35,8 @@ function writeBlob () {
   assert(createAsset.step() === 101, errorHandler)
 }
 
-run('blob.read', () => blob.read(u8, size), 30000000, 10)
+//run('blob.read', () => blob.read(u8, size), 30000000, 10)
+run('blob.write', () => blob.write(u8, size), 30000000, 10)
 //run('blob.write', writeBlob, 300000, 10)
 
 const { rows }  = db.prepare('select count(1) as rows from entry').get()

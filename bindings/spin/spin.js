@@ -9,7 +9,8 @@ const api = {
       'const char*', 'const char*'
     ],
     result: 'i32',
-    name: 'spin_create_isolate'
+    name: 'spin_create_isolate',
+    nofast: true
   },
   createIsolateContext: {
     parameters: [
@@ -23,10 +24,22 @@ const api = {
     result: 'void',
     name: 'spin_create_isolate_context'
   },
+  destroyIsolateContext: {
+    parameters: ['buffer'],
+    pointers: ['struct isolate_context*'],
+    result: 'void',
+    name: 'spin_destroy_isolate_context'
+  },
   contextSize: {
     parameters: [],
     result: 'i32',
     name: 'spin_context_size'
+  },
+  startIsolate: {
+    parameters: ['buffer'],
+    result: 'void',
+    name: 'spin_start_isolate',
+    nofast: true
   }
 }
 

@@ -165,6 +165,32 @@ void put_stringFast(void* p, void* p0, void* p1, struct FastOneByteString* const
   char** v6 = reinterpret_cast<char**>(p6->data);
   rocksdb_put(v0, v1, v2->data, v3, v4->data, v5, v6);
 }
+void putSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  rocksdb_t* v0 = reinterpret_cast<rocksdb_t*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  rocksdb_writeoptions_t* v1 = reinterpret_cast<rocksdb_writeoptions_t*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  String::Utf8Value v2(isolate, args[2]);
+  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  Local<Uint8Array> u84 = args[4].As<Uint8Array>();
+  uint8_t* ptr4 = (uint8_t*)u84->Buffer()->Data() + u84->ByteOffset();
+  const char* v4 = reinterpret_cast<const char*>(ptr4);
+  uint32_t v5 = Local<Integer>::Cast(args[5])->Value();
+  Local<Uint32Array> u326 = args[6].As<Uint32Array>();
+  uint8_t* ptr6 = (uint8_t*)u326->Buffer()->Data() + u326->ByteOffset();
+  char** v6 = reinterpret_cast<char**>(ptr6);
+  rocksdb_put(v0, v1, *v2, v3, v4, v5, v6);
+}
+
+void putFast(void* p, void* p0, void* p1, struct FastOneByteString* const p2, uint32_t p3, struct FastApiTypedArray* const p4, uint32_t p5, struct FastApiTypedArray* const p6) {
+  rocksdb_t* v0 = reinterpret_cast<rocksdb_t*>(p0);
+  rocksdb_writeoptions_t* v1 = reinterpret_cast<rocksdb_writeoptions_t*>(p1);
+  struct FastOneByteString* const v2 = p2;
+  uint32_t v3 = p3;
+  const char* v4 = reinterpret_cast<const char*>(p4->data);
+  uint32_t v5 = p5;
+  char** v6 = reinterpret_cast<char**>(p6->data);
+  rocksdb_put(v0, v1, v2->data, v3, v4, v5, v6);
+}
 void getSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   rocksdb_t* v0 = reinterpret_cast<rocksdb_t*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -281,6 +307,20 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoput_string = new v8::CFunctionInfo(*rcput_string, 8, cargsput_string);
   v8::CFunction* pFput_string = new v8::CFunction((const void*)&put_stringFast, infoput_string);
   SET_FAST_METHOD(isolate, module, "put_string", pFput_string, put_stringSlow);
+
+  v8::CTypeInfo* cargsput = (v8::CTypeInfo*)calloc(8, sizeof(v8::CTypeInfo));
+  cargsput[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsput[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsput[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsput[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
+  cargsput[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+  cargsput[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargsput[6] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+  cargsput[7] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  v8::CTypeInfo* rcput = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* infoput = new v8::CFunctionInfo(*rcput, 8, cargsput);
+  v8::CFunction* pFput = new v8::CFunction((const void*)&putFast, infoput);
+  SET_FAST_METHOD(isolate, module, "put", pFput, putSlow);
   v8::CTypeInfo* cargsget = (v8::CTypeInfo*)calloc(8, sizeof(v8::CTypeInfo));
   cargsget[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsget[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);

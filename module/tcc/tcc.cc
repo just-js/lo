@@ -76,10 +76,7 @@ void tcc_newFast(void* p, struct FastApiTypedArray* const p_ret) {
 
 }
 void tcc_deleteSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   tcc_delete(v0);
 }
 
@@ -89,9 +86,7 @@ void tcc_deleteFast(void* p, void* p0) {
 }
 void tcc_set_output_typeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = tcc_set_output_type(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
@@ -104,54 +99,46 @@ int32_t tcc_set_output_typeFast(void* p, void* p0, int32_t p1) {
 }
 void tcc_set_optionsSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  tcc_set_options(v0, v1);
+  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  String::Utf8Value v1(isolate, args[1]);
+  tcc_set_options(v0, *v1);
 }
 
-void tcc_set_optionsFast(void* p, void* p0, void* p1) {
+void tcc_set_optionsFast(void* p, void* p0, struct FastOneByteString* const p1) {
   TCCState* v0 = reinterpret_cast<TCCState*>(p0);
-  const char* v1 = reinterpret_cast<const char*>(p1);
-  tcc_set_options(v0, v1);
+  struct FastOneByteString* const v1 = p1;
+  tcc_set_options(v0, v1->data);
 }
 void tcc_add_include_pathSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  int32_t rc = tcc_add_include_path(v0, v1);
+  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  String::Utf8Value v1(isolate, args[1]);
+  int32_t rc = tcc_add_include_path(v0, *v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t tcc_add_include_pathFast(void* p, void* p0, void* p1) {
+int32_t tcc_add_include_pathFast(void* p, void* p0, struct FastOneByteString* const p1) {
   TCCState* v0 = reinterpret_cast<TCCState*>(p0);
-  const char* v1 = reinterpret_cast<const char*>(p1);
-  return tcc_add_include_path(v0, v1);
+  struct FastOneByteString* const v1 = p1;
+  return tcc_add_include_path(v0, v1->data);
 }
 void tcc_add_fileSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  int32_t rc = tcc_add_file(v0, v1);
+  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  String::Utf8Value v1(isolate, args[1]);
+  int32_t rc = tcc_add_file(v0, *v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t tcc_add_fileFast(void* p, void* p0, void* p1) {
+int32_t tcc_add_fileFast(void* p, void* p0, struct FastOneByteString* const p1) {
   TCCState* v0 = reinterpret_cast<TCCState*>(p0);
-  const char* v1 = reinterpret_cast<const char*>(p1);
-  return tcc_add_file(v0, v1);
+  struct FastOneByteString* const v1 = p1;
+  return tcc_add_file(v0, v1->data);
 }
 void tcc_compile_stringSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const char* v1 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = tcc_compile_string(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -163,10 +150,8 @@ int32_t tcc_compile_stringFast(void* p, void* p0, void* p1) {
 }
 void tcc_relocateSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  void* v1 = reinterpret_cast<void*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = tcc_relocate(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -177,11 +162,8 @@ int32_t tcc_relocateFast(void* p, void* p0, void* p1) {
   return tcc_relocate(v0, v1);
 }
 void tcc_get_symbolSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const char* v1 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   void* rc = tcc_get_symbol(v0, v1);
   Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
   ((void**)ab->Data())[0] = rc;
@@ -196,11 +178,9 @@ void tcc_get_symbolFast(void* p, void* p0, void* p1, struct FastApiTypedArray* c
 }
 void tcc_add_symbolSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
-  const void* v2 = reinterpret_cast<const void*>((uint64_t)args[2]->NumberValue(context).ToChecked());
+  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const char* v1 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  const void* v2 = reinterpret_cast<const void*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
   int32_t rc = tcc_add_symbol(v0, v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -213,10 +193,8 @@ int32_t tcc_add_symbolFast(void* p, void* p0, void* p1, void* p2) {
 }
 void tcc_output_fileSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)args[0]->NumberValue(context).ToChecked());
-  const char* v1 = reinterpret_cast<const char*>((uint64_t)args[1]->NumberValue(context).ToChecked());
+  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const char* v1 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = tcc_output_file(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
@@ -258,7 +236,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CTypeInfo* cargstcc_set_options = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
   cargstcc_set_options[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargstcc_set_options[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargstcc_set_options[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargstcc_set_options[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
   v8::CTypeInfo* rctcc_set_options = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
   v8::CFunctionInfo* infotcc_set_options = new v8::CFunctionInfo(*rctcc_set_options, 3, cargstcc_set_options);
   v8::CFunction* pFtcc_set_options = new v8::CFunction((const void*)&tcc_set_optionsFast, infotcc_set_options);
@@ -267,7 +245,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CTypeInfo* cargstcc_add_include_path = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
   cargstcc_add_include_path[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargstcc_add_include_path[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargstcc_add_include_path[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargstcc_add_include_path[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
   v8::CTypeInfo* rctcc_add_include_path = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CFunctionInfo* infotcc_add_include_path = new v8::CFunctionInfo(*rctcc_add_include_path, 3, cargstcc_add_include_path);
   v8::CFunction* pFtcc_add_include_path = new v8::CFunction((const void*)&tcc_add_include_pathFast, infotcc_add_include_path);
@@ -276,7 +254,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CTypeInfo* cargstcc_add_file = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
   cargstcc_add_file[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargstcc_add_file[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargstcc_add_file[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargstcc_add_file[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
   v8::CTypeInfo* rctcc_add_file = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
   v8::CFunctionInfo* infotcc_add_file = new v8::CFunctionInfo(*rctcc_add_file, 3, cargstcc_add_file);
   v8::CFunction* pFtcc_add_file = new v8::CFunction((const void*)&tcc_add_fileFast, infotcc_add_file);

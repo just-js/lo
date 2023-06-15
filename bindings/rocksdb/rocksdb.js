@@ -42,6 +42,12 @@ const api = {
     result: 'void',
     name: 'rocksdb_put'
   },
+  put: {
+    parameters: ['pointer', 'pointer', 'string', 'u32', 'buffer', 'u32', 'u32array'],
+    pointers: ['rocksdb_t*', 'rocksdb_writeoptions_t*', 'const char*', , 'const char*', , 'char**'],
+    result: 'void',
+    name: 'rocksdb_put'
+  },
   get: {
     parameters: ['pointer', 'pointer', 'string', 'u32', 'u32array', 'u32array'],
     pointers: ['rocksdb_t*', 'rocksdb_readoptions_t*', 'const char*', , 'size_t*', 'char**'],

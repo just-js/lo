@@ -2,6 +2,8 @@ import { Socket } from 'lib/socket.js'
 import { Loop } from 'lib/loop.js'
 import { tcc } from 'lib/ffi.js'
 import { dump } from 'lib/binary.js'
+import { pico } from 'lib/pico.js'
+import { system } from 'lib/system.js'
 
 const { rustls } = spin.load('rustls')
 
@@ -26,9 +28,6 @@ const source = spin.cstr(`
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
-
-#include <stdio.h>
-
 struct user_data {
   int fd;
 };
@@ -88,20 +87,30 @@ const eventLoop = new Loop()
 const sock = new Socket(eventLoop)
 const out_n = new Uint32Array(1)
 
+const HTTP_CTX_SZ = 32
+const HTTP_HEADER_SZ = 32
+const MAXHEADERS = 32
+const sbuf = new Uint8Array(HTTP_CTX_SZ + (HTTP_HEADER_SZ * MAXHEADERS))
+const state = new Uint32Array(sbuf.buffer)
+const decoder = new TextDecoder()
+
 async function connect () {
   await sock.connect(port, ip)
   const user_data = new Uint32Array([sock.fd])
   const req = encoder.encode(`GET /oven-sh/bun/tar.gz/bun-v0.5.9 HTTP/1.1\r\nHost: ${hostname}\r\nAccept: */*\r\nConnection: close\r\n\r\n`)
   spin.assert(rustls.connection_write(tls_conn, req, req.length, out_n) === RUSTLS_RESULT_OK)
   spin.assert(out_n[0] === req.length)
+  let headers = false
+  let chunks = []
+  let expectedLength = 0
   while (1) {
-    const want_read = rustls.connection_wants_write(tls_conn)
-    if (want_read) {
+    const want_write = rustls.connection_wants_write(tls_conn)
+    if (want_write) {
       spin.assert(rustls.connection_write_tls(tls_conn, do_write, user_data, out_n) === 0)
       spin.assert(out_n[0] > 0)
     }
-    const want_write = rustls.connection_wants_read(tls_conn)
-    if (want_write) {
+    const want_read = rustls.connection_wants_read(tls_conn)
+    if (want_read) {
       const rc = rustls.connection_read_tls(tls_conn, do_read, user_data, out_n)
       if (rc === 0) {
         if (out_n[0] === 0) {
@@ -109,13 +118,41 @@ async function connect () {
         }
         spin.assert(out_n[0] > 0)
         spin.assert(rustls.connection_process_new_packets(tls_conn) === RUSTLS_RESULT_OK)
-        const buf = new Uint8Array(4096)
+        const buf = new Uint8Array(65536)
         const rc = rustls.connection_read(tls_conn, buf, buf.length, out_n)
         if (rc === RUSTLS_RESULT_OK) {
-          console.log(out_n[0])
-          //console.log(dump(buf.subarray(0, out_n[0])))
+          if (out_n[0] === 0) {
+            break // EOF
+          }
+          if (!headers) {
+            let bodyStart = 0
+            const parsed = pico.parseResponse(buf.subarray(0, out_n[0]), out_n[0], state)
+            if (parsed > 0) {
+              const [version, status, nheader] = state
+              console.log(`version ${version} status ${status} headers ${nheader}`)
+              let off = 8
+              for (let i = 0; i < nheader; i++) {
+                const [nstart, nlen, vstart, vlen] = state.subarray(off, off + 4)
+                const name = decoder.decode(buf.subarray(nstart, nstart + nlen))
+                const value = decoder.decode(buf.subarray(vstart, vstart + vlen))
+                if (name.toLowerCase() === 'content-length') {
+                  expectedLength = parseInt(value, 10)
+                }
+                console.log(`${name}: ${value}`)
+                bodyStart = vstart + vlen + 4
+                off += 4
+              }
+              headers = true
+              if (out_n[0] > bodyStart) {
+                chunks.push(buf.slice(bodyStart, out_n[0]))
+              }
+            }
+          } else {
+            chunks.push(buf.slice(0, out_n[0]))
+          }
         } else {
           spin.assert(rc === RUSTLS_RESULT_PLAINTEXT_EMPTY)
+          system.usleep(100000)
         }
       } else {
         if (rc !== 11) break
@@ -125,15 +162,19 @@ async function connect () {
       const buf = new Uint8Array(4096)
       const rc = rustls.connection_read(tls_conn, buf, buf.length, out_n)
       if (rc === RUSTLS_RESULT_OK) {
-        console.log(out_n[0])
-        //console.log(dump(buf.subarray(0, out_n[0])))
+        if (out_n[0] === 0) {
+          break // EOF
+        }
+        chunks.push(buf.slice(0, out_n[0]))
       } else {
         spin.assert(rc === RUSTLS_RESULT_PLAINTEXT_EMPTY)
+        system.usleep(100000)
       }
     }
   }
   rustls.connection_free(tls_conn)
   sock.close()
+  console.log(chunks.reduce((p, c) => p + c.length, 0))
 }
 
 connect().catch(err => console.error(err.stack))
