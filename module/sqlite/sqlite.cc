@@ -129,6 +129,19 @@ int32_t execFast(void* p, void* p0, struct FastOneByteString* const p1, void* p2
   char** v4 = reinterpret_cast<char**>(p4->data);
   return sqlite3_exec(v0, v1->data, v2, v3, v4);
 }
+void exec2Slow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  String::Utf8Value v1(isolate, args[1]);
+  callback v2 = reinterpret_cast<callback>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  void* v3 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
+  Local<Uint32Array> u324 = args[4].As<Uint32Array>();
+  uint8_t* ptr4 = (uint8_t*)u324->Buffer()->Data() + u324->ByteOffset();
+  char** v4 = reinterpret_cast<char**>(ptr4);
+  int32_t rc = sqlite3_exec(v0, *v1, v2, v3, v4);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
 void errmsgSlow(const FunctionCallbackInfo<Value> &args) {
   sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   const char* rc = sqlite3_errmsg(v0);
@@ -528,6 +541,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoexec = new v8::CFunctionInfo(*rcexec, 6, cargsexec);
   v8::CFunction* pFexec = new v8::CFunction((const void*)&execFast, infoexec);
   SET_FAST_METHOD(isolate, module, "exec", pFexec, execSlow);
+  SET_METHOD(isolate, module, "exec2", exec2Slow);
   v8::CTypeInfo* cargserrmsg = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
   cargserrmsg[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargserrmsg[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);

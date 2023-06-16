@@ -289,6 +289,7 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
   }
 }
 
+// TODO: make a BindSlow and BindFast function
 void BindFastApi(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
@@ -381,9 +382,12 @@ void BindFastApi(const FunctionCallbackInfo<Value> &args) {
     // TODO: fix this api
     return;
   }
-  CFunctionInfo* info = new CFunctionInfo(*rc, fastlen, cargs);
-  CFunction* fastCFunc = new CFunction(wrapped, info);
-  ffn->cfunc = fastCFunc;
+  CFunction* fastCFunc = NULL;
+  if (args.Length() == 4) {
+    CFunctionInfo* info = new CFunctionInfo(*rc, fastlen, cargs);
+    fastCFunc = new CFunction(wrapped, info);
+    ffn->cfunc = fastCFunc;
+  }
   Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(
     isolate,
     SlowCallback,

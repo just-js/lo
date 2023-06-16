@@ -64,6 +64,8 @@ enum FastTypes: int {
 
 //v8::CTypeInfo* CTypeFromV8 (uint8_t v8Type);
 
+void init_fast_functions();
+
 // v8 callbacks
 // callback for heap limit reached
 size_t nearHeapLimitCallback(void* data, size_t current_heap_limit,
@@ -115,6 +117,7 @@ void Library(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Libraries(const v8::FunctionCallbackInfo<v8::Value> &args);
 void LoadModule(const v8::FunctionCallbackInfo<v8::Value> &args);
 void NextTick(const v8::FunctionCallbackInfo<v8::Value> &args);
+void RegisterCallback(const v8::FunctionCallbackInfo<v8::Value> &args);
 void RunMicroTasks(const v8::FunctionCallbackInfo<v8::Value> &args);
 void SetModuleCallbacks(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Utf8Decode(const v8::FunctionCallbackInfo<v8::Value> &args);
@@ -180,6 +183,13 @@ void spin_create_isolate_context (int argc, char** argv,
   uint64_t start, const char* globalobj, const char* scriptname,
   int cleanup, int onexit, void* startup_data, struct isolate_context* ctx);
 void spin_start_isolate (void* ptr);
+
+struct exec_info {
+  v8::Global<v8::Function> js_fn;
+  v8::Isolate* isolate;
+};
+
+void spin_callback (exec_info* info);
 void spin_destroy_isolate_context (struct isolate_context* ctx);
 #ifdef __cplusplus
     }

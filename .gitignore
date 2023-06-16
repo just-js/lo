@@ -11,3 +11,10 @@ deps
 tmp
 *.out
 node_modules
+README.md
+todo.md
+WebSocket-Benchmark.md
+module/adaurl/ada_c.h
+module/rustls/rustls.h
+module/tcc/libtcc.h
+spin

@@ -64,6 +64,12 @@ ${TARGET}: ${TARGET}.o main.o builtins.o ## link the runtime
 	strip --strip-debug --strip-unneeded ${TARGET}
 	objcopy --add-gnu-debuglink=${TARGET}.debug ${TARGET}
 
+${TARGET}-static: ${TARGET}.o main.o builtins.o ## link the runtime
+	$(CC) -flto -g -O3 ${V8_FLAGS} -static -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
+	objcopy --only-keep-debug ${TARGET} ${TARGET}.debug
+	strip --strip-debug --strip-unneeded ${TARGET}
+	objcopy --add-gnu-debuglink=${TARGET}.debug ${TARGET}
+
 all:
 	${MAKE} clean
 	${MAKE} ${TARGET}

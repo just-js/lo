@@ -24,6 +24,13 @@ const api = {
     pointers: ['sqlite3*', 'const char*', 'callback',, 'char**'],
     result: 'i32'
   },
+  exec2: {
+    name: 'sqlite3_exec',
+    parameters: ['pointer', 'string', 'pointer', 'pointer', 'u32array'],
+    pointers: ['sqlite3*', 'const char*', 'callback',, 'char**'],
+    result: 'i32',
+    nofast: true
+  },
   errmsg: {
     name: 'sqlite3_errmsg',
     parameters: ['pointer'],
