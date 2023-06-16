@@ -127,53 +127,6 @@ v8::CTypeInfo* CTypeFromV8 (uint8_t v8Type) {
   return new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);  
 }
 
-void ffi_prep_cifSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
-  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
-  ffi_cif* v0 = reinterpret_cast<ffi_cif*>(ptr0);
-  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
-  Local<Uint8Array> u83 = args[3].As<Uint8Array>();
-  uint8_t* ptr3 = (uint8_t*)u83->Buffer()->Data() + u83->ByteOffset();
-  ffi_type* v3 = reinterpret_cast<ffi_type*>(ptr3);
-  Local<Uint8Array> u84 = args[4].As<Uint8Array>();
-  uint8_t* ptr4 = (uint8_t*)u84->Buffer()->Data() + u84->ByteOffset();
-  ffi_type** v4 = reinterpret_cast<ffi_type**>(ptr4);
-  int32_t rc = ffi_prep_cif(v0, (ffi_abi)v1, v2, v3, v4);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
-}
-
-int32_t ffi_prep_cifFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, uint32_t p2, struct FastApiTypedArray* const p3, struct FastApiTypedArray* const p4) {
-  ffi_cif* v0 = reinterpret_cast<ffi_cif*>(p0->data);
-  uint32_t v1 = p1;
-  uint32_t v2 = p2;
-  ffi_type* v3 = reinterpret_cast<ffi_type*>(p3->data);
-  ffi_type** v4 = reinterpret_cast<ffi_type**>(p4->data);
-  return ffi_prep_cif(v0, (ffi_abi)v1, v2, v3, v4);
-}
-void ffi_callSlow(const FunctionCallbackInfo<Value> &args) {
-  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
-  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
-  ffi_cif* v0 = reinterpret_cast<ffi_cif*>(ptr0);
-  callback v1 = reinterpret_cast<callback>((uint64_t)Local<Integer>::Cast(args[1])->Value());
-  Local<Uint32Array> u322 = args[2].As<Uint32Array>();
-  uint8_t* ptr2 = (uint8_t*)u322->Buffer()->Data() + u322->ByteOffset();
-  void* v2 = reinterpret_cast<void*>(ptr2);
-  Local<Uint8Array> u83 = args[3].As<Uint8Array>();
-  uint8_t* ptr3 = (uint8_t*)u83->Buffer()->Data() + u83->ByteOffset();
-  void** v3 = reinterpret_cast<void**>(ptr3);
-  ffi_call(v0, v1, v2, v3);
-}
-
-void ffi_callFast(void* p, struct FastApiTypedArray* const p0, void* p1, struct FastApiTypedArray* const p2, struct FastApiTypedArray* const p3) {
-  ffi_cif* v0 = reinterpret_cast<ffi_cif*>(p0->data);
-  callback v1 = reinterpret_cast<callback>(p1);
-  void* v2 = reinterpret_cast<void*>(p2->data);
-  void** v3 = reinterpret_cast<void**>(p3->data);
-  ffi_call(v0, v1, v2, v3);
-}
-
 ffi_type* FFITypeFromV8 (uint8_t v8Type) {
   if (v8Type == spin::FastTypes::boolean) 
     return &ffi_type_uint8;
@@ -403,6 +356,53 @@ void BindFastApi(const FunctionCallbackInfo<Value> &args) {
   Local<Function> fun = 
     funcTemplate->GetFunction(context).ToLocalChecked();
   args.GetReturnValue().Set(fun);
+}
+
+void ffi_prep_cifSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
+  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
+  ffi_cif* v0 = reinterpret_cast<ffi_cif*>(ptr0);
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  Local<Uint8Array> u83 = args[3].As<Uint8Array>();
+  uint8_t* ptr3 = (uint8_t*)u83->Buffer()->Data() + u83->ByteOffset();
+  ffi_type* v3 = reinterpret_cast<ffi_type*>(ptr3);
+  Local<Uint8Array> u84 = args[4].As<Uint8Array>();
+  uint8_t* ptr4 = (uint8_t*)u84->Buffer()->Data() + u84->ByteOffset();
+  ffi_type** v4 = reinterpret_cast<ffi_type**>(ptr4);
+  int32_t rc = ffi_prep_cif(v0, (ffi_abi)v1, v2, v3, v4);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t ffi_prep_cifFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, uint32_t p2, struct FastApiTypedArray* const p3, struct FastApiTypedArray* const p4) {
+  ffi_cif* v0 = reinterpret_cast<ffi_cif*>(p0->data);
+  uint32_t v1 = p1;
+  uint32_t v2 = p2;
+  ffi_type* v3 = reinterpret_cast<ffi_type*>(p3->data);
+  ffi_type** v4 = reinterpret_cast<ffi_type**>(p4->data);
+  return ffi_prep_cif(v0, (ffi_abi)v1, v2, v3, v4);
+}
+void ffi_callSlow(const FunctionCallbackInfo<Value> &args) {
+  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
+  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
+  ffi_cif* v0 = reinterpret_cast<ffi_cif*>(ptr0);
+  callback v1 = reinterpret_cast<callback>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  Local<Uint32Array> u322 = args[2].As<Uint32Array>();
+  uint8_t* ptr2 = (uint8_t*)u322->Buffer()->Data() + u322->ByteOffset();
+  void* v2 = reinterpret_cast<void*>(ptr2);
+  Local<Uint8Array> u83 = args[3].As<Uint8Array>();
+  uint8_t* ptr3 = (uint8_t*)u83->Buffer()->Data() + u83->ByteOffset();
+  void** v3 = reinterpret_cast<void**>(ptr3);
+  ffi_call(v0, v1, v2, v3);
+}
+
+void ffi_callFast(void* p, struct FastApiTypedArray* const p0, void* p1, struct FastApiTypedArray* const p2, struct FastApiTypedArray* const p3) {
+  ffi_cif* v0 = reinterpret_cast<ffi_cif*>(p0->data);
+  callback v1 = reinterpret_cast<callback>(p1);
+  void* v2 = reinterpret_cast<void*>(p2->data);
+  void** v3 = reinterpret_cast<void**>(p3->data);
+  ffi_call(v0, v1, v2, v3);
 }
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
