@@ -60,6 +60,7 @@ using v8::CFunctionInfo;
 using v8::OOMDetails;
 using v8::V8;
 
+
 typedef void (*callback)();
 
 struct foreignFunction {
@@ -243,7 +244,7 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
 }
 
 // TODO: make a BindSlow and BindFast function
-void BindFastApi(const FunctionCallbackInfo<Value> &args) {
+void BindFastApiSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
   void* fn = reinterpret_cast<void*>(Local<Integer>::Cast(args[0])->Value());
@@ -358,6 +359,8 @@ void BindFastApi(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(fun);
 }
 
+
+
 void ffi_prep_cifSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Uint8Array> u80 = args[0].As<Uint8Array>();
@@ -430,8 +433,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoffi_call = new v8::CFunctionInfo(*rcffi_call, 5, cargsffi_call);
   v8::CFunction* pFffi_call = new v8::CFunction((const void*)&ffi_callFast, infoffi_call);
   SET_FAST_METHOD(isolate, module, "ffi_call", pFffi_call, ffi_callSlow);
-
-  SET_METHOD(isolate, module, "bindFastApi", BindFastApi);
+  SET_METHOD(isolate, module, "bindFastApi", BindFastApiSlow);
 
   SET_MODULE(isolate, target, "ffi", module);
 }
