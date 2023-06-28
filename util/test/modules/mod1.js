@@ -1,7 +1,11 @@
+import * as acorn from 'lib/acorn.js'
 import * as ansi from 'lib/ansi.js'
 import * as bench from 'lib/bench.js'
 import * as binary from 'lib/binary.js'
+import * as elf from 'lib/elf.js'
 import * as ffi from 'lib/ffi.js'
+import * as freeze from 'lib/freeze.js'
+import * as fs from 'lib/fs.js'
 import * as gen from 'lib/gen.js'
 import * as hash from 'lib/hash.js'
 import * as loop from 'lib/loop.js'
@@ -13,10 +17,15 @@ import * as socket from 'lib/socket.js'
 import * as sqlite from 'lib/sqlite.js'
 import * as stats from 'lib/stats.js'
 import * as stringify from 'lib/stringify.js'
+import * as system from 'lib/system.js'
 import * as tcc from 'lib/tcc.js'
+import * as thread from 'lib/thread.js'
 import * as timer from 'lib/timer.js'
+import * as tls from 'lib/tls.js'
+import * as tuntap from 'lib/tuntap.js'
 import * as websocket from 'lib/websocket.js'
 import * as wireguard from 'lib/wireguard.js'
+import * as ws from 'lib/ws.js'
 
 function loadLibraries () {
   const { epoll } = spin.load('epoll')
@@ -40,6 +49,12 @@ function loadLibraries () {
 
 const libs = loadLibraries()
 
-import { dump } from 'lib/binary.js'
+const { dump } = binary
 
-export { dump, libs }
+const modules = {
+  acorn, ansi, bench, binary, elf, ffi, freeze, fs, gen, hash, loop, net, 
+  packet, path, sni, socket, sqlite, stats, stringify, system, tcc, thread,
+  timer, tls, tuntap, websocket, wireguard, ws
+}
+
+export { dump, libs, modules }

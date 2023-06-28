@@ -52,7 +52,6 @@ int main(int argc, char** argv) {
   register_builtins();
   // create a new isolate on the main thread. this will block until the 
   // isolate exits
-  spin::init_fast_functions();
   spin::CreateIsolate(argc, argv, main_js, main_js_len, starttime, 
     GLOBALOBJ, _v8_cleanup, _on_exit, nullptr);
   // if we have the cleanup flag set, clean up memory left behind when isolate

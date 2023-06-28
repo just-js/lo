@@ -61,6 +61,22 @@ using v8::OOMDetails;
 using v8::V8;
 
 
+#ifdef __cplusplus
+extern "C"
+    {
+#endif
+extern void spin_ffi_call(void* state);
+extern void spin_ffi_syscall(void* state);
+#ifdef __cplusplus
+    }
+#endif
+
+typedef void (*spin_fast_call)(void*);
+
+void spin_fastcall (void** state) {
+  ((spin_fast_call)state[8])(state);
+}
+
 
 void createIsolateSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -162,6 +178,38 @@ void startIsolateSlow(const FunctionCallbackInfo<Value> &args) {
   spin_start_isolate(v0);
 }
 
+void callCallbackSlow(const FunctionCallbackInfo<Value> &args) {
+  exec_info* v0 = reinterpret_cast<exec_info*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  spin_callback(v0);
+}
+
+void ffi_callSlow(const FunctionCallbackInfo<Value> &args) {
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  spin_ffi_call(v0);
+}
+
+void ffi_callFast(void* p, void* p0) {
+  void* v0 = reinterpret_cast<void*>(p0);
+  spin_ffi_call(v0);
+}
+void ffi_syscallSlow(const FunctionCallbackInfo<Value> &args) {
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  spin_ffi_syscall(v0);
+}
+
+void ffi_syscallFast(void* p, void* p0) {
+  void* v0 = reinterpret_cast<void*>(p0);
+  spin_ffi_syscall(v0);
+}
+void fastcallSlow(const FunctionCallbackInfo<Value> &args) {
+  void** v0 = reinterpret_cast<void**>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  spin_fastcall(v0);
+}
+
+void fastcallFast(void* p, void* p0) {
+  void** v0 = reinterpret_cast<void**>(p0);
+  spin_fastcall(v0);
+}
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
@@ -206,6 +254,31 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunction* pFcontextSize = new v8::CFunction((const void*)&contextSizeFast, infocontextSize);
   SET_FAST_METHOD(isolate, module, "contextSize", pFcontextSize, contextSizeSlow);
   SET_METHOD(isolate, module, "startIsolate", startIsolateSlow);
+  SET_METHOD(isolate, module, "callCallback", callCallbackSlow);
+
+  v8::CTypeInfo* cargsffi_call = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+  cargsffi_call[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsffi_call[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  v8::CTypeInfo* rcffi_call = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* infoffi_call = new v8::CFunctionInfo(*rcffi_call, 2, cargsffi_call);
+  v8::CFunction* pFffi_call = new v8::CFunction((const void*)&ffi_callFast, infoffi_call);
+  SET_FAST_METHOD(isolate, module, "ffi_call", pFffi_call, ffi_callSlow);
+
+  v8::CTypeInfo* cargsffi_syscall = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+  cargsffi_syscall[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsffi_syscall[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  v8::CTypeInfo* rcffi_syscall = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* infoffi_syscall = new v8::CFunctionInfo(*rcffi_syscall, 2, cargsffi_syscall);
+  v8::CFunction* pFffi_syscall = new v8::CFunction((const void*)&ffi_syscallFast, infoffi_syscall);
+  SET_FAST_METHOD(isolate, module, "ffi_syscall", pFffi_syscall, ffi_syscallSlow);
+
+  v8::CTypeInfo* cargsfastcall = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
+  cargsfastcall[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsfastcall[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  v8::CTypeInfo* rcfastcall = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* infofastcall = new v8::CFunctionInfo(*rcfastcall, 2, cargsfastcall);
+  v8::CFunction* pFfastcall = new v8::CFunction((const void*)&fastcallFast, infofastcall);
+  SET_FAST_METHOD(isolate, module, "fastcall", pFfastcall, fastcallSlow);
 
   SET_MODULE(isolate, target, "spin", module);
 }

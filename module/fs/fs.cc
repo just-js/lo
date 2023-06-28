@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <sys/sendfile.h>
 #include <spin.h>
 
 namespace spin {
@@ -107,6 +108,25 @@ int32_t readFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_
   void* v1 = reinterpret_cast<void*>(p1->data);
   int32_t v2 = p2;
   return read(v0, v1, v2);
+}
+void preadSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  void* v1 = reinterpret_cast<void*>(ptr1);
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  int32_t rc = pread(v0, v1, v2, v3);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t preadFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2, uint32_t p3) {
+  int32_t v0 = p0;
+  void* v1 = reinterpret_cast<void*>(p1->data);
+  int32_t v2 = p2;
+  uint32_t v3 = p3;
+  return pread(v0, v1, v2, v3);
 }
 void lseekSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -223,6 +243,23 @@ int32_t fcntlFast(void* p, int32_t p0, int32_t p1, int32_t p2) {
   int32_t v2 = p2;
   return fcntl(v0, v1, v2);
 }
+void sendfileSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  off_t* v2 = reinterpret_cast<off_t*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  uint32_t rc = sendfile(v0, v1, v2, v3);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+uint32_t sendfileFast(void* p, int32_t p0, int32_t p1, void* p2, uint32_t p3) {
+  int32_t v0 = p0;
+  int32_t v1 = p1;
+  off_t* v2 = reinterpret_cast<off_t*>(p2);
+  uint32_t v3 = p3;
+  return sendfile(v0, v1, v2, v3);
+}
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
@@ -254,6 +291,17 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* inforead = new v8::CFunctionInfo(*rcread, 4, cargsread);
   v8::CFunction* pFread = new v8::CFunction((const void*)&readFast, inforead);
   SET_FAST_METHOD(isolate, module, "read", pFread, readSlow);
+
+  v8::CTypeInfo* cargspread = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
+  cargspread[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargspread[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargspread[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargspread[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargspread[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+  v8::CTypeInfo* rcpread = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infopread = new v8::CFunctionInfo(*rcpread, 5, cargspread);
+  v8::CFunction* pFpread = new v8::CFunction((const void*)&preadFast, infopread);
+  SET_FAST_METHOD(isolate, module, "pread", pFpread, preadSlow);
 
   v8::CTypeInfo* cargslseek = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargslseek[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
@@ -327,6 +375,17 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infofcntl = new v8::CFunctionInfo(*rcfcntl, 4, cargsfcntl);
   v8::CFunction* pFfcntl = new v8::CFunction((const void*)&fcntlFast, infofcntl);
   SET_FAST_METHOD(isolate, module, "fcntl", pFfcntl, fcntlSlow);
+
+  v8::CTypeInfo* cargssendfile = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
+  cargssendfile[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargssendfile[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargssendfile[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargssendfile[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargssendfile[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+  v8::CTypeInfo* rcsendfile = new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+  v8::CFunctionInfo* infosendfile = new v8::CFunctionInfo(*rcsendfile, 5, cargssendfile);
+  v8::CFunction* pFsendfile = new v8::CFunction((const void*)&sendfileFast, infosendfile);
+  SET_FAST_METHOD(isolate, module, "sendfile", pFsendfile, sendfileSlow);
 
   SET_MODULE(isolate, target, "fs", module);
 }

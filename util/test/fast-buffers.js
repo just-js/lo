@@ -45,7 +45,9 @@ uint32_t wrapped (void* p, struct FastApiTypedArray* const p_buf) {
 }
 `
 
-const { assert, cstr, bindFastApi } = spin
+const { ffi } = spin.load('ffi')
+const { bindFastApi } = ffi
+const { assert, cstr } = spin
 const { TCC_OUTPUT_MEMORY, TCC_RELOCATE_AUTO } = tcc
 
 const code = tcc.tcc_new()

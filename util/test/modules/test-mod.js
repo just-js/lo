@@ -33,4 +33,5 @@ hyperfine --warmup 100 "./spin util/test/modules/test-mod.js"
 
 const app = { libs: Array.from(spin.libCache.entries()), modules: Array.from(spin.moduleCache.entries()) }
 //console.log(JSON.stringify(app).length)
-console.log(JSON.stringify(app))
+//console.log(JSON.stringify(app))
+console.log(mod1.modules.stringify.stringify(app.libs))

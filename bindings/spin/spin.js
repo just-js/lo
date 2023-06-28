@@ -40,9 +40,58 @@ const api = {
     result: 'void',
     name: 'spin_start_isolate',
     nofast: true
+  },
+  callCallback: {
+    parameters: ['pointer'],
+    pointers: ['exec_info*'],
+    result: 'void',
+    name: 'spin_callback',
+    nofast: true
+  },
+  ffi_call: {
+    parameters: ['pointer'],
+    result: 'void',
+    name: 'spin_ffi_call',
+    nofast: false
+  },
+  ffi_syscall: {
+    parameters: ['pointer'],
+    result: 'void',
+    name: 'spin_ffi_syscall',
+    nofast: false
+  },
+  fastcall: {
+    parameters: ['pointer'],
+    pointers: ['void**'],
+    result: 'void',
+    name: 'spin_fastcall',
+    nofast: false
   }
 }
 
+const preamble = `
+#ifdef __cplusplus
+extern "C"
+    {
+#endif
+extern void spin_ffi_call(void* state);
+extern void spin_ffi_syscall(void* state);
+#ifdef __cplusplus
+    }
+#endif
+
+typedef void (*spin_fast_call)(void*);
+
+void spin_fastcall (void** state) {
+  ((spin_fast_call)state[8])(state);
+}
+`
+
+const make = `
+ffi_call.o:
+	as -o ffi_call.o ffi_call.S
+`
+const obj = ['ffi_call.o']
 const name = 'spin'
 
-export { name, api }
+export { name, api, make, obj, preamble }

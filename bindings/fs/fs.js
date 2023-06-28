@@ -12,6 +12,10 @@ const api = {
     parameters: ['i32', 'buffer', 'i32'],
     result: 'i32'
   },
+  pread: {
+    parameters: ['i32', 'buffer', 'i32', 'u32'],
+    result: 'i32'
+  },
   lseek: {
     parameters: ['i32', 'u32', 'i32'],
     result: 'u32'
@@ -52,10 +56,15 @@ const api = {
   fcntl: {
     parameters: ['i32', 'i32', 'i32'],
     result: 'i32'
+  },
+  sendfile: {
+    parameters: ['i32', 'i32', 'pointer', 'u32'],
+    pointers: [, , 'off_t*'],
+    result: 'u32'
   }
 }
 
-const includes = ['unistd.h', 'sys/stat.h', 'fcntl.h', 'dirent.h']
+const includes = ['unistd.h', 'sys/stat.h', 'fcntl.h', 'dirent.h', 'sys/sendfile.h']
 const name = 'fs'
 
 export { api, includes, name }

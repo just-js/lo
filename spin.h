@@ -62,10 +62,6 @@ enum FastTypes: int {
   buffer = 15, function = 16, u32array = 17, boolean = 18, string = 19
 };
 
-//v8::CTypeInfo* CTypeFromV8 (uint8_t v8Type);
-
-void init_fast_functions();
-
 // v8 callbacks
 // callback for heap limit reached
 size_t nearHeapLimitCallback(void* data, size_t current_heap_limit,
@@ -183,14 +179,16 @@ void spin_create_isolate_context (int argc, char** argv,
   uint64_t start, const char* globalobj, const char* scriptname,
   int cleanup, int onexit, void* startup_data, struct isolate_context* ctx);
 void spin_start_isolate (void* ptr);
+void spin_destroy_isolate_context (struct isolate_context* ctx);
 
 struct exec_info {
   v8::Global<v8::Function> js_fn;
   v8::Isolate* isolate;
 };
-
 void spin_callback (exec_info* info);
-void spin_destroy_isolate_context (struct isolate_context* ctx);
+
 #ifdef __cplusplus
     }
 #endif
+
+

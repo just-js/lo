@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 #include <sys/sysinfo.h>
 #include <signal.h>
+#include <sys/mman.h>
 #include <spin.h>
 
 namespace spin {
@@ -69,6 +70,29 @@ using v8::V8;
 
 
 
+void mmapSlow(const FunctionCallbackInfo<Value> &args) {
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  int32_t v4 = Local<Integer>::Cast(args[4])->Value();
+  uint32_t v5 = Local<Integer>::Cast(args[5])->Value();
+  void* rc = mmap(v0, v1, v2, v3, v4, v5);
+  Local<ArrayBuffer> ab = args[6].As<Uint32Array>()->Buffer();
+  ((void**)ab->Data())[0] = rc;
+}
+
+void mmapFast(void* p, void* p0, uint32_t p1, int32_t p2, int32_t p3, int32_t p4, uint32_t p5, struct FastApiTypedArray* const p_ret) {
+  void* v0 = reinterpret_cast<void*>(p0);
+  uint32_t v1 = p1;
+  int32_t v2 = p2;
+  int32_t v3 = p3;
+  int32_t v4 = p4;
+  uint32_t v5 = p5;
+  void* r = mmap(v0, v1, v2, v3, v4, v5);
+  ((void**)p_ret->data)[0] = r;
+
+}
 void getcwdSlow(const FunctionCallbackInfo<Value> &args) {
   Local<Uint8Array> u80 = args[0].As<Uint8Array>();
   uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
@@ -111,6 +135,38 @@ int32_t clock_gettimeFast(void* p, int32_t p0, void* p1) {
   int32_t v0 = p0;
   timespec* v1 = reinterpret_cast<timespec*>(p1);
   return clock_gettime(v0, v1);
+}
+void mprotectSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = mprotect(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t mprotectFast(void* p, void* p0, uint32_t p1, int32_t p2) {
+  void* v0 = reinterpret_cast<void*>(p0);
+  uint32_t v1 = p1;
+  int32_t v2 = p2;
+  return mprotect(v0, v1, v2);
+}
+void memcpySlow(const FunctionCallbackInfo<Value> &args) {
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  void* rc = memcpy(v0, v1, v2);
+  Local<ArrayBuffer> ab = args[3].As<Uint32Array>()->Buffer();
+  ((void**)ab->Data())[0] = rc;
+}
+
+void memcpyFast(void* p, void* p0, void* p1, int32_t p2, struct FastApiTypedArray* const p_ret) {
+  void* v0 = reinterpret_cast<void*>(p0);
+  void* v1 = reinterpret_cast<void*>(p1);
+  int32_t v2 = p2;
+  void* r = memcpy(v0, v1, v2);
+  ((void**)p_ret->data)[0] = r;
+
 }
 void exitSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -447,6 +503,19 @@ void freeFast(void* p, void* p0) {
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
+  v8::CTypeInfo* cargsmmap = (v8::CTypeInfo*)calloc(8, sizeof(v8::CTypeInfo));
+  cargsmmap[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsmmap[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsmmap[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+  cargsmmap[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsmmap[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsmmap[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsmmap[6] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+  cargsmmap[7] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
+  v8::CTypeInfo* rcmmap = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* infommap = new v8::CFunctionInfo(*rcmmap, 8, cargsmmap);
+  v8::CFunction* pFmmap = new v8::CFunction((const void*)&mmapFast, infommap);
+  SET_FAST_METHOD(isolate, module, "mmap", pFmmap, mmapSlow);
   v8::CTypeInfo* cargsgetcwd = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
   cargsgetcwd[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
   cargsgetcwd[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
@@ -474,6 +543,26 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   v8::CFunctionInfo* infoclock_gettime = new v8::CFunctionInfo(*rcclock_gettime, 3, cargsclock_gettime);
   v8::CFunction* pFclock_gettime = new v8::CFunction((const void*)&clock_gettimeFast, infoclock_gettime);
   SET_FAST_METHOD(isolate, module, "clock_gettime", pFclock_gettime, clock_gettimeSlow);
+
+  v8::CTypeInfo* cargsmprotect = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
+  cargsmprotect[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsmprotect[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsmprotect[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+  cargsmprotect[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CTypeInfo* rcmprotect = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  v8::CFunctionInfo* infomprotect = new v8::CFunctionInfo(*rcmprotect, 4, cargsmprotect);
+  v8::CFunction* pFmprotect = new v8::CFunction((const void*)&mprotectFast, infomprotect);
+  SET_FAST_METHOD(isolate, module, "mprotect", pFmprotect, mprotectSlow);
+  v8::CTypeInfo* cargsmemcpy = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
+  cargsmemcpy[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
+  cargsmemcpy[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsmemcpy[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
+  cargsmemcpy[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+  cargsmemcpy[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
+  v8::CTypeInfo* rcmemcpy = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+  v8::CFunctionInfo* infomemcpy = new v8::CFunctionInfo(*rcmemcpy, 5, cargsmemcpy);
+  v8::CFunction* pFmemcpy = new v8::CFunction((const void*)&memcpyFast, infomemcpy);
+  SET_FAST_METHOD(isolate, module, "memcpy", pFmemcpy, memcpySlow);
   SET_METHOD(isolate, module, "exit", exitSlow);
 
   v8::CTypeInfo* cargsusleep = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));

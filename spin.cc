@@ -61,92 +61,6 @@ std::map<int, Global<Module>> module_map;
 clock_t clock_id = CLOCK_MONOTONIC;
 struct timespec t;
 
-CFunction* pFerrnoget;
-CFunction* pFerrnoset;
-CFunction* pFhrtime;
-CFunction* pFgetaddress;
-CFunction* pFutf8length;
-CFunction* pFutf8encodeinto;
-CFunction* pFreadmemory;
-
-void init_fast_functions () {
-  CTypeInfo* cargserrnoset = (CTypeInfo*)calloc(2, 
-    sizeof(CTypeInfo));
-  cargserrnoset[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargserrnoset[1] = CTypeInfo(CTypeInfo::Type::kInt32);
-  CTypeInfo* rcerrnoset = new CTypeInfo(CTypeInfo::Type::kVoid);
-  CFunctionInfo* infoerrnoset = new CFunctionInfo(*rcerrnoset, 2, 
-    cargserrnoset);
-  pFerrnoset = new CFunction((const void*)&spin::fastSetErrno, 
-    infoerrnoset);
-  CTypeInfo* cargserrnoget = (CTypeInfo*)calloc(1, 
-    sizeof(CTypeInfo));
-  cargserrnoget[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  CTypeInfo* rcerrnoget = new CTypeInfo(CTypeInfo::Type::kInt32);
-  CFunctionInfo* infoerrnoget = new CFunctionInfo(*rcerrnoget, 1, 
-    cargserrnoget);
-  pFerrnoget = new CFunction((const void*)&spin::fastGetErrno, 
-    infoerrnoget);
-
-  CTypeInfo* cargshrtime = (CTypeInfo*)calloc(2, sizeof(CTypeInfo));
-  cargshrtime[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargshrtime[1] = CTypeInfo(CTypeInfo::Type::kUint32, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  CTypeInfo* rchrtime = new CTypeInfo(CTypeInfo::Type::kVoid);
-  CFunctionInfo* infohrtime = new CFunctionInfo(*rchrtime, 2, 
-    cargshrtime);
-  pFhrtime = new CFunction((const void*)&spin::fastHRTime, 
-    infohrtime);
-
-  CTypeInfo* cargsgetaddress = (CTypeInfo*)calloc(3, 
-    sizeof(CTypeInfo));
-  cargsgetaddress[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargsgetaddress[1] = CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsgetaddress[2] = CTypeInfo(CTypeInfo::Type::kUint32, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  CTypeInfo* rcgetaddress = new CTypeInfo(CTypeInfo::Type::kVoid);
-  CFunctionInfo* infogetaddress = new CFunctionInfo(*rcgetaddress, 3, 
-    cargsgetaddress);
-  pFgetaddress = new CFunction((const void*)&spin::fastGetAddress, 
-    infogetaddress);
-
-  CTypeInfo* cargsutf8length = (CTypeInfo*)calloc(2, 
-    sizeof(CTypeInfo));
-  cargsutf8length[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargsutf8length[1] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
-  CTypeInfo* rcutf8length = new CTypeInfo(CTypeInfo::Type::kInt32);
-  CFunctionInfo* infoutf8length = new CFunctionInfo(*rcutf8length, 2, 
-    cargsutf8length);
-  pFutf8length = new CFunction((const void*)&spin::fastUtf8Length, 
-    infoutf8length);
-
-  CTypeInfo* cargsutf8encodeinto = (CTypeInfo*)calloc(3, 
-    sizeof(CTypeInfo));
-  cargsutf8encodeinto[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargsutf8encodeinto[1] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
-  cargsutf8encodeinto[2] = CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  CTypeInfo* rcutf8encodeinto = new CTypeInfo(CTypeInfo::Type::kInt32);
-  CFunctionInfo* infoutf8encodeinto = new CFunctionInfo(*rcutf8encodeinto, 3, 
-    cargsutf8encodeinto);
-  pFutf8encodeinto = new CFunction((const void*)&spin::fastUtf8EncodeInto, 
-    infoutf8encodeinto);
-
-  CTypeInfo* cargsreadmemory = (CTypeInfo*)calloc(4, 
-    sizeof(CTypeInfo));
-  cargsreadmemory[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargsreadmemory[1] = CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsreadmemory[2] = CTypeInfo(CTypeInfo::Type::kUint64);
-  cargsreadmemory[3] = CTypeInfo(CTypeInfo::Type::kUint32);
-  CTypeInfo* rcreadmemory = new CTypeInfo(CTypeInfo::Type::kVoid);
-  CFunctionInfo* inforeadmemory = new CFunctionInfo(*rcreadmemory, 4, 
-    cargsreadmemory);
-  pFreadmemory = new CFunction((const void*)&spin::fastReadMemory, 
-    inforeadmemory);
-}
-
 // v8 isolate callbacks
 size_t spin::nearHeapLimitCallback(void* data, size_t current_heap_limit,
   size_t initial_heap_limit) {
@@ -532,6 +446,9 @@ int spin::CreateIsolate(int argc, char** argv, const char* main_src,
     start, globalobj, "main.js", cleanup, onexit, startup_data);
 }
 
+// TODO: in libraries, the init code is very slow and it never frees the
+// fastcall structures it creates
+// TODO: this is very slow
 void spin::Library(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
@@ -542,6 +459,7 @@ void spin::Library(const FunctionCallbackInfo<Value> &args) {
     if (iter == modules.end()) {
       return;
     } else {
+      // TODO does it need to register if called multiple times??
       register_plugin _init = (*iter->second);
       auto _register = reinterpret_cast<InitializerCallback>(_init());
       _register(isolate, exports);
@@ -556,6 +474,8 @@ void spin::Library(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(exports->NewInstance(context).ToLocalChecked());
 }
 
+// TODO: this is very slow. we need a better data structure and/or to cache
+// the results
 void spin::Builtin(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value name(isolate, args[0]);
@@ -580,6 +500,7 @@ void spin::Builtin(const FunctionCallbackInfo<Value> &args) {
 
 void spin::RunMicroTasks(const FunctionCallbackInfo<Value> &args) {
   args.GetIsolate()->PerformMicrotaskCheckpoint();
+  //TODO: args.GetIsolate()->SetMicrotasksPolicy()
 }
 
 void spin::NextTick(const FunctionCallbackInfo<Value>& args) {
@@ -631,6 +552,7 @@ void spin::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(module->GetModuleNamespace().As<Promise>());
 }
 
+// TODO: this is terribly slow
 void spin::LoadModule(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
@@ -751,8 +673,7 @@ uint64_t spin::hrtime() {
 }
 
 void spin::HRTime(const FunctionCallbackInfo<Value> &args) {
-  Local<ArrayBuffer> ab = args[0].As<Uint32Array>()->Buffer();
-  ((uint64_t*)ab->Data())[0] = hrtime();
+  ((uint64_t*)args[0].As<Uint32Array>()->Buffer()->Data())[0] = hrtime();
 }
 
 void spin::fastHRTime (void* p, struct FastApiTypedArray* const p_ret) {
@@ -760,8 +681,8 @@ void spin::fastHRTime (void* p, struct FastApiTypedArray* const p_ret) {
 }
 
 void spin::GetAddress(const FunctionCallbackInfo<Value> &args) {
-  Local<Uint8Array> u8 = args[0].As<Uint8Array>();
-  uint8_t* ptr = (uint8_t*)u8->Buffer()->Data() + u8->ByteOffset();
+  Local<TypedArray> ta = args[0].As<TypedArray>();
+  uint8_t* ptr = (uint8_t*)ta->Buffer()->Data() + ta->ByteOffset();
   ((uint64_t*)args[1].As<Uint32Array>()->Buffer()->Data())[0] = (uint64_t)ptr;
 }
 
@@ -772,8 +693,7 @@ void spin::fastGetAddress(void* p, struct FastApiTypedArray* const p_buf,
 
 void spin::Utf8Length(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-  args.GetReturnValue().Set(Integer::New(isolate, 
-    args[0].As<String>()->Utf8Length(isolate)));
+  args.GetReturnValue().Set(args[0].As<String>()->Utf8Length(isolate));
 }
 
 int32_t spin::fastUtf8Length (void* p, struct FastOneByteString* const p_str) {
@@ -807,15 +727,13 @@ void spin::WrapMemory(const FunctionCallbackInfo<Value> &args) {
     std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
         start, size, v8::BackingStore::EmptyDeleter, nullptr);
     Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-    Local<TypedArray> u8 = Uint8Array::New(ab, 0, size);
-    args.GetReturnValue().Set(u8);
+    args.GetReturnValue().Set(ab);
     return;
   }
   std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
       start, size, spin::FreeMemory, nullptr);
   Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-  Local<TypedArray> u8 = Uint8Array::New(ab, 0, size);
-  args.GetReturnValue().Set(u8);
+  args.GetReturnValue().Set(ab);
 }
 
 void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
@@ -866,17 +784,93 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
   SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
 
+  CTypeInfo* cargserrnoset = (CTypeInfo*)calloc(2, 
+    sizeof(CTypeInfo));
+  cargserrnoset[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargserrnoset[1] = CTypeInfo(CTypeInfo::Type::kInt32);
+  CTypeInfo* rcerrnoset = new CTypeInfo(CTypeInfo::Type::kVoid);
+  CFunctionInfo* infoerrnoset = new CFunctionInfo(*rcerrnoset, 2, 
+    cargserrnoset);
+  CFunction* pFerrnoset = new CFunction((const void*)&spin::fastSetErrno, 
+    infoerrnoset);
+  CTypeInfo* cargserrnoget = (CTypeInfo*)calloc(1, 
+    sizeof(CTypeInfo));
+  cargserrnoget[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  CTypeInfo* rcerrnoget = new CTypeInfo(CTypeInfo::Type::kInt32);
+  CFunctionInfo* infoerrnoget = new CFunctionInfo(*rcerrnoget, 1, 
+    cargserrnoget);
+  CFunction* pFerrnoget = new CFunction((const void*)&spin::fastGetErrno, 
+    infoerrnoget);
   SET_FAST_PROP(isolate, target, "errno", pFerrnoget, GetErrno, pFerrnoset, 
     SetErrno);
+
+  CTypeInfo* cargshrtime = (CTypeInfo*)calloc(2, sizeof(CTypeInfo));
+  cargshrtime[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargshrtime[1] = CTypeInfo(CTypeInfo::Type::kUint32, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  CTypeInfo* rchrtime = new CTypeInfo(CTypeInfo::Type::kVoid);
+  CFunctionInfo* infohrtime = new CFunctionInfo(*rchrtime, 2, 
+    cargshrtime);
+  CFunction* pFhrtime = new CFunction((const void*)&spin::fastHRTime, 
+    infohrtime);
   SET_FAST_METHOD(isolate, target, "hrtime", pFhrtime, HRTime);
+
+  CTypeInfo* cargsgetaddress = (CTypeInfo*)calloc(3, 
+    sizeof(CTypeInfo));
+  cargsgetaddress[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargsgetaddress[1] = CTypeInfo(CTypeInfo::Type::kUint8, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargsgetaddress[2] = CTypeInfo(CTypeInfo::Type::kUint32, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  CTypeInfo* rcgetaddress = new CTypeInfo(CTypeInfo::Type::kVoid);
+  CFunctionInfo* infogetaddress = new CFunctionInfo(*rcgetaddress, 3, 
+    cargsgetaddress);
+  CFunction* pFgetaddress = new CFunction((const void*)&spin::fastGetAddress, 
+    infogetaddress);
   SET_FAST_METHOD(isolate, target, "getAddress", pFgetaddress, GetAddress);
+
+  CTypeInfo* cargsutf8length = (CTypeInfo*)calloc(2, 
+    sizeof(CTypeInfo));
+  cargsutf8length[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargsutf8length[1] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
+  CTypeInfo* rcutf8length = new CTypeInfo(CTypeInfo::Type::kInt32);
+  CFunctionInfo* infoutf8length = new CFunctionInfo(*rcutf8length, 2, 
+    cargsutf8length);
+  CFunction* pFutf8length = new CFunction((const void*)&spin::fastUtf8Length, 
+    infoutf8length);
   SET_FAST_METHOD(isolate, target, "utf8Length", pFutf8length, Utf8Length);
+
+  CTypeInfo* cargsutf8encodeinto = (CTypeInfo*)calloc(3, 
+    sizeof(CTypeInfo));
+  cargsutf8encodeinto[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargsutf8encodeinto[1] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
+  cargsutf8encodeinto[2] = CTypeInfo(CTypeInfo::Type::kUint8, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  CTypeInfo* rcutf8encodeinto = new CTypeInfo(CTypeInfo::Type::kInt32);
+  CFunctionInfo* infoutf8encodeinto = new CFunctionInfo(*rcutf8encodeinto, 3, 
+    cargsutf8encodeinto);
+  CFunction* pFutf8encodeinto = new CFunction((const void*)&spin::fastUtf8EncodeInto, 
+    infoutf8encodeinto);
   SET_FAST_METHOD(isolate, target, "utf8EncodeInto", pFutf8encodeinto, 
     Utf8EncodeInto);
+
+  CTypeInfo* cargsreadmemory = (CTypeInfo*)calloc(4, 
+    sizeof(CTypeInfo));
+  cargsreadmemory[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  cargsreadmemory[1] = CTypeInfo(CTypeInfo::Type::kUint8, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
+  cargsreadmemory[2] = CTypeInfo(CTypeInfo::Type::kUint64);
+  cargsreadmemory[3] = CTypeInfo(CTypeInfo::Type::kUint32);
+  CTypeInfo* rcreadmemory = new CTypeInfo(CTypeInfo::Type::kVoid);
+  CFunctionInfo* inforeadmemory = new CFunctionInfo(*rcreadmemory, 4, 
+    cargsreadmemory);
+  CFunction* pFreadmemory = new CFunction((const void*)&spin::fastReadMemory, 
+    inforeadmemory);
   SET_FAST_METHOD(isolate, target, "readMemory", pFreadmemory, ReadMemory);
 
 }
 
+// C/FFI api for managing isolates
 int spin_create_isolate (int argc, char** argv, 
   const char* main, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
@@ -936,6 +930,7 @@ void spin_destroy_isolate_context (struct isolate_context* ctx) {
   free(ctx);
 }
 
+// generic callback used to trampoline ffi callbacks back into JS
 void spin_callback (exec_info* info) {
   Isolate* isolate = info->isolate;
   info->js_fn.Get(isolate)->Call(isolate->GetCurrentContext(), 

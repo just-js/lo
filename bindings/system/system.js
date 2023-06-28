@@ -1,4 +1,8 @@
 const api = {
+  mmap: {
+    parameters: ['pointer', 'u32', 'i32', 'i32', 'i32', 'u32'],
+    result: 'pointer'
+  },
   getcwd: {
     parameters: ['buffer', 'i32'],
     pointers: ['char*'],
@@ -13,6 +17,14 @@ const api = {
     parameters: ['i32', 'pointer'],
     pointers: [, 'timespec*'],
     result: 'i32'
+  },
+  mprotect: {
+    parameters: ['pointer', 'u32', 'i32'],
+    result: 'i32'
+  },
+  memcpy: {
+    parameters: ['pointer', 'pointer', 'i32'],
+    result: 'pointer'
   },
   exit: {
     parameters: ['i32'],
@@ -135,7 +147,10 @@ const api = {
   }
 }
 
-const includes = ['sys/eventfd.h', 'sys/times.h', 'sys/resource.h', 'unistd.h', 'sys/timerfd.h', 'sys/wait.h', 'sys/sysinfo.h', 'signal.h']
+const includes = [
+  'sys/eventfd.h', 'sys/times.h', 'sys/resource.h', 'unistd.h', 'sys/timerfd.h',
+  'sys/wait.h', 'sys/sysinfo.h', 'signal.h', 'sys/mman.h'
+]
 const name = 'system'
 const libs = []
 const obj = ['system.a']

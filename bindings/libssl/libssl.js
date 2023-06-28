@@ -482,15 +482,19 @@ const includes = [
   'atomic'
 ]
 
-const libs = ['ssl', 'crypto']
-const obj = []
+const libs = []
+const obj = ['libssl_o.a', 'libcrypto.a']
 const make = `
-curl -L -o openssl-1.1.1t.tar.gz https://www.openssl.org/source/openssl-1.1.1t.tar.gz
-tar -zxvf openssl-1.1.1t.tar.gz 
-cd openssl-1.1.1t/
-CFLAGS='-fPIC -mtune=native -m64 -O3' ./config shared zlib no-ssl no-tls1 no-dtls no-aria no-bf no-blake2 no-camellia no-cast no-chacha no-cmac no-des no-idea no-mdc2 no-ocb no-poly1305 no-rc2 no-scrypt no-seed no-siphash no-sm3 no-sm4 no-whirlpool no-afalgeng no-deprecated no-capieng no-cms no-comp no-dgram no-threads
-make clean build_generated
-make -j 6
+deps:
+	mkdir -p deps
+	curl -L -o openssl-1.1.1t.tar.gz https://www.openssl.org/source/openssl-1.1.1t.tar.gz
+	tar -zxvf openssl-1.1.1t.tar.gz -C deps
+	rm openssl-1.1.1t.tar.gz
+
+libcrypto.a libssl_o.a: deps
+	cd deps/openssl-1.1.1t/ &&	CFLAGS='-fPIC -mtune=native -m64 -O3' ./config shared zlib no-ssl no-tls1 no-dtls no-aria no-bf no-blake2 no-camellia no-cast no-chacha no-cmac no-des no-idea no-mdc2 no-ocb no-poly1305 no-rc2 no-scrypt no-seed no-siphash no-sm3 no-sm4 no-whirlpool no-afalgeng no-deprecated no-capieng no-cms no-comp no-dgram no-threads && make clean build_generated && make -j 6
+	cp deps/openssl-1.1.1t/libssl.a ./libssl_o.a
+	cp deps/openssl-1.1.1t/libcrypto.a ./
 `
 
-export { api, name, includes, libs, obj }
+export { api, name, includes, libs, obj, make }

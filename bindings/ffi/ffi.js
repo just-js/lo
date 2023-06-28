@@ -13,13 +13,15 @@ const api = {
   bindFastApi: {
     declare_only: true,
     nofast: true,
-    name: 'BindFastApi'
+    name: 'bindFastApi'
+  },
+  bindSlowApi: {
+    declare_only: true,
+    nofast: true,
+    name: 'bindSlowApi'
   }
 }
 
-const libs = ['ffi']
-const includes = ['ffi.h']
-const name = 'ffi'
 const preamble = `
 typedef void (*callback)();
 
@@ -128,6 +130,12 @@ ffi_type* FFITypeFromV8 (uint8_t v8Type) {
   return &ffi_type_void;  
 }
 
+// 10 ns if this fn does nothing
+// 46 ns for int fn (int)
+// 4ns for looping through and allocating args
+// 4ns return
+// 30 ns for the ffi call
+
 void SlowCallback(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
   foreignFunction* ffn = (foreignFunction*)args.Data()
@@ -203,8 +211,107 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
   }
 }
 
-// TODO: make a BindSlow and BindFast function
-void BindFastApiSlow(const FunctionCallbackInfo<Value> &args) {
+void bindSlowApiSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<Context> context = isolate->GetCurrentContext();
+  void* fn = reinterpret_cast<void*>(Local<Integer>::Cast(args[0])->Value());
+  void* wrapped = reinterpret_cast<void*>(Local<Integer>::Cast(args[1])->Value());
+  int rtype = Local<Integer>::Cast(args[2])->Value();
+  Local<Array> params = args[3].As<Array>();
+  Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
+  tpl->SetInternalFieldCount(2);
+  Local<Object> data = tpl->NewInstance(context).ToLocalChecked();
+  ffi_cif* cif = (ffi_cif*)calloc(1, sizeof(ffi_cif));
+  foreignFunction* ffn = new foreignFunction();
+  ffn->fast = wrapped;
+  ffn->ffi = fn;
+  ffn->cif = cif;
+  data->SetAlignedPointerInInternalField(1, ffn);
+  int len = params->Length();
+  ffi_type* ffirc = FFITypeFromV8(rtype);
+  ffn->rc = (FastTypes)rtype;
+  ffi_type** ffiargs = (ffi_type**)calloc(len, sizeof(ffi_type*));
+  ffn->params = (FastTypes*)calloc(len, sizeof(FastTypes));
+  ffn->nargs = len;
+  ffn->values = (void**)calloc(ffn->nargs, sizeof(void*));
+  int fastlen = len + 1 + needsunwrap((FastTypes)rtype);
+  CTypeInfo* cargs = (CTypeInfo*)calloc(fastlen, sizeof(CTypeInfo));
+  cargs[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+  int size = 0;
+  for (int i = 0; i < len; i++) {
+    uint8_t ptype = Local<Integer>::Cast(
+      params->Get(context, i).ToLocalChecked())->Value();
+    cargs[i + 1] = *CTypeFromV8(ptype);
+    ffiargs[i] = FFITypeFromV8(ptype);
+    ffn->params[i] = (FastTypes)ptype;
+    if (ffn->params[i] == spin::FastTypes::u8) {
+      size += 1;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::u16) {
+      size += 2;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::i32) {
+      size += 4;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::u32) {
+      size += 4;
+      continue;
+    }
+    size += 8;
+  }
+  ffn->start = calloc(1, size);
+  uint8_t* start = (uint8_t*)ffn->start;
+  for (int i = 0; i < ffn->nargs; i++) {
+    if (ffn->params[i] == spin::FastTypes::u8) {
+      ffn->values[i] = start;
+      start += 1;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::u16) {
+      ffn->values[i] = start;
+      start += 2;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::i32) {
+      ffn->values[i] = start;
+      start += 4;
+      continue;
+    }
+    if (ffn->params[i] == spin::FastTypes::u32) {
+      ffn->values[i] = start;
+      start += 4;
+      continue;
+    }
+    ffn->values[i] = start;
+    start += 8;
+  }
+  if (fastlen - 1 > len) {
+    cargs[fastlen - 1] = *CTypeFromV8(FastTypes::u32array);
+  }
+  ffi_status status = ffi_prep_cif(cif, FFI_DEFAULT_ABI, len, ffirc, ffiargs);
+  if (status != FFI_OK) {
+    // TODO: fix this api
+    return;
+  }
+  Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(
+    isolate,
+    SlowCallback,
+    data,
+    Local<Signature>(),
+    0,
+    ConstructorBehavior::kThrow,
+    SideEffectType::kHasNoSideEffect,
+    NULL
+  );
+  Local<Function> fun = 
+    funcTemplate->GetFunction(context).ToLocalChecked();
+  args.GetReturnValue().Set(fun);
+}
+
+void bindFastApiSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
   void* fn = reinterpret_cast<void*>(Local<Integer>::Cast(args[0])->Value());
@@ -288,7 +395,7 @@ void BindFastApiSlow(const FunctionCallbackInfo<Value> &args) {
     ffn->values[i] = start;
     start += 8;
   }
- if (fastlen - 1 > len) {
+  if (fastlen - 1 > len) {
     cargs[fastlen - 1] = *CTypeFromV8(FastTypes::u32array);
   }
   ffi_status status = ffi_prep_cif(cif, FFI_DEFAULT_ABI, len, ffirc, ffiargs);
@@ -296,12 +403,9 @@ void BindFastApiSlow(const FunctionCallbackInfo<Value> &args) {
     // TODO: fix this api
     return;
   }
-  CFunction* fastCFunc = NULL;
-  if (args.Length() == 4) {
-    CFunctionInfo* info = new CFunctionInfo(*rc, fastlen, cargs);
-    fastCFunc = new CFunction(wrapped, info);
-    ffn->cfunc = fastCFunc;
-  }
+  CFunctionInfo* info = new CFunctionInfo(*rc, fastlen, cargs);
+  CFunction* fastCFunc = new CFunction(wrapped, info);
+  ffn->cfunc = fastCFunc;
   Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(
     isolate,
     SlowCallback,
@@ -321,4 +425,22 @@ void BindFastApiSlow(const FunctionCallbackInfo<Value> &args) {
 
 `
 
-export { api, includes, name, preamble, libs }
+// needs libtool and autoconf packages installed
+
+const make = `deps:
+	mkdir -p deps
+	curl -L -o libffi.tar.gz https://github.com/libffi/libffi/archive/refs/tags/v3.4.2.tar.gz
+	tar -zxvf libffi.tar.gz -C deps/
+	rm -f libffi.tar.gz
+
+libffi.a: deps
+	cd deps/libffi-3.4.2 && ./autogen.sh && CFLAGS='-mstackrealign -fPIC -flto -O3' ./configure --enable-static=yes --enable-shared=no --disable-docs && make
+	cp deps/libffi-3.4.2/x86_64-pc-linux-gnu/include/ffi.h ./
+	cp deps/libffi-3.4.2/x86_64-pc-linux-gnu/.libs/libffi.a ./
+`
+const libs = []
+const includes = ['ffi.h']
+const name = 'ffi'
+const obj = ['libffi.a']
+
+export { api, includes, name, preamble, libs, make, obj }

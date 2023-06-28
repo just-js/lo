@@ -78,6 +78,7 @@ function extractRSAPublicKey (x509) {
   const key = X509_get_pubkey(x509)
   assert(key)
   const id = EVP_PKEY_id(key)
+  assert(id)
   const type = EVP_PKEY_type(id)
   assert(type === EVP_PKEY_RSA2 || type === EVP_PKEY_RSA)
   const rsa = EVP_PKEY_get1_RSA(key)
@@ -170,6 +171,7 @@ const EVP_PKEY_RSA2 = 19
 
 const handle = new Uint32Array(2)
 const { libssl } = spin.load('libssl')
+
 for (const name of Object.keys(api)) {
   const def = api[name]
   if (def.result === 'pointer' || def.result === 'u64') {
