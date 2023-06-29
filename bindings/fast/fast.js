@@ -105,6 +105,7 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
       case FastTypes::string:
         {
           String::Utf8Value arg0(isolate, args[i]);
+          // todo: fix this - never gets freed
           state->reg[r++] = (uint64_t)strdup(*arg0);
         }
         break;

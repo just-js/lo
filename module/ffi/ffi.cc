@@ -446,8 +446,7 @@ void bindFastApiSlow(const FunctionCallbackInfo<Value> &args) {
   ffn->cfunc = fastCFunc;
   Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(
     isolate,
-    nullptr,
-    //SlowCallback,
+    SlowCallback,
     data,
     Local<Signature>(),
     0,

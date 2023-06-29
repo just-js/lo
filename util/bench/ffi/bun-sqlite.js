@@ -22,7 +22,7 @@ function get () {
     sqlite3_reset(stmt)
     return v
   }
-  return -1
+  return 0
 }
 
 const encoder = new TextEncoder()
@@ -38,7 +38,7 @@ const {
     sqlite3_libversion, sqlite3_open_v2, sqlite3_exec, sqlite3_prepare_v2, 
     sqlite3_reset, sqlite3_step, sqlite3_column_int
   }
-} = dlopen('./libsqlite3.so', {
+} = dlopen('libsqlite3.so', {
   sqlite3_libversion: {
     args: [],
     returns: 'ptr'
@@ -76,7 +76,7 @@ const stmt = prepare('pragma user_version')
 console.log(get())
 console.log(new CString(sqlite3_libversion()))
 
-run('pragma user_version', get, 10000000, 20)
+run('pragma user_version', get, 15000000, 10)
 //run('sqlite3_version', () => new CString(sqlite3_libversion()), 30000000, 10)
 
 //const p = sqlite3_libversion()

@@ -3,7 +3,7 @@ import { Library } from 'lib/ffi.js'
 
 const libc = (new Library()).open().bind({
   getcwd: {
-    parameters: ['buffer', 'i32'],
+    parameters: ['pointer', 'i32'],
     pointers: ['char*'],
     result: 'void'
   }
@@ -16,7 +16,7 @@ const { utf8Decode } = spin
 const { getcwd } = libc
 
 function cwd () {
-  getcwd(u8, size)
+  getcwd(ptr, size)
   return utf8Decode(ptr, size)
 }
 

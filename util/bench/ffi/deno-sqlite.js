@@ -27,7 +27,7 @@ function get () {
     sqlite3_reset(stmt)
     return v
   }
-  return -1
+  return 0
 }
 
 const encoder = new TextEncoder()
@@ -43,7 +43,7 @@ const {
     sqlite3_open_v2, sqlite3_exec, sqlite3_prepare_v2, sqlite3_reset,
     sqlite3_step, sqlite3_column_int, sqlite3_libversion
   }
-} = dlopen('./libsqlite3.so', {
+} = dlopen('libsqlite3.so', {
   sqlite3_libversion: {
     parameters: [],
     result: 'pointer'

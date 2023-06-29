@@ -33,6 +33,6 @@ function get_version (stmt) {
 }
 
 assert(get_version(stmt) === 100)
-run('pragma user_version', () => get_version(stmt), 10000000, 20)
+run('pragma user_version', () => get_version(stmt), 15000000, 10)
 finalize(stmt)
 close2(db)
