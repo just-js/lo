@@ -79,7 +79,7 @@ struct fastcall {
   uint8_t result;
   uint8_t nparam;
   uint8_t param[30];
-  void* reg[16];
+  uint64_t reg[16];
   void* sse[16];
   void* stack;
 };
@@ -148,16 +148,71 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
   HandleScope scope(isolate);
   struct fastcall* state = (struct fastcall*)args.Data()
     .As<Object>()->GetAlignedPointerFromInternalField(1);
-/*  
+  int r = 1;
   for (int i = 0; i < state->nparam; i++) {
     switch (state->param[i]) {
+      case FastTypes::string:
+        {
+          String::Utf8Value arg0(isolate, args[i]);
+          state->reg[r++] = (uint64_t)strdup(*arg0);
+        }
+        break;
+      case FastTypes::u32:
+        state->reg[r++] = (uint32_t)Local<Integer>::Cast(args[i])->Value();
+        break;
+      case FastTypes::u16:
+        state->reg[r++] = (uint16_t)Local<Integer>::Cast(args[i])->Value();
+        break;
+      case FastTypes::u8:
+        state->reg[r++] = (uint8_t)Local<Integer>::Cast(args[i])->Value();
+        break;
       case FastTypes::i32:
+        state->reg[r++] = (int32_t)Local<Integer>::Cast(args[i])->Value();
+        break;
+      case FastTypes::i16:
+        state->reg[r++] = (int16_t)Local<Integer>::Cast(args[i])->Value();
+        break;
+      case FastTypes::i8:
+        state->reg[r++] = (int8_t)Local<Integer>::Cast(args[i])->Value();
+        break;
+      case FastTypes::i64:
+        state->reg[r++] = (int64_t)Local<Number>::Cast(args[i])->Value();
+        break;
+      case FastTypes::u64:
+      case FastTypes::pointer:
+        state->reg[r++] = (uint64_t)Local<Number>::Cast(args[i])->Value();
+        break;
+      case FastTypes::buffer:
+        {
+          Local<Uint8Array> u8 = args[i].As<Uint8Array>();
+          state->reg[r++] = (uint64_t)((uint8_t*)u8->Buffer()->Data() + u8->ByteOffset());
+        }
+        break;
+      case FastTypes::u32array:
+        {
+          Local<Uint32Array> u32 = args[i].As<Uint32Array>();
+          state->reg[r++] = (uint64_t)((uint8_t*)u32->Buffer()->Data() + u32->ByteOffset());
+        }
         break;
     }
   }
-*/
   spin_fastcall(state);
-  args.GetReturnValue().Set(Number::New(isolate, 5));
+  switch (state->result) {
+    case FastTypes::i32:
+      args.GetReturnValue().Set((int32_t)state->reg[0]);
+      break;
+    case FastTypes::u32:
+      args.GetReturnValue().Set((uint32_t)state->reg[0]);
+      break;
+    case FastTypes::buffer:
+    case FastTypes::u32array:
+    case FastTypes::u64:
+    case FastTypes::i64:
+    case FastTypes::pointer:
+      uint64_t* res = (uint64_t*)args[args.Length() - 1].As<Uint32Array>()->Buffer()->Data();
+      *res = state->reg[0];
+      break;
+  }
 }
 
 void bind_fastcallSlow(const FunctionCallbackInfo<Value> &args) {
