@@ -106,14 +106,17 @@ function rect (x, y, w, h) {
   return new Uint8Array((new Int32Array([x, y, w, h])).buffer)  
 }
 
+
 while (1) {
+  eventLoop.poll(0)
   spin.runMicroTasks()
-  while (SDL2.pollEvent(event) === 1) {
+  if (SDL2.pollEvent(event) === 1) {
     const [type] = event
     if (type === SDL_QUIT) break
     events++
     //console.log(event)
     if (!init) {
+      const start = Date.now()
       SDL2.setRenderDrawColor(hRend, 0xc0, 0xc0, 0xc0, 0xff)
       SDL2.renderClear(hRend)
       SDL2.setRenderDrawColor(hRend, 0x44, 0x00, 0x00, 0xff)
@@ -122,10 +125,10 @@ while (1) {
       SDL2.renderFillRect(hRend, rect(30, 30, 740, 540))
       SDL2.setRenderDrawColor(hRend, 0x00, 0x00, 0x44, 0xff)
       SDL2.renderFillRect(hRend, rect(50, 50, 700, 500))
-      SDL2.renderPresent(hRend)  
+      SDL2.renderPresent(hRend)
+      console.log(Date.now() - start)
       init = true
     }
-    eventLoop.poll(0)
     ticks++
   }
 }

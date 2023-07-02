@@ -73,10 +73,6 @@ function wrap (h, fn, plen = 0) {
 
 const u32 = new Uint32Array(2)
 
-function wrap2 (fn, plen = 0) {
-  return wrap(u32, fn, plen)
-}
-
 // todo: this is going to be the address of the underlying arraybuffer data,
 // need to apply the u8 offset
 function ptr (u8) {
@@ -274,7 +270,6 @@ spin.assert = assert
 spin.moduleCache = moduleCache
 spin.libCache = libCache
 spin.wrap = wrap
-spin.wrap2 = wrap2
 // todo: change anywhere that uses this
 const { wrapMemory } = spin
 spin.wrapMemory = (ptr, len) => new Uint8Array(wrapMemory(ptr, len))
@@ -282,6 +277,10 @@ spin.cstr = C
 spin.ptr = ptr
 spin.addr = addr
 spin.setModuleCallbacks(onModuleLoad, onModuleInstantiate)
+
+// Object.freeze(spin)
+// TODO: freeze intrinsics - maybe make these optional so can be overriden with cli flags/env vars?
+
 
 if (spin.args[1] === 'gen') {
   const {

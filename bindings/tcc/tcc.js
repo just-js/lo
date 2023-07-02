@@ -29,7 +29,7 @@ const api = {
     result: 'i32'
   },
   tcc_compile_string: {
-    parameters: ['pointer', 'pointer'],
+    parameters: ['pointer', 'string'],
     pointers: ['TCCState*', 'const char*'],
     result: 'i32'
   },
@@ -39,17 +39,17 @@ const api = {
     result: 'i32'
   },
   tcc_get_symbol: {
-    parameters: ['pointer', 'pointer'],
+    parameters: ['pointer', 'string'],
     pointers: ['TCCState*', 'const char*'],
     result: 'pointer'
   },
   tcc_add_symbol: {
-    parameters: ['pointer', 'pointer', 'pointer'],
+    parameters: ['pointer', 'string', 'pointer'],
     pointers: ['TCCState*', 'const char*', 'const void*'],
     result: 'i32'
   },
   tcc_output_file: {
-    parameters: ['pointer', 'pointer'],
+    parameters: ['pointer', 'string'],
     pointers: ['TCCState*', 'const char*'],
     result: 'i32'
   }
@@ -64,6 +64,7 @@ deps/tcc-${TCC_VERSION}/libtcc.a: ## dependencies
 	tar -jxvf deps/tcc-${TCC_VERSION}.tar.bz2	-C deps/
 	cd deps/tcc-${TCC_VERSION} && CFLAGS='-mstackrealign -fPIC -flto -O3' ./configure && cd ../../
 	make -C deps/tcc-${TCC_VERSION}/ libtcc.a
+	cp deps/tcc-0.9.27/libtcc.a ./
 
 `
 const name = 'tcc'
