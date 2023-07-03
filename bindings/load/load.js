@@ -19,7 +19,7 @@ const api = {
 const includes = ['dlfcn.h']
 const name = 'load'
 const libs = ['dl']
-const obj = ['load.a']
+const obj = []
 
 export { api, includes, name, libs, obj }
 

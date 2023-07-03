@@ -80,9 +80,7 @@ void dlopenFast(void* p, struct FastOneByteString* const p0, int32_t p1, struct 
 }
 void dlsymSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  void* v0 = reinterpret_cast<void*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   String::Utf8Value v1(isolate, args[1]);
   void* rc = dlsym(v0, *v1);
   Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
@@ -98,9 +96,7 @@ void dlsymFast(void* p, void* p0, struct FastOneByteString* const p1, struct Fas
 }
 void dlcloseSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-
-  Local<Context> context = isolate->GetCurrentContext();
-  void* v0 = reinterpret_cast<void*>((uint64_t)args[0]->NumberValue(context).ToChecked());
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = dlclose(v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }

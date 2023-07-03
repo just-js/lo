@@ -784,6 +784,7 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
   SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
 
+  // TODO: figure out how to manage lifetime of these types
   CTypeInfo* cargserrnoset = (CTypeInfo*)calloc(2, 
     sizeof(CTypeInfo));
   cargserrnoset[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
