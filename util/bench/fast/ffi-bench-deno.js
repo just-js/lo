@@ -11,7 +11,7 @@ const api = Deno.dlopen('\0', {
   }
 }).symbols
 
-const foo = Deno.dlopen('./module/foo/foo.so', {
+const foo = Deno.dlopen('./bug.so', {
   noop: {
     parameters: [],
     result: 'void'

@@ -3,7 +3,7 @@ import { run } from '../../../lib/bench.js'
 
 const { 
   symbols: { noop }
-} = dlopen('./module/foo/foo.so', {
+} = dlopen('./bug.so', {
   noop: {
     args: [],
     returns: 'void'
