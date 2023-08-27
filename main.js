@@ -199,6 +199,14 @@ async function globalMain () {
 
 const decoder = new TextDecoder()
 
+function loadSource (specifier) {
+  let src = spin.builtin(specifier)
+  if (!src) {
+    src = decoder.decode(readFile(specifier))
+  }
+  return src
+}
+
 async function onModuleLoad (specifier, resource) {
   if (!specifier) return
   if (moduleCache.has(specifier)) {
@@ -210,19 +218,13 @@ async function onModuleLoad (specifier, resource) {
     }
     return mod.namespace
   }
-  let src = spin.builtin(specifier)
-  if (!src) {
-    src = decoder.decode(readFile(specifier))
-  }
+  const src = loadSource(specifier)
   const mod = spin.loadModule(src, specifier)
   mod.resource = resource
   moduleCache.set(specifier, mod)
   const { requests } = mod
   for (const request of requests) {
-    let src = spin.builtin(request)
-    if (!src) {
-      src = decoder.decode(readFile(request))
-    }
+    const src = loadSource(request)
     const mod = spin.loadModule(src, request)
     moduleCache.set(request, mod)
   }
@@ -238,10 +240,7 @@ function onModuleInstantiate (specifier) {
   if (moduleCache.has(specifier)) {
     return moduleCache.get(specifier).identity
   }
-  let src = spin.builtin(specifier)
-  if (!src) {
-    src = decoder.decode(readFile(specifier))
-  }
+  const src = loadSource(specifier)
   const mod = spin.loadModule(src, specifier)
   moduleCache.set(specifier, mod)
   return mod.identity

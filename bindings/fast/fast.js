@@ -154,10 +154,12 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
         state->args[r++] = (int8_t)Local<Integer>::Cast(args[i])->Value();
         break;
       case FastTypes::i64:
+      case FastTypes::iSize:
         state->args[r++] = (int64_t)Local<Number>::Cast(args[i])->Value();
         break;
       case FastTypes::u64:
       case FastTypes::pointer:
+      case FastTypes::uSize:
         state->args[r++] = (uint64_t)Local<Number>::Cast(args[i])->Value();
         break;
       case FastTypes::buffer:
@@ -171,6 +173,12 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
           Local<Uint32Array> u32 = args[i].As<Uint32Array>();
           state->args[r++] = (uint64_t)((uint8_t*)u32->Buffer()->Data() + u32->ByteOffset());
         }
+        break;
+      case FastTypes::function:
+        break;
+      case FastTypes::f32:
+        break;
+      case FastTypes::f64:
         break;
     }
   }

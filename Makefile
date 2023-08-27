@@ -15,9 +15,11 @@ MODULE_DIR=module
 SPIN_HOME=$(shell pwd)
 # list of c++ library archive (.a) files to link into runtime
 #MODULES=module/load/load.a module/fs/fs.a module/ffi/ffi.a module/tcc/tcc.a
+#MODULES=module/load/load.a module/fs/fs.a module/fast/fast.a module/system/system.a
 MODULES=module/load/load.a module/fs/fs.a
 # list of JS modules to link into runtime
 #LIBS=lib/ansi.js lib/bench.js lib/binary.js lib/ffi.js lib/gen.js lib/packet.js lib/path.js lib/stringify.js
+#LIBS=lib/gen.js lib/fast.js lib/asm.js lib/system.js lib/bench.js
 LIBS=lib/gen.js
 # list of arbitrary assets to link into runtime
 ASSETS=
