@@ -78,6 +78,101 @@ void spin_fastcall (void** state) {
 }
 
 
+void createIsolateContextFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, struct FastOneByteString* const p2, uint32_t p3, struct FastOneByteString* const p4, uint32_t p5, struct FastApiTypedArray* const p6, int32_t p7, int32_t p8, uint64_t p9, struct FastOneByteString* const p10, struct FastOneByteString* const p11, int32_t p12, int32_t p13, void* p14, struct FastApiTypedArray* const p15);
+v8::CTypeInfo cargscreateIsolateContext[17] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rccreateIsolateContext = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infocreateIsolateContext = v8::CFunctionInfo(rccreateIsolateContext, 17, cargscreateIsolateContext);
+v8::CFunction pFcreateIsolateContext = v8::CFunction((const void*)&createIsolateContextFast, &infocreateIsolateContext);
+
+void createIsolateContext2Fast(void* p, int32_t p0, void* p1, struct FastOneByteString* const p2, uint32_t p3, struct FastOneByteString* const p4, uint32_t p5, void* p6, int32_t p7, int32_t p8, uint64_t p9, struct FastOneByteString* const p10, struct FastOneByteString* const p11, int32_t p12, int32_t p13, void* p14, struct FastApiTypedArray* const p15);
+v8::CTypeInfo cargscreateIsolateContext2[17] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rccreateIsolateContext2 = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infocreateIsolateContext2 = v8::CFunctionInfo(rccreateIsolateContext2, 17, cargscreateIsolateContext2);
+v8::CFunction pFcreateIsolateContext2 = v8::CFunction((const void*)&createIsolateContext2Fast, &infocreateIsolateContext2);
+
+void destroyIsolateContextFast(void* p, struct FastApiTypedArray* const p0);
+v8::CTypeInfo cargsdestroyIsolateContext[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcdestroyIsolateContext = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infodestroyIsolateContext = v8::CFunctionInfo(rcdestroyIsolateContext, 2, cargsdestroyIsolateContext);
+v8::CFunction pFdestroyIsolateContext = v8::CFunction((const void*)&destroyIsolateContextFast, &infodestroyIsolateContext);
+
+int32_t contextSizeFast(void* p);
+v8::CTypeInfo cargscontextSize[1] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+};
+v8::CTypeInfo rccontextSize = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infocontextSize = v8::CFunctionInfo(rccontextSize, 1, cargscontextSize);
+v8::CFunction pFcontextSize = v8::CFunction((const void*)&contextSizeFast, &infocontextSize);
+
+void ffi_callFast(void* p, void* p0);
+v8::CTypeInfo cargsffi_call[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcffi_call = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoffi_call = v8::CFunctionInfo(rcffi_call, 2, cargsffi_call);
+v8::CFunction pFffi_call = v8::CFunction((const void*)&ffi_callFast, &infoffi_call);
+
+void ffi_syscallFast(void* p, void* p0);
+v8::CTypeInfo cargsffi_syscall[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcffi_syscall = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoffi_syscall = v8::CFunctionInfo(rcffi_syscall, 2, cargsffi_syscall);
+v8::CFunction pFffi_syscall = v8::CFunction((const void*)&ffi_syscallFast, &infoffi_syscall);
+
+void fastcallFast(void* p, void* p0);
+v8::CTypeInfo cargsfastcall[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcfastcall = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infofastcall = v8::CFunctionInfo(rcfastcall, 2, cargsfastcall);
+v8::CFunction pFfastcall = v8::CFunction((const void*)&fastcallFast, &infofastcall);
+
+
+
 void createIsolateSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -138,6 +233,48 @@ void createIsolateContextFast(void* p, int32_t p0, struct FastApiTypedArray* con
   struct FastOneByteString* const v4 = p4;
   uint32_t v5 = p5;
   char* v6 = reinterpret_cast<char*>(p6->data);
+  int32_t v7 = p7;
+  int32_t v8 = p8;
+  uint64_t v9 = p9;
+  struct FastOneByteString* const v10 = p10;
+  struct FastOneByteString* const v11 = p11;
+  int32_t v12 = p12;
+  int32_t v13 = p13;
+  void* v14 = reinterpret_cast<void*>(p14);
+  struct isolate_context* v15 = reinterpret_cast<struct isolate_context*>(p15->data);
+  spin_create_isolate_context(v0, v1, v2->data, v3, v4->data, v5, v6, v7, v8, v9, v10->data, v11->data, v12, v13, v14, v15);
+}
+void createIsolateContext2Slow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  char** v1 = reinterpret_cast<char**>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  String::Utf8Value v2(isolate, args[2]);
+  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  String::Utf8Value v4(isolate, args[4]);
+  uint32_t v5 = Local<Integer>::Cast(args[5])->Value();
+  char* v6 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[6])->Value());
+  int32_t v7 = Local<Integer>::Cast(args[7])->Value();
+  int32_t v8 = Local<Integer>::Cast(args[8])->Value();
+  uint64_t v9 = Local<Integer>::Cast(args[9])->Value();
+  String::Utf8Value v10(isolate, args[10]);
+  String::Utf8Value v11(isolate, args[11]);
+  int32_t v12 = Local<Integer>::Cast(args[12])->Value();
+  int32_t v13 = Local<Integer>::Cast(args[13])->Value();
+  void* v14 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[14])->Value());
+  Local<Uint8Array> u815 = args[15].As<Uint8Array>();
+  uint8_t* ptr15 = (uint8_t*)u815->Buffer()->Data() + u815->ByteOffset();
+  struct isolate_context* v15 = reinterpret_cast<struct isolate_context*>(ptr15);
+  spin_create_isolate_context(v0, v1, *v2, v3, *v4, v5, v6, v7, v8, v9, *v10, *v11, v12, v13, v14, v15);
+}
+
+void createIsolateContext2Fast(void* p, int32_t p0, void* p1, struct FastOneByteString* const p2, uint32_t p3, struct FastOneByteString* const p4, uint32_t p5, void* p6, int32_t p7, int32_t p8, uint64_t p9, struct FastOneByteString* const p10, struct FastOneByteString* const p11, int32_t p12, int32_t p13, void* p14, struct FastApiTypedArray* const p15) {
+  int32_t v0 = p0;
+  char** v1 = reinterpret_cast<char**>(p1);
+  struct FastOneByteString* const v2 = p2;
+  uint32_t v3 = p3;
+  struct FastOneByteString* const v4 = p4;
+  uint32_t v5 = p5;
+  char* v6 = reinterpret_cast<char*>(p6);
   int32_t v7 = p7;
   int32_t v8 = p8;
   uint64_t v9 = p9;
@@ -214,71 +351,15 @@ void fastcallFast(void* p, void* p0) {
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
   SET_METHOD(isolate, module, "createIsolate", createIsolateSlow);
-
-  v8::CTypeInfo* cargscreateIsolateContext = (v8::CTypeInfo*)calloc(17, sizeof(v8::CTypeInfo));
-  cargscreateIsolateContext[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargscreateIsolateContext[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargscreateIsolateContext[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargscreateIsolateContext[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargscreateIsolateContext[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargscreateIsolateContext[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargscreateIsolateContext[6] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargscreateIsolateContext[7] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargscreateIsolateContext[8] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargscreateIsolateContext[9] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargscreateIsolateContext[10] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargscreateIsolateContext[11] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargscreateIsolateContext[12] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargscreateIsolateContext[13] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargscreateIsolateContext[14] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargscreateIsolateContext[15] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargscreateIsolateContext[16] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rccreateIsolateContext = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infocreateIsolateContext = new v8::CFunctionInfo(*rccreateIsolateContext, 17, cargscreateIsolateContext);
-  v8::CFunction* pFcreateIsolateContext = new v8::CFunction((const void*)&createIsolateContextFast, infocreateIsolateContext);
-  SET_FAST_METHOD(isolate, module, "createIsolateContext", pFcreateIsolateContext, createIsolateContextSlow);
-
-  v8::CTypeInfo* cargsdestroyIsolateContext = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsdestroyIsolateContext[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsdestroyIsolateContext[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcdestroyIsolateContext = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infodestroyIsolateContext = new v8::CFunctionInfo(*rcdestroyIsolateContext, 2, cargsdestroyIsolateContext);
-  v8::CFunction* pFdestroyIsolateContext = new v8::CFunction((const void*)&destroyIsolateContextFast, infodestroyIsolateContext);
-  SET_FAST_METHOD(isolate, module, "destroyIsolateContext", pFdestroyIsolateContext, destroyIsolateContextSlow);
-
-  v8::CTypeInfo* cargscontextSize = (v8::CTypeInfo*)calloc(1, sizeof(v8::CTypeInfo));
-  cargscontextSize[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  v8::CTypeInfo* rccontextSize = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infocontextSize = new v8::CFunctionInfo(*rccontextSize, 1, cargscontextSize);
-  v8::CFunction* pFcontextSize = new v8::CFunction((const void*)&contextSizeFast, infocontextSize);
-  SET_FAST_METHOD(isolate, module, "contextSize", pFcontextSize, contextSizeSlow);
+  SET_FAST_METHOD(isolate, module, "createIsolateContext", &pFcreateIsolateContext, createIsolateContextSlow);
+  SET_FAST_METHOD(isolate, module, "createIsolateContext2", &pFcreateIsolateContext2, createIsolateContext2Slow);
+  SET_FAST_METHOD(isolate, module, "destroyIsolateContext", &pFdestroyIsolateContext, destroyIsolateContextSlow);
+  SET_FAST_METHOD(isolate, module, "contextSize", &pFcontextSize, contextSizeSlow);
   SET_METHOD(isolate, module, "startIsolate", startIsolateSlow);
   SET_METHOD(isolate, module, "callCallback", callCallbackSlow);
-
-  v8::CTypeInfo* cargsffi_call = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsffi_call[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsffi_call[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcffi_call = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoffi_call = new v8::CFunctionInfo(*rcffi_call, 2, cargsffi_call);
-  v8::CFunction* pFffi_call = new v8::CFunction((const void*)&ffi_callFast, infoffi_call);
-  SET_FAST_METHOD(isolate, module, "ffi_call", pFffi_call, ffi_callSlow);
-
-  v8::CTypeInfo* cargsffi_syscall = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsffi_syscall[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsffi_syscall[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcffi_syscall = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoffi_syscall = new v8::CFunctionInfo(*rcffi_syscall, 2, cargsffi_syscall);
-  v8::CFunction* pFffi_syscall = new v8::CFunction((const void*)&ffi_syscallFast, infoffi_syscall);
-  SET_FAST_METHOD(isolate, module, "ffi_syscall", pFffi_syscall, ffi_syscallSlow);
-
-  v8::CTypeInfo* cargsfastcall = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsfastcall[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsfastcall[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcfastcall = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infofastcall = new v8::CFunctionInfo(*rcfastcall, 2, cargsfastcall);
-  v8::CFunction* pFfastcall = new v8::CFunction((const void*)&fastcallFast, infofastcall);
-  SET_FAST_METHOD(isolate, module, "fastcall", pFfastcall, fastcallSlow);
+  SET_FAST_METHOD(isolate, module, "ffi_call", &pFffi_call, ffi_callSlow);
+  SET_FAST_METHOD(isolate, module, "ffi_syscall", &pFffi_syscall, ffi_syscallSlow);
+  SET_FAST_METHOD(isolate, module, "fastcall", &pFfastcall, fastcallSlow);
 
   SET_MODULE(isolate, target, "spin", module);
 }

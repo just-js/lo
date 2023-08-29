@@ -62,6 +62,163 @@ using v8::V8;
 
 
 
+void versionFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsversion[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcversion = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoversion = v8::CFunctionInfo(rcversion, 2, cargsversion);
+v8::CFunction pFversion = v8::CFunction((const void*)&versionFast, &infoversion);
+
+void client_config_builder_newFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsclient_config_builder_new[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcclient_config_builder_new = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoclient_config_builder_new = v8::CFunctionInfo(rcclient_config_builder_new, 2, cargsclient_config_builder_new);
+v8::CFunction pFclient_config_builder_new = v8::CFunction((const void*)&client_config_builder_newFast, &infoclient_config_builder_new);
+
+int32_t client_config_builder_load_roots_from_fileFast(void* p, void* p0, struct FastOneByteString* const p1);
+v8::CTypeInfo cargsclient_config_builder_load_roots_from_file[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+};
+v8::CTypeInfo rcclient_config_builder_load_roots_from_file = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoclient_config_builder_load_roots_from_file = v8::CFunctionInfo(rcclient_config_builder_load_roots_from_file, 3, cargsclient_config_builder_load_roots_from_file);
+v8::CFunction pFclient_config_builder_load_roots_from_file = v8::CFunction((const void*)&client_config_builder_load_roots_from_fileFast, &infoclient_config_builder_load_roots_from_file);
+
+int32_t client_config_builder_set_alpn_protocolsFast(void* p, void* p0, struct FastApiTypedArray* const p1, uint32_t p2);
+v8::CTypeInfo cargsclient_config_builder_set_alpn_protocols[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcclient_config_builder_set_alpn_protocols = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoclient_config_builder_set_alpn_protocols = v8::CFunctionInfo(rcclient_config_builder_set_alpn_protocols, 4, cargsclient_config_builder_set_alpn_protocols);
+v8::CFunction pFclient_config_builder_set_alpn_protocols = v8::CFunction((const void*)&client_config_builder_set_alpn_protocolsFast, &infoclient_config_builder_set_alpn_protocols);
+
+void client_config_builder_buildFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsclient_config_builder_build[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcclient_config_builder_build = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoclient_config_builder_build = v8::CFunctionInfo(rcclient_config_builder_build, 3, cargsclient_config_builder_build);
+v8::CFunction pFclient_config_builder_build = v8::CFunction((const void*)&client_config_builder_buildFast, &infoclient_config_builder_build);
+
+void client_config_freeFast(void* p, void* p0);
+v8::CTypeInfo cargsclient_config_free[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcclient_config_free = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoclient_config_free = v8::CFunctionInfo(rcclient_config_free, 2, cargsclient_config_free);
+v8::CFunction pFclient_config_free = v8::CFunction((const void*)&client_config_freeFast, &infoclient_config_free);
+
+int32_t client_connection_newFast(void* p, void* p0, struct FastOneByteString* const p1, struct FastApiTypedArray* const p2);
+v8::CTypeInfo cargsclient_connection_new[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcclient_connection_new = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoclient_connection_new = v8::CFunctionInfo(rcclient_connection_new, 4, cargsclient_connection_new);
+v8::CFunction pFclient_connection_new = v8::CFunction((const void*)&client_connection_newFast, &infoclient_connection_new);
+
+int32_t connection_wants_readFast(void* p, void* p0);
+v8::CTypeInfo cargsconnection_wants_read[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcconnection_wants_read = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoconnection_wants_read = v8::CFunctionInfo(rcconnection_wants_read, 2, cargsconnection_wants_read);
+v8::CFunction pFconnection_wants_read = v8::CFunction((const void*)&connection_wants_readFast, &infoconnection_wants_read);
+
+int32_t connection_read_tlsFast(void* p, void* p0, void* p1, struct FastApiTypedArray* const p2, struct FastApiTypedArray* const p3);
+v8::CTypeInfo cargsconnection_read_tls[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcconnection_read_tls = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoconnection_read_tls = v8::CFunctionInfo(rcconnection_read_tls, 5, cargsconnection_read_tls);
+v8::CFunction pFconnection_read_tls = v8::CFunction((const void*)&connection_read_tlsFast, &infoconnection_read_tls);
+
+int32_t connection_readFast(void* p, void* p0, struct FastApiTypedArray* const p1, uint32_t p2, struct FastApiTypedArray* const p3);
+v8::CTypeInfo cargsconnection_read[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcconnection_read = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoconnection_read = v8::CFunctionInfo(rcconnection_read, 5, cargsconnection_read);
+v8::CFunction pFconnection_read = v8::CFunction((const void*)&connection_readFast, &infoconnection_read);
+
+int32_t connection_wants_writeFast(void* p, void* p0);
+v8::CTypeInfo cargsconnection_wants_write[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcconnection_wants_write = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoconnection_wants_write = v8::CFunctionInfo(rcconnection_wants_write, 2, cargsconnection_wants_write);
+v8::CFunction pFconnection_wants_write = v8::CFunction((const void*)&connection_wants_writeFast, &infoconnection_wants_write);
+
+int32_t connection_write_tlsFast(void* p, void* p0, void* p1, struct FastApiTypedArray* const p2, struct FastApiTypedArray* const p3);
+v8::CTypeInfo cargsconnection_write_tls[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcconnection_write_tls = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoconnection_write_tls = v8::CFunctionInfo(rcconnection_write_tls, 5, cargsconnection_write_tls);
+v8::CFunction pFconnection_write_tls = v8::CFunction((const void*)&connection_write_tlsFast, &infoconnection_write_tls);
+
+int32_t connection_writeFast(void* p, void* p0, struct FastApiTypedArray* const p1, uint32_t p2, struct FastApiTypedArray* const p3);
+v8::CTypeInfo cargsconnection_write[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcconnection_write = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoconnection_write = v8::CFunctionInfo(rcconnection_write, 5, cargsconnection_write);
+v8::CFunction pFconnection_write = v8::CFunction((const void*)&connection_writeFast, &infoconnection_write);
+
+int32_t connection_process_new_packetsFast(void* p, void* p0);
+v8::CTypeInfo cargsconnection_process_new_packets[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcconnection_process_new_packets = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoconnection_process_new_packets = v8::CFunctionInfo(rcconnection_process_new_packets, 2, cargsconnection_process_new_packets);
+v8::CFunction pFconnection_process_new_packets = v8::CFunction((const void*)&connection_process_new_packetsFast, &infoconnection_process_new_packets);
+
+void connection_freeFast(void* p, void* p0);
+v8::CTypeInfo cargsconnection_free[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcconnection_free = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoconnection_free = v8::CFunctionInfo(rcconnection_free, 2, cargsconnection_free);
+v8::CFunction pFconnection_free = v8::CFunction((const void*)&connection_freeFast, &infoconnection_free);
+
+
+
 void versionSlow(const FunctionCallbackInfo<Value> &args) {
 
   rustls_str rc = rustls_version();
@@ -286,143 +443,21 @@ void connection_freeFast(void* p, void* p0) {
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
-  v8::CTypeInfo* cargsversion = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsversion[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsversion[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcversion = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoversion = new v8::CFunctionInfo(*rcversion, 2, cargsversion);
-  v8::CFunction* pFversion = new v8::CFunction((const void*)&versionFast, infoversion);
-  SET_FAST_METHOD(isolate, module, "version", pFversion, versionSlow);
-  v8::CTypeInfo* cargsclient_config_builder_new = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsclient_config_builder_new[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsclient_config_builder_new[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcclient_config_builder_new = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoclient_config_builder_new = new v8::CFunctionInfo(*rcclient_config_builder_new, 2, cargsclient_config_builder_new);
-  v8::CFunction* pFclient_config_builder_new = new v8::CFunction((const void*)&client_config_builder_newFast, infoclient_config_builder_new);
-  SET_FAST_METHOD(isolate, module, "client_config_builder_new", pFclient_config_builder_new, client_config_builder_newSlow);
-
-  v8::CTypeInfo* cargsclient_config_builder_load_roots_from_file = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsclient_config_builder_load_roots_from_file[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsclient_config_builder_load_roots_from_file[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsclient_config_builder_load_roots_from_file[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  v8::CTypeInfo* rcclient_config_builder_load_roots_from_file = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoclient_config_builder_load_roots_from_file = new v8::CFunctionInfo(*rcclient_config_builder_load_roots_from_file, 3, cargsclient_config_builder_load_roots_from_file);
-  v8::CFunction* pFclient_config_builder_load_roots_from_file = new v8::CFunction((const void*)&client_config_builder_load_roots_from_fileFast, infoclient_config_builder_load_roots_from_file);
-  SET_FAST_METHOD(isolate, module, "client_config_builder_load_roots_from_file", pFclient_config_builder_load_roots_from_file, client_config_builder_load_roots_from_fileSlow);
-
-  v8::CTypeInfo* cargsclient_config_builder_set_alpn_protocols = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsclient_config_builder_set_alpn_protocols[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsclient_config_builder_set_alpn_protocols[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsclient_config_builder_set_alpn_protocols[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsclient_config_builder_set_alpn_protocols[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rcclient_config_builder_set_alpn_protocols = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoclient_config_builder_set_alpn_protocols = new v8::CFunctionInfo(*rcclient_config_builder_set_alpn_protocols, 4, cargsclient_config_builder_set_alpn_protocols);
-  v8::CFunction* pFclient_config_builder_set_alpn_protocols = new v8::CFunction((const void*)&client_config_builder_set_alpn_protocolsFast, infoclient_config_builder_set_alpn_protocols);
-  SET_FAST_METHOD(isolate, module, "client_config_builder_set_alpn_protocols", pFclient_config_builder_set_alpn_protocols, client_config_builder_set_alpn_protocolsSlow);
-  v8::CTypeInfo* cargsclient_config_builder_build = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsclient_config_builder_build[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsclient_config_builder_build[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsclient_config_builder_build[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcclient_config_builder_build = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoclient_config_builder_build = new v8::CFunctionInfo(*rcclient_config_builder_build, 3, cargsclient_config_builder_build);
-  v8::CFunction* pFclient_config_builder_build = new v8::CFunction((const void*)&client_config_builder_buildFast, infoclient_config_builder_build);
-  SET_FAST_METHOD(isolate, module, "client_config_builder_build", pFclient_config_builder_build, client_config_builder_buildSlow);
-
-  v8::CTypeInfo* cargsclient_config_free = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsclient_config_free[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsclient_config_free[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcclient_config_free = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoclient_config_free = new v8::CFunctionInfo(*rcclient_config_free, 2, cargsclient_config_free);
-  v8::CFunction* pFclient_config_free = new v8::CFunction((const void*)&client_config_freeFast, infoclient_config_free);
-  SET_FAST_METHOD(isolate, module, "client_config_free", pFclient_config_free, client_config_freeSlow);
-
-  v8::CTypeInfo* cargsclient_connection_new = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsclient_connection_new[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsclient_connection_new[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsclient_connection_new[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargsclient_connection_new[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcclient_connection_new = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoclient_connection_new = new v8::CFunctionInfo(*rcclient_connection_new, 4, cargsclient_connection_new);
-  v8::CFunction* pFclient_connection_new = new v8::CFunction((const void*)&client_connection_newFast, infoclient_connection_new);
-  SET_FAST_METHOD(isolate, module, "client_connection_new", pFclient_connection_new, client_connection_newSlow);
-
-  v8::CTypeInfo* cargsconnection_wants_read = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsconnection_wants_read[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsconnection_wants_read[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcconnection_wants_read = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoconnection_wants_read = new v8::CFunctionInfo(*rcconnection_wants_read, 2, cargsconnection_wants_read);
-  v8::CFunction* pFconnection_wants_read = new v8::CFunction((const void*)&connection_wants_readFast, infoconnection_wants_read);
-  SET_FAST_METHOD(isolate, module, "connection_wants_read", pFconnection_wants_read, connection_wants_readSlow);
-
-  v8::CTypeInfo* cargsconnection_read_tls = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargsconnection_read_tls[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsconnection_read_tls[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsconnection_read_tls[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsconnection_read_tls[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsconnection_read_tls[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcconnection_read_tls = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoconnection_read_tls = new v8::CFunctionInfo(*rcconnection_read_tls, 5, cargsconnection_read_tls);
-  v8::CFunction* pFconnection_read_tls = new v8::CFunction((const void*)&connection_read_tlsFast, infoconnection_read_tls);
-  SET_FAST_METHOD(isolate, module, "connection_read_tls", pFconnection_read_tls, connection_read_tlsSlow);
-
-  v8::CTypeInfo* cargsconnection_read = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargsconnection_read[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsconnection_read[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsconnection_read[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsconnection_read[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsconnection_read[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcconnection_read = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoconnection_read = new v8::CFunctionInfo(*rcconnection_read, 5, cargsconnection_read);
-  v8::CFunction* pFconnection_read = new v8::CFunction((const void*)&connection_readFast, infoconnection_read);
-  SET_FAST_METHOD(isolate, module, "connection_read", pFconnection_read, connection_readSlow);
-
-  v8::CTypeInfo* cargsconnection_wants_write = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsconnection_wants_write[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsconnection_wants_write[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcconnection_wants_write = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoconnection_wants_write = new v8::CFunctionInfo(*rcconnection_wants_write, 2, cargsconnection_wants_write);
-  v8::CFunction* pFconnection_wants_write = new v8::CFunction((const void*)&connection_wants_writeFast, infoconnection_wants_write);
-  SET_FAST_METHOD(isolate, module, "connection_wants_write", pFconnection_wants_write, connection_wants_writeSlow);
-
-  v8::CTypeInfo* cargsconnection_write_tls = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargsconnection_write_tls[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsconnection_write_tls[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsconnection_write_tls[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsconnection_write_tls[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsconnection_write_tls[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcconnection_write_tls = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoconnection_write_tls = new v8::CFunctionInfo(*rcconnection_write_tls, 5, cargsconnection_write_tls);
-  v8::CFunction* pFconnection_write_tls = new v8::CFunction((const void*)&connection_write_tlsFast, infoconnection_write_tls);
-  SET_FAST_METHOD(isolate, module, "connection_write_tls", pFconnection_write_tls, connection_write_tlsSlow);
-
-  v8::CTypeInfo* cargsconnection_write = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargsconnection_write[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsconnection_write[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsconnection_write[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsconnection_write[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsconnection_write[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcconnection_write = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoconnection_write = new v8::CFunctionInfo(*rcconnection_write, 5, cargsconnection_write);
-  v8::CFunction* pFconnection_write = new v8::CFunction((const void*)&connection_writeFast, infoconnection_write);
-  SET_FAST_METHOD(isolate, module, "connection_write", pFconnection_write, connection_writeSlow);
-
-  v8::CTypeInfo* cargsconnection_process_new_packets = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsconnection_process_new_packets[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsconnection_process_new_packets[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcconnection_process_new_packets = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoconnection_process_new_packets = new v8::CFunctionInfo(*rcconnection_process_new_packets, 2, cargsconnection_process_new_packets);
-  v8::CFunction* pFconnection_process_new_packets = new v8::CFunction((const void*)&connection_process_new_packetsFast, infoconnection_process_new_packets);
-  SET_FAST_METHOD(isolate, module, "connection_process_new_packets", pFconnection_process_new_packets, connection_process_new_packetsSlow);
-
-  v8::CTypeInfo* cargsconnection_free = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsconnection_free[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsconnection_free[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcconnection_free = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoconnection_free = new v8::CFunctionInfo(*rcconnection_free, 2, cargsconnection_free);
-  v8::CFunction* pFconnection_free = new v8::CFunction((const void*)&connection_freeFast, infoconnection_free);
-  SET_FAST_METHOD(isolate, module, "connection_free", pFconnection_free, connection_freeSlow);
+  SET_FAST_METHOD(isolate, module, "version", &pFversion, versionSlow);
+  SET_FAST_METHOD(isolate, module, "client_config_builder_new", &pFclient_config_builder_new, client_config_builder_newSlow);
+  SET_FAST_METHOD(isolate, module, "client_config_builder_load_roots_from_file", &pFclient_config_builder_load_roots_from_file, client_config_builder_load_roots_from_fileSlow);
+  SET_FAST_METHOD(isolate, module, "client_config_builder_set_alpn_protocols", &pFclient_config_builder_set_alpn_protocols, client_config_builder_set_alpn_protocolsSlow);
+  SET_FAST_METHOD(isolate, module, "client_config_builder_build", &pFclient_config_builder_build, client_config_builder_buildSlow);
+  SET_FAST_METHOD(isolate, module, "client_config_free", &pFclient_config_free, client_config_freeSlow);
+  SET_FAST_METHOD(isolate, module, "client_connection_new", &pFclient_connection_new, client_connection_newSlow);
+  SET_FAST_METHOD(isolate, module, "connection_wants_read", &pFconnection_wants_read, connection_wants_readSlow);
+  SET_FAST_METHOD(isolate, module, "connection_read_tls", &pFconnection_read_tls, connection_read_tlsSlow);
+  SET_FAST_METHOD(isolate, module, "connection_read", &pFconnection_read, connection_readSlow);
+  SET_FAST_METHOD(isolate, module, "connection_wants_write", &pFconnection_wants_write, connection_wants_writeSlow);
+  SET_FAST_METHOD(isolate, module, "connection_write_tls", &pFconnection_write_tls, connection_write_tlsSlow);
+  SET_FAST_METHOD(isolate, module, "connection_write", &pFconnection_write, connection_writeSlow);
+  SET_FAST_METHOD(isolate, module, "connection_process_new_packets", &pFconnection_process_new_packets, connection_process_new_packetsSlow);
+  SET_FAST_METHOD(isolate, module, "connection_free", &pFconnection_free, connection_freeSlow);
 
   SET_MODULE(isolate, target, "rustls", module);
 }

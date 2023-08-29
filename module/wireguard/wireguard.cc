@@ -62,6 +62,112 @@ using v8::V8;
 
 
 
+int32_t setFast(void* p, void* p0);
+v8::CTypeInfo cargsset[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcset = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoset = v8::CFunctionInfo(rcset, 2, cargsset);
+v8::CFunction pFset = v8::CFunction((const void*)&setFast, &infoset);
+
+int32_t getFast(void* p, struct FastApiTypedArray* const p0, struct FastOneByteString* const p1);
+v8::CTypeInfo cargsget[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+};
+v8::CTypeInfo rcget = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoget = v8::CFunctionInfo(rcget, 3, cargsget);
+v8::CFunction pFget = v8::CFunction((const void*)&getFast, &infoget);
+
+int32_t addFast(void* p, struct FastOneByteString* const p0);
+v8::CTypeInfo cargsadd[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+};
+v8::CTypeInfo rcadd = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoadd = v8::CFunctionInfo(rcadd, 2, cargsadd);
+v8::CFunction pFadd = v8::CFunction((const void*)&addFast, &infoadd);
+
+int32_t deleteFast(void* p, struct FastOneByteString* const p0);
+v8::CTypeInfo cargsdelete[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+};
+v8::CTypeInfo rcdelete = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infodelete = v8::CFunctionInfo(rcdelete, 2, cargsdelete);
+v8::CFunction pFdelete = v8::CFunction((const void*)&deleteFast, &infodelete);
+
+void freeFast(void* p, void* p0);
+v8::CTypeInfo cargsfree[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcfree = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infofree = v8::CFunctionInfo(rcfree, 2, cargsfree);
+v8::CFunction pFfree = v8::CFunction((const void*)&freeFast, &infofree);
+
+void listFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargslist[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rclist = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infolist = v8::CFunctionInfo(rclist, 2, cargslist);
+v8::CFunction pFlist = v8::CFunction((const void*)&listFast, &infolist);
+
+void keytobase64Fast(void* p, struct FastApiTypedArray* const p0, struct FastApiTypedArray* const p1);
+v8::CTypeInfo cargskeytobase64[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rckeytobase64 = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infokeytobase64 = v8::CFunctionInfo(rckeytobase64, 3, cargskeytobase64);
+v8::CFunction pFkeytobase64 = v8::CFunction((const void*)&keytobase64Fast, &infokeytobase64);
+
+int32_t keyfrombase64Fast(void* p, struct FastApiTypedArray* const p0, struct FastApiTypedArray* const p1);
+v8::CTypeInfo cargskeyfrombase64[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rckeyfrombase64 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infokeyfrombase64 = v8::CFunctionInfo(rckeyfrombase64, 3, cargskeyfrombase64);
+v8::CFunction pFkeyfrombase64 = v8::CFunction((const void*)&keyfrombase64Fast, &infokeyfrombase64);
+
+void genpubKeyFast(void* p, struct FastApiTypedArray* const p0, struct FastApiTypedArray* const p1);
+v8::CTypeInfo cargsgenpubKey[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcgenpubKey = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infogenpubKey = v8::CFunctionInfo(rcgenpubKey, 3, cargsgenpubKey);
+v8::CFunction pFgenpubKey = v8::CFunction((const void*)&genpubKeyFast, &infogenpubKey);
+
+void genprivKeyFast(void* p, struct FastApiTypedArray* const p0);
+v8::CTypeInfo cargsgenprivKey[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcgenprivKey = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infogenprivKey = v8::CFunctionInfo(rcgenprivKey, 2, cargsgenprivKey);
+v8::CFunction pFgenprivKey = v8::CFunction((const void*)&genprivKeyFast, &infogenprivKey);
+
+void genpresharedKeyFast(void* p, struct FastApiTypedArray* const p0);
+v8::CTypeInfo cargsgenpresharedKey[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcgenpresharedKey = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infogenpresharedKey = v8::CFunctionInfo(rcgenpresharedKey, 2, cargsgenpresharedKey);
+v8::CFunction pFgenpresharedKey = v8::CFunction((const void*)&genpresharedKeyFast, &infogenpresharedKey);
+
+
+
 void setSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   wg_device* v0 = reinterpret_cast<wg_device*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -204,98 +310,17 @@ void genpresharedKeyFast(void* p, struct FastApiTypedArray* const p0) {
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
-
-  v8::CTypeInfo* cargsset = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsset[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsset[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcset = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoset = new v8::CFunctionInfo(*rcset, 2, cargsset);
-  v8::CFunction* pFset = new v8::CFunction((const void*)&setFast, infoset);
-  SET_FAST_METHOD(isolate, module, "set", pFset, setSlow);
-
-  v8::CTypeInfo* cargsget = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsget[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsget[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsget[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  v8::CTypeInfo* rcget = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoget = new v8::CFunctionInfo(*rcget, 3, cargsget);
-  v8::CFunction* pFget = new v8::CFunction((const void*)&getFast, infoget);
-  SET_FAST_METHOD(isolate, module, "get", pFget, getSlow);
-
-  v8::CTypeInfo* cargsadd = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsadd[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsadd[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  v8::CTypeInfo* rcadd = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoadd = new v8::CFunctionInfo(*rcadd, 2, cargsadd);
-  v8::CFunction* pFadd = new v8::CFunction((const void*)&addFast, infoadd);
-  SET_FAST_METHOD(isolate, module, "add", pFadd, addSlow);
-
-  v8::CTypeInfo* cargsdelete = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsdelete[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsdelete[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  v8::CTypeInfo* rcdelete = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infodelete = new v8::CFunctionInfo(*rcdelete, 2, cargsdelete);
-  v8::CFunction* pFdelete = new v8::CFunction((const void*)&deleteFast, infodelete);
-  SET_FAST_METHOD(isolate, module, "delete", pFdelete, deleteSlow);
-
-  v8::CTypeInfo* cargsfree = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsfree[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsfree[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcfree = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infofree = new v8::CFunctionInfo(*rcfree, 2, cargsfree);
-  v8::CFunction* pFfree = new v8::CFunction((const void*)&freeFast, infofree);
-  SET_FAST_METHOD(isolate, module, "free", pFfree, freeSlow);
-  v8::CTypeInfo* cargslist = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargslist[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargslist[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rclist = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infolist = new v8::CFunctionInfo(*rclist, 2, cargslist);
-  v8::CFunction* pFlist = new v8::CFunction((const void*)&listFast, infolist);
-  SET_FAST_METHOD(isolate, module, "list", pFlist, listSlow);
-
-  v8::CTypeInfo* cargskeytobase64 = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargskeytobase64[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargskeytobase64[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargskeytobase64[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rckeytobase64 = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infokeytobase64 = new v8::CFunctionInfo(*rckeytobase64, 3, cargskeytobase64);
-  v8::CFunction* pFkeytobase64 = new v8::CFunction((const void*)&keytobase64Fast, infokeytobase64);
-  SET_FAST_METHOD(isolate, module, "keytobase64", pFkeytobase64, keytobase64Slow);
-
-  v8::CTypeInfo* cargskeyfrombase64 = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargskeyfrombase64[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargskeyfrombase64[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargskeyfrombase64[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rckeyfrombase64 = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infokeyfrombase64 = new v8::CFunctionInfo(*rckeyfrombase64, 3, cargskeyfrombase64);
-  v8::CFunction* pFkeyfrombase64 = new v8::CFunction((const void*)&keyfrombase64Fast, infokeyfrombase64);
-  SET_FAST_METHOD(isolate, module, "keyfrombase64", pFkeyfrombase64, keyfrombase64Slow);
-
-  v8::CTypeInfo* cargsgenpubKey = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsgenpubKey[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsgenpubKey[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsgenpubKey[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcgenpubKey = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infogenpubKey = new v8::CFunctionInfo(*rcgenpubKey, 3, cargsgenpubKey);
-  v8::CFunction* pFgenpubKey = new v8::CFunction((const void*)&genpubKeyFast, infogenpubKey);
-  SET_FAST_METHOD(isolate, module, "genpubKey", pFgenpubKey, genpubKeySlow);
-
-  v8::CTypeInfo* cargsgenprivKey = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsgenprivKey[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsgenprivKey[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcgenprivKey = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infogenprivKey = new v8::CFunctionInfo(*rcgenprivKey, 2, cargsgenprivKey);
-  v8::CFunction* pFgenprivKey = new v8::CFunction((const void*)&genprivKeyFast, infogenprivKey);
-  SET_FAST_METHOD(isolate, module, "genprivKey", pFgenprivKey, genprivKeySlow);
-
-  v8::CTypeInfo* cargsgenpresharedKey = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsgenpresharedKey[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsgenpresharedKey[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcgenpresharedKey = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infogenpresharedKey = new v8::CFunctionInfo(*rcgenpresharedKey, 2, cargsgenpresharedKey);
-  v8::CFunction* pFgenpresharedKey = new v8::CFunction((const void*)&genpresharedKeyFast, infogenpresharedKey);
-  SET_FAST_METHOD(isolate, module, "genpresharedKey", pFgenpresharedKey, genpresharedKeySlow);
+  SET_FAST_METHOD(isolate, module, "set", &pFset, setSlow);
+  SET_FAST_METHOD(isolate, module, "get", &pFget, getSlow);
+  SET_FAST_METHOD(isolate, module, "add", &pFadd, addSlow);
+  SET_FAST_METHOD(isolate, module, "delete", &pFdelete, deleteSlow);
+  SET_FAST_METHOD(isolate, module, "free", &pFfree, freeSlow);
+  SET_FAST_METHOD(isolate, module, "list", &pFlist, listSlow);
+  SET_FAST_METHOD(isolate, module, "keytobase64", &pFkeytobase64, keytobase64Slow);
+  SET_FAST_METHOD(isolate, module, "keyfrombase64", &pFkeyfrombase64, keyfrombase64Slow);
+  SET_FAST_METHOD(isolate, module, "genpubKey", &pFgenpubKey, genpubKeySlow);
+  SET_FAST_METHOD(isolate, module, "genprivKey", &pFgenprivKey, genprivKeySlow);
+  SET_FAST_METHOD(isolate, module, "genpresharedKey", &pFgenpresharedKey, genpresharedKeySlow);
 
   SET_MODULE(isolate, target, "wireguard", module);
 }

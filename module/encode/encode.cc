@@ -113,6 +113,32 @@ size_t hex_decode(char* buf,
 
 
 
+uint32_t hex_encodeFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, uint32_t p3);
+v8::CTypeInfo cargshex_encode[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rchex_encode = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+v8::CFunctionInfo infohex_encode = v8::CFunctionInfo(rchex_encode, 5, cargshex_encode);
+v8::CFunction pFhex_encode = v8::CFunction((const void*)&hex_encodeFast, &infohex_encode);
+
+uint32_t hex_decodeFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, uint32_t p3);
+v8::CTypeInfo cargshex_decode[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rchex_decode = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+v8::CFunctionInfo infohex_decode = v8::CFunctionInfo(rchex_decode, 5, cargshex_decode);
+v8::CFunction pFhex_decode = v8::CFunction((const void*)&hex_decodeFast, &infohex_decode);
+
+
+
 void hex_encodeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Uint8Array> u80 = args[0].As<Uint8Array>();
@@ -158,28 +184,8 @@ uint32_t hex_decodeFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
-
-  v8::CTypeInfo* cargshex_encode = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargshex_encode[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargshex_encode[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargshex_encode[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargshex_encode[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargshex_encode[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rchex_encode = new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CFunctionInfo* infohex_encode = new v8::CFunctionInfo(*rchex_encode, 5, cargshex_encode);
-  v8::CFunction* pFhex_encode = new v8::CFunction((const void*)&hex_encodeFast, infohex_encode);
-  SET_FAST_METHOD(isolate, module, "hex_encode", pFhex_encode, hex_encodeSlow);
-
-  v8::CTypeInfo* cargshex_decode = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargshex_decode[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargshex_decode[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargshex_decode[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargshex_decode[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargshex_decode[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rchex_decode = new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CFunctionInfo* infohex_decode = new v8::CFunctionInfo(*rchex_decode, 5, cargshex_decode);
-  v8::CFunction* pFhex_decode = new v8::CFunction((const void*)&hex_decodeFast, infohex_decode);
-  SET_FAST_METHOD(isolate, module, "hex_decode", pFhex_decode, hex_decodeSlow);
+  SET_FAST_METHOD(isolate, module, "hex_encode", &pFhex_encode, hex_encodeSlow);
+  SET_FAST_METHOD(isolate, module, "hex_decode", &pFhex_decode, hex_decodeSlow);
 
   SET_MODULE(isolate, target, "encode", module);
 }

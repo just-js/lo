@@ -463,6 +463,33 @@ void bindFastApiSlow(const FunctionCallbackInfo<Value> &args) {
 
 
 
+int32_t ffi_prep_cifFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, uint32_t p2, struct FastApiTypedArray* const p3, struct FastApiTypedArray* const p4);
+v8::CTypeInfo cargsffi_prep_cif[6] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcffi_prep_cif = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoffi_prep_cif = v8::CFunctionInfo(rcffi_prep_cif, 6, cargsffi_prep_cif);
+v8::CFunction pFffi_prep_cif = v8::CFunction((const void*)&ffi_prep_cifFast, &infoffi_prep_cif);
+
+void ffi_callFast(void* p, struct FastApiTypedArray* const p0, void* p1, struct FastApiTypedArray* const p2, struct FastApiTypedArray* const p3);
+v8::CTypeInfo cargsffi_call[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcffi_call = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoffi_call = v8::CFunctionInfo(rcffi_call, 5, cargsffi_call);
+v8::CFunction pFffi_call = v8::CFunction((const void*)&ffi_callFast, &infoffi_call);
+
+
+
 void ffi_prep_cifSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Uint8Array> u80 = args[0].As<Uint8Array>();
@@ -512,29 +539,8 @@ void ffi_callFast(void* p, struct FastApiTypedArray* const p0, void* p1, struct 
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
-
-  v8::CTypeInfo* cargsffi_prep_cif = (v8::CTypeInfo*)calloc(6, sizeof(v8::CTypeInfo));
-  cargsffi_prep_cif[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsffi_prep_cif[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsffi_prep_cif[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsffi_prep_cif[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsffi_prep_cif[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsffi_prep_cif[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcffi_prep_cif = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoffi_prep_cif = new v8::CFunctionInfo(*rcffi_prep_cif, 6, cargsffi_prep_cif);
-  v8::CFunction* pFffi_prep_cif = new v8::CFunction((const void*)&ffi_prep_cifFast, infoffi_prep_cif);
-  SET_FAST_METHOD(isolate, module, "ffi_prep_cif", pFffi_prep_cif, ffi_prep_cifSlow);
-
-  v8::CTypeInfo* cargsffi_call = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargsffi_call[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsffi_call[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsffi_call[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsffi_call[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsffi_call[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcffi_call = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoffi_call = new v8::CFunctionInfo(*rcffi_call, 5, cargsffi_call);
-  v8::CFunction* pFffi_call = new v8::CFunction((const void*)&ffi_callFast, infoffi_call);
-  SET_FAST_METHOD(isolate, module, "ffi_call", pFffi_call, ffi_callSlow);
+  SET_FAST_METHOD(isolate, module, "ffi_prep_cif", &pFffi_prep_cif, ffi_prep_cifSlow);
+  SET_FAST_METHOD(isolate, module, "ffi_call", &pFffi_call, ffi_callSlow);
   SET_METHOD(isolate, module, "bindFastApi", bindFastApiSlow);
   SET_METHOD(isolate, module, "bindSlowApi", bindSlowApiSlow);
 

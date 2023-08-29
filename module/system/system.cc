@@ -70,6 +70,315 @@ using v8::V8;
 
 
 
+void mmapFast(void* p, void* p0, uint32_t p1, int32_t p2, int32_t p3, int32_t p4, uint32_t p5, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsmmap[8] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcmmap = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infommap = v8::CFunctionInfo(rcmmap, 8, cargsmmap);
+v8::CFunction pFmmap = v8::CFunction((const void*)&mmapFast, &infommap);
+
+void getcwdFast(void* p, struct FastApiTypedArray* const p0, int32_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsgetcwd[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcgetcwd = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infogetcwd = v8::CFunctionInfo(rcgetcwd, 4, cargsgetcwd);
+v8::CFunction pFgetcwd = v8::CFunction((const void*)&getcwdFast, &infogetcwd);
+
+int32_t eventfdFast(void* p, uint32_t p0, int32_t p1);
+v8::CTypeInfo cargseventfd[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rceventfd = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoeventfd = v8::CFunctionInfo(rceventfd, 3, cargseventfd);
+v8::CFunction pFeventfd = v8::CFunction((const void*)&eventfdFast, &infoeventfd);
+
+int32_t clock_gettimeFast(void* p, int32_t p0, void* p1);
+v8::CTypeInfo cargsclock_gettime[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcclock_gettime = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoclock_gettime = v8::CFunctionInfo(rcclock_gettime, 3, cargsclock_gettime);
+v8::CFunction pFclock_gettime = v8::CFunction((const void*)&clock_gettimeFast, &infoclock_gettime);
+
+int32_t mprotectFast(void* p, void* p0, uint32_t p1, int32_t p2);
+v8::CTypeInfo cargsmprotect[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcmprotect = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infomprotect = v8::CFunctionInfo(rcmprotect, 4, cargsmprotect);
+v8::CFunction pFmprotect = v8::CFunction((const void*)&mprotectFast, &infomprotect);
+
+void memcpyFast(void* p, void* p0, void* p1, int32_t p2, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsmemcpy[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcmemcpy = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infomemcpy = v8::CFunctionInfo(rcmemcpy, 5, cargsmemcpy);
+v8::CFunction pFmemcpy = v8::CFunction((const void*)&memcpyFast, &infomemcpy);
+
+int32_t usleepFast(void* p, uint32_t p0);
+v8::CTypeInfo cargsusleep[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcusleep = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infousleep = v8::CFunctionInfo(rcusleep, 2, cargsusleep);
+v8::CFunction pFusleep = v8::CFunction((const void*)&usleepFast, &infousleep);
+
+int32_t getpidFast(void* p);
+v8::CTypeInfo cargsgetpid[1] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+};
+v8::CTypeInfo rcgetpid = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infogetpid = v8::CFunctionInfo(rcgetpid, 1, cargsgetpid);
+v8::CFunction pFgetpid = v8::CFunction((const void*)&getpidFast, &infogetpid);
+
+int32_t getrusageFast(void* p, int32_t p0, struct FastApiTypedArray* const p1);
+v8::CTypeInfo cargsgetrusage[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcgetrusage = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infogetrusage = v8::CFunctionInfo(rcgetrusage, 3, cargsgetrusage);
+v8::CFunction pFgetrusage = v8::CFunction((const void*)&getrusageFast, &infogetrusage);
+
+int32_t timerfd_createFast(void* p, int32_t p0, int32_t p1);
+v8::CTypeInfo cargstimerfd_create[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rctimerfd_create = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infotimerfd_create = v8::CFunctionInfo(rctimerfd_create, 3, cargstimerfd_create);
+v8::CFunction pFtimerfd_create = v8::CFunction((const void*)&timerfd_createFast, &infotimerfd_create);
+
+uint32_t sleepFast(void* p, uint32_t p0);
+v8::CTypeInfo cargssleep[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcsleep = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+v8::CFunctionInfo infosleep = v8::CFunctionInfo(rcsleep, 2, cargssleep);
+v8::CFunction pFsleep = v8::CFunction((const void*)&sleepFast, &infosleep);
+
+int32_t timerfd_settimeFast(void* p, int32_t p0, int32_t p1, struct FastApiTypedArray* const p2, void* p3);
+v8::CTypeInfo cargstimerfd_settime[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rctimerfd_settime = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infotimerfd_settime = v8::CFunctionInfo(rctimerfd_settime, 5, cargstimerfd_settime);
+v8::CFunction pFtimerfd_settime = v8::CFunction((const void*)&timerfd_settimeFast, &infotimerfd_settime);
+
+int32_t forkFast(void* p);
+v8::CTypeInfo cargsfork[1] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+};
+v8::CTypeInfo rcfork = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infofork = v8::CFunctionInfo(rcfork, 1, cargsfork);
+v8::CFunction pFfork = v8::CFunction((const void*)&forkFast, &infofork);
+
+int32_t killFast(void* p, int32_t p0, int32_t p1);
+v8::CTypeInfo cargskill[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rckill = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infokill = v8::CFunctionInfo(rckill, 3, cargskill);
+v8::CFunction pFkill = v8::CFunction((const void*)&killFast, &infokill);
+
+int32_t waitpidFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2);
+v8::CTypeInfo cargswaitpid[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcwaitpid = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infowaitpid = v8::CFunctionInfo(rcwaitpid, 4, cargswaitpid);
+v8::CFunction pFwaitpid = v8::CFunction((const void*)&waitpidFast, &infowaitpid);
+
+int32_t execvpFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1);
+v8::CTypeInfo cargsexecvp[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcexecvp = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoexecvp = v8::CFunctionInfo(rcexecvp, 3, cargsexecvp);
+v8::CFunction pFexecvp = v8::CFunction((const void*)&execvpFast, &infoexecvp);
+
+uint32_t readlinkFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1, uint32_t p2);
+v8::CTypeInfo cargsreadlink[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcreadlink = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+v8::CFunctionInfo inforeadlink = v8::CFunctionInfo(rcreadlink, 4, cargsreadlink);
+v8::CFunction pFreadlink = v8::CFunction((const void*)&readlinkFast, &inforeadlink);
+
+uint32_t sysconfFast(void* p, int32_t p0);
+v8::CTypeInfo cargssysconf[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcsysconf = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+v8::CFunctionInfo infosysconf = v8::CFunctionInfo(rcsysconf, 2, cargssysconf);
+v8::CFunction pFsysconf = v8::CFunction((const void*)&sysconfFast, &infosysconf);
+
+int32_t pidfd_openFast(void* p, int32_t p0, int32_t p1, uint32_t p2);
+v8::CTypeInfo cargspidfd_open[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcpidfd_open = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infopidfd_open = v8::CFunctionInfo(rcpidfd_open, 4, cargspidfd_open);
+v8::CFunction pFpidfd_open = v8::CFunction((const void*)&pidfd_openFast, &infopidfd_open);
+
+int32_t gettidFast(void* p, int32_t p0);
+v8::CTypeInfo cargsgettid[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcgettid = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infogettid = v8::CFunctionInfo(rcgettid, 2, cargsgettid);
+v8::CFunction pFgettid = v8::CFunction((const void*)&gettidFast, &infogettid);
+
+int32_t getrlimitFast(void* p, int32_t p0, struct FastApiTypedArray* const p1);
+v8::CTypeInfo cargsgetrlimit[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcgetrlimit = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infogetrlimit = v8::CFunctionInfo(rcgetrlimit, 3, cargsgetrlimit);
+v8::CFunction pFgetrlimit = v8::CFunction((const void*)&getrlimitFast, &infogetrlimit);
+
+int32_t setrlimitFast(void* p, int32_t p0, struct FastApiTypedArray* const p1);
+v8::CTypeInfo cargssetrlimit[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcsetrlimit = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infosetrlimit = v8::CFunctionInfo(rcsetrlimit, 3, cargssetrlimit);
+v8::CFunction pFsetrlimit = v8::CFunction((const void*)&setrlimitFast, &infosetrlimit);
+
+int32_t strerror_rFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, uint32_t p2);
+v8::CTypeInfo cargsstrerror_r[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcstrerror_r = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infostrerror_r = v8::CFunctionInfo(rcstrerror_r, 4, cargsstrerror_r);
+v8::CFunction pFstrerror_r = v8::CFunction((const void*)&strerror_rFast, &infostrerror_r);
+
+int32_t timesFast(void* p, struct FastApiTypedArray* const p0);
+v8::CTypeInfo cargstimes[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rctimes = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infotimes = v8::CFunctionInfo(rctimes, 2, cargstimes);
+v8::CFunction pFtimes = v8::CFunction((const void*)&timesFast, &infotimes);
+
+uint32_t sysinfoFast(void* p, struct FastApiTypedArray* const p0);
+v8::CTypeInfo cargssysinfo[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcsysinfo = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+v8::CFunctionInfo infosysinfo = v8::CFunctionInfo(rcsysinfo, 2, cargssysinfo);
+v8::CFunction pFsysinfo = v8::CFunction((const void*)&sysinfoFast, &infosysinfo);
+
+uint32_t get_avphys_pagesFast(void* p);
+v8::CTypeInfo cargsget_avphys_pages[1] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+};
+v8::CTypeInfo rcget_avphys_pages = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+v8::CFunctionInfo infoget_avphys_pages = v8::CFunctionInfo(rcget_avphys_pages, 1, cargsget_avphys_pages);
+v8::CFunction pFget_avphys_pages = v8::CFunction((const void*)&get_avphys_pagesFast, &infoget_avphys_pages);
+
+void signalFast(void* p, int32_t p0, void* p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargssignal[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcsignal = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infosignal = v8::CFunctionInfo(rcsignal, 4, cargssignal);
+v8::CFunction pFsignal = v8::CFunction((const void*)&signalFast, &infosignal);
+
+void getenvFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsgetenv[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcgetenv = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infogetenv = v8::CFunctionInfo(rcgetenv, 3, cargsgetenv);
+v8::CFunction pFgetenv = v8::CFunction((const void*)&getenvFast, &infogetenv);
+
+void callocFast(void* p, uint32_t p0, uint32_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargscalloc[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rccalloc = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infocalloc = v8::CFunctionInfo(rccalloc, 4, cargscalloc);
+v8::CFunction pFcalloc = v8::CFunction((const void*)&callocFast, &infocalloc);
+
+void freeFast(void* p, void* p0);
+v8::CTypeInfo cargsfree[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcfree = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infofree = v8::CFunctionInfo(rcfree, 2, cargsfree);
+v8::CFunction pFfree = v8::CFunction((const void*)&freeFast, &infofree);
+
+
+
 void mmapSlow(const FunctionCallbackInfo<Value> &args) {
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -503,278 +812,37 @@ void freeFast(void* p, void* p0) {
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
-  v8::CTypeInfo* cargsmmap = (v8::CTypeInfo*)calloc(8, sizeof(v8::CTypeInfo));
-  cargsmmap[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsmmap[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsmmap[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsmmap[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsmmap[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsmmap[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsmmap[6] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsmmap[7] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcmmap = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infommap = new v8::CFunctionInfo(*rcmmap, 8, cargsmmap);
-  v8::CFunction* pFmmap = new v8::CFunction((const void*)&mmapFast, infommap);
-  SET_FAST_METHOD(isolate, module, "mmap", pFmmap, mmapSlow);
-  v8::CTypeInfo* cargsgetcwd = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsgetcwd[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsgetcwd[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsgetcwd[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsgetcwd[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcgetcwd = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infogetcwd = new v8::CFunctionInfo(*rcgetcwd, 4, cargsgetcwd);
-  v8::CFunction* pFgetcwd = new v8::CFunction((const void*)&getcwdFast, infogetcwd);
-  SET_FAST_METHOD(isolate, module, "getcwd", pFgetcwd, getcwdSlow);
-
-  v8::CTypeInfo* cargseventfd = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargseventfd[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargseventfd[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargseventfd[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rceventfd = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoeventfd = new v8::CFunctionInfo(*rceventfd, 3, cargseventfd);
-  v8::CFunction* pFeventfd = new v8::CFunction((const void*)&eventfdFast, infoeventfd);
-  SET_FAST_METHOD(isolate, module, "eventfd", pFeventfd, eventfdSlow);
-
-  v8::CTypeInfo* cargsclock_gettime = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsclock_gettime[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsclock_gettime[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsclock_gettime[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcclock_gettime = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoclock_gettime = new v8::CFunctionInfo(*rcclock_gettime, 3, cargsclock_gettime);
-  v8::CFunction* pFclock_gettime = new v8::CFunction((const void*)&clock_gettimeFast, infoclock_gettime);
-  SET_FAST_METHOD(isolate, module, "clock_gettime", pFclock_gettime, clock_gettimeSlow);
-
-  v8::CTypeInfo* cargsmprotect = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsmprotect[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsmprotect[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsmprotect[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsmprotect[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcmprotect = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infomprotect = new v8::CFunctionInfo(*rcmprotect, 4, cargsmprotect);
-  v8::CFunction* pFmprotect = new v8::CFunction((const void*)&mprotectFast, infomprotect);
-  SET_FAST_METHOD(isolate, module, "mprotect", pFmprotect, mprotectSlow);
-  v8::CTypeInfo* cargsmemcpy = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargsmemcpy[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsmemcpy[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsmemcpy[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsmemcpy[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsmemcpy[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcmemcpy = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infomemcpy = new v8::CFunctionInfo(*rcmemcpy, 5, cargsmemcpy);
-  v8::CFunction* pFmemcpy = new v8::CFunction((const void*)&memcpyFast, infomemcpy);
-  SET_FAST_METHOD(isolate, module, "memcpy", pFmemcpy, memcpySlow);
+  SET_FAST_METHOD(isolate, module, "mmap", &pFmmap, mmapSlow);
+  SET_FAST_METHOD(isolate, module, "getcwd", &pFgetcwd, getcwdSlow);
+  SET_FAST_METHOD(isolate, module, "eventfd", &pFeventfd, eventfdSlow);
+  SET_FAST_METHOD(isolate, module, "clock_gettime", &pFclock_gettime, clock_gettimeSlow);
+  SET_FAST_METHOD(isolate, module, "mprotect", &pFmprotect, mprotectSlow);
+  SET_FAST_METHOD(isolate, module, "memcpy", &pFmemcpy, memcpySlow);
   SET_METHOD(isolate, module, "exit", exitSlow);
-
-  v8::CTypeInfo* cargsusleep = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsusleep[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsusleep[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rcusleep = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infousleep = new v8::CFunctionInfo(*rcusleep, 2, cargsusleep);
-  v8::CFunction* pFusleep = new v8::CFunction((const void*)&usleepFast, infousleep);
-  SET_FAST_METHOD(isolate, module, "usleep", pFusleep, usleepSlow);
-
-  v8::CTypeInfo* cargsgetpid = (v8::CTypeInfo*)calloc(1, sizeof(v8::CTypeInfo));
-  cargsgetpid[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  v8::CTypeInfo* rcgetpid = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infogetpid = new v8::CFunctionInfo(*rcgetpid, 1, cargsgetpid);
-  v8::CFunction* pFgetpid = new v8::CFunction((const void*)&getpidFast, infogetpid);
-  SET_FAST_METHOD(isolate, module, "getpid", pFgetpid, getpidSlow);
-
-  v8::CTypeInfo* cargsgetrusage = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsgetrusage[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsgetrusage[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsgetrusage[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcgetrusage = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infogetrusage = new v8::CFunctionInfo(*rcgetrusage, 3, cargsgetrusage);
-  v8::CFunction* pFgetrusage = new v8::CFunction((const void*)&getrusageFast, infogetrusage);
-  SET_FAST_METHOD(isolate, module, "getrusage", pFgetrusage, getrusageSlow);
-
-  v8::CTypeInfo* cargstimerfd_create = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargstimerfd_create[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargstimerfd_create[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargstimerfd_create[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rctimerfd_create = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infotimerfd_create = new v8::CFunctionInfo(*rctimerfd_create, 3, cargstimerfd_create);
-  v8::CFunction* pFtimerfd_create = new v8::CFunction((const void*)&timerfd_createFast, infotimerfd_create);
-  SET_FAST_METHOD(isolate, module, "timerfd_create", pFtimerfd_create, timerfd_createSlow);
-
-  v8::CTypeInfo* cargssleep = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargssleep[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargssleep[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rcsleep = new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CFunctionInfo* infosleep = new v8::CFunctionInfo(*rcsleep, 2, cargssleep);
-  v8::CFunction* pFsleep = new v8::CFunction((const void*)&sleepFast, infosleep);
-  SET_FAST_METHOD(isolate, module, "sleep", pFsleep, sleepSlow);
-
-  v8::CTypeInfo* cargstimerfd_settime = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargstimerfd_settime[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargstimerfd_settime[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargstimerfd_settime[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargstimerfd_settime[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargstimerfd_settime[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rctimerfd_settime = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infotimerfd_settime = new v8::CFunctionInfo(*rctimerfd_settime, 5, cargstimerfd_settime);
-  v8::CFunction* pFtimerfd_settime = new v8::CFunction((const void*)&timerfd_settimeFast, infotimerfd_settime);
-  SET_FAST_METHOD(isolate, module, "timerfd_settime", pFtimerfd_settime, timerfd_settimeSlow);
-
-  v8::CTypeInfo* cargsfork = (v8::CTypeInfo*)calloc(1, sizeof(v8::CTypeInfo));
-  cargsfork[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  v8::CTypeInfo* rcfork = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infofork = new v8::CFunctionInfo(*rcfork, 1, cargsfork);
-  v8::CFunction* pFfork = new v8::CFunction((const void*)&forkFast, infofork);
-  SET_FAST_METHOD(isolate, module, "fork", pFfork, forkSlow);
-
-  v8::CTypeInfo* cargskill = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargskill[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargskill[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargskill[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rckill = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infokill = new v8::CFunctionInfo(*rckill, 3, cargskill);
-  v8::CFunction* pFkill = new v8::CFunction((const void*)&killFast, infokill);
-  SET_FAST_METHOD(isolate, module, "kill", pFkill, killSlow);
-
-  v8::CTypeInfo* cargswaitpid = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargswaitpid[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargswaitpid[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargswaitpid[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargswaitpid[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcwaitpid = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infowaitpid = new v8::CFunctionInfo(*rcwaitpid, 4, cargswaitpid);
-  v8::CFunction* pFwaitpid = new v8::CFunction((const void*)&waitpidFast, infowaitpid);
-  SET_FAST_METHOD(isolate, module, "waitpid", pFwaitpid, waitpidSlow);
-
-  v8::CTypeInfo* cargsexecvp = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsexecvp[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsexecvp[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargsexecvp[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcexecvp = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoexecvp = new v8::CFunctionInfo(*rcexecvp, 3, cargsexecvp);
-  v8::CFunction* pFexecvp = new v8::CFunction((const void*)&execvpFast, infoexecvp);
-  SET_FAST_METHOD(isolate, module, "execvp", pFexecvp, execvpSlow);
-
-  v8::CTypeInfo* cargsreadlink = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsreadlink[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsreadlink[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargsreadlink[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsreadlink[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rcreadlink = new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CFunctionInfo* inforeadlink = new v8::CFunctionInfo(*rcreadlink, 4, cargsreadlink);
-  v8::CFunction* pFreadlink = new v8::CFunction((const void*)&readlinkFast, inforeadlink);
-  SET_FAST_METHOD(isolate, module, "readlink", pFreadlink, readlinkSlow);
-
-  v8::CTypeInfo* cargssysconf = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargssysconf[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargssysconf[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcsysconf = new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CFunctionInfo* infosysconf = new v8::CFunctionInfo(*rcsysconf, 2, cargssysconf);
-  v8::CFunction* pFsysconf = new v8::CFunction((const void*)&sysconfFast, infosysconf);
-  SET_FAST_METHOD(isolate, module, "sysconf", pFsysconf, sysconfSlow);
-
-  v8::CTypeInfo* cargspidfd_open = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargspidfd_open[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargspidfd_open[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargspidfd_open[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargspidfd_open[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rcpidfd_open = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infopidfd_open = new v8::CFunctionInfo(*rcpidfd_open, 4, cargspidfd_open);
-  v8::CFunction* pFpidfd_open = new v8::CFunction((const void*)&pidfd_openFast, infopidfd_open);
-  SET_FAST_METHOD(isolate, module, "pidfd_open", pFpidfd_open, pidfd_openSlow);
-
-  v8::CTypeInfo* cargsgettid = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsgettid[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsgettid[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcgettid = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infogettid = new v8::CFunctionInfo(*rcgettid, 2, cargsgettid);
-  v8::CFunction* pFgettid = new v8::CFunction((const void*)&gettidFast, infogettid);
-  SET_FAST_METHOD(isolate, module, "gettid", pFgettid, gettidSlow);
-
-  v8::CTypeInfo* cargsgetrlimit = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsgetrlimit[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsgetrlimit[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsgetrlimit[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcgetrlimit = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infogetrlimit = new v8::CFunctionInfo(*rcgetrlimit, 3, cargsgetrlimit);
-  v8::CFunction* pFgetrlimit = new v8::CFunction((const void*)&getrlimitFast, infogetrlimit);
-  SET_FAST_METHOD(isolate, module, "getrlimit", pFgetrlimit, getrlimitSlow);
-
-  v8::CTypeInfo* cargssetrlimit = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargssetrlimit[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargssetrlimit[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargssetrlimit[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcsetrlimit = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infosetrlimit = new v8::CFunctionInfo(*rcsetrlimit, 3, cargssetrlimit);
-  v8::CFunction* pFsetrlimit = new v8::CFunction((const void*)&setrlimitFast, infosetrlimit);
-  SET_FAST_METHOD(isolate, module, "setrlimit", pFsetrlimit, setrlimitSlow);
-
-  v8::CTypeInfo* cargsstrerror_r = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsstrerror_r[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsstrerror_r[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsstrerror_r[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsstrerror_r[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rcstrerror_r = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infostrerror_r = new v8::CFunctionInfo(*rcstrerror_r, 4, cargsstrerror_r);
-  v8::CFunction* pFstrerror_r = new v8::CFunction((const void*)&strerror_rFast, infostrerror_r);
-  SET_FAST_METHOD(isolate, module, "strerror_r", pFstrerror_r, strerror_rSlow);
-
-  v8::CTypeInfo* cargstimes = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargstimes[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargstimes[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rctimes = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infotimes = new v8::CFunctionInfo(*rctimes, 2, cargstimes);
-  v8::CFunction* pFtimes = new v8::CFunction((const void*)&timesFast, infotimes);
-  SET_FAST_METHOD(isolate, module, "times", pFtimes, timesSlow);
-
-  v8::CTypeInfo* cargssysinfo = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargssysinfo[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargssysinfo[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcsysinfo = new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CFunctionInfo* infosysinfo = new v8::CFunctionInfo(*rcsysinfo, 2, cargssysinfo);
-  v8::CFunction* pFsysinfo = new v8::CFunction((const void*)&sysinfoFast, infosysinfo);
-  SET_FAST_METHOD(isolate, module, "sysinfo", pFsysinfo, sysinfoSlow);
-
-  v8::CTypeInfo* cargsget_avphys_pages = (v8::CTypeInfo*)calloc(1, sizeof(v8::CTypeInfo));
-  cargsget_avphys_pages[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  v8::CTypeInfo* rcget_avphys_pages = new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CFunctionInfo* infoget_avphys_pages = new v8::CFunctionInfo(*rcget_avphys_pages, 1, cargsget_avphys_pages);
-  v8::CFunction* pFget_avphys_pages = new v8::CFunction((const void*)&get_avphys_pagesFast, infoget_avphys_pages);
-  SET_FAST_METHOD(isolate, module, "get_avphys_pages", pFget_avphys_pages, get_avphys_pagesSlow);
-  v8::CTypeInfo* cargssignal = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargssignal[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargssignal[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargssignal[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargssignal[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcsignal = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infosignal = new v8::CFunctionInfo(*rcsignal, 4, cargssignal);
-  v8::CFunction* pFsignal = new v8::CFunction((const void*)&signalFast, infosignal);
-  SET_FAST_METHOD(isolate, module, "signal", pFsignal, signalSlow);
-  v8::CTypeInfo* cargsgetenv = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsgetenv[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsgetenv[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargsgetenv[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcgetenv = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infogetenv = new v8::CFunctionInfo(*rcgetenv, 3, cargsgetenv);
-  v8::CFunction* pFgetenv = new v8::CFunction((const void*)&getenvFast, infogetenv);
-  SET_FAST_METHOD(isolate, module, "getenv", pFgetenv, getenvSlow);
-  v8::CTypeInfo* cargscalloc = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargscalloc[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargscalloc[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargscalloc[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargscalloc[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rccalloc = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infocalloc = new v8::CFunctionInfo(*rccalloc, 4, cargscalloc);
-  v8::CFunction* pFcalloc = new v8::CFunction((const void*)&callocFast, infocalloc);
-  SET_FAST_METHOD(isolate, module, "calloc", pFcalloc, callocSlow);
-
-  v8::CTypeInfo* cargsfree = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsfree[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsfree[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcfree = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infofree = new v8::CFunctionInfo(*rcfree, 2, cargsfree);
-  v8::CFunction* pFfree = new v8::CFunction((const void*)&freeFast, infofree);
-  SET_FAST_METHOD(isolate, module, "free", pFfree, freeSlow);
+  SET_FAST_METHOD(isolate, module, "usleep", &pFusleep, usleepSlow);
+  SET_FAST_METHOD(isolate, module, "getpid", &pFgetpid, getpidSlow);
+  SET_FAST_METHOD(isolate, module, "getrusage", &pFgetrusage, getrusageSlow);
+  SET_FAST_METHOD(isolate, module, "timerfd_create", &pFtimerfd_create, timerfd_createSlow);
+  SET_FAST_METHOD(isolate, module, "sleep", &pFsleep, sleepSlow);
+  SET_FAST_METHOD(isolate, module, "timerfd_settime", &pFtimerfd_settime, timerfd_settimeSlow);
+  SET_FAST_METHOD(isolate, module, "fork", &pFfork, forkSlow);
+  SET_FAST_METHOD(isolate, module, "kill", &pFkill, killSlow);
+  SET_FAST_METHOD(isolate, module, "waitpid", &pFwaitpid, waitpidSlow);
+  SET_FAST_METHOD(isolate, module, "execvp", &pFexecvp, execvpSlow);
+  SET_FAST_METHOD(isolate, module, "readlink", &pFreadlink, readlinkSlow);
+  SET_FAST_METHOD(isolate, module, "sysconf", &pFsysconf, sysconfSlow);
+  SET_FAST_METHOD(isolate, module, "pidfd_open", &pFpidfd_open, pidfd_openSlow);
+  SET_FAST_METHOD(isolate, module, "gettid", &pFgettid, gettidSlow);
+  SET_FAST_METHOD(isolate, module, "getrlimit", &pFgetrlimit, getrlimitSlow);
+  SET_FAST_METHOD(isolate, module, "setrlimit", &pFsetrlimit, setrlimitSlow);
+  SET_FAST_METHOD(isolate, module, "strerror_r", &pFstrerror_r, strerror_rSlow);
+  SET_FAST_METHOD(isolate, module, "times", &pFtimes, timesSlow);
+  SET_FAST_METHOD(isolate, module, "sysinfo", &pFsysinfo, sysinfoSlow);
+  SET_FAST_METHOD(isolate, module, "get_avphys_pages", &pFget_avphys_pages, get_avphys_pagesSlow);
+  SET_FAST_METHOD(isolate, module, "signal", &pFsignal, signalSlow);
+  SET_FAST_METHOD(isolate, module, "getenv", &pFgetenv, getenvSlow);
+  SET_FAST_METHOD(isolate, module, "calloc", &pFcalloc, callocSlow);
+  SET_FAST_METHOD(isolate, module, "free", &pFfree, freeSlow);
 
   SET_MODULE(isolate, target, "system", module);
 }

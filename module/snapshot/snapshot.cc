@@ -91,7 +91,6 @@ void create_snapshotSlow (const FunctionCallbackInfo<Value>& args) {
     (uint64_t)Local<Integer>::Cast(args[0])->Value());
   v8::SnapshotCreator snapshot_creator(isolate);
   {
-    v8::HandleScope scope(isolate);
     v8::Local<v8::Context> context = v8::Context::New(isolate);
     if (embedded_source != nullptr &&
         !RunExtraCode(isolate, context, embedded_source, "<embedded>")) {
@@ -103,6 +102,8 @@ void create_snapshotSlow (const FunctionCallbackInfo<Value>& args) {
   ((uint64_t*)args[1].As<Uint32Array>()->Buffer()->Data())[0] = (uint64_t)sna.data;
   args.GetReturnValue().Set(Integer::New(isolate, sna.raw_size));
 }
+
+
 
 
 

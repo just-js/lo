@@ -62,6 +62,127 @@ using v8::V8;
 
 
 
+void closeFast(void* p, void* p0);
+v8::CTypeInfo cargsclose[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcclose = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoclose = v8::CFunctionInfo(rcclose, 2, cargsclose);
+v8::CFunction pFclose = v8::CFunction((const void*)&closeFast, &infoclose);
+
+void openFast(void* p, void* p0, struct FastOneByteString* const p1, struct FastApiTypedArray* const p2, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsopen[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcopen = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoopen = v8::CFunctionInfo(rcopen, 5, cargsopen);
+v8::CFunction pFopen = v8::CFunction((const void*)&openFast, &infoopen);
+
+void options_createFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsoptions_create[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcoptions_create = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infooptions_create = v8::CFunctionInfo(rcoptions_create, 2, cargsoptions_create);
+v8::CFunction pFoptions_create = v8::CFunction((const void*)&options_createFast, &infooptions_create);
+
+void readoptions_createFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsreadoptions_create[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcreadoptions_create = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo inforeadoptions_create = v8::CFunctionInfo(rcreadoptions_create, 2, cargsreadoptions_create);
+v8::CFunction pFreadoptions_create = v8::CFunction((const void*)&readoptions_createFast, &inforeadoptions_create);
+
+void writeoptions_createFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargswriteoptions_create[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcwriteoptions_create = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infowriteoptions_create = v8::CFunctionInfo(rcwriteoptions_create, 2, cargswriteoptions_create);
+v8::CFunction pFwriteoptions_create = v8::CFunction((const void*)&writeoptions_createFast, &infowriteoptions_create);
+
+void options_set_create_if_missingFast(void* p, void* p0, uint8_t p1);
+v8::CTypeInfo cargsoptions_set_create_if_missing[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kVoid),
+};
+v8::CTypeInfo rcoptions_set_create_if_missing = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infooptions_set_create_if_missing = v8::CFunctionInfo(rcoptions_set_create_if_missing, 3, cargsoptions_set_create_if_missing);
+v8::CFunction pFoptions_set_create_if_missing = v8::CFunction((const void*)&options_set_create_if_missingFast, &infooptions_set_create_if_missing);
+
+void put_stringFast(void* p, void* p0, void* p1, struct FastOneByteString* const p2, uint32_t p3, struct FastOneByteString* const p4, uint32_t p5, struct FastApiTypedArray* const p6);
+v8::CTypeInfo cargsput_string[8] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcput_string = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoput_string = v8::CFunctionInfo(rcput_string, 8, cargsput_string);
+v8::CFunction pFput_string = v8::CFunction((const void*)&put_stringFast, &infoput_string);
+
+void putFast(void* p, void* p0, void* p1, struct FastOneByteString* const p2, uint32_t p3, struct FastApiTypedArray* const p4, uint32_t p5, struct FastApiTypedArray* const p6);
+v8::CTypeInfo cargsput[8] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcput = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoput = v8::CFunctionInfo(rcput, 8, cargsput);
+v8::CFunction pFput = v8::CFunction((const void*)&putFast, &infoput);
+
+void getFast(void* p, void* p0, void* p1, struct FastOneByteString* const p2, uint32_t p3, struct FastApiTypedArray* const p4, struct FastApiTypedArray* const p5, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsget[8] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcget = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoget = v8::CFunctionInfo(rcget, 8, cargsget);
+v8::CFunction pFget = v8::CFunction((const void*)&getFast, &infoget);
+
+void deleteFast(void* p, void* p0, void* p1, struct FastOneByteString* const p2, uint32_t p3, struct FastApiTypedArray* const p4);
+v8::CTypeInfo cargsdelete[6] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcdelete = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infodelete = v8::CFunctionInfo(rcdelete, 6, cargsdelete);
+v8::CFunction pFdelete = v8::CFunction((const void*)&deleteFast, &infodelete);
+
+
+
 void closeSlow(const FunctionCallbackInfo<Value> &args) {
   rocksdb_t* v0 = reinterpret_cast<rocksdb_t*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   rocksdb_close(v0);
@@ -242,110 +363,16 @@ void deleteFast(void* p, void* p0, void* p1, struct FastOneByteString* const p2,
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
-
-  v8::CTypeInfo* cargsclose = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsclose[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsclose[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcclose = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoclose = new v8::CFunctionInfo(*rcclose, 2, cargsclose);
-  v8::CFunction* pFclose = new v8::CFunction((const void*)&closeFast, infoclose);
-  SET_FAST_METHOD(isolate, module, "close", pFclose, closeSlow);
-  v8::CTypeInfo* cargsopen = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargsopen[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsopen[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsopen[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargsopen[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsopen[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcopen = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoopen = new v8::CFunctionInfo(*rcopen, 5, cargsopen);
-  v8::CFunction* pFopen = new v8::CFunction((const void*)&openFast, infoopen);
-  SET_FAST_METHOD(isolate, module, "open", pFopen, openSlow);
-  v8::CTypeInfo* cargsoptions_create = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsoptions_create[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsoptions_create[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcoptions_create = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infooptions_create = new v8::CFunctionInfo(*rcoptions_create, 2, cargsoptions_create);
-  v8::CFunction* pFoptions_create = new v8::CFunction((const void*)&options_createFast, infooptions_create);
-  SET_FAST_METHOD(isolate, module, "options_create", pFoptions_create, options_createSlow);
-  v8::CTypeInfo* cargsreadoptions_create = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsreadoptions_create[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsreadoptions_create[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcreadoptions_create = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* inforeadoptions_create = new v8::CFunctionInfo(*rcreadoptions_create, 2, cargsreadoptions_create);
-  v8::CFunction* pFreadoptions_create = new v8::CFunction((const void*)&readoptions_createFast, inforeadoptions_create);
-  SET_FAST_METHOD(isolate, module, "readoptions_create", pFreadoptions_create, readoptions_createSlow);
-  v8::CTypeInfo* cargswriteoptions_create = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargswriteoptions_create[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargswriteoptions_create[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcwriteoptions_create = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infowriteoptions_create = new v8::CFunctionInfo(*rcwriteoptions_create, 2, cargswriteoptions_create);
-  v8::CFunction* pFwriteoptions_create = new v8::CFunction((const void*)&writeoptions_createFast, infowriteoptions_create);
-  SET_FAST_METHOD(isolate, module, "writeoptions_create", pFwriteoptions_create, writeoptions_createSlow);
-
-  v8::CTypeInfo* cargsoptions_set_create_if_missing = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsoptions_set_create_if_missing[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsoptions_set_create_if_missing[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsoptions_set_create_if_missing[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CTypeInfo* rcoptions_set_create_if_missing = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infooptions_set_create_if_missing = new v8::CFunctionInfo(*rcoptions_set_create_if_missing, 3, cargsoptions_set_create_if_missing);
-  v8::CFunction* pFoptions_set_create_if_missing = new v8::CFunction((const void*)&options_set_create_if_missingFast, infooptions_set_create_if_missing);
-  SET_FAST_METHOD(isolate, module, "options_set_create_if_missing", pFoptions_set_create_if_missing, options_set_create_if_missingSlow);
-
-  v8::CTypeInfo* cargsput_string = (v8::CTypeInfo*)calloc(8, sizeof(v8::CTypeInfo));
-  cargsput_string[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsput_string[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsput_string[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsput_string[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargsput_string[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsput_string[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargsput_string[6] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsput_string[7] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcput_string = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoput_string = new v8::CFunctionInfo(*rcput_string, 8, cargsput_string);
-  v8::CFunction* pFput_string = new v8::CFunction((const void*)&put_stringFast, infoput_string);
-  SET_FAST_METHOD(isolate, module, "put_string", pFput_string, put_stringSlow);
-
-  v8::CTypeInfo* cargsput = (v8::CTypeInfo*)calloc(8, sizeof(v8::CTypeInfo));
-  cargsput[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsput[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsput[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsput[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargsput[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsput[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsput[6] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsput[7] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcput = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoput = new v8::CFunctionInfo(*rcput, 8, cargsput);
-  v8::CFunction* pFput = new v8::CFunction((const void*)&putFast, infoput);
-  SET_FAST_METHOD(isolate, module, "put", pFput, putSlow);
-  v8::CTypeInfo* cargsget = (v8::CTypeInfo*)calloc(8, sizeof(v8::CTypeInfo));
-  cargsget[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsget[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsget[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsget[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargsget[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsget[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsget[6] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsget[7] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcget = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoget = new v8::CFunctionInfo(*rcget, 8, cargsget);
-  v8::CFunction* pFget = new v8::CFunction((const void*)&getFast, infoget);
-  SET_FAST_METHOD(isolate, module, "get", pFget, getSlow);
-
-  v8::CTypeInfo* cargsdelete = (v8::CTypeInfo*)calloc(6, sizeof(v8::CTypeInfo));
-  cargsdelete[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsdelete[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsdelete[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsdelete[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargsdelete[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsdelete[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcdelete = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infodelete = new v8::CFunctionInfo(*rcdelete, 6, cargsdelete);
-  v8::CFunction* pFdelete = new v8::CFunction((const void*)&deleteFast, infodelete);
-  SET_FAST_METHOD(isolate, module, "delete", pFdelete, deleteSlow);
+  SET_FAST_METHOD(isolate, module, "close", &pFclose, closeSlow);
+  SET_FAST_METHOD(isolate, module, "open", &pFopen, openSlow);
+  SET_FAST_METHOD(isolate, module, "options_create", &pFoptions_create, options_createSlow);
+  SET_FAST_METHOD(isolate, module, "readoptions_create", &pFreadoptions_create, readoptions_createSlow);
+  SET_FAST_METHOD(isolate, module, "writeoptions_create", &pFwriteoptions_create, writeoptions_createSlow);
+  SET_FAST_METHOD(isolate, module, "options_set_create_if_missing", &pFoptions_set_create_if_missing, options_set_create_if_missingSlow);
+  SET_FAST_METHOD(isolate, module, "put_string", &pFput_string, put_stringSlow);
+  SET_FAST_METHOD(isolate, module, "put", &pFput, putSlow);
+  SET_FAST_METHOD(isolate, module, "get", &pFget, getSlow);
+  SET_FAST_METHOD(isolate, module, "delete", &pFdelete, deleteSlow);
 
   SET_MODULE(isolate, target, "rocksdb", module);
 }

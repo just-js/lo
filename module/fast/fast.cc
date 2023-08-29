@@ -287,6 +287,17 @@ void bind_fastcallSlow(const FunctionCallbackInfo<Value> &args) {
 
 
 
+void fastcallFast(void* p, void* p0);
+v8::CTypeInfo cargsfastcall[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcfastcall = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infofastcall = v8::CFunctionInfo(rcfastcall, 2, cargsfastcall);
+v8::CFunction pFfastcall = v8::CFunction((const void*)&fastcallFast, &infofastcall);
+
+
+
 void fastcallSlow(const FunctionCallbackInfo<Value> &args) {
   struct fastcall* v0 = reinterpret_cast<struct fastcall*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   spin_fastcall(v0);
@@ -300,14 +311,7 @@ void fastcallFast(void* p, void* p0) {
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
   SET_METHOD(isolate, module, "bind_fastcall", bind_fastcallSlow);
-
-  v8::CTypeInfo* cargsfastcall = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsfastcall[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsfastcall[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcfastcall = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infofastcall = new v8::CFunctionInfo(*rcfastcall, 2, cargsfastcall);
-  v8::CFunction* pFfastcall = new v8::CFunction((const void*)&fastcallFast, infofastcall);
-  SET_FAST_METHOD(isolate, module, "fastcall", pFfastcall, fastcallSlow);
+  SET_FAST_METHOD(isolate, module, "fastcall", &pFfastcall, fastcallSlow);
 
   SET_MODULE(isolate, target, "fast", module);
 }

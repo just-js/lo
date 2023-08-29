@@ -62,6 +62,68 @@ using v8::V8;
 
 
 
+void seccomp_syscall_resolve_num_archFast(void* p, int32_t p0, int32_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsseccomp_syscall_resolve_num_arch[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcseccomp_syscall_resolve_num_arch = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoseccomp_syscall_resolve_num_arch = v8::CFunctionInfo(rcseccomp_syscall_resolve_num_arch, 4, cargsseccomp_syscall_resolve_num_arch);
+v8::CFunction pFseccomp_syscall_resolve_num_arch = v8::CFunction((const void*)&seccomp_syscall_resolve_num_archFast, &infoseccomp_syscall_resolve_num_arch);
+
+void seccomp_initFast(void* p, uint32_t p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsseccomp_init[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcseccomp_init = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoseccomp_init = v8::CFunctionInfo(rcseccomp_init, 3, cargsseccomp_init);
+v8::CFunction pFseccomp_init = v8::CFunction((const void*)&seccomp_initFast, &infoseccomp_init);
+
+int32_t seccomp_rule_add_exactFast(void* p, void* p0, uint32_t p1, int32_t p2, uint32_t p3);
+v8::CTypeInfo cargsseccomp_rule_add_exact[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcseccomp_rule_add_exact = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoseccomp_rule_add_exact = v8::CFunctionInfo(rcseccomp_rule_add_exact, 5, cargsseccomp_rule_add_exact);
+v8::CFunction pFseccomp_rule_add_exact = v8::CFunction((const void*)&seccomp_rule_add_exactFast, &infoseccomp_rule_add_exact);
+
+int32_t seccomp_loadFast(void* p, void* p0);
+v8::CTypeInfo cargsseccomp_load[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcseccomp_load = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoseccomp_load = v8::CFunctionInfo(rcseccomp_load, 2, cargsseccomp_load);
+v8::CFunction pFseccomp_load = v8::CFunction((const void*)&seccomp_loadFast, &infoseccomp_load);
+
+void seccomp_releaseFast(void* p, void* p0);
+v8::CTypeInfo cargsseccomp_release[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcseccomp_release = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoseccomp_release = v8::CFunctionInfo(rcseccomp_release, 2, cargsseccomp_release);
+v8::CFunction pFseccomp_release = v8::CFunction((const void*)&seccomp_releaseFast, &infoseccomp_release);
+
+int32_t seccomp_syscall_resolve_nameFast(void* p, struct FastOneByteString* const p0);
+v8::CTypeInfo cargsseccomp_syscall_resolve_name[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+};
+v8::CTypeInfo rcseccomp_syscall_resolve_name = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoseccomp_syscall_resolve_name = v8::CFunctionInfo(rcseccomp_syscall_resolve_name, 2, cargsseccomp_syscall_resolve_name);
+v8::CFunction pFseccomp_syscall_resolve_name = v8::CFunction((const void*)&seccomp_syscall_resolve_nameFast, &infoseccomp_syscall_resolve_name);
+
+
+
 void seccomp_syscall_resolve_num_archSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -141,58 +203,12 @@ int32_t seccomp_syscall_resolve_nameFast(void* p, struct FastOneByteString* cons
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
-  v8::CTypeInfo* cargsseccomp_syscall_resolve_num_arch = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsseccomp_syscall_resolve_num_arch[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsseccomp_syscall_resolve_num_arch[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsseccomp_syscall_resolve_num_arch[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsseccomp_syscall_resolve_num_arch[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcseccomp_syscall_resolve_num_arch = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoseccomp_syscall_resolve_num_arch = new v8::CFunctionInfo(*rcseccomp_syscall_resolve_num_arch, 4, cargsseccomp_syscall_resolve_num_arch);
-  v8::CFunction* pFseccomp_syscall_resolve_num_arch = new v8::CFunction((const void*)&seccomp_syscall_resolve_num_archFast, infoseccomp_syscall_resolve_num_arch);
-  SET_FAST_METHOD(isolate, module, "seccomp_syscall_resolve_num_arch", pFseccomp_syscall_resolve_num_arch, seccomp_syscall_resolve_num_archSlow);
-  v8::CTypeInfo* cargsseccomp_init = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsseccomp_init[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsseccomp_init[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsseccomp_init[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcseccomp_init = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoseccomp_init = new v8::CFunctionInfo(*rcseccomp_init, 3, cargsseccomp_init);
-  v8::CFunction* pFseccomp_init = new v8::CFunction((const void*)&seccomp_initFast, infoseccomp_init);
-  SET_FAST_METHOD(isolate, module, "seccomp_init", pFseccomp_init, seccomp_initSlow);
-
-  v8::CTypeInfo* cargsseccomp_rule_add_exact = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargsseccomp_rule_add_exact[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsseccomp_rule_add_exact[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsseccomp_rule_add_exact[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsseccomp_rule_add_exact[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsseccomp_rule_add_exact[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rcseccomp_rule_add_exact = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoseccomp_rule_add_exact = new v8::CFunctionInfo(*rcseccomp_rule_add_exact, 5, cargsseccomp_rule_add_exact);
-  v8::CFunction* pFseccomp_rule_add_exact = new v8::CFunction((const void*)&seccomp_rule_add_exactFast, infoseccomp_rule_add_exact);
-  SET_FAST_METHOD(isolate, module, "seccomp_rule_add_exact", pFseccomp_rule_add_exact, seccomp_rule_add_exactSlow);
-
-  v8::CTypeInfo* cargsseccomp_load = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsseccomp_load[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsseccomp_load[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcseccomp_load = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoseccomp_load = new v8::CFunctionInfo(*rcseccomp_load, 2, cargsseccomp_load);
-  v8::CFunction* pFseccomp_load = new v8::CFunction((const void*)&seccomp_loadFast, infoseccomp_load);
-  SET_FAST_METHOD(isolate, module, "seccomp_load", pFseccomp_load, seccomp_loadSlow);
-
-  v8::CTypeInfo* cargsseccomp_release = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsseccomp_release[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsseccomp_release[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcseccomp_release = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoseccomp_release = new v8::CFunctionInfo(*rcseccomp_release, 2, cargsseccomp_release);
-  v8::CFunction* pFseccomp_release = new v8::CFunction((const void*)&seccomp_releaseFast, infoseccomp_release);
-  SET_FAST_METHOD(isolate, module, "seccomp_release", pFseccomp_release, seccomp_releaseSlow);
-
-  v8::CTypeInfo* cargsseccomp_syscall_resolve_name = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsseccomp_syscall_resolve_name[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsseccomp_syscall_resolve_name[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  v8::CTypeInfo* rcseccomp_syscall_resolve_name = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoseccomp_syscall_resolve_name = new v8::CFunctionInfo(*rcseccomp_syscall_resolve_name, 2, cargsseccomp_syscall_resolve_name);
-  v8::CFunction* pFseccomp_syscall_resolve_name = new v8::CFunction((const void*)&seccomp_syscall_resolve_nameFast, infoseccomp_syscall_resolve_name);
-  SET_FAST_METHOD(isolate, module, "seccomp_syscall_resolve_name", pFseccomp_syscall_resolve_name, seccomp_syscall_resolve_nameSlow);
+  SET_FAST_METHOD(isolate, module, "seccomp_syscall_resolve_num_arch", &pFseccomp_syscall_resolve_num_arch, seccomp_syscall_resolve_num_archSlow);
+  SET_FAST_METHOD(isolate, module, "seccomp_init", &pFseccomp_init, seccomp_initSlow);
+  SET_FAST_METHOD(isolate, module, "seccomp_rule_add_exact", &pFseccomp_rule_add_exact, seccomp_rule_add_exactSlow);
+  SET_FAST_METHOD(isolate, module, "seccomp_load", &pFseccomp_load, seccomp_loadSlow);
+  SET_FAST_METHOD(isolate, module, "seccomp_release", &pFseccomp_release, seccomp_releaseSlow);
+  SET_FAST_METHOD(isolate, module, "seccomp_syscall_resolve_name", &pFseccomp_syscall_resolve_name, seccomp_syscall_resolve_nameSlow);
 
   SET_MODULE(isolate, target, "seccomp", module);
 }

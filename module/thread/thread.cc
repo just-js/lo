@@ -63,6 +63,109 @@ using v8::V8;
 typedef void* (*start_routine)(void*);
 
 
+int32_t createFast(void* p, struct FastApiTypedArray* const p0, void* p1, void* p2, struct FastApiTypedArray* const p3);
+v8::CTypeInfo cargscreate[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rccreate = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infocreate = v8::CFunctionInfo(rccreate, 5, cargscreate);
+v8::CFunction pFcreate = v8::CFunction((const void*)&createFast, &infocreate);
+
+int32_t cancelFast(void* p, uint64_t p0);
+v8::CTypeInfo cargscancel[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rccancel = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infocancel = v8::CFunctionInfo(rccancel, 2, cargscancel);
+v8::CFunction pFcancel = v8::CFunction((const void*)&cancelFast, &infocancel);
+
+void selfFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsself[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcself = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoself = v8::CFunctionInfo(rcself, 2, cargsself);
+v8::CFunction pFself = v8::CFunction((const void*)&selfFast, &infoself);
+
+int32_t detachFast(void* p, uint64_t p0);
+v8::CTypeInfo cargsdetach[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcdetach = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infodetach = v8::CFunctionInfo(rcdetach, 2, cargsdetach);
+v8::CFunction pFdetach = v8::CFunction((const void*)&detachFast, &infodetach);
+
+int32_t joinFast(void* p, uint64_t p0, struct FastApiTypedArray* const p1);
+v8::CTypeInfo cargsjoin[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcjoin = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infojoin = v8::CFunctionInfo(rcjoin, 3, cargsjoin);
+v8::CFunction pFjoin = v8::CFunction((const void*)&joinFast, &infojoin);
+
+void exitFast(void* p, struct FastApiTypedArray* const p0);
+v8::CTypeInfo cargsexit[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcexit = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoexit = v8::CFunctionInfo(rcexit, 2, cargsexit);
+v8::CFunction pFexit = v8::CFunction((const void*)&exitFast, &infoexit);
+
+int32_t tryJoinFast(void* p, uint64_t p0, struct FastApiTypedArray* const p1);
+v8::CTypeInfo cargstryJoin[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rctryJoin = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infotryJoin = v8::CFunctionInfo(rctryJoin, 3, cargstryJoin);
+v8::CFunction pFtryJoin = v8::CFunction((const void*)&tryJoinFast, &infotryJoin);
+
+int32_t setNameFast(void* p, uint64_t p0, struct FastOneByteString* const p1);
+v8::CTypeInfo cargssetName[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+};
+v8::CTypeInfo rcsetName = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infosetName = v8::CFunctionInfo(rcsetName, 3, cargssetName);
+v8::CFunction pFsetName = v8::CFunction((const void*)&setNameFast, &infosetName);
+
+int32_t setAffinityFast(void* p, uint64_t p0, uint32_t p1, struct FastApiTypedArray* const p2);
+v8::CTypeInfo cargssetAffinity[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcsetAffinity = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infosetAffinity = v8::CFunctionInfo(rcsetAffinity, 4, cargssetAffinity);
+v8::CFunction pFsetAffinity = v8::CFunction((const void*)&setAffinityFast, &infosetAffinity);
+
+int32_t getAffinityFast(void* p, uint64_t p0, uint32_t p1, struct FastApiTypedArray* const p2);
+v8::CTypeInfo cargsgetAffinity[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcgetAffinity = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infogetAffinity = v8::CFunctionInfo(rcgetAffinity, 4, cargsgetAffinity);
+v8::CFunction pFgetAffinity = v8::CFunction((const void*)&getAffinityFast, &infogetAffinity);
+
+
+
 void createSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Uint32Array> u320 = args[0].As<Uint32Array>();
@@ -210,96 +313,16 @@ int32_t getAffinityFast(void* p, uint64_t p0, uint32_t p1, struct FastApiTypedAr
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
-
-  v8::CTypeInfo* cargscreate = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargscreate[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargscreate[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargscreate[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargscreate[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargscreate[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rccreate = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infocreate = new v8::CFunctionInfo(*rccreate, 5, cargscreate);
-  v8::CFunction* pFcreate = new v8::CFunction((const void*)&createFast, infocreate);
-  SET_FAST_METHOD(isolate, module, "create", pFcreate, createSlow);
-
-  v8::CTypeInfo* cargscancel = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargscancel[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargscancel[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rccancel = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infocancel = new v8::CFunctionInfo(*rccancel, 2, cargscancel);
-  v8::CFunction* pFcancel = new v8::CFunction((const void*)&cancelFast, infocancel);
-  SET_FAST_METHOD(isolate, module, "cancel", pFcancel, cancelSlow);
-  v8::CTypeInfo* cargsself = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsself[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsself[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcself = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoself = new v8::CFunctionInfo(*rcself, 2, cargsself);
-  v8::CFunction* pFself = new v8::CFunction((const void*)&selfFast, infoself);
-  SET_FAST_METHOD(isolate, module, "self", pFself, selfSlow);
-
-  v8::CTypeInfo* cargsdetach = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsdetach[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsdetach[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcdetach = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infodetach = new v8::CFunctionInfo(*rcdetach, 2, cargsdetach);
-  v8::CFunction* pFdetach = new v8::CFunction((const void*)&detachFast, infodetach);
-  SET_FAST_METHOD(isolate, module, "detach", pFdetach, detachSlow);
-
-  v8::CTypeInfo* cargsjoin = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsjoin[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsjoin[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsjoin[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcjoin = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infojoin = new v8::CFunctionInfo(*rcjoin, 3, cargsjoin);
-  v8::CFunction* pFjoin = new v8::CFunction((const void*)&joinFast, infojoin);
-  SET_FAST_METHOD(isolate, module, "join", pFjoin, joinSlow);
-
-  v8::CTypeInfo* cargsexit = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsexit[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsexit[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcexit = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoexit = new v8::CFunctionInfo(*rcexit, 2, cargsexit);
-  v8::CFunction* pFexit = new v8::CFunction((const void*)&exitFast, infoexit);
-  SET_FAST_METHOD(isolate, module, "exit", pFexit, exitSlow);
-
-  v8::CTypeInfo* cargstryJoin = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargstryJoin[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargstryJoin[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargstryJoin[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rctryJoin = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infotryJoin = new v8::CFunctionInfo(*rctryJoin, 3, cargstryJoin);
-  v8::CFunction* pFtryJoin = new v8::CFunction((const void*)&tryJoinFast, infotryJoin);
-  SET_FAST_METHOD(isolate, module, "tryJoin", pFtryJoin, tryJoinSlow);
-
-  v8::CTypeInfo* cargssetName = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargssetName[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargssetName[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargssetName[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  v8::CTypeInfo* rcsetName = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infosetName = new v8::CFunctionInfo(*rcsetName, 3, cargssetName);
-  v8::CFunction* pFsetName = new v8::CFunction((const void*)&setNameFast, infosetName);
-  SET_FAST_METHOD(isolate, module, "setName", pFsetName, setNameSlow);
-
-  v8::CTypeInfo* cargssetAffinity = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargssetAffinity[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargssetAffinity[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargssetAffinity[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargssetAffinity[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcsetAffinity = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infosetAffinity = new v8::CFunctionInfo(*rcsetAffinity, 4, cargssetAffinity);
-  v8::CFunction* pFsetAffinity = new v8::CFunction((const void*)&setAffinityFast, infosetAffinity);
-  SET_FAST_METHOD(isolate, module, "setAffinity", pFsetAffinity, setAffinitySlow);
-
-  v8::CTypeInfo* cargsgetAffinity = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsgetAffinity[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsgetAffinity[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsgetAffinity[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsgetAffinity[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcgetAffinity = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infogetAffinity = new v8::CFunctionInfo(*rcgetAffinity, 4, cargsgetAffinity);
-  v8::CFunction* pFgetAffinity = new v8::CFunction((const void*)&getAffinityFast, infogetAffinity);
-  SET_FAST_METHOD(isolate, module, "getAffinity", pFgetAffinity, getAffinitySlow);
+  SET_FAST_METHOD(isolate, module, "create", &pFcreate, createSlow);
+  SET_FAST_METHOD(isolate, module, "cancel", &pFcancel, cancelSlow);
+  SET_FAST_METHOD(isolate, module, "self", &pFself, selfSlow);
+  SET_FAST_METHOD(isolate, module, "detach", &pFdetach, detachSlow);
+  SET_FAST_METHOD(isolate, module, "join", &pFjoin, joinSlow);
+  SET_FAST_METHOD(isolate, module, "exit", &pFexit, exitSlow);
+  SET_FAST_METHOD(isolate, module, "tryJoin", &pFtryJoin, tryJoinSlow);
+  SET_FAST_METHOD(isolate, module, "setName", &pFsetName, setNameSlow);
+  SET_FAST_METHOD(isolate, module, "setAffinity", &pFsetAffinity, setAffinitySlow);
+  SET_FAST_METHOD(isolate, module, "getAffinity", &pFgetAffinity, getAffinitySlow);
 
   SET_MODULE(isolate, target, "thread", module);
 }

@@ -24,6 +24,18 @@ const api = {
     result: 'void',
     name: 'spin_create_isolate_context'
   },
+  createIsolateContext2: {
+    parameters: [
+      'i32', 'pointer', 'string', 'u32', 'string', 'u32', 'pointer', 
+      'i32', 'i32', 'u64', 'string', 'string', 'i32', 'i32', 'pointer', 'buffer'
+    ],
+    pointers: [
+      , 'char**', 'const char*', , 'const char*', , 'char*', , , 
+      'const char*', 'const char*', , , , , 'struct isolate_context*'
+    ],
+    result: 'void',
+    name: 'spin_create_isolate_context'
+  },
   destroyIsolateContext: {
     parameters: ['buffer'],
     pointers: ['struct isolate_context*'],

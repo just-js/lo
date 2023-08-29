@@ -8,7 +8,7 @@ TARGET=spin
 # name of runtime object on globalThis in JS
 GLOBALOBJ="spin"
 # we have to link dl as v8 requires it
-LIB=-ldl
+LIB=
 # directory to look for c++ modules
 MODULE_DIR=module
 # passed to module makefile so they can acces headers
@@ -62,10 +62,16 @@ ${TARGET}.o: ${TARGET}.h ${TARGET}.cc ## compile the main library
 	$(CC) -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native ${WARNFLAGS} ${TARGET}.cc
 
 ${TARGET}: ${TARGET}.o main.o builtins.o ## link the runtime
-	$(CC) -flto -g -O3 ${V8_FLAGS} -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
+	$(CC) -flto -g -O3 ${V8_FLAGS} -static-libstdc++ -static-libgcc -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 	objcopy --only-keep-debug ${TARGET} ${TARGET}.debug
 	strip --strip-debug --strip-unneeded ${TARGET}
 	objcopy --add-gnu-debuglink=${TARGET}.debug ${TARGET}
+
+${TARGET}.so: ${TARGET}.o main.o builtins.o ## link the runtime
+	$(CC) -flto -g -O3 ${V8_FLAGS} -rdynamic -shared -m64 -Wl,--start-group ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}.so
+	objcopy --only-keep-debug ${TARGET}.so ${TARGET}.so.debug
+	strip --strip-debug --strip-unneeded ${TARGET}.so
+	objcopy --add-gnu-debuglink=${TARGET}.so.debug ${TARGET}.so
 
 ${TARGET}-static: ${TARGET}.o main.o builtins.o ## link the runtime
 	$(CC) -flto -g -O3 ${V8_FLAGS} -static -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
@@ -81,17 +87,24 @@ ${MODULE_DIR}/${MODULE}: ## initialize a new module from an api definition
 	mkdir -p ${MODULE_DIR}/${MODULE}
 
 libs:
+	${MAKE} MODULE=adaurl gen library
+#	${MAKE} MODULE=bestline gen library
+	${MAKE} MODULE=dynasm gen library
+	${MAKE} MODULE=encode gen library
 	${MAKE} MODULE=epoll gen library
+	${MAKE} MODULE=fast gen library
 	${MAKE} MODULE=ffi gen library
 	${MAKE} MODULE=fs gen library
 	${MAKE} MODULE=libssl gen library
 	${MAKE} MODULE=load gen library
+#	${MAKE} MODULE=lz4 gen library
 	${MAKE} MODULE=net gen library
 	${MAKE} MODULE=pico gen library
 	${MAKE} MODULE=rocksdb gen library
 	${MAKE} MODULE=rsync gen library
 	${MAKE} MODULE=rustls gen library
 	${MAKE} MODULE=seccomp gen library
+	${MAKE} MODULE=snapshot gen library
 	${MAKE} MODULE=spin gen library
 	${MAKE} MODULE=sqlite gen library
 	${MAKE} MODULE=system gen library
@@ -100,6 +113,7 @@ libs:
 	${MAKE} MODULE=wireguard gen library
 
 gen: ${TARGET} ${MODULE_DIR}/${MODULE} ## generate source and Makefile from definitions for a library
+	mkdir -p ${MODULE_DIR}/${MODULE}
 	./${TARGET} gen --make ${BINDINGS_DIR}/${MODULE}/${MODULE}.js > ${MODULE_DIR}/${MODULE}/Makefile
 	./${TARGET} gen ${BINDINGS_DIR}/${MODULE}/${MODULE}.js > ${MODULE_DIR}/${MODULE}/${MODULE}.cc
 
@@ -112,6 +126,7 @@ library: ## build a spin shared library
 clean: ## tidy up
 	rm -f *.o
 	rm -f ${TARGET}
+	rm -f ${TARGET}.so
 	rm -f *.debug
 
 cleanall: ## remove target and build deps

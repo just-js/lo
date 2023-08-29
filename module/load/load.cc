@@ -62,6 +62,39 @@ using v8::V8;
 
 
 
+void dlopenFast(void* p, struct FastOneByteString* const p0, int32_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsdlopen[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcdlopen = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infodlopen = v8::CFunctionInfo(rcdlopen, 4, cargsdlopen);
+v8::CFunction pFdlopen = v8::CFunction((const void*)&dlopenFast, &infodlopen);
+
+void dlsymFast(void* p, void* p0, struct FastOneByteString* const p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsdlsym[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcdlsym = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infodlsym = v8::CFunctionInfo(rcdlsym, 4, cargsdlsym);
+v8::CFunction pFdlsym = v8::CFunction((const void*)&dlsymFast, &infodlsym);
+
+int32_t dlcloseFast(void* p, void* p0);
+v8::CTypeInfo cargsdlclose[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcdlclose = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infodlclose = v8::CFunctionInfo(rcdlclose, 2, cargsdlclose);
+v8::CFunction pFdlclose = v8::CFunction((const void*)&dlcloseFast, &infodlclose);
+
+
+
 void dlopenSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -108,32 +141,9 @@ int32_t dlcloseFast(void* p, void* p0) {
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
-  v8::CTypeInfo* cargsdlopen = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsdlopen[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsdlopen[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargsdlopen[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsdlopen[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcdlopen = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infodlopen = new v8::CFunctionInfo(*rcdlopen, 4, cargsdlopen);
-  v8::CFunction* pFdlopen = new v8::CFunction((const void*)&dlopenFast, infodlopen);
-  SET_FAST_METHOD(isolate, module, "dlopen", pFdlopen, dlopenSlow);
-  v8::CTypeInfo* cargsdlsym = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsdlsym[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsdlsym[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsdlsym[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargsdlsym[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcdlsym = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infodlsym = new v8::CFunctionInfo(*rcdlsym, 4, cargsdlsym);
-  v8::CFunction* pFdlsym = new v8::CFunction((const void*)&dlsymFast, infodlsym);
-  SET_FAST_METHOD(isolate, module, "dlsym", pFdlsym, dlsymSlow);
-
-  v8::CTypeInfo* cargsdlclose = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsdlclose[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsdlclose[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcdlclose = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infodlclose = new v8::CFunctionInfo(*rcdlclose, 2, cargsdlclose);
-  v8::CFunction* pFdlclose = new v8::CFunction((const void*)&dlcloseFast, infodlclose);
-  SET_FAST_METHOD(isolate, module, "dlclose", pFdlclose, dlcloseSlow);
+  SET_FAST_METHOD(isolate, module, "dlopen", &pFdlopen, dlopenSlow);
+  SET_FAST_METHOD(isolate, module, "dlsym", &pFdlsym, dlsymSlow);
+  SET_FAST_METHOD(isolate, module, "dlclose", &pFdlclose, dlcloseSlow);
 
   SET_MODULE(isolate, target, "load", module);
 }

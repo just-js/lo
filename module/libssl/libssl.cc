@@ -72,6 +72,939 @@ using v8::V8;
 
 
 
+void OpenSSL_versionFast(void* p, int32_t p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsOpenSSL_version[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcOpenSSL_version = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoOpenSSL_version = v8::CFunctionInfo(rcOpenSSL_version, 3, cargsOpenSSL_version);
+v8::CFunction pFOpenSSL_version = v8::CFunction((const void*)&OpenSSL_versionFast, &infoOpenSSL_version);
+
+void EVP_PKEY_CTX_new_idFast(void* p, int32_t p0, void* p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsEVP_PKEY_CTX_new_id[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcEVP_PKEY_CTX_new_id = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_PKEY_CTX_new_id = v8::CFunctionInfo(rcEVP_PKEY_CTX_new_id, 4, cargsEVP_PKEY_CTX_new_id);
+v8::CFunction pFEVP_PKEY_CTX_new_id = v8::CFunction((const void*)&EVP_PKEY_CTX_new_idFast, &infoEVP_PKEY_CTX_new_id);
+
+int32_t EVP_PKEY_keygen_initFast(void* p, void* p0);
+v8::CTypeInfo cargsEVP_PKEY_keygen_init[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcEVP_PKEY_keygen_init = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_PKEY_keygen_init = v8::CFunctionInfo(rcEVP_PKEY_keygen_init, 2, cargsEVP_PKEY_keygen_init);
+v8::CFunction pFEVP_PKEY_keygen_init = v8::CFunction((const void*)&EVP_PKEY_keygen_initFast, &infoEVP_PKEY_keygen_init);
+
+int32_t EVP_PKEY_keygenFast(void* p, void* p0, void* p1);
+v8::CTypeInfo cargsEVP_PKEY_keygen[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcEVP_PKEY_keygen = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_PKEY_keygen = v8::CFunctionInfo(rcEVP_PKEY_keygen, 3, cargsEVP_PKEY_keygen);
+v8::CFunction pFEVP_PKEY_keygen = v8::CFunction((const void*)&EVP_PKEY_keygenFast, &infoEVP_PKEY_keygen);
+
+void EVP_PKEY_newFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsEVP_PKEY_new[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcEVP_PKEY_new = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_PKEY_new = v8::CFunctionInfo(rcEVP_PKEY_new, 2, cargsEVP_PKEY_new);
+v8::CFunction pFEVP_PKEY_new = v8::CFunction((const void*)&EVP_PKEY_newFast, &infoEVP_PKEY_new);
+
+int32_t EVP_PKEY_assignFast(void* p, void* p0, int32_t p1, void* p2);
+v8::CTypeInfo cargsEVP_PKEY_assign[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcEVP_PKEY_assign = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_PKEY_assign = v8::CFunctionInfo(rcEVP_PKEY_assign, 4, cargsEVP_PKEY_assign);
+v8::CFunction pFEVP_PKEY_assign = v8::CFunction((const void*)&EVP_PKEY_assignFast, &infoEVP_PKEY_assign);
+
+int32_t EVP_PKEY_idFast(void* p, void* p0);
+v8::CTypeInfo cargsEVP_PKEY_id[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcEVP_PKEY_id = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_PKEY_id = v8::CFunctionInfo(rcEVP_PKEY_id, 2, cargsEVP_PKEY_id);
+v8::CFunction pFEVP_PKEY_id = v8::CFunction((const void*)&EVP_PKEY_idFast, &infoEVP_PKEY_id);
+
+int32_t EVP_PKEY_typeFast(void* p, int32_t p0);
+v8::CTypeInfo cargsEVP_PKEY_type[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcEVP_PKEY_type = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_PKEY_type = v8::CFunctionInfo(rcEVP_PKEY_type, 2, cargsEVP_PKEY_type);
+v8::CFunction pFEVP_PKEY_type = v8::CFunction((const void*)&EVP_PKEY_typeFast, &infoEVP_PKEY_type);
+
+void EVP_PKEY_get1_RSAFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsEVP_PKEY_get1_RSA[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcEVP_PKEY_get1_RSA = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_PKEY_get1_RSA = v8::CFunctionInfo(rcEVP_PKEY_get1_RSA, 3, cargsEVP_PKEY_get1_RSA);
+v8::CFunction pFEVP_PKEY_get1_RSA = v8::CFunction((const void*)&EVP_PKEY_get1_RSAFast, &infoEVP_PKEY_get1_RSA);
+
+void EVP_PKEY_freeFast(void* p, void* p0);
+v8::CTypeInfo cargsEVP_PKEY_free[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcEVP_PKEY_free = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_PKEY_free = v8::CFunctionInfo(rcEVP_PKEY_free, 2, cargsEVP_PKEY_free);
+v8::CFunction pFEVP_PKEY_free = v8::CFunction((const void*)&EVP_PKEY_freeFast, &infoEVP_PKEY_free);
+
+void EVP_PKEY_CTX_freeFast(void* p, void* p0);
+v8::CTypeInfo cargsEVP_PKEY_CTX_free[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcEVP_PKEY_CTX_free = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_PKEY_CTX_free = v8::CFunctionInfo(rcEVP_PKEY_CTX_free, 2, cargsEVP_PKEY_CTX_free);
+v8::CFunction pFEVP_PKEY_CTX_free = v8::CFunction((const void*)&EVP_PKEY_CTX_freeFast, &infoEVP_PKEY_CTX_free);
+
+void EVP_MD_CTX_newFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsEVP_MD_CTX_new[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcEVP_MD_CTX_new = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_MD_CTX_new = v8::CFunctionInfo(rcEVP_MD_CTX_new, 2, cargsEVP_MD_CTX_new);
+v8::CFunction pFEVP_MD_CTX_new = v8::CFunction((const void*)&EVP_MD_CTX_newFast, &infoEVP_MD_CTX_new);
+
+int32_t EVP_MD_CTX_resetFast(void* p, void* p0);
+v8::CTypeInfo cargsEVP_MD_CTX_reset[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcEVP_MD_CTX_reset = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_MD_CTX_reset = v8::CFunctionInfo(rcEVP_MD_CTX_reset, 2, cargsEVP_MD_CTX_reset);
+v8::CFunction pFEVP_MD_CTX_reset = v8::CFunction((const void*)&EVP_MD_CTX_resetFast, &infoEVP_MD_CTX_reset);
+
+void EVP_MD_CTX_freeFast(void* p, void* p0);
+v8::CTypeInfo cargsEVP_MD_CTX_free[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcEVP_MD_CTX_free = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_MD_CTX_free = v8::CFunctionInfo(rcEVP_MD_CTX_free, 2, cargsEVP_MD_CTX_free);
+v8::CFunction pFEVP_MD_CTX_free = v8::CFunction((const void*)&EVP_MD_CTX_freeFast, &infoEVP_MD_CTX_free);
+
+void EVP_get_digestbynidFast(void* p, int32_t p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsEVP_get_digestbynid[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcEVP_get_digestbynid = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_get_digestbynid = v8::CFunctionInfo(rcEVP_get_digestbynid, 3, cargsEVP_get_digestbynid);
+v8::CFunction pFEVP_get_digestbynid = v8::CFunction((const void*)&EVP_get_digestbynidFast, &infoEVP_get_digestbynid);
+
+void EVP_get_digestbynameFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsEVP_get_digestbyname[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcEVP_get_digestbyname = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_get_digestbyname = v8::CFunctionInfo(rcEVP_get_digestbyname, 3, cargsEVP_get_digestbyname);
+v8::CFunction pFEVP_get_digestbyname = v8::CFunction((const void*)&EVP_get_digestbynameFast, &infoEVP_get_digestbyname);
+
+int32_t EVP_DigestFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, struct FastApiTypedArray* const p3, void* p4, void* p5);
+v8::CTypeInfo cargsEVP_Digest[7] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcEVP_Digest = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_Digest = v8::CFunctionInfo(rcEVP_Digest, 7, cargsEVP_Digest);
+v8::CFunction pFEVP_Digest = v8::CFunction((const void*)&EVP_DigestFast, &infoEVP_Digest);
+
+int32_t EVP_DigestInit_exFast(void* p, void* p0, void* p1, void* p2);
+v8::CTypeInfo cargsEVP_DigestInit_ex[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcEVP_DigestInit_ex = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_DigestInit_ex = v8::CFunctionInfo(rcEVP_DigestInit_ex, 4, cargsEVP_DigestInit_ex);
+v8::CFunction pFEVP_DigestInit_ex = v8::CFunction((const void*)&EVP_DigestInit_exFast, &infoEVP_DigestInit_ex);
+
+int32_t EVP_DigestUpdateFast(void* p, void* p0, void* p1, uint32_t p2);
+v8::CTypeInfo cargsEVP_DigestUpdate[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcEVP_DigestUpdate = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_DigestUpdate = v8::CFunctionInfo(rcEVP_DigestUpdate, 4, cargsEVP_DigestUpdate);
+v8::CFunction pFEVP_DigestUpdate = v8::CFunction((const void*)&EVP_DigestUpdateFast, &infoEVP_DigestUpdate);
+
+int32_t EVP_DigestUpdateBufferFast(void* p, void* p0, struct FastApiTypedArray* const p1, uint32_t p2);
+v8::CTypeInfo cargsEVP_DigestUpdateBuffer[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcEVP_DigestUpdateBuffer = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_DigestUpdateBuffer = v8::CFunctionInfo(rcEVP_DigestUpdateBuffer, 4, cargsEVP_DigestUpdateBuffer);
+v8::CFunction pFEVP_DigestUpdateBuffer = v8::CFunction((const void*)&EVP_DigestUpdateBufferFast, &infoEVP_DigestUpdateBuffer);
+
+int32_t EVP_DigestUpdateStringFast(void* p, void* p0, struct FastOneByteString* const p1, uint32_t p2);
+v8::CTypeInfo cargsEVP_DigestUpdateString[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcEVP_DigestUpdateString = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_DigestUpdateString = v8::CFunctionInfo(rcEVP_DigestUpdateString, 4, cargsEVP_DigestUpdateString);
+v8::CFunction pFEVP_DigestUpdateString = v8::CFunction((const void*)&EVP_DigestUpdateStringFast, &infoEVP_DigestUpdateString);
+
+int32_t EVP_DigestVerifyFinalFast(void* p, void* p0, void* p1, uint32_t p2);
+v8::CTypeInfo cargsEVP_DigestVerifyFinal[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcEVP_DigestVerifyFinal = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_DigestVerifyFinal = v8::CFunctionInfo(rcEVP_DigestVerifyFinal, 4, cargsEVP_DigestVerifyFinal);
+v8::CFunction pFEVP_DigestVerifyFinal = v8::CFunction((const void*)&EVP_DigestVerifyFinalFast, &infoEVP_DigestVerifyFinal);
+
+int32_t EVP_DigestSignFinalFast(void* p, void* p0, void* p1, void* p2);
+v8::CTypeInfo cargsEVP_DigestSignFinal[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcEVP_DigestSignFinal = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_DigestSignFinal = v8::CFunctionInfo(rcEVP_DigestSignFinal, 4, cargsEVP_DigestSignFinal);
+v8::CFunction pFEVP_DigestSignFinal = v8::CFunction((const void*)&EVP_DigestSignFinalFast, &infoEVP_DigestSignFinal);
+
+int32_t EVP_DigestFinalFast(void* p, void* p0, struct FastApiTypedArray* const p1, struct FastApiTypedArray* const p2);
+v8::CTypeInfo cargsEVP_DigestFinal[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcEVP_DigestFinal = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_DigestFinal = v8::CFunctionInfo(rcEVP_DigestFinal, 4, cargsEVP_DigestFinal);
+v8::CFunction pFEVP_DigestFinal = v8::CFunction((const void*)&EVP_DigestFinalFast, &infoEVP_DigestFinal);
+
+void EVP_sha1Fast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsEVP_sha1[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcEVP_sha1 = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_sha1 = v8::CFunctionInfo(rcEVP_sha1, 2, cargsEVP_sha1);
+v8::CFunction pFEVP_sha1 = v8::CFunction((const void*)&EVP_sha1Fast, &infoEVP_sha1);
+
+void EVP_sha224Fast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsEVP_sha224[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcEVP_sha224 = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_sha224 = v8::CFunctionInfo(rcEVP_sha224, 2, cargsEVP_sha224);
+v8::CFunction pFEVP_sha224 = v8::CFunction((const void*)&EVP_sha224Fast, &infoEVP_sha224);
+
+void EVP_sha256Fast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsEVP_sha256[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcEVP_sha256 = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_sha256 = v8::CFunctionInfo(rcEVP_sha256, 2, cargsEVP_sha256);
+v8::CFunction pFEVP_sha256 = v8::CFunction((const void*)&EVP_sha256Fast, &infoEVP_sha256);
+
+void EVP_sha384Fast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsEVP_sha384[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcEVP_sha384 = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_sha384 = v8::CFunctionInfo(rcEVP_sha384, 2, cargsEVP_sha384);
+v8::CFunction pFEVP_sha384 = v8::CFunction((const void*)&EVP_sha384Fast, &infoEVP_sha384);
+
+void EVP_sha512Fast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsEVP_sha512[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcEVP_sha512 = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_sha512 = v8::CFunctionInfo(rcEVP_sha512, 2, cargsEVP_sha512);
+v8::CFunction pFEVP_sha512 = v8::CFunction((const void*)&EVP_sha512Fast, &infoEVP_sha512);
+
+void EVP_sha512_256Fast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsEVP_sha512_256[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcEVP_sha512_256 = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_sha512_256 = v8::CFunctionInfo(rcEVP_sha512_256, 2, cargsEVP_sha512_256);
+v8::CFunction pFEVP_sha512_256 = v8::CFunction((const void*)&EVP_sha512_256Fast, &infoEVP_sha512_256);
+
+int32_t EVP_DigestVerifyInitFast(void* p, void* p0, void* p1, void* p2, void* p3, void* p4);
+v8::CTypeInfo cargsEVP_DigestVerifyInit[6] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcEVP_DigestVerifyInit = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_DigestVerifyInit = v8::CFunctionInfo(rcEVP_DigestVerifyInit, 6, cargsEVP_DigestVerifyInit);
+v8::CFunction pFEVP_DigestVerifyInit = v8::CFunction((const void*)&EVP_DigestVerifyInitFast, &infoEVP_DigestVerifyInit);
+
+int32_t EVP_DigestSignInitFast(void* p, void* p0, void* p1, void* p2, void* p3, void* p4);
+v8::CTypeInfo cargsEVP_DigestSignInit[6] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcEVP_DigestSignInit = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoEVP_DigestSignInit = v8::CFunctionInfo(rcEVP_DigestSignInit, 6, cargsEVP_DigestSignInit);
+v8::CFunction pFEVP_DigestSignInit = v8::CFunction((const void*)&EVP_DigestSignInitFast, &infoEVP_DigestSignInit);
+
+void BIO_s_memFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsBIO_s_mem[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcBIO_s_mem = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoBIO_s_mem = v8::CFunctionInfo(rcBIO_s_mem, 2, cargsBIO_s_mem);
+v8::CFunction pFBIO_s_mem = v8::CFunction((const void*)&BIO_s_memFast, &infoBIO_s_mem);
+
+void BIO_newFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsBIO_new[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcBIO_new = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoBIO_new = v8::CFunctionInfo(rcBIO_new, 3, cargsBIO_new);
+v8::CFunction pFBIO_new = v8::CFunction((const void*)&BIO_newFast, &infoBIO_new);
+
+void BIO_new_mem_bufFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsBIO_new_mem_buf[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcBIO_new_mem_buf = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoBIO_new_mem_buf = v8::CFunctionInfo(rcBIO_new_mem_buf, 4, cargsBIO_new_mem_buf);
+v8::CFunction pFBIO_new_mem_buf = v8::CFunction((const void*)&BIO_new_mem_bufFast, &infoBIO_new_mem_buf);
+
+int32_t BIO_ctrlFast(void* p, void* p0, int32_t p1, uint64_t p2, void* p3);
+v8::CTypeInfo cargsBIO_ctrl[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcBIO_ctrl = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoBIO_ctrl = v8::CFunctionInfo(rcBIO_ctrl, 5, cargsBIO_ctrl);
+v8::CFunction pFBIO_ctrl = v8::CFunction((const void*)&BIO_ctrlFast, &infoBIO_ctrl);
+
+int32_t BIO_readFast(void* p, void* p0, void* p1, int32_t p2);
+v8::CTypeInfo cargsBIO_read[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcBIO_read = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoBIO_read = v8::CFunctionInfo(rcBIO_read, 4, cargsBIO_read);
+v8::CFunction pFBIO_read = v8::CFunction((const void*)&BIO_readFast, &infoBIO_read);
+
+int32_t PEM_write_bio_PrivateKeyFast(void* p, void* p0, void* p1, void* p2, void* p3, int32_t p4, void* p5, void* p6);
+v8::CTypeInfo cargsPEM_write_bio_PrivateKey[8] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcPEM_write_bio_PrivateKey = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoPEM_write_bio_PrivateKey = v8::CFunctionInfo(rcPEM_write_bio_PrivateKey, 8, cargsPEM_write_bio_PrivateKey);
+v8::CFunction pFPEM_write_bio_PrivateKey = v8::CFunction((const void*)&PEM_write_bio_PrivateKeyFast, &infoPEM_write_bio_PrivateKey);
+
+int32_t PEM_write_bio_PUBKEYFast(void* p, void* p0, void* p1);
+v8::CTypeInfo cargsPEM_write_bio_PUBKEY[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcPEM_write_bio_PUBKEY = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoPEM_write_bio_PUBKEY = v8::CFunctionInfo(rcPEM_write_bio_PUBKEY, 3, cargsPEM_write_bio_PUBKEY);
+v8::CFunction pFPEM_write_bio_PUBKEY = v8::CFunction((const void*)&PEM_write_bio_PUBKEYFast, &infoPEM_write_bio_PUBKEY);
+
+int32_t PEM_write_bio_X509_REQFast(void* p, void* p0, void* p1);
+v8::CTypeInfo cargsPEM_write_bio_X509_REQ[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcPEM_write_bio_X509_REQ = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoPEM_write_bio_X509_REQ = v8::CFunctionInfo(rcPEM_write_bio_X509_REQ, 3, cargsPEM_write_bio_X509_REQ);
+v8::CFunction pFPEM_write_bio_X509_REQ = v8::CFunction((const void*)&PEM_write_bio_X509_REQFast, &infoPEM_write_bio_X509_REQ);
+
+void PEM_read_bio_RSA_PUBKEYFast(void* p, void* p0, void* p1, void* p2, void* p3, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsPEM_read_bio_RSA_PUBKEY[6] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcPEM_read_bio_RSA_PUBKEY = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoPEM_read_bio_RSA_PUBKEY = v8::CFunctionInfo(rcPEM_read_bio_RSA_PUBKEY, 6, cargsPEM_read_bio_RSA_PUBKEY);
+v8::CFunction pFPEM_read_bio_RSA_PUBKEY = v8::CFunction((const void*)&PEM_read_bio_RSA_PUBKEYFast, &infoPEM_read_bio_RSA_PUBKEY);
+
+void PEM_read_bio_RSAPrivateKeyFast(void* p, void* p0, void* p1, void* p2, void* p3, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsPEM_read_bio_RSAPrivateKey[6] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcPEM_read_bio_RSAPrivateKey = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoPEM_read_bio_RSAPrivateKey = v8::CFunctionInfo(rcPEM_read_bio_RSAPrivateKey, 6, cargsPEM_read_bio_RSAPrivateKey);
+v8::CFunction pFPEM_read_bio_RSAPrivateKey = v8::CFunction((const void*)&PEM_read_bio_RSAPrivateKeyFast, &infoPEM_read_bio_RSAPrivateKey);
+
+void PEM_read_bio_X509Fast(void* p, void* p0, void* p1, void* p2, void* p3, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsPEM_read_bio_X509[6] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcPEM_read_bio_X509 = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoPEM_read_bio_X509 = v8::CFunctionInfo(rcPEM_read_bio_X509, 6, cargsPEM_read_bio_X509);
+v8::CFunction pFPEM_read_bio_X509 = v8::CFunction((const void*)&PEM_read_bio_X509Fast, &infoPEM_read_bio_X509);
+
+void X509_get_subject_nameFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsX509_get_subject_name[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcX509_get_subject_name = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoX509_get_subject_name = v8::CFunctionInfo(rcX509_get_subject_name, 3, cargsX509_get_subject_name);
+v8::CFunction pFX509_get_subject_name = v8::CFunction((const void*)&X509_get_subject_nameFast, &infoX509_get_subject_name);
+
+void X509_NAME_onelineFast(void* p, void* p0, void* p1, int32_t p2, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsX509_NAME_oneline[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcX509_NAME_oneline = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoX509_NAME_oneline = v8::CFunctionInfo(rcX509_NAME_oneline, 5, cargsX509_NAME_oneline);
+v8::CFunction pFX509_NAME_oneline = v8::CFunction((const void*)&X509_NAME_onelineFast, &infoX509_NAME_oneline);
+
+void X509_get_issuer_nameFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsX509_get_issuer_name[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcX509_get_issuer_name = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoX509_get_issuer_name = v8::CFunctionInfo(rcX509_get_issuer_name, 3, cargsX509_get_issuer_name);
+v8::CFunction pFX509_get_issuer_name = v8::CFunction((const void*)&X509_get_issuer_nameFast, &infoX509_get_issuer_name);
+
+void X509_freeFast(void* p, void* p0);
+v8::CTypeInfo cargsX509_free[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcX509_free = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoX509_free = v8::CFunctionInfo(rcX509_free, 2, cargsX509_free);
+v8::CFunction pFX509_free = v8::CFunction((const void*)&X509_freeFast, &infoX509_free);
+
+void X509_get_pubkeyFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsX509_get_pubkey[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcX509_get_pubkey = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoX509_get_pubkey = v8::CFunctionInfo(rcX509_get_pubkey, 3, cargsX509_get_pubkey);
+v8::CFunction pFX509_get_pubkey = v8::CFunction((const void*)&X509_get_pubkeyFast, &infoX509_get_pubkey);
+
+void X509_REQ_newFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsX509_REQ_new[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcX509_REQ_new = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoX509_REQ_new = v8::CFunctionInfo(rcX509_REQ_new, 2, cargsX509_REQ_new);
+v8::CFunction pFX509_REQ_new = v8::CFunction((const void*)&X509_REQ_newFast, &infoX509_REQ_new);
+
+int32_t X509_REQ_set_versionFast(void* p, void* p0, uint32_t p1);
+v8::CTypeInfo cargsX509_REQ_set_version[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcX509_REQ_set_version = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoX509_REQ_set_version = v8::CFunctionInfo(rcX509_REQ_set_version, 3, cargsX509_REQ_set_version);
+v8::CFunction pFX509_REQ_set_version = v8::CFunction((const void*)&X509_REQ_set_versionFast, &infoX509_REQ_set_version);
+
+void X509_REQ_get_subject_nameFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsX509_REQ_get_subject_name[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcX509_REQ_get_subject_name = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoX509_REQ_get_subject_name = v8::CFunctionInfo(rcX509_REQ_get_subject_name, 3, cargsX509_REQ_get_subject_name);
+v8::CFunction pFX509_REQ_get_subject_name = v8::CFunction((const void*)&X509_REQ_get_subject_nameFast, &infoX509_REQ_get_subject_name);
+
+int32_t X509_NAME_add_entry_by_txtFast(void* p, void* p0, void* p1, int32_t p2, void* p3, int32_t p4, int32_t p5, int32_t p6);
+v8::CTypeInfo cargsX509_NAME_add_entry_by_txt[8] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcX509_NAME_add_entry_by_txt = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoX509_NAME_add_entry_by_txt = v8::CFunctionInfo(rcX509_NAME_add_entry_by_txt, 8, cargsX509_NAME_add_entry_by_txt);
+v8::CFunction pFX509_NAME_add_entry_by_txt = v8::CFunction((const void*)&X509_NAME_add_entry_by_txtFast, &infoX509_NAME_add_entry_by_txt);
+
+int32_t X509_REQ_set_pubkeyFast(void* p, void* p0, void* p1);
+v8::CTypeInfo cargsX509_REQ_set_pubkey[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcX509_REQ_set_pubkey = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoX509_REQ_set_pubkey = v8::CFunctionInfo(rcX509_REQ_set_pubkey, 3, cargsX509_REQ_set_pubkey);
+v8::CFunction pFX509_REQ_set_pubkey = v8::CFunction((const void*)&X509_REQ_set_pubkeyFast, &infoX509_REQ_set_pubkey);
+
+int32_t X509_REQ_signFast(void* p, void* p0, void* p1, void* p2);
+v8::CTypeInfo cargsX509_REQ_sign[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcX509_REQ_sign = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoX509_REQ_sign = v8::CFunctionInfo(rcX509_REQ_sign, 4, cargsX509_REQ_sign);
+v8::CFunction pFX509_REQ_sign = v8::CFunction((const void*)&X509_REQ_signFast, &infoX509_REQ_sign);
+
+int32_t OBJ_txt2nidFast(void* p, void* p0);
+v8::CTypeInfo cargsOBJ_txt2nid[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcOBJ_txt2nid = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoOBJ_txt2nid = v8::CFunctionInfo(rcOBJ_txt2nid, 2, cargsOBJ_txt2nid);
+v8::CFunction pFOBJ_txt2nid = v8::CFunction((const void*)&OBJ_txt2nidFast, &infoOBJ_txt2nid);
+
+int32_t SSL_get_errorFast(void* p, void* p0, int32_t p1);
+v8::CTypeInfo cargsSSL_get_error[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcSSL_get_error = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_get_error = v8::CFunctionInfo(rcSSL_get_error, 3, cargsSSL_get_error);
+v8::CFunction pFSSL_get_error = v8::CFunction((const void*)&SSL_get_errorFast, &infoSSL_get_error);
+
+int32_t SSL_is_init_finishedFast(void* p, void* p0);
+v8::CTypeInfo cargsSSL_is_init_finished[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_is_init_finished = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_is_init_finished = v8::CFunctionInfo(rcSSL_is_init_finished, 2, cargsSSL_is_init_finished);
+v8::CFunction pFSSL_is_init_finished = v8::CFunction((const void*)&SSL_is_init_finishedFast, &infoSSL_is_init_finished);
+
+int32_t SSL_shutdownFast(void* p, void* p0);
+v8::CTypeInfo cargsSSL_shutdown[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_shutdown = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_shutdown = v8::CFunctionInfo(rcSSL_shutdown, 2, cargsSSL_shutdown);
+v8::CFunction pFSSL_shutdown = v8::CFunction((const void*)&SSL_shutdownFast, &infoSSL_shutdown);
+
+void SSL_get_servernameFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsSSL_get_servername[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcSSL_get_servername = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_get_servername = v8::CFunctionInfo(rcSSL_get_servername, 4, cargsSSL_get_servername);
+v8::CFunction pFSSL_get_servername = v8::CFunction((const void*)&SSL_get_servernameFast, &infoSSL_get_servername);
+
+int32_t SSL_get_servername_typeFast(void* p, void* p0);
+v8::CTypeInfo cargsSSL_get_servername_type[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_get_servername_type = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_get_servername_type = v8::CFunctionInfo(rcSSL_get_servername_type, 2, cargsSSL_get_servername_type);
+v8::CFunction pFSSL_get_servername_type = v8::CFunction((const void*)&SSL_get_servername_typeFast, &infoSSL_get_servername_type);
+
+void SSL_freeFast(void* p, void* p0);
+v8::CTypeInfo cargsSSL_free[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_free = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_free = v8::CFunctionInfo(rcSSL_free, 2, cargsSSL_free);
+v8::CFunction pFSSL_free = v8::CFunction((const void*)&SSL_freeFast, &infoSSL_free);
+
+int32_t SSL_readFast(void* p, void* p0, void* p1, int32_t p2);
+v8::CTypeInfo cargsSSL_read[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcSSL_read = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_read = v8::CFunctionInfo(rcSSL_read, 4, cargsSSL_read);
+v8::CFunction pFSSL_read = v8::CFunction((const void*)&SSL_readFast, &infoSSL_read);
+
+int32_t SSL_writeFast(void* p, void* p0, void* p1, int32_t p2);
+v8::CTypeInfo cargsSSL_write[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcSSL_write = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_write = v8::CFunctionInfo(rcSSL_write, 4, cargsSSL_write);
+v8::CFunction pFSSL_write = v8::CFunction((const void*)&SSL_writeFast, &infoSSL_write);
+
+void SSL_get_versionFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsSSL_get_version[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcSSL_get_version = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_get_version = v8::CFunctionInfo(rcSSL_get_version, 3, cargsSSL_get_version);
+v8::CFunction pFSSL_get_version = v8::CFunction((const void*)&SSL_get_versionFast, &infoSSL_get_version);
+
+void SSL_CIPHER_get_nameFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsSSL_CIPHER_get_name[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcSSL_CIPHER_get_name = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_CIPHER_get_name = v8::CFunctionInfo(rcSSL_CIPHER_get_name, 3, cargsSSL_CIPHER_get_name);
+v8::CFunction pFSSL_CIPHER_get_name = v8::CFunction((const void*)&SSL_CIPHER_get_nameFast, &infoSSL_CIPHER_get_name);
+
+void SSL_get_current_cipherFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsSSL_get_current_cipher[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcSSL_get_current_cipher = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_get_current_cipher = v8::CFunctionInfo(rcSSL_get_current_cipher, 3, cargsSSL_get_current_cipher);
+v8::CFunction pFSSL_get_current_cipher = v8::CFunction((const void*)&SSL_get_current_cipherFast, &infoSSL_get_current_cipher);
+
+void SSL_get_peer_certificateFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsSSL_get_peer_certificate[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcSSL_get_peer_certificate = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_get_peer_certificate = v8::CFunctionInfo(rcSSL_get_peer_certificate, 3, cargsSSL_get_peer_certificate);
+v8::CFunction pFSSL_get_peer_certificate = v8::CFunction((const void*)&SSL_get_peer_certificateFast, &infoSSL_get_peer_certificate);
+
+void SSL_set_SSL_CTXFast(void* p, void* p0, void* p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsSSL_set_SSL_CTX[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcSSL_set_SSL_CTX = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_set_SSL_CTX = v8::CFunctionInfo(rcSSL_set_SSL_CTX, 4, cargsSSL_set_SSL_CTX);
+v8::CFunction pFSSL_set_SSL_CTX = v8::CFunction((const void*)&SSL_set_SSL_CTXFast, &infoSSL_set_SSL_CTX);
+
+void SSL_newFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsSSL_new[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcSSL_new = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_new = v8::CFunctionInfo(rcSSL_new, 3, cargsSSL_new);
+v8::CFunction pFSSL_new = v8::CFunction((const void*)&SSL_newFast, &infoSSL_new);
+
+int32_t SSL_set_fdFast(void* p, void* p0, int32_t p1);
+v8::CTypeInfo cargsSSL_set_fd[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcSSL_set_fd = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_set_fd = v8::CFunctionInfo(rcSSL_set_fd, 3, cargsSSL_set_fd);
+v8::CFunction pFSSL_set_fd = v8::CFunction((const void*)&SSL_set_fdFast, &infoSSL_set_fd);
+
+void SSL_set_bioFast(void* p, void* p0, void* p1, void* p2);
+v8::CTypeInfo cargsSSL_set_bio[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_set_bio = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_set_bio = v8::CFunctionInfo(rcSSL_set_bio, 4, cargsSSL_set_bio);
+v8::CFunction pFSSL_set_bio = v8::CFunction((const void*)&SSL_set_bioFast, &infoSSL_set_bio);
+
+void SSL_set_accept_stateFast(void* p, void* p0);
+v8::CTypeInfo cargsSSL_set_accept_state[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_set_accept_state = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_set_accept_state = v8::CFunctionInfo(rcSSL_set_accept_state, 2, cargsSSL_set_accept_state);
+v8::CFunction pFSSL_set_accept_state = v8::CFunction((const void*)&SSL_set_accept_stateFast, &infoSSL_set_accept_state);
+
+int32_t SSL_acceptFast(void* p, void* p0);
+v8::CTypeInfo cargsSSL_accept[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_accept = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_accept = v8::CFunctionInfo(rcSSL_accept, 2, cargsSSL_accept);
+v8::CFunction pFSSL_accept = v8::CFunction((const void*)&SSL_acceptFast, &infoSSL_accept);
+
+void SSL_set_connect_stateFast(void* p, void* p0);
+v8::CTypeInfo cargsSSL_set_connect_state[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_set_connect_state = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_set_connect_state = v8::CFunctionInfo(rcSSL_set_connect_state, 2, cargsSSL_set_connect_state);
+v8::CFunction pFSSL_set_connect_state = v8::CFunction((const void*)&SSL_set_connect_stateFast, &infoSSL_set_connect_state);
+
+int32_t SSL_do_handshakeFast(void* p, void* p0);
+v8::CTypeInfo cargsSSL_do_handshake[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_do_handshake = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_do_handshake = v8::CFunctionInfo(rcSSL_do_handshake, 2, cargsSSL_do_handshake);
+v8::CFunction pFSSL_do_handshake = v8::CFunction((const void*)&SSL_do_handshakeFast, &infoSSL_do_handshake);
+
+void SSL_CTX_newFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsSSL_CTX_new[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcSSL_CTX_new = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_CTX_new = v8::CFunctionInfo(rcSSL_CTX_new, 3, cargsSSL_CTX_new);
+v8::CFunction pFSSL_CTX_new = v8::CFunction((const void*)&SSL_CTX_newFast, &infoSSL_CTX_new);
+
+int32_t SSL_CTX_use_certificate_fileFast(void* p, void* p0, void* p1, int32_t p2);
+v8::CTypeInfo cargsSSL_CTX_use_certificate_file[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcSSL_CTX_use_certificate_file = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_CTX_use_certificate_file = v8::CFunctionInfo(rcSSL_CTX_use_certificate_file, 4, cargsSSL_CTX_use_certificate_file);
+v8::CFunction pFSSL_CTX_use_certificate_file = v8::CFunction((const void*)&SSL_CTX_use_certificate_fileFast, &infoSSL_CTX_use_certificate_file);
+
+int32_t SSL_CTX_use_certificate_chain_fileFast(void* p, void* p0, void* p1);
+v8::CTypeInfo cargsSSL_CTX_use_certificate_chain_file[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_CTX_use_certificate_chain_file = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_CTX_use_certificate_chain_file = v8::CFunctionInfo(rcSSL_CTX_use_certificate_chain_file, 3, cargsSSL_CTX_use_certificate_chain_file);
+v8::CFunction pFSSL_CTX_use_certificate_chain_file = v8::CFunction((const void*)&SSL_CTX_use_certificate_chain_fileFast, &infoSSL_CTX_use_certificate_chain_file);
+
+int32_t SSL_CTX_use_PrivateKey_fileFast(void* p, void* p0, void* p1, int32_t p2);
+v8::CTypeInfo cargsSSL_CTX_use_PrivateKey_file[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcSSL_CTX_use_PrivateKey_file = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_CTX_use_PrivateKey_file = v8::CFunctionInfo(rcSSL_CTX_use_PrivateKey_file, 4, cargsSSL_CTX_use_PrivateKey_file);
+v8::CFunction pFSSL_CTX_use_PrivateKey_file = v8::CFunction((const void*)&SSL_CTX_use_PrivateKey_fileFast, &infoSSL_CTX_use_PrivateKey_file);
+
+void SSL_CTX_set_optionsFast(void* p, void* p0, uint64_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsSSL_CTX_set_options[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcSSL_CTX_set_options = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_CTX_set_options = v8::CFunctionInfo(rcSSL_CTX_set_options, 4, cargsSSL_CTX_set_options);
+v8::CFunction pFSSL_CTX_set_options = v8::CFunction((const void*)&SSL_CTX_set_optionsFast, &infoSSL_CTX_set_options);
+
+int32_t SSL_CTX_set_cipher_listFast(void* p, void* p0, void* p1);
+v8::CTypeInfo cargsSSL_CTX_set_cipher_list[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_CTX_set_cipher_list = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_CTX_set_cipher_list = v8::CFunctionInfo(rcSSL_CTX_set_cipher_list, 3, cargsSSL_CTX_set_cipher_list);
+v8::CFunction pFSSL_CTX_set_cipher_list = v8::CFunction((const void*)&SSL_CTX_set_cipher_listFast, &infoSSL_CTX_set_cipher_list);
+
+int32_t SSL_set_cipher_listFast(void* p, void* p0, void* p1);
+v8::CTypeInfo cargsSSL_set_cipher_list[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_set_cipher_list = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_set_cipher_list = v8::CFunctionInfo(rcSSL_set_cipher_list, 3, cargsSSL_set_cipher_list);
+v8::CFunction pFSSL_set_cipher_list = v8::CFunction((const void*)&SSL_set_cipher_listFast, &infoSSL_set_cipher_list);
+
+void SSL_CTX_freeFast(void* p, void* p0);
+v8::CTypeInfo cargsSSL_CTX_free[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_CTX_free = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_CTX_free = v8::CFunctionInfo(rcSSL_CTX_free, 2, cargsSSL_CTX_free);
+v8::CFunction pFSSL_CTX_free = v8::CFunction((const void*)&SSL_CTX_freeFast, &infoSSL_CTX_free);
+
+void TLS_server_methodFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsTLS_server_method[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcTLS_server_method = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoTLS_server_method = v8::CFunctionInfo(rcTLS_server_method, 2, cargsTLS_server_method);
+v8::CFunction pFTLS_server_method = v8::CFunction((const void*)&TLS_server_methodFast, &infoTLS_server_method);
+
+void TLS_client_methodFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsTLS_client_method[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcTLS_client_method = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoTLS_client_method = v8::CFunctionInfo(rcTLS_client_method, 2, cargsTLS_client_method);
+v8::CFunction pFTLS_client_method = v8::CFunction((const void*)&TLS_client_methodFast, &infoTLS_client_method);
+
+int32_t SSL_CTX_set_ciphersuitesFast(void* p, void* p0, void* p1);
+v8::CTypeInfo cargsSSL_CTX_set_ciphersuites[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_CTX_set_ciphersuites = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_CTX_set_ciphersuites = v8::CFunctionInfo(rcSSL_CTX_set_ciphersuites, 3, cargsSSL_CTX_set_ciphersuites);
+v8::CFunction pFSSL_CTX_set_ciphersuites = v8::CFunction((const void*)&SSL_CTX_set_ciphersuitesFast, &infoSSL_CTX_set_ciphersuites);
+
+void SSL_ctrlFast(void* p, void* p0, int32_t p1, uint64_t p2, void* p3, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsSSL_ctrl[6] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcSSL_ctrl = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoSSL_ctrl = v8::CFunctionInfo(rcSSL_ctrl, 6, cargsSSL_ctrl);
+v8::CFunction pFSSL_ctrl = v8::CFunction((const void*)&SSL_ctrlFast, &infoSSL_ctrl);
+
+int32_t RSA_pkey_ctx_ctrlFast(void* p, void* p0, int32_t p1, int32_t p2, int32_t p3, void* p4);
+v8::CTypeInfo cargsRSA_pkey_ctx_ctrl[6] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcRSA_pkey_ctx_ctrl = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoRSA_pkey_ctx_ctrl = v8::CFunctionInfo(rcRSA_pkey_ctx_ctrl, 6, cargsRSA_pkey_ctx_ctrl);
+v8::CFunction pFRSA_pkey_ctx_ctrl = v8::CFunction((const void*)&RSA_pkey_ctx_ctrlFast, &infoRSA_pkey_ctx_ctrl);
+
+void EVP_sha512_224Fast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsEVP_sha512_224[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcEVP_sha512_224 = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoEVP_sha512_224 = v8::CFunctionInfo(rcEVP_sha512_224, 2, cargsEVP_sha512_224);
+v8::CFunction pFEVP_sha512_224 = v8::CFunction((const void*)&EVP_sha512_224Fast, &infoEVP_sha512_224);
+
+
+
 void OpenSSL_versionSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   const char* rc = OpenSSL_version(v0);
@@ -1309,810 +2242,95 @@ void EVP_sha512_224Fast(void* p, struct FastApiTypedArray* const p_ret) {
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
-  v8::CTypeInfo* cargsOpenSSL_version = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsOpenSSL_version[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsOpenSSL_version[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsOpenSSL_version[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcOpenSSL_version = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoOpenSSL_version = new v8::CFunctionInfo(*rcOpenSSL_version, 3, cargsOpenSSL_version);
-  v8::CFunction* pFOpenSSL_version = new v8::CFunction((const void*)&OpenSSL_versionFast, infoOpenSSL_version);
-  SET_FAST_METHOD(isolate, module, "OpenSSL_version", pFOpenSSL_version, OpenSSL_versionSlow);
-  v8::CTypeInfo* cargsEVP_PKEY_CTX_new_id = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsEVP_PKEY_CTX_new_id[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_PKEY_CTX_new_id[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsEVP_PKEY_CTX_new_id[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_PKEY_CTX_new_id[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcEVP_PKEY_CTX_new_id = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_PKEY_CTX_new_id = new v8::CFunctionInfo(*rcEVP_PKEY_CTX_new_id, 4, cargsEVP_PKEY_CTX_new_id);
-  v8::CFunction* pFEVP_PKEY_CTX_new_id = new v8::CFunction((const void*)&EVP_PKEY_CTX_new_idFast, infoEVP_PKEY_CTX_new_id);
-  SET_FAST_METHOD(isolate, module, "EVP_PKEY_CTX_new_id", pFEVP_PKEY_CTX_new_id, EVP_PKEY_CTX_new_idSlow);
-
-  v8::CTypeInfo* cargsEVP_PKEY_keygen_init = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_PKEY_keygen_init[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_PKEY_keygen_init[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcEVP_PKEY_keygen_init = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_PKEY_keygen_init = new v8::CFunctionInfo(*rcEVP_PKEY_keygen_init, 2, cargsEVP_PKEY_keygen_init);
-  v8::CFunction* pFEVP_PKEY_keygen_init = new v8::CFunction((const void*)&EVP_PKEY_keygen_initFast, infoEVP_PKEY_keygen_init);
-  SET_FAST_METHOD(isolate, module, "EVP_PKEY_keygen_init", pFEVP_PKEY_keygen_init, EVP_PKEY_keygen_initSlow);
-
-  v8::CTypeInfo* cargsEVP_PKEY_keygen = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsEVP_PKEY_keygen[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_PKEY_keygen[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_PKEY_keygen[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcEVP_PKEY_keygen = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_PKEY_keygen = new v8::CFunctionInfo(*rcEVP_PKEY_keygen, 3, cargsEVP_PKEY_keygen);
-  v8::CFunction* pFEVP_PKEY_keygen = new v8::CFunction((const void*)&EVP_PKEY_keygenFast, infoEVP_PKEY_keygen);
-  SET_FAST_METHOD(isolate, module, "EVP_PKEY_keygen", pFEVP_PKEY_keygen, EVP_PKEY_keygenSlow);
-  v8::CTypeInfo* cargsEVP_PKEY_new = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_PKEY_new[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsEVP_PKEY_new[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcEVP_PKEY_new = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_PKEY_new = new v8::CFunctionInfo(*rcEVP_PKEY_new, 2, cargsEVP_PKEY_new);
-  v8::CFunction* pFEVP_PKEY_new = new v8::CFunction((const void*)&EVP_PKEY_newFast, infoEVP_PKEY_new);
-  SET_FAST_METHOD(isolate, module, "EVP_PKEY_new", pFEVP_PKEY_new, EVP_PKEY_newSlow);
-
-  v8::CTypeInfo* cargsEVP_PKEY_assign = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsEVP_PKEY_assign[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_PKEY_assign[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_PKEY_assign[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsEVP_PKEY_assign[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcEVP_PKEY_assign = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_PKEY_assign = new v8::CFunctionInfo(*rcEVP_PKEY_assign, 4, cargsEVP_PKEY_assign);
-  v8::CFunction* pFEVP_PKEY_assign = new v8::CFunction((const void*)&EVP_PKEY_assignFast, infoEVP_PKEY_assign);
-  SET_FAST_METHOD(isolate, module, "EVP_PKEY_assign", pFEVP_PKEY_assign, EVP_PKEY_assignSlow);
-
-  v8::CTypeInfo* cargsEVP_PKEY_id = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_PKEY_id[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_PKEY_id[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcEVP_PKEY_id = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_PKEY_id = new v8::CFunctionInfo(*rcEVP_PKEY_id, 2, cargsEVP_PKEY_id);
-  v8::CFunction* pFEVP_PKEY_id = new v8::CFunction((const void*)&EVP_PKEY_idFast, infoEVP_PKEY_id);
-  SET_FAST_METHOD(isolate, module, "EVP_PKEY_id", pFEVP_PKEY_id, EVP_PKEY_idSlow);
-
-  v8::CTypeInfo* cargsEVP_PKEY_type = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_PKEY_type[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_PKEY_type[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcEVP_PKEY_type = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_PKEY_type = new v8::CFunctionInfo(*rcEVP_PKEY_type, 2, cargsEVP_PKEY_type);
-  v8::CFunction* pFEVP_PKEY_type = new v8::CFunction((const void*)&EVP_PKEY_typeFast, infoEVP_PKEY_type);
-  SET_FAST_METHOD(isolate, module, "EVP_PKEY_type", pFEVP_PKEY_type, EVP_PKEY_typeSlow);
-  v8::CTypeInfo* cargsEVP_PKEY_get1_RSA = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsEVP_PKEY_get1_RSA[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_PKEY_get1_RSA[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_PKEY_get1_RSA[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcEVP_PKEY_get1_RSA = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_PKEY_get1_RSA = new v8::CFunctionInfo(*rcEVP_PKEY_get1_RSA, 3, cargsEVP_PKEY_get1_RSA);
-  v8::CFunction* pFEVP_PKEY_get1_RSA = new v8::CFunction((const void*)&EVP_PKEY_get1_RSAFast, infoEVP_PKEY_get1_RSA);
-  SET_FAST_METHOD(isolate, module, "EVP_PKEY_get1_RSA", pFEVP_PKEY_get1_RSA, EVP_PKEY_get1_RSASlow);
-
-  v8::CTypeInfo* cargsEVP_PKEY_free = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_PKEY_free[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_PKEY_free[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcEVP_PKEY_free = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_PKEY_free = new v8::CFunctionInfo(*rcEVP_PKEY_free, 2, cargsEVP_PKEY_free);
-  v8::CFunction* pFEVP_PKEY_free = new v8::CFunction((const void*)&EVP_PKEY_freeFast, infoEVP_PKEY_free);
-  SET_FAST_METHOD(isolate, module, "EVP_PKEY_free", pFEVP_PKEY_free, EVP_PKEY_freeSlow);
-
-  v8::CTypeInfo* cargsEVP_PKEY_CTX_free = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_PKEY_CTX_free[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_PKEY_CTX_free[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcEVP_PKEY_CTX_free = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_PKEY_CTX_free = new v8::CFunctionInfo(*rcEVP_PKEY_CTX_free, 2, cargsEVP_PKEY_CTX_free);
-  v8::CFunction* pFEVP_PKEY_CTX_free = new v8::CFunction((const void*)&EVP_PKEY_CTX_freeFast, infoEVP_PKEY_CTX_free);
-  SET_FAST_METHOD(isolate, module, "EVP_PKEY_CTX_free", pFEVP_PKEY_CTX_free, EVP_PKEY_CTX_freeSlow);
-  v8::CTypeInfo* cargsEVP_MD_CTX_new = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_MD_CTX_new[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsEVP_MD_CTX_new[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcEVP_MD_CTX_new = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_MD_CTX_new = new v8::CFunctionInfo(*rcEVP_MD_CTX_new, 2, cargsEVP_MD_CTX_new);
-  v8::CFunction* pFEVP_MD_CTX_new = new v8::CFunction((const void*)&EVP_MD_CTX_newFast, infoEVP_MD_CTX_new);
-  SET_FAST_METHOD(isolate, module, "EVP_MD_CTX_new", pFEVP_MD_CTX_new, EVP_MD_CTX_newSlow);
-
-  v8::CTypeInfo* cargsEVP_MD_CTX_reset = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_MD_CTX_reset[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_MD_CTX_reset[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcEVP_MD_CTX_reset = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_MD_CTX_reset = new v8::CFunctionInfo(*rcEVP_MD_CTX_reset, 2, cargsEVP_MD_CTX_reset);
-  v8::CFunction* pFEVP_MD_CTX_reset = new v8::CFunction((const void*)&EVP_MD_CTX_resetFast, infoEVP_MD_CTX_reset);
-  SET_FAST_METHOD(isolate, module, "EVP_MD_CTX_reset", pFEVP_MD_CTX_reset, EVP_MD_CTX_resetSlow);
-
-  v8::CTypeInfo* cargsEVP_MD_CTX_free = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_MD_CTX_free[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_MD_CTX_free[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcEVP_MD_CTX_free = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_MD_CTX_free = new v8::CFunctionInfo(*rcEVP_MD_CTX_free, 2, cargsEVP_MD_CTX_free);
-  v8::CFunction* pFEVP_MD_CTX_free = new v8::CFunction((const void*)&EVP_MD_CTX_freeFast, infoEVP_MD_CTX_free);
-  SET_FAST_METHOD(isolate, module, "EVP_MD_CTX_free", pFEVP_MD_CTX_free, EVP_MD_CTX_freeSlow);
-  v8::CTypeInfo* cargsEVP_get_digestbynid = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsEVP_get_digestbynid[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_get_digestbynid[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsEVP_get_digestbynid[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcEVP_get_digestbynid = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_get_digestbynid = new v8::CFunctionInfo(*rcEVP_get_digestbynid, 3, cargsEVP_get_digestbynid);
-  v8::CFunction* pFEVP_get_digestbynid = new v8::CFunction((const void*)&EVP_get_digestbynidFast, infoEVP_get_digestbynid);
-  SET_FAST_METHOD(isolate, module, "EVP_get_digestbynid", pFEVP_get_digestbynid, EVP_get_digestbynidSlow);
-  v8::CTypeInfo* cargsEVP_get_digestbyname = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsEVP_get_digestbyname[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_get_digestbyname[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargsEVP_get_digestbyname[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcEVP_get_digestbyname = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_get_digestbyname = new v8::CFunctionInfo(*rcEVP_get_digestbyname, 3, cargsEVP_get_digestbyname);
-  v8::CFunction* pFEVP_get_digestbyname = new v8::CFunction((const void*)&EVP_get_digestbynameFast, infoEVP_get_digestbyname);
-  SET_FAST_METHOD(isolate, module, "EVP_get_digestbyname", pFEVP_get_digestbyname, EVP_get_digestbynameSlow);
-
-  v8::CTypeInfo* cargsEVP_Digest = (v8::CTypeInfo*)calloc(7, sizeof(v8::CTypeInfo));
-  cargsEVP_Digest[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_Digest[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsEVP_Digest[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsEVP_Digest[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsEVP_Digest[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsEVP_Digest[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_Digest[6] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcEVP_Digest = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_Digest = new v8::CFunctionInfo(*rcEVP_Digest, 7, cargsEVP_Digest);
-  v8::CFunction* pFEVP_Digest = new v8::CFunction((const void*)&EVP_DigestFast, infoEVP_Digest);
-  SET_FAST_METHOD(isolate, module, "EVP_Digest", pFEVP_Digest, EVP_DigestSlow);
-
-  v8::CTypeInfo* cargsEVP_DigestInit_ex = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsEVP_DigestInit_ex[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_DigestInit_ex[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestInit_ex[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestInit_ex[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcEVP_DigestInit_ex = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_DigestInit_ex = new v8::CFunctionInfo(*rcEVP_DigestInit_ex, 4, cargsEVP_DigestInit_ex);
-  v8::CFunction* pFEVP_DigestInit_ex = new v8::CFunction((const void*)&EVP_DigestInit_exFast, infoEVP_DigestInit_ex);
-  SET_FAST_METHOD(isolate, module, "EVP_DigestInit_ex", pFEVP_DigestInit_ex, EVP_DigestInit_exSlow);
-
-  v8::CTypeInfo* cargsEVP_DigestUpdate = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsEVP_DigestUpdate[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_DigestUpdate[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestUpdate[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestUpdate[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rcEVP_DigestUpdate = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_DigestUpdate = new v8::CFunctionInfo(*rcEVP_DigestUpdate, 4, cargsEVP_DigestUpdate);
-  v8::CFunction* pFEVP_DigestUpdate = new v8::CFunction((const void*)&EVP_DigestUpdateFast, infoEVP_DigestUpdate);
-  SET_FAST_METHOD(isolate, module, "EVP_DigestUpdate", pFEVP_DigestUpdate, EVP_DigestUpdateSlow);
-
-  v8::CTypeInfo* cargsEVP_DigestUpdateBuffer = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsEVP_DigestUpdateBuffer[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_DigestUpdateBuffer[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestUpdateBuffer[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsEVP_DigestUpdateBuffer[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rcEVP_DigestUpdateBuffer = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_DigestUpdateBuffer = new v8::CFunctionInfo(*rcEVP_DigestUpdateBuffer, 4, cargsEVP_DigestUpdateBuffer);
-  v8::CFunction* pFEVP_DigestUpdateBuffer = new v8::CFunction((const void*)&EVP_DigestUpdateBufferFast, infoEVP_DigestUpdateBuffer);
-  SET_FAST_METHOD(isolate, module, "EVP_DigestUpdateBuffer", pFEVP_DigestUpdateBuffer, EVP_DigestUpdateBufferSlow);
-
-  v8::CTypeInfo* cargsEVP_DigestUpdateString = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsEVP_DigestUpdateString[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_DigestUpdateString[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestUpdateString[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
-  cargsEVP_DigestUpdateString[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rcEVP_DigestUpdateString = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_DigestUpdateString = new v8::CFunctionInfo(*rcEVP_DigestUpdateString, 4, cargsEVP_DigestUpdateString);
-  v8::CFunction* pFEVP_DigestUpdateString = new v8::CFunction((const void*)&EVP_DigestUpdateStringFast, infoEVP_DigestUpdateString);
-  SET_FAST_METHOD(isolate, module, "EVP_DigestUpdateString", pFEVP_DigestUpdateString, EVP_DigestUpdateStringSlow);
-
-  v8::CTypeInfo* cargsEVP_DigestVerifyFinal = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsEVP_DigestVerifyFinal[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_DigestVerifyFinal[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestVerifyFinal[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestVerifyFinal[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rcEVP_DigestVerifyFinal = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_DigestVerifyFinal = new v8::CFunctionInfo(*rcEVP_DigestVerifyFinal, 4, cargsEVP_DigestVerifyFinal);
-  v8::CFunction* pFEVP_DigestVerifyFinal = new v8::CFunction((const void*)&EVP_DigestVerifyFinalFast, infoEVP_DigestVerifyFinal);
-  SET_FAST_METHOD(isolate, module, "EVP_DigestVerifyFinal", pFEVP_DigestVerifyFinal, EVP_DigestVerifyFinalSlow);
-
-  v8::CTypeInfo* cargsEVP_DigestSignFinal = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsEVP_DigestSignFinal[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_DigestSignFinal[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestSignFinal[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestSignFinal[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcEVP_DigestSignFinal = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_DigestSignFinal = new v8::CFunctionInfo(*rcEVP_DigestSignFinal, 4, cargsEVP_DigestSignFinal);
-  v8::CFunction* pFEVP_DigestSignFinal = new v8::CFunction((const void*)&EVP_DigestSignFinalFast, infoEVP_DigestSignFinal);
-  SET_FAST_METHOD(isolate, module, "EVP_DigestSignFinal", pFEVP_DigestSignFinal, EVP_DigestSignFinalSlow);
-
-  v8::CTypeInfo* cargsEVP_DigestFinal = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsEVP_DigestFinal[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_DigestFinal[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestFinal[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsEVP_DigestFinal[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcEVP_DigestFinal = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_DigestFinal = new v8::CFunctionInfo(*rcEVP_DigestFinal, 4, cargsEVP_DigestFinal);
-  v8::CFunction* pFEVP_DigestFinal = new v8::CFunction((const void*)&EVP_DigestFinalFast, infoEVP_DigestFinal);
-  SET_FAST_METHOD(isolate, module, "EVP_DigestFinal", pFEVP_DigestFinal, EVP_DigestFinalSlow);
-  v8::CTypeInfo* cargsEVP_sha1 = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_sha1[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsEVP_sha1[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcEVP_sha1 = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_sha1 = new v8::CFunctionInfo(*rcEVP_sha1, 2, cargsEVP_sha1);
-  v8::CFunction* pFEVP_sha1 = new v8::CFunction((const void*)&EVP_sha1Fast, infoEVP_sha1);
-  SET_FAST_METHOD(isolate, module, "EVP_sha1", pFEVP_sha1, EVP_sha1Slow);
-  v8::CTypeInfo* cargsEVP_sha224 = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_sha224[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsEVP_sha224[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcEVP_sha224 = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_sha224 = new v8::CFunctionInfo(*rcEVP_sha224, 2, cargsEVP_sha224);
-  v8::CFunction* pFEVP_sha224 = new v8::CFunction((const void*)&EVP_sha224Fast, infoEVP_sha224);
-  SET_FAST_METHOD(isolate, module, "EVP_sha224", pFEVP_sha224, EVP_sha224Slow);
-  v8::CTypeInfo* cargsEVP_sha256 = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_sha256[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsEVP_sha256[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcEVP_sha256 = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_sha256 = new v8::CFunctionInfo(*rcEVP_sha256, 2, cargsEVP_sha256);
-  v8::CFunction* pFEVP_sha256 = new v8::CFunction((const void*)&EVP_sha256Fast, infoEVP_sha256);
-  SET_FAST_METHOD(isolate, module, "EVP_sha256", pFEVP_sha256, EVP_sha256Slow);
-  v8::CTypeInfo* cargsEVP_sha384 = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_sha384[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsEVP_sha384[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcEVP_sha384 = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_sha384 = new v8::CFunctionInfo(*rcEVP_sha384, 2, cargsEVP_sha384);
-  v8::CFunction* pFEVP_sha384 = new v8::CFunction((const void*)&EVP_sha384Fast, infoEVP_sha384);
-  SET_FAST_METHOD(isolate, module, "EVP_sha384", pFEVP_sha384, EVP_sha384Slow);
-  v8::CTypeInfo* cargsEVP_sha512 = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_sha512[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsEVP_sha512[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcEVP_sha512 = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_sha512 = new v8::CFunctionInfo(*rcEVP_sha512, 2, cargsEVP_sha512);
-  v8::CFunction* pFEVP_sha512 = new v8::CFunction((const void*)&EVP_sha512Fast, infoEVP_sha512);
-  SET_FAST_METHOD(isolate, module, "EVP_sha512", pFEVP_sha512, EVP_sha512Slow);
-  v8::CTypeInfo* cargsEVP_sha512_256 = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_sha512_256[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsEVP_sha512_256[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcEVP_sha512_256 = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_sha512_256 = new v8::CFunctionInfo(*rcEVP_sha512_256, 2, cargsEVP_sha512_256);
-  v8::CFunction* pFEVP_sha512_256 = new v8::CFunction((const void*)&EVP_sha512_256Fast, infoEVP_sha512_256);
-  SET_FAST_METHOD(isolate, module, "EVP_sha512_256", pFEVP_sha512_256, EVP_sha512_256Slow);
-
-  v8::CTypeInfo* cargsEVP_DigestVerifyInit = (v8::CTypeInfo*)calloc(6, sizeof(v8::CTypeInfo));
-  cargsEVP_DigestVerifyInit[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_DigestVerifyInit[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestVerifyInit[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestVerifyInit[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestVerifyInit[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestVerifyInit[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcEVP_DigestVerifyInit = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_DigestVerifyInit = new v8::CFunctionInfo(*rcEVP_DigestVerifyInit, 6, cargsEVP_DigestVerifyInit);
-  v8::CFunction* pFEVP_DigestVerifyInit = new v8::CFunction((const void*)&EVP_DigestVerifyInitFast, infoEVP_DigestVerifyInit);
-  SET_FAST_METHOD(isolate, module, "EVP_DigestVerifyInit", pFEVP_DigestVerifyInit, EVP_DigestVerifyInitSlow);
-
-  v8::CTypeInfo* cargsEVP_DigestSignInit = (v8::CTypeInfo*)calloc(6, sizeof(v8::CTypeInfo));
-  cargsEVP_DigestSignInit[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsEVP_DigestSignInit[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestSignInit[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestSignInit[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestSignInit[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsEVP_DigestSignInit[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcEVP_DigestSignInit = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoEVP_DigestSignInit = new v8::CFunctionInfo(*rcEVP_DigestSignInit, 6, cargsEVP_DigestSignInit);
-  v8::CFunction* pFEVP_DigestSignInit = new v8::CFunction((const void*)&EVP_DigestSignInitFast, infoEVP_DigestSignInit);
-  SET_FAST_METHOD(isolate, module, "EVP_DigestSignInit", pFEVP_DigestSignInit, EVP_DigestSignInitSlow);
-  v8::CTypeInfo* cargsBIO_s_mem = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsBIO_s_mem[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsBIO_s_mem[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcBIO_s_mem = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoBIO_s_mem = new v8::CFunctionInfo(*rcBIO_s_mem, 2, cargsBIO_s_mem);
-  v8::CFunction* pFBIO_s_mem = new v8::CFunction((const void*)&BIO_s_memFast, infoBIO_s_mem);
-  SET_FAST_METHOD(isolate, module, "BIO_s_mem", pFBIO_s_mem, BIO_s_memSlow);
-  v8::CTypeInfo* cargsBIO_new = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsBIO_new[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsBIO_new[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsBIO_new[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcBIO_new = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoBIO_new = new v8::CFunctionInfo(*rcBIO_new, 3, cargsBIO_new);
-  v8::CFunction* pFBIO_new = new v8::CFunction((const void*)&BIO_newFast, infoBIO_new);
-  SET_FAST_METHOD(isolate, module, "BIO_new", pFBIO_new, BIO_newSlow);
-  v8::CTypeInfo* cargsBIO_new_mem_buf = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsBIO_new_mem_buf[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsBIO_new_mem_buf[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsBIO_new_mem_buf[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsBIO_new_mem_buf[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcBIO_new_mem_buf = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoBIO_new_mem_buf = new v8::CFunctionInfo(*rcBIO_new_mem_buf, 4, cargsBIO_new_mem_buf);
-  v8::CFunction* pFBIO_new_mem_buf = new v8::CFunction((const void*)&BIO_new_mem_bufFast, infoBIO_new_mem_buf);
-  SET_FAST_METHOD(isolate, module, "BIO_new_mem_buf", pFBIO_new_mem_buf, BIO_new_mem_bufSlow);
-
-  v8::CTypeInfo* cargsBIO_ctrl = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargsBIO_ctrl[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsBIO_ctrl[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsBIO_ctrl[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsBIO_ctrl[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsBIO_ctrl[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcBIO_ctrl = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoBIO_ctrl = new v8::CFunctionInfo(*rcBIO_ctrl, 5, cargsBIO_ctrl);
-  v8::CFunction* pFBIO_ctrl = new v8::CFunction((const void*)&BIO_ctrlFast, infoBIO_ctrl);
-  SET_FAST_METHOD(isolate, module, "BIO_ctrl", pFBIO_ctrl, BIO_ctrlSlow);
-
-  v8::CTypeInfo* cargsBIO_read = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsBIO_read[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsBIO_read[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsBIO_read[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsBIO_read[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcBIO_read = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoBIO_read = new v8::CFunctionInfo(*rcBIO_read, 4, cargsBIO_read);
-  v8::CFunction* pFBIO_read = new v8::CFunction((const void*)&BIO_readFast, infoBIO_read);
-  SET_FAST_METHOD(isolate, module, "BIO_read", pFBIO_read, BIO_readSlow);
-
-  v8::CTypeInfo* cargsPEM_write_bio_PrivateKey = (v8::CTypeInfo*)calloc(8, sizeof(v8::CTypeInfo));
-  cargsPEM_write_bio_PrivateKey[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsPEM_write_bio_PrivateKey[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_write_bio_PrivateKey[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_write_bio_PrivateKey[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_write_bio_PrivateKey[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_write_bio_PrivateKey[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsPEM_write_bio_PrivateKey[6] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_write_bio_PrivateKey[7] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcPEM_write_bio_PrivateKey = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoPEM_write_bio_PrivateKey = new v8::CFunctionInfo(*rcPEM_write_bio_PrivateKey, 8, cargsPEM_write_bio_PrivateKey);
-  v8::CFunction* pFPEM_write_bio_PrivateKey = new v8::CFunction((const void*)&PEM_write_bio_PrivateKeyFast, infoPEM_write_bio_PrivateKey);
-  SET_FAST_METHOD(isolate, module, "PEM_write_bio_PrivateKey", pFPEM_write_bio_PrivateKey, PEM_write_bio_PrivateKeySlow);
-
-  v8::CTypeInfo* cargsPEM_write_bio_PUBKEY = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsPEM_write_bio_PUBKEY[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsPEM_write_bio_PUBKEY[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_write_bio_PUBKEY[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcPEM_write_bio_PUBKEY = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoPEM_write_bio_PUBKEY = new v8::CFunctionInfo(*rcPEM_write_bio_PUBKEY, 3, cargsPEM_write_bio_PUBKEY);
-  v8::CFunction* pFPEM_write_bio_PUBKEY = new v8::CFunction((const void*)&PEM_write_bio_PUBKEYFast, infoPEM_write_bio_PUBKEY);
-  SET_FAST_METHOD(isolate, module, "PEM_write_bio_PUBKEY", pFPEM_write_bio_PUBKEY, PEM_write_bio_PUBKEYSlow);
-
-  v8::CTypeInfo* cargsPEM_write_bio_X509_REQ = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsPEM_write_bio_X509_REQ[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsPEM_write_bio_X509_REQ[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_write_bio_X509_REQ[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcPEM_write_bio_X509_REQ = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoPEM_write_bio_X509_REQ = new v8::CFunctionInfo(*rcPEM_write_bio_X509_REQ, 3, cargsPEM_write_bio_X509_REQ);
-  v8::CFunction* pFPEM_write_bio_X509_REQ = new v8::CFunction((const void*)&PEM_write_bio_X509_REQFast, infoPEM_write_bio_X509_REQ);
-  SET_FAST_METHOD(isolate, module, "PEM_write_bio_X509_REQ", pFPEM_write_bio_X509_REQ, PEM_write_bio_X509_REQSlow);
-  v8::CTypeInfo* cargsPEM_read_bio_RSA_PUBKEY = (v8::CTypeInfo*)calloc(6, sizeof(v8::CTypeInfo));
-  cargsPEM_read_bio_RSA_PUBKEY[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsPEM_read_bio_RSA_PUBKEY[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_read_bio_RSA_PUBKEY[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_read_bio_RSA_PUBKEY[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_read_bio_RSA_PUBKEY[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_read_bio_RSA_PUBKEY[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcPEM_read_bio_RSA_PUBKEY = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoPEM_read_bio_RSA_PUBKEY = new v8::CFunctionInfo(*rcPEM_read_bio_RSA_PUBKEY, 6, cargsPEM_read_bio_RSA_PUBKEY);
-  v8::CFunction* pFPEM_read_bio_RSA_PUBKEY = new v8::CFunction((const void*)&PEM_read_bio_RSA_PUBKEYFast, infoPEM_read_bio_RSA_PUBKEY);
-  SET_FAST_METHOD(isolate, module, "PEM_read_bio_RSA_PUBKEY", pFPEM_read_bio_RSA_PUBKEY, PEM_read_bio_RSA_PUBKEYSlow);
-  v8::CTypeInfo* cargsPEM_read_bio_RSAPrivateKey = (v8::CTypeInfo*)calloc(6, sizeof(v8::CTypeInfo));
-  cargsPEM_read_bio_RSAPrivateKey[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsPEM_read_bio_RSAPrivateKey[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_read_bio_RSAPrivateKey[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_read_bio_RSAPrivateKey[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_read_bio_RSAPrivateKey[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_read_bio_RSAPrivateKey[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcPEM_read_bio_RSAPrivateKey = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoPEM_read_bio_RSAPrivateKey = new v8::CFunctionInfo(*rcPEM_read_bio_RSAPrivateKey, 6, cargsPEM_read_bio_RSAPrivateKey);
-  v8::CFunction* pFPEM_read_bio_RSAPrivateKey = new v8::CFunction((const void*)&PEM_read_bio_RSAPrivateKeyFast, infoPEM_read_bio_RSAPrivateKey);
-  SET_FAST_METHOD(isolate, module, "PEM_read_bio_RSAPrivateKey", pFPEM_read_bio_RSAPrivateKey, PEM_read_bio_RSAPrivateKeySlow);
-  v8::CTypeInfo* cargsPEM_read_bio_X509 = (v8::CTypeInfo*)calloc(6, sizeof(v8::CTypeInfo));
-  cargsPEM_read_bio_X509[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsPEM_read_bio_X509[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_read_bio_X509[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_read_bio_X509[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_read_bio_X509[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsPEM_read_bio_X509[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcPEM_read_bio_X509 = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoPEM_read_bio_X509 = new v8::CFunctionInfo(*rcPEM_read_bio_X509, 6, cargsPEM_read_bio_X509);
-  v8::CFunction* pFPEM_read_bio_X509 = new v8::CFunction((const void*)&PEM_read_bio_X509Fast, infoPEM_read_bio_X509);
-  SET_FAST_METHOD(isolate, module, "PEM_read_bio_X509", pFPEM_read_bio_X509, PEM_read_bio_X509Slow);
-  v8::CTypeInfo* cargsX509_get_subject_name = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsX509_get_subject_name[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsX509_get_subject_name[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_get_subject_name[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcX509_get_subject_name = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoX509_get_subject_name = new v8::CFunctionInfo(*rcX509_get_subject_name, 3, cargsX509_get_subject_name);
-  v8::CFunction* pFX509_get_subject_name = new v8::CFunction((const void*)&X509_get_subject_nameFast, infoX509_get_subject_name);
-  SET_FAST_METHOD(isolate, module, "X509_get_subject_name", pFX509_get_subject_name, X509_get_subject_nameSlow);
-  v8::CTypeInfo* cargsX509_NAME_oneline = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargsX509_NAME_oneline[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsX509_NAME_oneline[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_NAME_oneline[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_NAME_oneline[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsX509_NAME_oneline[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcX509_NAME_oneline = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoX509_NAME_oneline = new v8::CFunctionInfo(*rcX509_NAME_oneline, 5, cargsX509_NAME_oneline);
-  v8::CFunction* pFX509_NAME_oneline = new v8::CFunction((const void*)&X509_NAME_onelineFast, infoX509_NAME_oneline);
-  SET_FAST_METHOD(isolate, module, "X509_NAME_oneline", pFX509_NAME_oneline, X509_NAME_onelineSlow);
-  v8::CTypeInfo* cargsX509_get_issuer_name = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsX509_get_issuer_name[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsX509_get_issuer_name[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_get_issuer_name[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcX509_get_issuer_name = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoX509_get_issuer_name = new v8::CFunctionInfo(*rcX509_get_issuer_name, 3, cargsX509_get_issuer_name);
-  v8::CFunction* pFX509_get_issuer_name = new v8::CFunction((const void*)&X509_get_issuer_nameFast, infoX509_get_issuer_name);
-  SET_FAST_METHOD(isolate, module, "X509_get_issuer_name", pFX509_get_issuer_name, X509_get_issuer_nameSlow);
-
-  v8::CTypeInfo* cargsX509_free = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsX509_free[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsX509_free[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcX509_free = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoX509_free = new v8::CFunctionInfo(*rcX509_free, 2, cargsX509_free);
-  v8::CFunction* pFX509_free = new v8::CFunction((const void*)&X509_freeFast, infoX509_free);
-  SET_FAST_METHOD(isolate, module, "X509_free", pFX509_free, X509_freeSlow);
-  v8::CTypeInfo* cargsX509_get_pubkey = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsX509_get_pubkey[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsX509_get_pubkey[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_get_pubkey[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcX509_get_pubkey = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoX509_get_pubkey = new v8::CFunctionInfo(*rcX509_get_pubkey, 3, cargsX509_get_pubkey);
-  v8::CFunction* pFX509_get_pubkey = new v8::CFunction((const void*)&X509_get_pubkeyFast, infoX509_get_pubkey);
-  SET_FAST_METHOD(isolate, module, "X509_get_pubkey", pFX509_get_pubkey, X509_get_pubkeySlow);
-  v8::CTypeInfo* cargsX509_REQ_new = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsX509_REQ_new[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsX509_REQ_new[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcX509_REQ_new = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoX509_REQ_new = new v8::CFunctionInfo(*rcX509_REQ_new, 2, cargsX509_REQ_new);
-  v8::CFunction* pFX509_REQ_new = new v8::CFunction((const void*)&X509_REQ_newFast, infoX509_REQ_new);
-  SET_FAST_METHOD(isolate, module, "X509_REQ_new", pFX509_REQ_new, X509_REQ_newSlow);
-
-  v8::CTypeInfo* cargsX509_REQ_set_version = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsX509_REQ_set_version[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsX509_REQ_set_version[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_REQ_set_version[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  v8::CTypeInfo* rcX509_REQ_set_version = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoX509_REQ_set_version = new v8::CFunctionInfo(*rcX509_REQ_set_version, 3, cargsX509_REQ_set_version);
-  v8::CFunction* pFX509_REQ_set_version = new v8::CFunction((const void*)&X509_REQ_set_versionFast, infoX509_REQ_set_version);
-  SET_FAST_METHOD(isolate, module, "X509_REQ_set_version", pFX509_REQ_set_version, X509_REQ_set_versionSlow);
-  v8::CTypeInfo* cargsX509_REQ_get_subject_name = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsX509_REQ_get_subject_name[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsX509_REQ_get_subject_name[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_REQ_get_subject_name[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcX509_REQ_get_subject_name = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoX509_REQ_get_subject_name = new v8::CFunctionInfo(*rcX509_REQ_get_subject_name, 3, cargsX509_REQ_get_subject_name);
-  v8::CFunction* pFX509_REQ_get_subject_name = new v8::CFunction((const void*)&X509_REQ_get_subject_nameFast, infoX509_REQ_get_subject_name);
-  SET_FAST_METHOD(isolate, module, "X509_REQ_get_subject_name", pFX509_REQ_get_subject_name, X509_REQ_get_subject_nameSlow);
-
-  v8::CTypeInfo* cargsX509_NAME_add_entry_by_txt = (v8::CTypeInfo*)calloc(8, sizeof(v8::CTypeInfo));
-  cargsX509_NAME_add_entry_by_txt[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsX509_NAME_add_entry_by_txt[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_NAME_add_entry_by_txt[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_NAME_add_entry_by_txt[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsX509_NAME_add_entry_by_txt[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_NAME_add_entry_by_txt[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsX509_NAME_add_entry_by_txt[6] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsX509_NAME_add_entry_by_txt[7] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcX509_NAME_add_entry_by_txt = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoX509_NAME_add_entry_by_txt = new v8::CFunctionInfo(*rcX509_NAME_add_entry_by_txt, 8, cargsX509_NAME_add_entry_by_txt);
-  v8::CFunction* pFX509_NAME_add_entry_by_txt = new v8::CFunction((const void*)&X509_NAME_add_entry_by_txtFast, infoX509_NAME_add_entry_by_txt);
-  SET_FAST_METHOD(isolate, module, "X509_NAME_add_entry_by_txt", pFX509_NAME_add_entry_by_txt, X509_NAME_add_entry_by_txtSlow);
-
-  v8::CTypeInfo* cargsX509_REQ_set_pubkey = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsX509_REQ_set_pubkey[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsX509_REQ_set_pubkey[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_REQ_set_pubkey[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcX509_REQ_set_pubkey = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoX509_REQ_set_pubkey = new v8::CFunctionInfo(*rcX509_REQ_set_pubkey, 3, cargsX509_REQ_set_pubkey);
-  v8::CFunction* pFX509_REQ_set_pubkey = new v8::CFunction((const void*)&X509_REQ_set_pubkeyFast, infoX509_REQ_set_pubkey);
-  SET_FAST_METHOD(isolate, module, "X509_REQ_set_pubkey", pFX509_REQ_set_pubkey, X509_REQ_set_pubkeySlow);
-
-  v8::CTypeInfo* cargsX509_REQ_sign = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsX509_REQ_sign[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsX509_REQ_sign[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_REQ_sign[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsX509_REQ_sign[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcX509_REQ_sign = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoX509_REQ_sign = new v8::CFunctionInfo(*rcX509_REQ_sign, 4, cargsX509_REQ_sign);
-  v8::CFunction* pFX509_REQ_sign = new v8::CFunction((const void*)&X509_REQ_signFast, infoX509_REQ_sign);
-  SET_FAST_METHOD(isolate, module, "X509_REQ_sign", pFX509_REQ_sign, X509_REQ_signSlow);
-
-  v8::CTypeInfo* cargsOBJ_txt2nid = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsOBJ_txt2nid[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsOBJ_txt2nid[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcOBJ_txt2nid = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoOBJ_txt2nid = new v8::CFunctionInfo(*rcOBJ_txt2nid, 2, cargsOBJ_txt2nid);
-  v8::CFunction* pFOBJ_txt2nid = new v8::CFunction((const void*)&OBJ_txt2nidFast, infoOBJ_txt2nid);
-  SET_FAST_METHOD(isolate, module, "OBJ_txt2nid", pFOBJ_txt2nid, OBJ_txt2nidSlow);
-
-  v8::CTypeInfo* cargsSSL_get_error = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsSSL_get_error[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_get_error[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_get_error[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcSSL_get_error = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_get_error = new v8::CFunctionInfo(*rcSSL_get_error, 3, cargsSSL_get_error);
-  v8::CFunction* pFSSL_get_error = new v8::CFunction((const void*)&SSL_get_errorFast, infoSSL_get_error);
-  SET_FAST_METHOD(isolate, module, "SSL_get_error", pFSSL_get_error, SSL_get_errorSlow);
-
-  v8::CTypeInfo* cargsSSL_is_init_finished = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsSSL_is_init_finished[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_is_init_finished[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_is_init_finished = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_is_init_finished = new v8::CFunctionInfo(*rcSSL_is_init_finished, 2, cargsSSL_is_init_finished);
-  v8::CFunction* pFSSL_is_init_finished = new v8::CFunction((const void*)&SSL_is_init_finishedFast, infoSSL_is_init_finished);
-  SET_FAST_METHOD(isolate, module, "SSL_is_init_finished", pFSSL_is_init_finished, SSL_is_init_finishedSlow);
-
-  v8::CTypeInfo* cargsSSL_shutdown = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsSSL_shutdown[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_shutdown[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_shutdown = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_shutdown = new v8::CFunctionInfo(*rcSSL_shutdown, 2, cargsSSL_shutdown);
-  v8::CFunction* pFSSL_shutdown = new v8::CFunction((const void*)&SSL_shutdownFast, infoSSL_shutdown);
-  SET_FAST_METHOD(isolate, module, "SSL_shutdown", pFSSL_shutdown, SSL_shutdownSlow);
-  v8::CTypeInfo* cargsSSL_get_servername = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsSSL_get_servername[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_get_servername[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_get_servername[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsSSL_get_servername[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcSSL_get_servername = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_get_servername = new v8::CFunctionInfo(*rcSSL_get_servername, 4, cargsSSL_get_servername);
-  v8::CFunction* pFSSL_get_servername = new v8::CFunction((const void*)&SSL_get_servernameFast, infoSSL_get_servername);
-  SET_FAST_METHOD(isolate, module, "SSL_get_servername", pFSSL_get_servername, SSL_get_servernameSlow);
-
-  v8::CTypeInfo* cargsSSL_get_servername_type = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsSSL_get_servername_type[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_get_servername_type[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_get_servername_type = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_get_servername_type = new v8::CFunctionInfo(*rcSSL_get_servername_type, 2, cargsSSL_get_servername_type);
-  v8::CFunction* pFSSL_get_servername_type = new v8::CFunction((const void*)&SSL_get_servername_typeFast, infoSSL_get_servername_type);
-  SET_FAST_METHOD(isolate, module, "SSL_get_servername_type", pFSSL_get_servername_type, SSL_get_servername_typeSlow);
-
-  v8::CTypeInfo* cargsSSL_free = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsSSL_free[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_free[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_free = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_free = new v8::CFunctionInfo(*rcSSL_free, 2, cargsSSL_free);
-  v8::CFunction* pFSSL_free = new v8::CFunction((const void*)&SSL_freeFast, infoSSL_free);
-  SET_FAST_METHOD(isolate, module, "SSL_free", pFSSL_free, SSL_freeSlow);
-
-  v8::CTypeInfo* cargsSSL_read = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsSSL_read[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_read[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_read[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_read[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcSSL_read = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_read = new v8::CFunctionInfo(*rcSSL_read, 4, cargsSSL_read);
-  v8::CFunction* pFSSL_read = new v8::CFunction((const void*)&SSL_readFast, infoSSL_read);
-  SET_FAST_METHOD(isolate, module, "SSL_read", pFSSL_read, SSL_readSlow);
-
-  v8::CTypeInfo* cargsSSL_write = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsSSL_write[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_write[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_write[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_write[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcSSL_write = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_write = new v8::CFunctionInfo(*rcSSL_write, 4, cargsSSL_write);
-  v8::CFunction* pFSSL_write = new v8::CFunction((const void*)&SSL_writeFast, infoSSL_write);
-  SET_FAST_METHOD(isolate, module, "SSL_write", pFSSL_write, SSL_writeSlow);
-  v8::CTypeInfo* cargsSSL_get_version = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsSSL_get_version[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_get_version[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_get_version[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcSSL_get_version = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_get_version = new v8::CFunctionInfo(*rcSSL_get_version, 3, cargsSSL_get_version);
-  v8::CFunction* pFSSL_get_version = new v8::CFunction((const void*)&SSL_get_versionFast, infoSSL_get_version);
-  SET_FAST_METHOD(isolate, module, "SSL_get_version", pFSSL_get_version, SSL_get_versionSlow);
-  v8::CTypeInfo* cargsSSL_CIPHER_get_name = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsSSL_CIPHER_get_name[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_CIPHER_get_name[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_CIPHER_get_name[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcSSL_CIPHER_get_name = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_CIPHER_get_name = new v8::CFunctionInfo(*rcSSL_CIPHER_get_name, 3, cargsSSL_CIPHER_get_name);
-  v8::CFunction* pFSSL_CIPHER_get_name = new v8::CFunction((const void*)&SSL_CIPHER_get_nameFast, infoSSL_CIPHER_get_name);
-  SET_FAST_METHOD(isolate, module, "SSL_CIPHER_get_name", pFSSL_CIPHER_get_name, SSL_CIPHER_get_nameSlow);
-  v8::CTypeInfo* cargsSSL_get_current_cipher = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsSSL_get_current_cipher[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_get_current_cipher[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_get_current_cipher[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcSSL_get_current_cipher = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_get_current_cipher = new v8::CFunctionInfo(*rcSSL_get_current_cipher, 3, cargsSSL_get_current_cipher);
-  v8::CFunction* pFSSL_get_current_cipher = new v8::CFunction((const void*)&SSL_get_current_cipherFast, infoSSL_get_current_cipher);
-  SET_FAST_METHOD(isolate, module, "SSL_get_current_cipher", pFSSL_get_current_cipher, SSL_get_current_cipherSlow);
-  v8::CTypeInfo* cargsSSL_get_peer_certificate = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsSSL_get_peer_certificate[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_get_peer_certificate[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_get_peer_certificate[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcSSL_get_peer_certificate = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_get_peer_certificate = new v8::CFunctionInfo(*rcSSL_get_peer_certificate, 3, cargsSSL_get_peer_certificate);
-  v8::CFunction* pFSSL_get_peer_certificate = new v8::CFunction((const void*)&SSL_get_peer_certificateFast, infoSSL_get_peer_certificate);
-  SET_FAST_METHOD(isolate, module, "SSL_get_peer_certificate", pFSSL_get_peer_certificate, SSL_get_peer_certificateSlow);
-  v8::CTypeInfo* cargsSSL_set_SSL_CTX = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsSSL_set_SSL_CTX[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_set_SSL_CTX[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_set_SSL_CTX[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_set_SSL_CTX[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcSSL_set_SSL_CTX = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_set_SSL_CTX = new v8::CFunctionInfo(*rcSSL_set_SSL_CTX, 4, cargsSSL_set_SSL_CTX);
-  v8::CFunction* pFSSL_set_SSL_CTX = new v8::CFunction((const void*)&SSL_set_SSL_CTXFast, infoSSL_set_SSL_CTX);
-  SET_FAST_METHOD(isolate, module, "SSL_set_SSL_CTX", pFSSL_set_SSL_CTX, SSL_set_SSL_CTXSlow);
-  v8::CTypeInfo* cargsSSL_new = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsSSL_new[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_new[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_new[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcSSL_new = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_new = new v8::CFunctionInfo(*rcSSL_new, 3, cargsSSL_new);
-  v8::CFunction* pFSSL_new = new v8::CFunction((const void*)&SSL_newFast, infoSSL_new);
-  SET_FAST_METHOD(isolate, module, "SSL_new", pFSSL_new, SSL_newSlow);
-
-  v8::CTypeInfo* cargsSSL_set_fd = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsSSL_set_fd[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_set_fd[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_set_fd[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcSSL_set_fd = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_set_fd = new v8::CFunctionInfo(*rcSSL_set_fd, 3, cargsSSL_set_fd);
-  v8::CFunction* pFSSL_set_fd = new v8::CFunction((const void*)&SSL_set_fdFast, infoSSL_set_fd);
-  SET_FAST_METHOD(isolate, module, "SSL_set_fd", pFSSL_set_fd, SSL_set_fdSlow);
-
-  v8::CTypeInfo* cargsSSL_set_bio = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsSSL_set_bio[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_set_bio[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_set_bio[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_set_bio[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_set_bio = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_set_bio = new v8::CFunctionInfo(*rcSSL_set_bio, 4, cargsSSL_set_bio);
-  v8::CFunction* pFSSL_set_bio = new v8::CFunction((const void*)&SSL_set_bioFast, infoSSL_set_bio);
-  SET_FAST_METHOD(isolate, module, "SSL_set_bio", pFSSL_set_bio, SSL_set_bioSlow);
-
-  v8::CTypeInfo* cargsSSL_set_accept_state = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsSSL_set_accept_state[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_set_accept_state[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_set_accept_state = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_set_accept_state = new v8::CFunctionInfo(*rcSSL_set_accept_state, 2, cargsSSL_set_accept_state);
-  v8::CFunction* pFSSL_set_accept_state = new v8::CFunction((const void*)&SSL_set_accept_stateFast, infoSSL_set_accept_state);
-  SET_FAST_METHOD(isolate, module, "SSL_set_accept_state", pFSSL_set_accept_state, SSL_set_accept_stateSlow);
-
-  v8::CTypeInfo* cargsSSL_accept = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsSSL_accept[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_accept[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_accept = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_accept = new v8::CFunctionInfo(*rcSSL_accept, 2, cargsSSL_accept);
-  v8::CFunction* pFSSL_accept = new v8::CFunction((const void*)&SSL_acceptFast, infoSSL_accept);
-  SET_FAST_METHOD(isolate, module, "SSL_accept", pFSSL_accept, SSL_acceptSlow);
-
-  v8::CTypeInfo* cargsSSL_set_connect_state = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsSSL_set_connect_state[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_set_connect_state[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_set_connect_state = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_set_connect_state = new v8::CFunctionInfo(*rcSSL_set_connect_state, 2, cargsSSL_set_connect_state);
-  v8::CFunction* pFSSL_set_connect_state = new v8::CFunction((const void*)&SSL_set_connect_stateFast, infoSSL_set_connect_state);
-  SET_FAST_METHOD(isolate, module, "SSL_set_connect_state", pFSSL_set_connect_state, SSL_set_connect_stateSlow);
-
-  v8::CTypeInfo* cargsSSL_do_handshake = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsSSL_do_handshake[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_do_handshake[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_do_handshake = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_do_handshake = new v8::CFunctionInfo(*rcSSL_do_handshake, 2, cargsSSL_do_handshake);
-  v8::CFunction* pFSSL_do_handshake = new v8::CFunction((const void*)&SSL_do_handshakeFast, infoSSL_do_handshake);
-  SET_FAST_METHOD(isolate, module, "SSL_do_handshake", pFSSL_do_handshake, SSL_do_handshakeSlow);
-  v8::CTypeInfo* cargsSSL_CTX_new = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsSSL_CTX_new[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_CTX_new[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_CTX_new[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcSSL_CTX_new = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_CTX_new = new v8::CFunctionInfo(*rcSSL_CTX_new, 3, cargsSSL_CTX_new);
-  v8::CFunction* pFSSL_CTX_new = new v8::CFunction((const void*)&SSL_CTX_newFast, infoSSL_CTX_new);
-  SET_FAST_METHOD(isolate, module, "SSL_CTX_new", pFSSL_CTX_new, SSL_CTX_newSlow);
-
-  v8::CTypeInfo* cargsSSL_CTX_use_certificate_file = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsSSL_CTX_use_certificate_file[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_CTX_use_certificate_file[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_CTX_use_certificate_file[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_CTX_use_certificate_file[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcSSL_CTX_use_certificate_file = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_CTX_use_certificate_file = new v8::CFunctionInfo(*rcSSL_CTX_use_certificate_file, 4, cargsSSL_CTX_use_certificate_file);
-  v8::CFunction* pFSSL_CTX_use_certificate_file = new v8::CFunction((const void*)&SSL_CTX_use_certificate_fileFast, infoSSL_CTX_use_certificate_file);
-  SET_FAST_METHOD(isolate, module, "SSL_CTX_use_certificate_file", pFSSL_CTX_use_certificate_file, SSL_CTX_use_certificate_fileSlow);
-
-  v8::CTypeInfo* cargsSSL_CTX_use_certificate_chain_file = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsSSL_CTX_use_certificate_chain_file[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_CTX_use_certificate_chain_file[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_CTX_use_certificate_chain_file[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_CTX_use_certificate_chain_file = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_CTX_use_certificate_chain_file = new v8::CFunctionInfo(*rcSSL_CTX_use_certificate_chain_file, 3, cargsSSL_CTX_use_certificate_chain_file);
-  v8::CFunction* pFSSL_CTX_use_certificate_chain_file = new v8::CFunction((const void*)&SSL_CTX_use_certificate_chain_fileFast, infoSSL_CTX_use_certificate_chain_file);
-  SET_FAST_METHOD(isolate, module, "SSL_CTX_use_certificate_chain_file", pFSSL_CTX_use_certificate_chain_file, SSL_CTX_use_certificate_chain_fileSlow);
-
-  v8::CTypeInfo* cargsSSL_CTX_use_PrivateKey_file = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsSSL_CTX_use_PrivateKey_file[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_CTX_use_PrivateKey_file[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_CTX_use_PrivateKey_file[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_CTX_use_PrivateKey_file[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcSSL_CTX_use_PrivateKey_file = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_CTX_use_PrivateKey_file = new v8::CFunctionInfo(*rcSSL_CTX_use_PrivateKey_file, 4, cargsSSL_CTX_use_PrivateKey_file);
-  v8::CFunction* pFSSL_CTX_use_PrivateKey_file = new v8::CFunction((const void*)&SSL_CTX_use_PrivateKey_fileFast, infoSSL_CTX_use_PrivateKey_file);
-  SET_FAST_METHOD(isolate, module, "SSL_CTX_use_PrivateKey_file", pFSSL_CTX_use_PrivateKey_file, SSL_CTX_use_PrivateKey_fileSlow);
-  v8::CTypeInfo* cargsSSL_CTX_set_options = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsSSL_CTX_set_options[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_CTX_set_options[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_CTX_set_options[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_CTX_set_options[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcSSL_CTX_set_options = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_CTX_set_options = new v8::CFunctionInfo(*rcSSL_CTX_set_options, 4, cargsSSL_CTX_set_options);
-  v8::CFunction* pFSSL_CTX_set_options = new v8::CFunction((const void*)&SSL_CTX_set_optionsFast, infoSSL_CTX_set_options);
-  SET_FAST_METHOD(isolate, module, "SSL_CTX_set_options", pFSSL_CTX_set_options, SSL_CTX_set_optionsSlow);
-
-  v8::CTypeInfo* cargsSSL_CTX_set_cipher_list = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsSSL_CTX_set_cipher_list[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_CTX_set_cipher_list[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_CTX_set_cipher_list[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_CTX_set_cipher_list = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_CTX_set_cipher_list = new v8::CFunctionInfo(*rcSSL_CTX_set_cipher_list, 3, cargsSSL_CTX_set_cipher_list);
-  v8::CFunction* pFSSL_CTX_set_cipher_list = new v8::CFunction((const void*)&SSL_CTX_set_cipher_listFast, infoSSL_CTX_set_cipher_list);
-  SET_FAST_METHOD(isolate, module, "SSL_CTX_set_cipher_list", pFSSL_CTX_set_cipher_list, SSL_CTX_set_cipher_listSlow);
-
-  v8::CTypeInfo* cargsSSL_set_cipher_list = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsSSL_set_cipher_list[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_set_cipher_list[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_set_cipher_list[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_set_cipher_list = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_set_cipher_list = new v8::CFunctionInfo(*rcSSL_set_cipher_list, 3, cargsSSL_set_cipher_list);
-  v8::CFunction* pFSSL_set_cipher_list = new v8::CFunction((const void*)&SSL_set_cipher_listFast, infoSSL_set_cipher_list);
-  SET_FAST_METHOD(isolate, module, "SSL_set_cipher_list", pFSSL_set_cipher_list, SSL_set_cipher_listSlow);
-
-  v8::CTypeInfo* cargsSSL_CTX_free = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsSSL_CTX_free[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_CTX_free[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_CTX_free = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_CTX_free = new v8::CFunctionInfo(*rcSSL_CTX_free, 2, cargsSSL_CTX_free);
-  v8::CFunction* pFSSL_CTX_free = new v8::CFunction((const void*)&SSL_CTX_freeFast, infoSSL_CTX_free);
-  SET_FAST_METHOD(isolate, module, "SSL_CTX_free", pFSSL_CTX_free, SSL_CTX_freeSlow);
-  v8::CTypeInfo* cargsTLS_server_method = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsTLS_server_method[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsTLS_server_method[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcTLS_server_method = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoTLS_server_method = new v8::CFunctionInfo(*rcTLS_server_method, 2, cargsTLS_server_method);
-  v8::CFunction* pFTLS_server_method = new v8::CFunction((const void*)&TLS_server_methodFast, infoTLS_server_method);
-  SET_FAST_METHOD(isolate, module, "TLS_server_method", pFTLS_server_method, TLS_server_methodSlow);
-  v8::CTypeInfo* cargsTLS_client_method = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsTLS_client_method[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsTLS_client_method[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcTLS_client_method = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoTLS_client_method = new v8::CFunctionInfo(*rcTLS_client_method, 2, cargsTLS_client_method);
-  v8::CFunction* pFTLS_client_method = new v8::CFunction((const void*)&TLS_client_methodFast, infoTLS_client_method);
-  SET_FAST_METHOD(isolate, module, "TLS_client_method", pFTLS_client_method, TLS_client_methodSlow);
-
-  v8::CTypeInfo* cargsSSL_CTX_set_ciphersuites = (v8::CTypeInfo*)calloc(3, sizeof(v8::CTypeInfo));
-  cargsSSL_CTX_set_ciphersuites[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_CTX_set_ciphersuites[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_CTX_set_ciphersuites[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcSSL_CTX_set_ciphersuites = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoSSL_CTX_set_ciphersuites = new v8::CFunctionInfo(*rcSSL_CTX_set_ciphersuites, 3, cargsSSL_CTX_set_ciphersuites);
-  v8::CFunction* pFSSL_CTX_set_ciphersuites = new v8::CFunction((const void*)&SSL_CTX_set_ciphersuitesFast, infoSSL_CTX_set_ciphersuites);
-  SET_FAST_METHOD(isolate, module, "SSL_CTX_set_ciphersuites", pFSSL_CTX_set_ciphersuites, SSL_CTX_set_ciphersuitesSlow);
-  v8::CTypeInfo* cargsSSL_ctrl = (v8::CTypeInfo*)calloc(6, sizeof(v8::CTypeInfo));
-  cargsSSL_ctrl[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsSSL_ctrl[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_ctrl[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsSSL_ctrl[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_ctrl[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsSSL_ctrl[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcSSL_ctrl = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoSSL_ctrl = new v8::CFunctionInfo(*rcSSL_ctrl, 6, cargsSSL_ctrl);
-  v8::CFunction* pFSSL_ctrl = new v8::CFunction((const void*)&SSL_ctrlFast, infoSSL_ctrl);
-  SET_FAST_METHOD(isolate, module, "SSL_ctrl", pFSSL_ctrl, SSL_ctrlSlow);
-
-  v8::CTypeInfo* cargsRSA_pkey_ctx_ctrl = (v8::CTypeInfo*)calloc(6, sizeof(v8::CTypeInfo));
-  cargsRSA_pkey_ctx_ctrl[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsRSA_pkey_ctx_ctrl[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsRSA_pkey_ctx_ctrl[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsRSA_pkey_ctx_ctrl[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsRSA_pkey_ctx_ctrl[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsRSA_pkey_ctx_ctrl[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcRSA_pkey_ctx_ctrl = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoRSA_pkey_ctx_ctrl = new v8::CFunctionInfo(*rcRSA_pkey_ctx_ctrl, 6, cargsRSA_pkey_ctx_ctrl);
-  v8::CFunction* pFRSA_pkey_ctx_ctrl = new v8::CFunction((const void*)&RSA_pkey_ctx_ctrlFast, infoRSA_pkey_ctx_ctrl);
-  SET_FAST_METHOD(isolate, module, "RSA_pkey_ctx_ctrl", pFRSA_pkey_ctx_ctrl, RSA_pkey_ctx_ctrlSlow);
-  v8::CTypeInfo* cargsEVP_sha512_224 = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsEVP_sha512_224[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-
-  cargsEVP_sha512_224[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcEVP_sha512_224 = new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-  v8::CFunctionInfo* infoEVP_sha512_224 = new v8::CFunctionInfo(*rcEVP_sha512_224, 2, cargsEVP_sha512_224);
-  v8::CFunction* pFEVP_sha512_224 = new v8::CFunction((const void*)&EVP_sha512_224Fast, infoEVP_sha512_224);
-  SET_FAST_METHOD(isolate, module, "EVP_sha512_224", pFEVP_sha512_224, EVP_sha512_224Slow);
+  SET_FAST_METHOD(isolate, module, "OpenSSL_version", &pFOpenSSL_version, OpenSSL_versionSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_PKEY_CTX_new_id", &pFEVP_PKEY_CTX_new_id, EVP_PKEY_CTX_new_idSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_PKEY_keygen_init", &pFEVP_PKEY_keygen_init, EVP_PKEY_keygen_initSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_PKEY_keygen", &pFEVP_PKEY_keygen, EVP_PKEY_keygenSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_PKEY_new", &pFEVP_PKEY_new, EVP_PKEY_newSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_PKEY_assign", &pFEVP_PKEY_assign, EVP_PKEY_assignSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_PKEY_id", &pFEVP_PKEY_id, EVP_PKEY_idSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_PKEY_type", &pFEVP_PKEY_type, EVP_PKEY_typeSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_PKEY_get1_RSA", &pFEVP_PKEY_get1_RSA, EVP_PKEY_get1_RSASlow);
+  SET_FAST_METHOD(isolate, module, "EVP_PKEY_free", &pFEVP_PKEY_free, EVP_PKEY_freeSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_PKEY_CTX_free", &pFEVP_PKEY_CTX_free, EVP_PKEY_CTX_freeSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_MD_CTX_new", &pFEVP_MD_CTX_new, EVP_MD_CTX_newSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_MD_CTX_reset", &pFEVP_MD_CTX_reset, EVP_MD_CTX_resetSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_MD_CTX_free", &pFEVP_MD_CTX_free, EVP_MD_CTX_freeSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_get_digestbynid", &pFEVP_get_digestbynid, EVP_get_digestbynidSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_get_digestbyname", &pFEVP_get_digestbyname, EVP_get_digestbynameSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_Digest", &pFEVP_Digest, EVP_DigestSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_DigestInit_ex", &pFEVP_DigestInit_ex, EVP_DigestInit_exSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_DigestUpdate", &pFEVP_DigestUpdate, EVP_DigestUpdateSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_DigestUpdateBuffer", &pFEVP_DigestUpdateBuffer, EVP_DigestUpdateBufferSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_DigestUpdateString", &pFEVP_DigestUpdateString, EVP_DigestUpdateStringSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_DigestVerifyFinal", &pFEVP_DigestVerifyFinal, EVP_DigestVerifyFinalSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_DigestSignFinal", &pFEVP_DigestSignFinal, EVP_DigestSignFinalSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_DigestFinal", &pFEVP_DigestFinal, EVP_DigestFinalSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_sha1", &pFEVP_sha1, EVP_sha1Slow);
+  SET_FAST_METHOD(isolate, module, "EVP_sha224", &pFEVP_sha224, EVP_sha224Slow);
+  SET_FAST_METHOD(isolate, module, "EVP_sha256", &pFEVP_sha256, EVP_sha256Slow);
+  SET_FAST_METHOD(isolate, module, "EVP_sha384", &pFEVP_sha384, EVP_sha384Slow);
+  SET_FAST_METHOD(isolate, module, "EVP_sha512", &pFEVP_sha512, EVP_sha512Slow);
+  SET_FAST_METHOD(isolate, module, "EVP_sha512_256", &pFEVP_sha512_256, EVP_sha512_256Slow);
+  SET_FAST_METHOD(isolate, module, "EVP_DigestVerifyInit", &pFEVP_DigestVerifyInit, EVP_DigestVerifyInitSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_DigestSignInit", &pFEVP_DigestSignInit, EVP_DigestSignInitSlow);
+  SET_FAST_METHOD(isolate, module, "BIO_s_mem", &pFBIO_s_mem, BIO_s_memSlow);
+  SET_FAST_METHOD(isolate, module, "BIO_new", &pFBIO_new, BIO_newSlow);
+  SET_FAST_METHOD(isolate, module, "BIO_new_mem_buf", &pFBIO_new_mem_buf, BIO_new_mem_bufSlow);
+  SET_FAST_METHOD(isolate, module, "BIO_ctrl", &pFBIO_ctrl, BIO_ctrlSlow);
+  SET_FAST_METHOD(isolate, module, "BIO_read", &pFBIO_read, BIO_readSlow);
+  SET_FAST_METHOD(isolate, module, "PEM_write_bio_PrivateKey", &pFPEM_write_bio_PrivateKey, PEM_write_bio_PrivateKeySlow);
+  SET_FAST_METHOD(isolate, module, "PEM_write_bio_PUBKEY", &pFPEM_write_bio_PUBKEY, PEM_write_bio_PUBKEYSlow);
+  SET_FAST_METHOD(isolate, module, "PEM_write_bio_X509_REQ", &pFPEM_write_bio_X509_REQ, PEM_write_bio_X509_REQSlow);
+  SET_FAST_METHOD(isolate, module, "PEM_read_bio_RSA_PUBKEY", &pFPEM_read_bio_RSA_PUBKEY, PEM_read_bio_RSA_PUBKEYSlow);
+  SET_FAST_METHOD(isolate, module, "PEM_read_bio_RSAPrivateKey", &pFPEM_read_bio_RSAPrivateKey, PEM_read_bio_RSAPrivateKeySlow);
+  SET_FAST_METHOD(isolate, module, "PEM_read_bio_X509", &pFPEM_read_bio_X509, PEM_read_bio_X509Slow);
+  SET_FAST_METHOD(isolate, module, "X509_get_subject_name", &pFX509_get_subject_name, X509_get_subject_nameSlow);
+  SET_FAST_METHOD(isolate, module, "X509_NAME_oneline", &pFX509_NAME_oneline, X509_NAME_onelineSlow);
+  SET_FAST_METHOD(isolate, module, "X509_get_issuer_name", &pFX509_get_issuer_name, X509_get_issuer_nameSlow);
+  SET_FAST_METHOD(isolate, module, "X509_free", &pFX509_free, X509_freeSlow);
+  SET_FAST_METHOD(isolate, module, "X509_get_pubkey", &pFX509_get_pubkey, X509_get_pubkeySlow);
+  SET_FAST_METHOD(isolate, module, "X509_REQ_new", &pFX509_REQ_new, X509_REQ_newSlow);
+  SET_FAST_METHOD(isolate, module, "X509_REQ_set_version", &pFX509_REQ_set_version, X509_REQ_set_versionSlow);
+  SET_FAST_METHOD(isolate, module, "X509_REQ_get_subject_name", &pFX509_REQ_get_subject_name, X509_REQ_get_subject_nameSlow);
+  SET_FAST_METHOD(isolate, module, "X509_NAME_add_entry_by_txt", &pFX509_NAME_add_entry_by_txt, X509_NAME_add_entry_by_txtSlow);
+  SET_FAST_METHOD(isolate, module, "X509_REQ_set_pubkey", &pFX509_REQ_set_pubkey, X509_REQ_set_pubkeySlow);
+  SET_FAST_METHOD(isolate, module, "X509_REQ_sign", &pFX509_REQ_sign, X509_REQ_signSlow);
+  SET_FAST_METHOD(isolate, module, "OBJ_txt2nid", &pFOBJ_txt2nid, OBJ_txt2nidSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_get_error", &pFSSL_get_error, SSL_get_errorSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_is_init_finished", &pFSSL_is_init_finished, SSL_is_init_finishedSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_shutdown", &pFSSL_shutdown, SSL_shutdownSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_get_servername", &pFSSL_get_servername, SSL_get_servernameSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_get_servername_type", &pFSSL_get_servername_type, SSL_get_servername_typeSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_free", &pFSSL_free, SSL_freeSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_read", &pFSSL_read, SSL_readSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_write", &pFSSL_write, SSL_writeSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_get_version", &pFSSL_get_version, SSL_get_versionSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_CIPHER_get_name", &pFSSL_CIPHER_get_name, SSL_CIPHER_get_nameSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_get_current_cipher", &pFSSL_get_current_cipher, SSL_get_current_cipherSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_get_peer_certificate", &pFSSL_get_peer_certificate, SSL_get_peer_certificateSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_set_SSL_CTX", &pFSSL_set_SSL_CTX, SSL_set_SSL_CTXSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_new", &pFSSL_new, SSL_newSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_set_fd", &pFSSL_set_fd, SSL_set_fdSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_set_bio", &pFSSL_set_bio, SSL_set_bioSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_set_accept_state", &pFSSL_set_accept_state, SSL_set_accept_stateSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_accept", &pFSSL_accept, SSL_acceptSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_set_connect_state", &pFSSL_set_connect_state, SSL_set_connect_stateSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_do_handshake", &pFSSL_do_handshake, SSL_do_handshakeSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_CTX_new", &pFSSL_CTX_new, SSL_CTX_newSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_CTX_use_certificate_file", &pFSSL_CTX_use_certificate_file, SSL_CTX_use_certificate_fileSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_CTX_use_certificate_chain_file", &pFSSL_CTX_use_certificate_chain_file, SSL_CTX_use_certificate_chain_fileSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_CTX_use_PrivateKey_file", &pFSSL_CTX_use_PrivateKey_file, SSL_CTX_use_PrivateKey_fileSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_CTX_set_options", &pFSSL_CTX_set_options, SSL_CTX_set_optionsSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_CTX_set_cipher_list", &pFSSL_CTX_set_cipher_list, SSL_CTX_set_cipher_listSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_set_cipher_list", &pFSSL_set_cipher_list, SSL_set_cipher_listSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_CTX_free", &pFSSL_CTX_free, SSL_CTX_freeSlow);
+  SET_FAST_METHOD(isolate, module, "TLS_server_method", &pFTLS_server_method, TLS_server_methodSlow);
+  SET_FAST_METHOD(isolate, module, "TLS_client_method", &pFTLS_client_method, TLS_client_methodSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_CTX_set_ciphersuites", &pFSSL_CTX_set_ciphersuites, SSL_CTX_set_ciphersuitesSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_ctrl", &pFSSL_ctrl, SSL_ctrlSlow);
+  SET_FAST_METHOD(isolate, module, "RSA_pkey_ctx_ctrl", &pFRSA_pkey_ctx_ctrl, RSA_pkey_ctx_ctrlSlow);
+  SET_FAST_METHOD(isolate, module, "EVP_sha512_224", &pFEVP_sha512_224, EVP_sha512_224Slow);
 
   SET_MODULE(isolate, target, "libssl", module);
 }

@@ -62,6 +62,52 @@ using v8::V8;
 
 
 
+int32_t parseRequestFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2);
+v8::CTypeInfo cargsparseRequest[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcparseRequest = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoparseRequest = v8::CFunctionInfo(rcparseRequest, 4, cargsparseRequest);
+v8::CFunction pFparseRequest = v8::CFunction((const void*)&parseRequestFast, &infoparseRequest);
+
+int32_t parseRequest2Fast(void* p, void* p0, uint32_t p1, void* p2);
+v8::CTypeInfo cargsparseRequest2[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcparseRequest2 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoparseRequest2 = v8::CFunctionInfo(rcparseRequest2, 4, cargsparseRequest2);
+v8::CFunction pFparseRequest2 = v8::CFunction((const void*)&parseRequest2Fast, &infoparseRequest2);
+
+int32_t parseResponseFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2);
+v8::CTypeInfo cargsparseResponse[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcparseResponse = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoparseResponse = v8::CFunctionInfo(rcparseResponse, 4, cargsparseResponse);
+v8::CFunction pFparseResponse = v8::CFunction((const void*)&parseResponseFast, &infoparseResponse);
+
+int32_t parseResponse2Fast(void* p, void* p0, uint32_t p1, void* p2);
+v8::CTypeInfo cargsparseResponse2[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcparseResponse2 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoparseResponse2 = v8::CFunctionInfo(rcparseResponse2, 4, cargsparseResponse2);
+v8::CFunction pFparseResponse2 = v8::CFunction((const void*)&parseResponse2Fast, &infoparseResponse2);
+
+
+
 void parseRequestSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Uint8Array> u80 = args[0].As<Uint8Array>();
@@ -133,46 +179,10 @@ int32_t parseResponse2Fast(void* p, void* p0, uint32_t p1, void* p2) {
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
-
-  v8::CTypeInfo* cargsparseRequest = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsparseRequest[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsparseRequest[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsparseRequest[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsparseRequest[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcparseRequest = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoparseRequest = new v8::CFunctionInfo(*rcparseRequest, 4, cargsparseRequest);
-  v8::CFunction* pFparseRequest = new v8::CFunction((const void*)&parseRequestFast, infoparseRequest);
-  SET_FAST_METHOD(isolate, module, "parseRequest", pFparseRequest, parseRequestSlow);
-
-  v8::CTypeInfo* cargsparseRequest2 = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsparseRequest2[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsparseRequest2[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsparseRequest2[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsparseRequest2[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcparseRequest2 = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoparseRequest2 = new v8::CFunctionInfo(*rcparseRequest2, 4, cargsparseRequest2);
-  v8::CFunction* pFparseRequest2 = new v8::CFunction((const void*)&parseRequest2Fast, infoparseRequest2);
-  SET_FAST_METHOD(isolate, module, "parseRequest2", pFparseRequest2, parseRequest2Slow);
-
-  v8::CTypeInfo* cargsparseResponse = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsparseResponse[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsparseResponse[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsparseResponse[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsparseResponse[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcparseResponse = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoparseResponse = new v8::CFunctionInfo(*rcparseResponse, 4, cargsparseResponse);
-  v8::CFunction* pFparseResponse = new v8::CFunction((const void*)&parseResponseFast, infoparseResponse);
-  SET_FAST_METHOD(isolate, module, "parseResponse", pFparseResponse, parseResponseSlow);
-
-  v8::CTypeInfo* cargsparseResponse2 = (v8::CTypeInfo*)calloc(4, sizeof(v8::CTypeInfo));
-  cargsparseResponse2[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsparseResponse2[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  cargsparseResponse2[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  cargsparseResponse2[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  v8::CTypeInfo* rcparseResponse2 = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoparseResponse2 = new v8::CFunctionInfo(*rcparseResponse2, 4, cargsparseResponse2);
-  v8::CFunction* pFparseResponse2 = new v8::CFunction((const void*)&parseResponse2Fast, infoparseResponse2);
-  SET_FAST_METHOD(isolate, module, "parseResponse2", pFparseResponse2, parseResponse2Slow);
+  SET_FAST_METHOD(isolate, module, "parseRequest", &pFparseRequest, parseRequestSlow);
+  SET_FAST_METHOD(isolate, module, "parseRequest2", &pFparseRequest2, parseRequest2Slow);
+  SET_FAST_METHOD(isolate, module, "parseResponse", &pFparseResponse, parseResponseSlow);
+  SET_FAST_METHOD(isolate, module, "parseResponse2", &pFparseResponse2, parseResponse2Slow);
 
   SET_MODULE(isolate, target, "pico", module);
 }

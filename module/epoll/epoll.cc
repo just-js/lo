@@ -63,6 +63,50 @@ using v8::V8;
 
 
 
+int32_t createFast(void* p, int32_t p0);
+v8::CTypeInfo cargscreate[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rccreate = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infocreate = v8::CFunctionInfo(rccreate, 2, cargscreate);
+v8::CFunction pFcreate = v8::CFunction((const void*)&createFast, &infocreate);
+
+int32_t modifyFast(void* p, int32_t p0, int32_t p1, int32_t p2, struct FastApiTypedArray* const p3);
+v8::CTypeInfo cargsmodify[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcmodify = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infomodify = v8::CFunctionInfo(rcmodify, 5, cargsmodify);
+v8::CFunction pFmodify = v8::CFunction((const void*)&modifyFast, &infomodify);
+
+int32_t waitFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2, int32_t p3);
+v8::CTypeInfo cargswait[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcwait = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infowait = v8::CFunctionInfo(rcwait, 5, cargswait);
+v8::CFunction pFwait = v8::CFunction((const void*)&waitFast, &infowait);
+
+int32_t closeFast(void* p, int32_t p0);
+v8::CTypeInfo cargsclose[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcclose = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoclose = v8::CFunctionInfo(rcclose, 2, cargsclose);
+v8::CFunction pFclose = v8::CFunction((const void*)&closeFast, &infoclose);
+
+
+
 void createSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -126,44 +170,10 @@ int32_t closeFast(void* p, int32_t p0) {
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
-
-  v8::CTypeInfo* cargscreate = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargscreate[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargscreate[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rccreate = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infocreate = new v8::CFunctionInfo(*rccreate, 2, cargscreate);
-  v8::CFunction* pFcreate = new v8::CFunction((const void*)&createFast, infocreate);
-  SET_FAST_METHOD(isolate, module, "create", pFcreate, createSlow);
-
-  v8::CTypeInfo* cargsmodify = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargsmodify[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsmodify[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsmodify[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsmodify[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsmodify[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  v8::CTypeInfo* rcmodify = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infomodify = new v8::CFunctionInfo(*rcmodify, 5, cargsmodify);
-  v8::CFunction* pFmodify = new v8::CFunction((const void*)&modifyFast, infomodify);
-  SET_FAST_METHOD(isolate, module, "modify", pFmodify, modifySlow);
-
-  v8::CTypeInfo* cargswait = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargswait[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargswait[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargswait[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargswait[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargswait[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcwait = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infowait = new v8::CFunctionInfo(*rcwait, 5, cargswait);
-  v8::CFunction* pFwait = new v8::CFunction((const void*)&waitFast, infowait);
-  SET_FAST_METHOD(isolate, module, "wait", pFwait, waitSlow);
-
-  v8::CTypeInfo* cargsclose = (v8::CTypeInfo*)calloc(2, sizeof(v8::CTypeInfo));
-  cargsclose[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsclose[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcclose = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoclose = new v8::CFunctionInfo(*rcclose, 2, cargsclose);
-  v8::CFunction* pFclose = new v8::CFunction((const void*)&closeFast, infoclose);
-  SET_FAST_METHOD(isolate, module, "close", pFclose, closeSlow);
+  SET_FAST_METHOD(isolate, module, "create", &pFcreate, createSlow);
+  SET_FAST_METHOD(isolate, module, "modify", &pFmodify, modifySlow);
+  SET_FAST_METHOD(isolate, module, "wait", &pFwait, waitSlow);
+  SET_FAST_METHOD(isolate, module, "close", &pFclose, closeSlow);
 
   SET_MODULE(isolate, target, "epoll", module);
 }

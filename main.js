@@ -24,7 +24,6 @@ globalThis.console = {
 
 globalThis.onUnhandledRejection = err => {
   console.error(`${AR}Unhandled Rejection${AD}`)
-  console.error(err.message)
   console.error(err.stack)
 }
 
@@ -178,22 +177,18 @@ async function globalMain () {
   if (spin.args[1] === 'eval') return (new Function(`return (${spin.args[2]})`))()
   let filePath = spin.args[1]
   if (spin.workerSource) filePath = 'thread.js'
-  try {
-    const { main, serve, test, bench } = await import(filePath)
-    if (test) {
-      await test(...spin.args.slice(2))
-    }
-    if (bench) {
-      await bench(...spin.args.slice(2))
-    }
-    if (main) {
-      await main(...spin.args.slice(2))
-    }
-    if (serve) {
-      await serve(...spin.args.slice(2))
-    }
-  } catch (err) {
-    console.error(err.stack)
+  const { main, serve, test, bench } = await import(filePath)
+  if (test) {
+    await test(...spin.args.slice(2))
+  }
+  if (bench) {
+    await bench(...spin.args.slice(2))
+  }
+  if (main) {
+    await main(...spin.args.slice(2))
+  }
+  if (serve) {
+    await serve(...spin.args.slice(2))
   }
 }
 

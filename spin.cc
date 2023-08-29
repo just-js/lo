@@ -61,6 +61,82 @@ std::map<int, Global<Module>> module_map;
 clock_t clock_id = CLOCK_MONOTONIC;
 struct timespec t;
 
+CTypeInfo cargshrtime[2] = { 
+  CTypeInfo(CTypeInfo::Type::kV8Value), 
+  CTypeInfo(CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, 
+    CTypeInfo::Flags::kNone) 
+};
+CTypeInfo rchrtime = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infohrtime = CFunctionInfo(rchrtime, 2, cargshrtime);
+CFunction pFhrtime = CFunction((const void*)&spin::fastHRTime, 
+  &infohrtime);
+
+CTypeInfo cargsgetaddress[3] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint8, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint32, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone)
+};
+CTypeInfo rcgetaddress = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infogetaddress = CFunctionInfo(rcgetaddress, 3, 
+  cargsgetaddress);
+CFunction pFgetaddress = CFunction((const void*)&spin::fastGetAddress, 
+  &infogetaddress);
+
+CTypeInfo cargsutf8length[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kSeqOneByteString)
+};
+CTypeInfo rcutf8length = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoutf8length = CFunctionInfo(rcutf8length, 2, 
+  cargsutf8length);
+CFunction pFutf8length = CFunction((const void*)&spin::fastUtf8Length, 
+  &infoutf8length);
+
+CTypeInfo cargsutf8encodeinto[3] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
+  CTypeInfo(CTypeInfo::Type::kUint8,
+  CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone)
+};
+CTypeInfo rcutf8encodeinto = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoutf8encodeinto = CFunctionInfo(rcutf8encodeinto, 3, 
+  cargsutf8encodeinto);
+CFunction pFutf8encodeinto = CFunction((const void*)&spin::fastUtf8EncodeInto, 
+  &infoutf8encodeinto);
+
+CTypeInfo cargsreadmemory[4] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint8, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint32)
+};
+CTypeInfo rcreadmemory = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo inforeadmemory = CFunctionInfo(rcreadmemory, 4, 
+  cargsreadmemory);
+CFunction pFreadmemory = CFunction((const void*)&spin::fastReadMemory, 
+  &inforeadmemory);
+
+CTypeInfo cargserrnoset[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kInt32)
+};
+CTypeInfo rcerrnoset = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infoerrnoset = CFunctionInfo(rcerrnoset, 2, 
+  cargserrnoset);
+CFunction pFerrnoset = CFunction((const void*)&spin::fastSetErrno, 
+  &infoerrnoset);
+CTypeInfo cargserrnoget[1] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value)
+};
+CTypeInfo rcerrnoget = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoerrnoget = CFunctionInfo(rcerrnoget, 1, 
+  cargserrnoget);
+CFunction pFerrnoget = CFunction((const void*)&spin::fastGetErrno, 
+  &infoerrnoget);
+
 // v8 isolate callbacks
 size_t spin::nearHeapLimitCallback(void* data, size_t current_heap_limit,
   size_t initial_heap_limit) {
@@ -95,6 +171,9 @@ void spin::FreeMemory(void* buf, size_t length, void* data) {
   free(buf);
 }
 
+// QN: how do we ensure an isolate doesn't allocate a bunch of external 
+// memory and never free it? how do we ensure all memory created by an isolate
+// is free when the isolate is destroyed?
 void cleanupIsolate (Isolate* isolate) {
   isolate->ContextDisposedNotification();
   isolate->ClearKeptObjects();
@@ -298,6 +377,30 @@ MaybeLocal<Promise> OnDynamicImport(Local<Context> context,
   return Local<Promise>::Cast(result.ToLocalChecked());
 }
 
+/*
+this can be used to hook into jit events. we could allow setting this
+when new isolate context is created for tracing jit events.
+it has some overhead even when empty - ~300-400 microseconds
+*/
+void JitCodeEventHandler (const v8::JitCodeEvent* event) {
+//  fprintf(stderr, "jit\n");
+}
+
+// this can be used to record counters for internal v8 events. it has negligible
+// overhead when empty
+int* CounterLookupCallback (const char* name) {
+//  fprintf(stderr, "%s\n", name);
+  return 0;
+}
+
+bool AbortOnUncaughtException (Isolate* isolate) {
+  return true;
+}
+
+void LogEvent (const char* name, int status) {
+  fprintf(stderr, "log %i %s\n", status, name);
+}
+
 int spin::CreateIsolate(int argc, char** argv, 
   const char* main_src, unsigned int main_len, 
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
@@ -310,25 +413,41 @@ int spin::CreateIsolate(int argc, char** argv,
   create_params.embedder_wrapper_type_index = 0;
   create_params.embedder_wrapper_object_index = 1;
   create_params.snapshot_blob = startup_data;
-  Isolate *isolate = Isolate::New(create_params);
+  //create_params.code_event_handler = JitCodeEventHandler;
+  //create_params.constraints = 
+  //create_params.counter_lookup_callback = CounterLookupCallback;
+  create_params.allow_atomics_wait = false;
+  create_params.only_terminate_in_safe_scope = false;
+  create_params.fatal_error_callback = fatalErrorcallback;
+  create_params.oom_error_callback = OOMErrorcallback;
+  Isolate *isolate = Isolate::Allocate();
   {
+    v8::Locker locker(isolate);
+    isolate->Enter();
+    // we can call Isolate::SetData and Isolate::GetData before we initialize
+    Isolate::Initialize(isolate, create_params);
     Isolate::Scope isolate_scope(isolate);
     HandleScope handle_scope(isolate);
+    // TODO: we shoudl expose these to embedder in some way
+    isolate->SetRAILMode(v8::RAILMode::PERFORMANCE_RESPONSE);
     isolate->SetCaptureStackTraceForUncaughtExceptions(true, 1000, 
       StackTrace::kDetailed);
     isolate->AddNearHeapLimitCallback(spin::nearHeapLimitCallback, 0);
-    isolate->SetFatalErrorHandler(fatalErrorcallback);
-    isolate->SetOOMErrorHandler(OOMErrorcallback);
-    Local<ObjectTemplate> global = ObjectTemplate::New(isolate);
-    Local<ObjectTemplate> runtime = ObjectTemplate::New(isolate);
-    spin::Init(isolate, runtime);
-    global->Set(String::NewFromUtf8(isolate, globalobj, 
-      NewStringType::kInternalized, strnlen(globalobj, 256)).ToLocalChecked(), 
-      runtime);
-    Local<Context> context = Context::New(isolate, NULL, global);
-    Context::Scope context_scope(context);
+    isolate->SetAbortOnUncaughtExceptionCallback(AbortOnUncaughtException);
     isolate->SetPromiseRejectCallback(PromiseRejectCallback);
     isolate->SetHostImportModuleDynamicallyCallback(OnDynamicImport);
+    //isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kExplicit);
+    //isolate->SetEventLogger(LogEvent);
+    //isolate->SetFatalErrorHandler(fatalErrorcallback);
+    //isolate->SetOOMErrorHandler(OOMErrorcallback);
+    //isolate->EnableMemorySavingsMode();
+    //isolate->SetData(0, 0);
+    Local<ObjectTemplate> global = ObjectTemplate::New(isolate);
+    Local<ObjectTemplate> runtime = ObjectTemplate::New(isolate);
+    runtime->SetImmutableProto();
+    spin::Init(isolate, runtime);
+    Local<Context> context = Context::New(isolate, NULL, global);
+    Context::Scope context_scope(context);
     Local<Array> arguments = Array::New(isolate);
     for (int i = 0; i < argc; i++) {
       arguments->Set(context, i, String::NewFromUtf8(isolate, argv[i], 
@@ -338,10 +457,9 @@ int spin::CreateIsolate(int argc, char** argv,
     globalInstance->Set(context, String::NewFromUtf8Literal(isolate, 
       "global", 
       NewStringType::kNormal), globalInstance).Check();
-    Local<Value> obj = globalInstance->Get(context, 
-      String::NewFromUtf8(isolate, globalobj, NewStringType::kInternalized, 
-        strnlen(globalobj, 256)).ToLocalChecked()).ToLocalChecked();
-    Local<Object> runtimeInstance = Local<Object>::Cast(obj);
+    Local<Object> runtimeInstance = runtime->NewInstance(context).ToLocalChecked();
+    runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, "args", 
+      NewStringType::kNormal), arguments).Check();
     if (buf != NULL) {
       std::unique_ptr<BackingStore> backing = 
         SharedArrayBuffer::NewBackingStore(buf, buflen, 
@@ -361,14 +479,15 @@ int spin::CreateIsolate(int argc, char** argv,
         NewStringType::kNormal), 
         Integer::New(isolate, fd)).Check();
     }
-    runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, "args", 
-      NewStringType::kNormal), arguments).Check();
     if (js_len > 0) {
       runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, 
         "workerSource", NewStringType::kNormal), 
         String::NewFromUtf8(isolate, js, NewStringType::kNormal, 
         js_len).ToLocalChecked()).Check();
     }
+    globalInstance->Set(context, String::NewFromUtf8(isolate, globalobj, 
+      NewStringType::kNormal, strnlen(globalobj, 256)).ToLocalChecked(), 
+      runtimeInstance).Check();
     TryCatch try_catch(isolate);
     Local<PrimitiveArray> opts =
         PrimitiveArray::New(isolate, spin::HostDefinedOptions::kLength);
@@ -431,6 +550,7 @@ int spin::CreateIsolate(int argc, char** argv,
       }
     }
   }
+  isolate->Exit();
   if (cleanup == 1) {
     cleanupIsolate(isolate);
     delete create_params.array_buffer_allocator;
@@ -764,13 +884,12 @@ int32_t spin::fastUtf8EncodeInto (void* p, struct FastOneByteString*
 }
 
 void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
-  Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
-  SET_VALUE(isolate, version, GLOBALOBJ, String::NewFromUtf8Literal(isolate, 
-    VERSION));
-  SET_VALUE(isolate, version, "v8", String::NewFromUtf8(isolate, 
-    V8::GetVersion()).ToLocalChecked());
-  SET_MODULE(isolate, target, "version", version);
-
+  //Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
+  //SET_VALUE(isolate, version, GLOBALOBJ, String::NewFromUtf8Literal(isolate, 
+  //  VERSION));
+  //SET_VALUE(isolate, version, "v8", String::NewFromUtf8(isolate, 
+  //  V8::GetVersion()).ToLocalChecked());
+  //SET_MODULE(isolate, target, "version", version);
   SET_METHOD(isolate, target, "nextTick", NextTick);
   SET_METHOD(isolate, target, "registerCallback", RegisterCallback);
   SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);
@@ -783,92 +902,14 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
   SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
-
-  // TODO: figure out how to manage lifetime of these types
-  CTypeInfo* cargserrnoset = (CTypeInfo*)calloc(2, 
-    sizeof(CTypeInfo));
-  cargserrnoset[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargserrnoset[1] = CTypeInfo(CTypeInfo::Type::kInt32);
-  CTypeInfo* rcerrnoset = new CTypeInfo(CTypeInfo::Type::kVoid);
-  CFunctionInfo* infoerrnoset = new CFunctionInfo(*rcerrnoset, 2, 
-    cargserrnoset);
-  CFunction* pFerrnoset = new CFunction((const void*)&spin::fastSetErrno, 
-    infoerrnoset);
-  CTypeInfo* cargserrnoget = (CTypeInfo*)calloc(1, 
-    sizeof(CTypeInfo));
-  cargserrnoget[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  CTypeInfo* rcerrnoget = new CTypeInfo(CTypeInfo::Type::kInt32);
-  CFunctionInfo* infoerrnoget = new CFunctionInfo(*rcerrnoget, 1, 
-    cargserrnoget);
-  CFunction* pFerrnoget = new CFunction((const void*)&spin::fastGetErrno, 
-    infoerrnoget);
-  SET_FAST_PROP(isolate, target, "errno", pFerrnoget, GetErrno, pFerrnoset, 
+  SET_FAST_PROP(isolate, target, "errno", &pFerrnoget, GetErrno, &pFerrnoset, 
     SetErrno);
-
-  CTypeInfo* cargshrtime = (CTypeInfo*)calloc(2, sizeof(CTypeInfo));
-  cargshrtime[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargshrtime[1] = CTypeInfo(CTypeInfo::Type::kUint32, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  CTypeInfo* rchrtime = new CTypeInfo(CTypeInfo::Type::kVoid);
-  CFunctionInfo* infohrtime = new CFunctionInfo(*rchrtime, 2, 
-    cargshrtime);
-  CFunction* pFhrtime = new CFunction((const void*)&spin::fastHRTime, 
-    infohrtime);
-  SET_FAST_METHOD(isolate, target, "hrtime", pFhrtime, HRTime);
-
-  CTypeInfo* cargsgetaddress = (CTypeInfo*)calloc(3, 
-    sizeof(CTypeInfo));
-  cargsgetaddress[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargsgetaddress[1] = CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsgetaddress[2] = CTypeInfo(CTypeInfo::Type::kUint32, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  CTypeInfo* rcgetaddress = new CTypeInfo(CTypeInfo::Type::kVoid);
-  CFunctionInfo* infogetaddress = new CFunctionInfo(*rcgetaddress, 3, 
-    cargsgetaddress);
-  CFunction* pFgetaddress = new CFunction((const void*)&spin::fastGetAddress, 
-    infogetaddress);
-  SET_FAST_METHOD(isolate, target, "getAddress", pFgetaddress, GetAddress);
-
-  CTypeInfo* cargsutf8length = (CTypeInfo*)calloc(2, 
-    sizeof(CTypeInfo));
-  cargsutf8length[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargsutf8length[1] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
-  CTypeInfo* rcutf8length = new CTypeInfo(CTypeInfo::Type::kInt32);
-  CFunctionInfo* infoutf8length = new CFunctionInfo(*rcutf8length, 2, 
-    cargsutf8length);
-  CFunction* pFutf8length = new CFunction((const void*)&spin::fastUtf8Length, 
-    infoutf8length);
-  SET_FAST_METHOD(isolate, target, "utf8Length", pFutf8length, Utf8Length);
-
-  CTypeInfo* cargsutf8encodeinto = (CTypeInfo*)calloc(3, 
-    sizeof(CTypeInfo));
-  cargsutf8encodeinto[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargsutf8encodeinto[1] = CTypeInfo(CTypeInfo::Type::kSeqOneByteString);
-  cargsutf8encodeinto[2] = CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  CTypeInfo* rcutf8encodeinto = new CTypeInfo(CTypeInfo::Type::kInt32);
-  CFunctionInfo* infoutf8encodeinto = new CFunctionInfo(*rcutf8encodeinto, 3, 
-    cargsutf8encodeinto);
-  CFunction* pFutf8encodeinto = new CFunction((const void*)&spin::fastUtf8EncodeInto, 
-    infoutf8encodeinto);
-  SET_FAST_METHOD(isolate, target, "utf8EncodeInto", pFutf8encodeinto, 
+  SET_FAST_METHOD(isolate, target, "hrtime", &pFhrtime, HRTime);
+  SET_FAST_METHOD(isolate, target, "getAddress", &pFgetaddress, GetAddress);
+  SET_FAST_METHOD(isolate, target, "utf8Length", &pFutf8length, Utf8Length);
+  SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto, 
     Utf8EncodeInto);
-
-  CTypeInfo* cargsreadmemory = (CTypeInfo*)calloc(4, 
-    sizeof(CTypeInfo));
-  cargsreadmemory[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  cargsreadmemory[1] = CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsreadmemory[2] = CTypeInfo(CTypeInfo::Type::kUint64);
-  cargsreadmemory[3] = CTypeInfo(CTypeInfo::Type::kUint32);
-  CTypeInfo* rcreadmemory = new CTypeInfo(CTypeInfo::Type::kVoid);
-  CFunctionInfo* inforeadmemory = new CFunctionInfo(*rcreadmemory, 4, 
-    cargsreadmemory);
-  CFunction* pFreadmemory = new CFunction((const void*)&spin::fastReadMemory, 
-    inforeadmemory);
-  SET_FAST_METHOD(isolate, target, "readMemory", pFreadmemory, ReadMemory);
-
+  SET_FAST_METHOD(isolate, target, "readMemory", &pFreadmemory, ReadMemory);
 }
 
 // C/FFI api for managing isolates
