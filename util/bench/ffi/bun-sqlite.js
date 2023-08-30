@@ -38,7 +38,7 @@ const {
     sqlite3_libversion, sqlite3_open_v2, sqlite3_exec, sqlite3_prepare_v2, 
     sqlite3_reset, sqlite3_step, sqlite3_column_int
   }
-} = dlopen('libsqlite3.so', {
+} = dlopen('./scratch/libsqlite3.so', {
   sqlite3_libversion: {
     args: [],
     returns: 'ptr'

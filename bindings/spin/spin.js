@@ -60,18 +60,6 @@ const api = {
     name: 'spin_callback',
     nofast: true
   },
-  ffi_call: {
-    parameters: ['pointer'],
-    result: 'void',
-    name: 'spin_ffi_call',
-    nofast: false
-  },
-  ffi_syscall: {
-    parameters: ['pointer'],
-    result: 'void',
-    name: 'spin_ffi_syscall',
-    nofast: false
-  },
   fastcall: {
     parameters: ['pointer'],
     pointers: ['void**'],
@@ -82,16 +70,6 @@ const api = {
 }
 
 const preamble = `
-#ifdef __cplusplus
-extern "C"
-    {
-#endif
-extern void spin_ffi_call(void* state);
-extern void spin_ffi_syscall(void* state);
-#ifdef __cplusplus
-    }
-#endif
-
 typedef void (*spin_fast_call)(void*);
 
 void spin_fastcall (void** state) {

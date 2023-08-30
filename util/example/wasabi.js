@@ -286,7 +286,7 @@ const u8 = new Uint8Array(BUFSIZE)
 const decoder = new TextDecoder()
 const encoder = new TextEncoder()
 const [ homeDir = './' ] = args.slice(2)
-const address = '0.0.0.0'
+const address = '127.0.0.1'
 const port = 8080
 const serverName = 'poo'
 Object.keys(contentTypes).forEach(k => responses[k] = {})

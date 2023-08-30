@@ -77,7 +77,7 @@ const api = {
     result: 'i32'
   },
   pipe2: {
-    parameters: ['pointer', 'i32'],
+    parameters: ['u32array', 'i32'],
     pointers: ['int*'],
     result: 'i32'
   },

@@ -16,11 +16,11 @@ SPIN_HOME=$(shell pwd)
 # list of c++ library archive (.a) files to link into runtime
 #MODULES=module/load/load.a module/fs/fs.a module/ffi/ffi.a module/tcc/tcc.a
 #MODULES=module/load/load.a module/fs/fs.a module/fast/fast.a module/system/system.a
-MODULES=module/load/load.a module/fs/fs.a
+MODULES=module/load/load.a module/fs/fs.a module/system/system.a module/fast/fast.a module/spin/spin.a module/thread/thread.a
 # list of JS modules to link into runtime
 #LIBS=lib/ansi.js lib/bench.js lib/binary.js lib/ffi.js lib/gen.js lib/packet.js lib/path.js lib/stringify.js
 #LIBS=lib/gen.js lib/fast.js lib/asm.js lib/system.js lib/bench.js
-LIBS=lib/gen.js
+LIBS=lib/gen.js lib/system.js lib/fast.js lib/asm.js lib/bench.js lib/thread.js
 # list of arbitrary assets to link into runtime
 ASSETS=
 # when initializing a module, the path to the api defintion
@@ -62,7 +62,7 @@ ${TARGET}.o: ${TARGET}.h ${TARGET}.cc ## compile the main library
 	$(CC) -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native ${WARNFLAGS} ${TARGET}.cc
 
 ${TARGET}: ${TARGET}.o main.o builtins.o ## link the runtime
-	$(CC) -flto -g -O3 ${V8_FLAGS} -static-libstdc++ -static-libgcc -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
+	$(CC) -flto -g -O3 ${V8_FLAGS} -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 	objcopy --only-keep-debug ${TARGET} ${TARGET}.debug
 	strip --strip-debug --strip-unneeded ${TARGET}
 	objcopy --add-gnu-debuglink=${TARGET}.debug ${TARGET}

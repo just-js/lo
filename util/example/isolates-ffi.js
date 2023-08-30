@@ -27,7 +27,7 @@ function spawn (code) {
 }
 
 //const src = `spin.library('fs').fs.write_string(2, 'hello\\n')`
-const src = ''
+const src = '1'
 let done = 0
 
 const eventLoop = new Loop()

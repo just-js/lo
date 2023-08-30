@@ -412,28 +412,27 @@ int spin::CreateIsolate(int argc, char** argv,
     ArrayBuffer::Allocator::NewDefaultAllocator();
   create_params.embedder_wrapper_type_index = 0;
   create_params.embedder_wrapper_object_index = 1;
-  create_params.snapshot_blob = startup_data;
+  //create_params.snapshot_blob = startup_data;
   //create_params.code_event_handler = JitCodeEventHandler;
-  //create_params.constraints = 
   //create_params.counter_lookup_callback = CounterLookupCallback;
-  create_params.allow_atomics_wait = false;
-  create_params.only_terminate_in_safe_scope = false;
+  //create_params.allow_atomics_wait = false;
+  //create_params.only_terminate_in_safe_scope = false;
   create_params.fatal_error_callback = fatalErrorcallback;
   create_params.oom_error_callback = OOMErrorcallback;
   Isolate *isolate = Isolate::Allocate();
   {
-    v8::Locker locker(isolate);
-    isolate->Enter();
+    //v8::Locker locker(isolate);
+    //isolate->Enter();
     // we can call Isolate::SetData and Isolate::GetData before we initialize
     Isolate::Initialize(isolate, create_params);
     Isolate::Scope isolate_scope(isolate);
     HandleScope handle_scope(isolate);
     // TODO: we shoudl expose these to embedder in some way
-    isolate->SetRAILMode(v8::RAILMode::PERFORMANCE_RESPONSE);
+    //isolate->SetRAILMode(v8::RAILMode::PERFORMANCE_RESPONSE);
     isolate->SetCaptureStackTraceForUncaughtExceptions(true, 1000, 
       StackTrace::kDetailed);
-    isolate->AddNearHeapLimitCallback(spin::nearHeapLimitCallback, 0);
-    isolate->SetAbortOnUncaughtExceptionCallback(AbortOnUncaughtException);
+    //isolate->AddNearHeapLimitCallback(spin::nearHeapLimitCallback, 0);
+    //isolate->SetAbortOnUncaughtExceptionCallback(AbortOnUncaughtException);
     isolate->SetPromiseRejectCallback(PromiseRejectCallback);
     isolate->SetHostImportModuleDynamicallyCallback(OnDynamicImport);
     //isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kExplicit);
@@ -444,22 +443,22 @@ int spin::CreateIsolate(int argc, char** argv,
     //isolate->SetData(0, 0);
     Local<ObjectTemplate> global = ObjectTemplate::New(isolate);
     Local<ObjectTemplate> runtime = ObjectTemplate::New(isolate);
-    runtime->SetImmutableProto();
+    //runtime->SetImmutableProto();
     spin::Init(isolate, runtime);
     Local<Context> context = Context::New(isolate, NULL, global);
     Context::Scope context_scope(context);
+    Local<Object> globalInstance = context->Global();
+    globalInstance->Set(context, String::NewFromUtf8Literal(isolate, 
+      "global", 
+      NewStringType::kInternalized), globalInstance).Check();
+    Local<Object> runtimeInstance = runtime->NewInstance(context).ToLocalChecked();
     Local<Array> arguments = Array::New(isolate);
     for (int i = 0; i < argc; i++) {
       arguments->Set(context, i, String::NewFromUtf8(isolate, argv[i], 
         NewStringType::kNormal, strlen(argv[i])).ToLocalChecked()).Check();
     }
-    Local<Object> globalInstance = context->Global();
-    globalInstance->Set(context, String::NewFromUtf8Literal(isolate, 
-      "global", 
-      NewStringType::kNormal), globalInstance).Check();
-    Local<Object> runtimeInstance = runtime->NewInstance(context).ToLocalChecked();
     runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, "args", 
-      NewStringType::kNormal), arguments).Check();
+      NewStringType::kInternalized), arguments).Check();
     if (buf != NULL) {
       std::unique_ptr<BackingStore> backing = 
         SharedArrayBuffer::NewBackingStore(buf, buflen, 
@@ -469,24 +468,30 @@ int spin::CreateIsolate(int argc, char** argv,
       runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, 
         "buffer", NewStringType::kNormal), ab).Check();
     }
+    runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, "argv", 
+      NewStringType::kInternalized), 
+      Number::New(isolate, (uint64_t)argv)).Check();
+    runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, "argc", 
+      NewStringType::kInternalized), 
+      Number::New(isolate, argc)).Check();
     if (start > 0) {
       runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, "start", 
-        NewStringType::kNormal), 
+        NewStringType::kInternalized), 
         Number::New(isolate, start)).Check();
     }
     if (fd != 0) {
       runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, "fd", 
-        NewStringType::kNormal), 
+        NewStringType::kInternalized), 
         Integer::New(isolate, fd)).Check();
     }
     if (js_len > 0) {
       runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, 
-        "workerSource", NewStringType::kNormal), 
+        "workerSource", NewStringType::kInternalized), 
         String::NewFromUtf8(isolate, js, NewStringType::kNormal, 
         js_len).ToLocalChecked()).Check();
     }
     globalInstance->Set(context, String::NewFromUtf8(isolate, globalobj, 
-      NewStringType::kNormal, strnlen(globalobj, 256)).ToLocalChecked(), 
+      NewStringType::kInternalized, strnlen(globalobj, 256)).ToLocalChecked(), 
       runtimeInstance).Check();
     TryCatch try_catch(isolate);
     Local<PrimitiveArray> opts =
@@ -550,7 +555,7 @@ int spin::CreateIsolate(int argc, char** argv,
       }
     }
   }
-  isolate->Exit();
+  //isolate->Exit();
   if (cleanup == 1) {
     cleanupIsolate(isolate);
     delete create_params.array_buffer_allocator;

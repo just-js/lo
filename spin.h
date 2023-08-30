@@ -165,6 +165,7 @@ struct isolate_context {
   char* globalobj;
   char* scriptname;
   void* startup_data;
+  void* isolate;
 };
 
 int spin_create_isolate (int argc, char** argv, 

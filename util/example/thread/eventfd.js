@@ -27,21 +27,23 @@ function createThread () {
   let rc = thread.create(tbuf, 0, start_isolate_address, ctx)
   assert(rc === 0, 'could not create thread')
   const tid = addr(tbuf)
-  threads.push({ tid, ctx, tbuf, buf })
+  threads[tid] = { tid, ctx, tbuf, buf }
 }
 
 const js = `
 console.log(spin.hrtime() - spin.start)
 import { Loop } from 'lib/loop.js'
 import { Timer } from 'lib/timer.js'
+const { thread } = spin.load('thread')
 
 const { fs } = spin
+
+const tid = thread.self()
 
 const eventLoop = new Loop()
 
 const timer = new Timer(eventLoop, 1000, () => {
-  console.log(events)
-  //events = 0
+  console.log('thread ' + tid + ' events ' + events)
 })
 
 const on = new BigUint64Array([BigInt(1)])
@@ -70,19 +72,22 @@ const O_NONBLOCK = 2048
 const fd = system.eventfd(0, O_NONBLOCK)
 const rcbuf = new Uint32Array(2)
 const signal = new Uint8Array([1, 0, 0, 0, 0, 0, 0, 0])
-const threads = []
+const threads = {}
 const start_isolate_address = dlsym(0, 'spin_start_isolate')
 assert(start_isolate_address, `could not locate symbol`)
-createThread()
-createThread()
-createThread()
+
+const THREADS = 10
+
+for (let i = 0; i < THREADS; i++) createThread()
 
 function poll() {
-  for (const t of threads) {
+  for (const tid of Object.keys(threads)) {
+    const t = threads[tid]
     const rc = thread.tryJoin(t.tid, rcbuf)
     if (rc === 0) {
       console.log(`thread ${t.tid} complete`)
-      createThread()
+      //createThread()
+      delete threads[t.tid]
     } else if (rc !== EBUSY) {
       console.log(`thread error ${rc}`)
       return
@@ -93,7 +98,15 @@ function poll() {
     console.log(system.strerror(spin.errno))
     return
   }
+  if (Object.keys(threads).length === 0) {
+    shutdown()
+    return
+  }
   nextTick(poll)
+}
+
+function shutdown () {
+  console.log('shutting down')
 }
 
 poll()

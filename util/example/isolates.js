@@ -6,8 +6,10 @@ const { assert } = spin
 
 const { createIsolate } = spin.load('spin').spin
 
+const empty = new Uint32Array(0)
+
 function getArgs (args) {
-  return new Uint32Array(0)
+  return empty
 }
 
 function spawnJS (main = '', js = '', argc = 0, argv = [], buf = new Uint8Array(0), fd = 0) {
@@ -23,16 +25,21 @@ const src = '1'
 let done = 0
 
 const eventLoop = new Loop()
+let last = Date.now()
 
 const timer = new Timer(eventLoop, 1000, () => {
-  console.log(`isolates ${done} rss ${system.getrusage()[0]}`)
+  const elapsed = Date.now() - last
+  const duration = Math.floor((elapsed / done) * 100) / 100
+  const rate = Math.floor(done / (elapsed / 1000))
+  console.log(`isolates ${done} @ ${rate} per second, ${duration} ms, rss ${system.getrusage()[0]}`)
   done = 0
+  last = Date.now()
 })
 
 while (1) {
   spawn(src)
   done++
-  spin.runMicroTasks()
+  //spin.runMicroTasks()
   eventLoop.poll(0)
 }
 

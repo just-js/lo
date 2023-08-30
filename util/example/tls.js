@@ -1,7 +1,6 @@
 import { Socket } from 'lib/socket.js'
 import { Loop } from 'lib/loop.js'
-import { tcc } from 'lib/ffi.js'
-import { dump } from 'lib/binary.js'
+import * as tcc from 'lib/tcc.js'
 import { pico } from 'lib/pico.js'
 import { system } from 'lib/system.js'
 
@@ -23,11 +22,13 @@ function byteSlice (str) {
   return { slice, u8 }
 }
 
-const source = spin.cstr(`
+const compiler = new tcc.Compiler()
+compiler.compile(`
 #include <stdint.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
+
 struct user_data {
   int fd;
 };
@@ -47,18 +48,8 @@ int do_read (struct user_data* userdata, uint8_t* buf, size_t n, size_t* out_n) 
 }
 `)
 
-const TCC_OUTPUT_MEMORY = 1
-const TCC_RELOCATE_AUTO = 1
-const code = tcc.tcc_new()
-tcc.tcc_set_output_type(code, TCC_OUTPUT_MEMORY)
-let rc = tcc.tcc_compile_string(code, source.ptr)
-spin.assert(rc === 0, `could not compile (${rc})`)
-rc = tcc.tcc_relocate(code, TCC_RELOCATE_AUTO)
-spin.assert(rc === 0, `could not relocate (${rc})`)
-const do_write = tcc.tcc_get_symbol(code, spin.cstr('do_write').ptr)
-spin.assert(do_write, `could not locate symbol`)
-const do_read = tcc.tcc_get_symbol(code, spin.cstr('do_read').ptr)
-spin.assert(do_read, `could not locate symbol`)
+const do_read = compiler.symbol('do_read')
+const do_write = compiler.symbol('do_write')
 
 // https://codeload.github.com/oven-sh/bun/tar.gz/bun-v0.5.9
 
@@ -124,6 +115,7 @@ async function connect () {
           if (out_n[0] === 0) {
             break // EOF
           }
+//          console.log(out_n[0])
           if (!headers) {
             let bodyStart = 0
             const parsed = pico.parseResponse(buf.subarray(0, out_n[0]), out_n[0], state)

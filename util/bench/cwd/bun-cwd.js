@@ -1,4 +1,4 @@
-import { run } from './lib/bench.js'
+import { run } from '../../../lib/bench.js'
 
 const { cwd } = process
 

@@ -8,17 +8,40 @@ extern char _binary_main_js_start[];
 extern char _binary_main_js_end[];
 extern char _binary_lib_gen_js_start[];
 extern char _binary_lib_gen_js_end[];
+extern char _binary_lib_system_js_start[];
+extern char _binary_lib_system_js_end[];
+extern char _binary_lib_fast_js_start[];
+extern char _binary_lib_fast_js_end[];
+extern char _binary_lib_asm_js_start[];
+extern char _binary_lib_asm_js_end[];
+extern char _binary_lib_bench_js_start[];
+extern char _binary_lib_bench_js_end[];
+extern char _binary_lib_thread_js_start[];
+extern char _binary_lib_thread_js_end[];
 
 extern "C" {
   extern void* _register_load();
   extern void* _register_fs();
+  extern void* _register_system();
+  extern void* _register_fast();
+  extern void* _register_spin();
+  extern void* _register_thread();
 }
 
 void register_builtins() {
   spin::builtins_add("main.js", _binary_main_js_start, _binary_main_js_end - _binary_main_js_start);
   spin::builtins_add("lib/gen.js", _binary_lib_gen_js_start, _binary_lib_gen_js_end - _binary_lib_gen_js_start);
+  spin::builtins_add("lib/system.js", _binary_lib_system_js_start, _binary_lib_system_js_end - _binary_lib_system_js_start);
+  spin::builtins_add("lib/fast.js", _binary_lib_fast_js_start, _binary_lib_fast_js_end - _binary_lib_fast_js_start);
+  spin::builtins_add("lib/asm.js", _binary_lib_asm_js_start, _binary_lib_asm_js_end - _binary_lib_asm_js_start);
+  spin::builtins_add("lib/bench.js", _binary_lib_bench_js_start, _binary_lib_bench_js_end - _binary_lib_bench_js_start);
+  spin::builtins_add("lib/thread.js", _binary_lib_thread_js_start, _binary_lib_thread_js_end - _binary_lib_thread_js_start);
   spin::modules_add("load", &_register_load);
   spin::modules_add("fs", &_register_fs);
+  spin::modules_add("system", &_register_system);
+  spin::modules_add("fast", &_register_fast);
+  spin::modules_add("spin", &_register_spin);
+  spin::modules_add("thread", &_register_thread);
 }
 
 static unsigned int main_js_len = _binary_main_js_end - _binary_main_js_start;

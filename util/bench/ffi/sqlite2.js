@@ -1,12 +1,13 @@
 import { run } from 'lib/bench.js'
-import { Library } from 'lib/ffi.js'
+import { bind, fastcall } from 'lib/fast.js'
 import * as sqlite from 'bindings/sqlite/sqlite.js'
 
-const { utf8Decode, utf8Length, assert } = spin
+const { utf8Decode, utf8Length, assert, dlopen, dlsym, wrap, addr } = spin
 
 function open (path = ':memory:', flags = defaultFlags) {
   const rc = open2(path, pHandle, flags, 0)
-  return spin.addr(pHandle)
+  assert(rc === 0)
+  return addr(pHandle)
 }
 
 function execute (sql) {
@@ -33,12 +34,25 @@ const OPEN_NOMUTEX = 0x00008000
 const ROW = 100
 const defaultFlags = OPEN_READWRITE | OPEN_NOMUTEX | OPEN_CREATE
 const pHandle = new Uint32Array(2)
-
 const path = './scratch/libsqlite3.so'
+const handle = dlopen(path, 1)
+assert(handle)
+const binding = {}
+Object.keys(sqlite.api).forEach(k => {
+  const def = sqlite.api[k]
+  const sym = dlsym(handle, def.name || k)
+  assert(sym)
+  const fn = bind(sym, def.result, def.parameters)
+  if (def.result === 'pointer') {
+    binding[k] = wrap(pHandle, fn, def.parameters.length)
+  } else {
+    binding[k] = fn
+  }
+})
+
 const {
   version, open2, exec, prepare2, reset, column_int, step
-} = (new Library()).open(path).bind(sqlite.api)
-
+} = binding
 
 const db = open(':memory:')
 assert(db)

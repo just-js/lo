@@ -267,10 +267,10 @@ v8::CTypeInfo rcwrite = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infowrite = v8::CFunctionInfo(rcwrite, 4, cargswrite);
 v8::CFunction pFwrite = v8::CFunction((const void*)&writeFast, &infowrite);
 
-int32_t pipe2Fast(void* p, void* p0, int32_t p1);
+int32_t pipe2Fast(void* p, struct FastApiTypedArray* const p0, int32_t p1);
 v8::CTypeInfo cargspipe2[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
 };
 v8::CTypeInfo rcpipe2 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
@@ -614,14 +614,16 @@ int32_t writeFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32
 }
 void pipe2Slow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-  int* v0 = reinterpret_cast<int*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  Local<Uint32Array> u320 = args[0].As<Uint32Array>();
+  uint8_t* ptr0 = (uint8_t*)u320->Buffer()->Data() + u320->ByteOffset();
+  int* v0 = reinterpret_cast<int*>(ptr0);
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = pipe2(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t pipe2Fast(void* p, void* p0, int32_t p1) {
-  int* v0 = reinterpret_cast<int*>(p0);
+int32_t pipe2Fast(void* p, struct FastApiTypedArray* const p0, int32_t p1) {
+  int* v0 = reinterpret_cast<int*>(p0->data);
   int32_t v1 = p1;
   return pipe2(v0, v1);
 }

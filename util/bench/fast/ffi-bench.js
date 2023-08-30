@@ -9,8 +9,13 @@ assert(handle)
 
 const noop = bind(dlsym(handle, 'noop'), 'void', [])
 assert(noop.state.ptr)
-//const getpid = bind(dlsym(0, 'getpid'), 'i32', [])
-//assert(getpid.state.ptr)
+const add1 = bind(dlsym(handle, 'add1'), 'i32', ['i32'])
+assert(add1.state.ptr)
+const add2 = bind(dlsym(handle, 'add2'), 'i32', ['i32', 'i32'])
+assert(add2.state.ptr)
+
+const getpid = bind(dlsym(0, 'getpid'), 'i32', [])
+assert(getpid.state.ptr)
 //const strnlen = bind(dlsym(0, 'strnlen'), 'i32', ['pointer', 'u32'])
 //assert(strnlen.state.ptr)
 //const strnlen2 = bind(dlsym(0, 'strnlen'), 'i32', ['string', 'u32'])
@@ -29,13 +34,17 @@ const strptr = strb.ptr
 //assert(strnlen2('hello', 1024) === 5)
 //assert(strnlen3(strb, 1024) === 5)
 
-const noop_ptr = noop.state.ptr
-noop()
-const hello = 'hello'
+//const noop_ptr = noop.state.ptr
+//noop()
+//const hello = 'hello'
 
-run('noop', noop, 400000000, 10)
+assert(add1(1) === 2)
+assert(add2(1, 2) === 3)
+//run('noop', noop, 400000000, 10)
+//run('add1', () => add1(1), 400000000, 10)
+//run('add2', () => add2(1, 2), 400000000, 10)
 //run('fastcall.noop', () => fastcall(noop_ptr), 400000000, 10)
-//run('getpid', getpid, 2000000, 10)
+run('getpid', getpid, 2000000, 10)
 //run('system.getpid', system.getpid, 2000000, 10)
 //run('strnlen', () => strnlen(strptr, 1024), 400000000, 10)
 //run('strnlen2', () => strnlen2(hello, 1024), 400000000, 10)
