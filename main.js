@@ -274,8 +274,6 @@ spin.setModuleCallbacks(onModuleLoad, onModuleInstantiate)
 
 // Object.freeze(spin)
 // TODO: freeze intrinsics - maybe make these optional so can be overriden with cli flags/env vars?
-
-
 if (spin.args[1] === 'gen') {
   const {
     bindings, linkerScript, headerFile, makeFile

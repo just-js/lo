@@ -46,6 +46,8 @@ interface Runtime {
   utf8Decode(buf: TypedArray, len: number): string;
   wrap(handle: TypedArray, fn: Function, plen: number): void;
   addr(handle: TypedArray): number;
+  dlsym(handle: number, name: String);
+  dlopen(path: String, flags: number);
   version: RuntimeVersion;
   args: Array<String>;
 }
