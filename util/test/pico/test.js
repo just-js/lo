@@ -4,11 +4,11 @@ import { Library } from 'lib/ffi.js'
 const req = 'GET /foo HTTP/1.1\r\nHost: tfb-server\r\nAccept: *.*\r\n\r\n'
 
 const { phr_parse_request } = (new Library())
-  .open('./module/pico/picohttpparser.so')
+  .open('./module/pico/pico.so')
   .bind({
   phr_parse_request: {
     parameters: [
-      'string', 'u32', 'u32array', 'u32array', 'u32array', 'u32array', 
+      'pointer', 'u32', 'u32array', 'u32array', 'u32array', 'u32array', 
       'u32array', 'buffer', 'u32array', 'u32'
     ],
     result: 'i32'
@@ -16,22 +16,7 @@ const { phr_parse_request } = (new Library())
 })
 
 
-const { assert, addr, utf8Decode } = spin
-/*
-num_headers[0] = 16
-const bytes = phr_parse_request(req, req.length, method, method_len, path, 
-  path_len, minor_version, headers, num_headers, 0)
-assert(bytes === req.length)
-console.log(`method ${utf8Decode(addr(method), method_len[0])}`)
-console.log(`path ${utf8Decode(addr(path), path_len[0])}`)
-console.log(`version ${minor_version[0]}`)
-console.log(`num_headers ${num_headers[0]}`)
-let off = 0
-for (let i = 0; i < num_headers[0]; i++) {
-  console.log(headers.slice(off, off + 32))
-  off += 32
-}
-*/
+const { assert } = spin
 
 class Parser {
   method = new Uint32Array(2)
@@ -55,6 +40,16 @@ class Parser {
 
 const len = req.length
 const parser = new Parser()
-assert(parser.parse(req, len) === len)
+const encoder = new TextEncoder()
+const rb = spin.ptr(encoder.encode(req))
+function parse () {
+  assert(parser.parse(rb.ptr, len) === len)
+  assert(parser.method_len[0] === 3)
+  assert(parser.path_len[0] === 4)
+  assert(parser.minor_version[0] === 1)
+  assert(parser.num_headers[0] === 2)
+}
 
-run('parser', () => parser.parse(req, len), 20000000, 10)
+parse()
+
+run('parser', parse, 20000000, 10)

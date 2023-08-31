@@ -224,7 +224,7 @@ void spin::SET_FAST_METHOD(Isolate* isolate, Local<ObjectTemplate>
     Local<Signature>(),
     0,
     ConstructorBehavior::kThrow,
-    SideEffectType::kHasSideEffect,
+    SideEffectType::kHasNoSideEffect,
     fastCFunc
   );
   exports->Set(
@@ -889,12 +889,12 @@ int32_t spin::fastUtf8EncodeInto (void* p, struct FastOneByteString*
 }
 
 void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
-  //Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
-  //SET_VALUE(isolate, version, GLOBALOBJ, String::NewFromUtf8Literal(isolate, 
-  //  VERSION));
-  //SET_VALUE(isolate, version, "v8", String::NewFromUtf8(isolate, 
-  //  V8::GetVersion()).ToLocalChecked());
-  //SET_MODULE(isolate, target, "version", version);
+  Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
+  SET_VALUE(isolate, version, GLOBALOBJ, String::NewFromUtf8Literal(isolate, 
+    VERSION));
+  SET_VALUE(isolate, version, "v8", String::NewFromUtf8(isolate, 
+    V8::GetVersion()).ToLocalChecked());
+  SET_MODULE(isolate, target, "version", version);
   SET_METHOD(isolate, target, "nextTick", NextTick);
   SET_METHOD(isolate, target, "registerCallback", RegisterCallback);
   SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);

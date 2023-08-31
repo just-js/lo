@@ -10,13 +10,11 @@ const { parseRequest, parseResponse } = (new Library())
   .bind({
     parseRequest: {
       parameters: ['buffer', 'u32', 'buffer'],
-      pointers: ['char*', ,'httpRequest*'],
       result: 'i32',
       name: 'parse_request'
     },
     parseResponse: {
       parameters: ['buffer', 'u32', 'buffer'],
-      pointers: ['char*', ,'httpResponse*'],
       result: 'i32',
       name: 'parse_response'
     }
