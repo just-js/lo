@@ -285,6 +285,27 @@ void bind_fastcallSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(fun);
 }
 
+void bind_slowcallSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<Context> context = isolate->GetCurrentContext();
+  struct fastcall* state = reinterpret_cast<struct fastcall*>(
+    Local<Integer>::Cast(args[0])->Value());
+  Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
+  tpl->SetInternalFieldCount(2);
+  Local<Object> data = tpl->NewInstance(context).ToLocalChecked();
+  data->SetAlignedPointerInInternalField(1, state);
+  Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(isolate, 
+    SlowCallback, data, Local<Signature>(), 0, ConstructorBehavior::kThrow,
+    SideEffectType::kHasNoSideEffect, 0
+  );
+
+  //Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(isolate, 
+  //  SlowCallback);
+  Local<Function> fun = 
+    funcTemplate->GetFunction(context).ToLocalChecked();
+  args.GetReturnValue().Set(fun);
+}
+
 
 
 void fastcallFast(void* p, void* p0);
@@ -311,6 +332,7 @@ void fastcallFast(void* p, void* p0) {
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
   SET_METHOD(isolate, module, "bind_fastcall", bind_fastcallSlow);
+  SET_METHOD(isolate, module, "bind_slowcall", bind_slowcallSlow);
   SET_FAST_METHOD(isolate, module, "fastcall", &pFfastcall, fastcallSlow);
 
   SET_MODULE(isolate, target, "fast", module);

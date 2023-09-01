@@ -980,6 +980,7 @@ void spin_destroy_isolate_context (struct isolate_context* ctx) {
 // generic callback used to trampoline ffi callbacks back into JS
 void spin_callback (exec_info* info) {
   Isolate* isolate = info->isolate;
+  HandleScope scope(isolate);
   info->js_fn.Get(isolate)->Call(isolate->GetCurrentContext(), 
     v8::Null(isolate), 0, 0).ToLocalChecked();
 }
