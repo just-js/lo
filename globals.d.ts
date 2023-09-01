@@ -46,13 +46,18 @@ interface Runtime {
   utf8Decode(buf: TypedArray, len: number): string;
   wrap(handle: TypedArray, fn: Function, plen: number): void;
   addr(handle: TypedArray): number;
-  dlsym(handle: number, name: String);
-  dlopen(path: String, flags: number);
+  dlsym(handle: number, name: String): number;
+  dlopen(path: String, flags: number): number;
   version: RuntimeVersion;
   args: Array<String>;
+  workerSource: String;
+  builtin(path: String): String;
+  async evaluateModule(identifier: String): Promise<object>;
+  loadModule(src: String, specifier: String): Object;
 }
 
 declare var spin: Runtime & typeof globalThis;
+
 declare var TextEncoder: {
   prototype: TextEncoder;
   new(): TextEncoder;
