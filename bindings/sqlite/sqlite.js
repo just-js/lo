@@ -8,7 +8,7 @@ const api = {
   },
   open: {
     name: 'sqlite3_open',
-    parameters: ['pointer', 'pointer'],
+    parameters: ['pointer', 'u32array'],
     pointers: ['const char*', 'sqlite3 **'],
     result: 'i32'
   },
@@ -195,7 +195,6 @@ const api = {
     pointers: ['sqlite3_blob*'],
     result: 'i32'
   },
-/*
   serialize: {
     name: 'sqlite3_serialize',
     parameters: ['pointer', 'string', 'u32array', 'u32'],
@@ -205,11 +204,10 @@ const api = {
   },
   deserialize: {
     name: 'sqlite3_deserialize',
-    parameters: ['pointer', 'string', 'buffer', 'u64', 'u64', 'u32'],
+    parameters: ['pointer', 'string', 'buffer', 'u32', 'u32', 'u32'],
     pointers: ['sqlite3*', , 'unsigned char*'],
     result: 'i32'
   }
-*/
 }
 
 /*

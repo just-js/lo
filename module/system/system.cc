@@ -10,6 +10,7 @@
 #include <sys/sysinfo.h>
 #include <signal.h>
 #include <sys/mman.h>
+#include <linux/userfaultfd.h>
 #include <spin.h>
 
 namespace spin {
@@ -67,6 +68,7 @@ using v8::ModuleRequest;
 using v8::CFunctionInfo;
 using v8::OOMDetails;
 using v8::V8;
+using v8::BigInt;
 
 
 
@@ -84,6 +86,16 @@ v8::CTypeInfo cargsmmap[8] = {
 v8::CTypeInfo rcmmap = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infommap = v8::CFunctionInfo(rcmmap, 8, cargsmmap);
 v8::CFunction pFmmap = v8::CFunction((const void*)&mmapFast, &infommap);
+
+int32_t munmapFast(void* p, void* p0, uint32_t p1);
+v8::CTypeInfo cargsmunmap[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcmunmap = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infomunmap = v8::CFunctionInfo(rcmunmap, 3, cargsmunmap);
+v8::CFunction pFmunmap = v8::CFunction((const void*)&munmapFast, &infomunmap);
 
 void getcwdFast(void* p, struct FastApiTypedArray* const p0, int32_t p1, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargsgetcwd[4] = {
@@ -127,17 +139,38 @@ v8::CTypeInfo rcmprotect = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infomprotect = v8::CFunctionInfo(rcmprotect, 4, cargsmprotect);
 v8::CFunction pFmprotect = v8::CFunction((const void*)&mprotectFast, &infomprotect);
 
-void memcpyFast(void* p, void* p0, void* p1, int32_t p2, struct FastApiTypedArray* const p_ret);
+void memcpyFast(void* p, void* p0, void* p1, uint32_t p2, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargsmemcpy[5] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcmemcpy = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infomemcpy = v8::CFunctionInfo(rcmemcpy, 5, cargsmemcpy);
 v8::CFunction pFmemcpy = v8::CFunction((const void*)&memcpyFast, &infomemcpy);
+
+void memmoveFast(void* p, void* p0, void* p1, uint32_t p2, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsmemmove[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcmemmove = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infomemmove = v8::CFunctionInfo(rcmemmove, 5, cargsmemmove);
+v8::CFunction pFmemmove = v8::CFunction((const void*)&memmoveFast, &infomemmove);
+
+void exitFast(void* p, int32_t p0);
+v8::CTypeInfo cargsexit[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcexit = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoexit = v8::CFunctionInfo(rcexit, 2, cargsexit);
+v8::CFunction pFexit = v8::CFunction((const void*)&exitFast, &infoexit);
 
 int32_t usleepFast(void* p, uint32_t p0);
 v8::CTypeInfo cargsusleep[2] = {
@@ -377,6 +410,16 @@ v8::CTypeInfo rcfree = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infofree = v8::CFunctionInfo(rcfree, 2, cargsfree);
 v8::CFunction pFfree = v8::CFunction((const void*)&freeFast, &infofree);
 
+int32_t memfd_createFast(void* p, struct FastOneByteString* const p0, uint32_t p1);
+v8::CTypeInfo cargsmemfd_create[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcmemfd_create = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infomemfd_create = v8::CFunctionInfo(rcmemfd_create, 3, cargsmemfd_create);
+v8::CFunction pFmemfd_create = v8::CFunction((const void*)&memfd_createFast, &infomemfd_create);
+
 
 
 void mmapSlow(const FunctionCallbackInfo<Value> &args) {
@@ -401,6 +444,19 @@ void mmapFast(void* p, void* p0, uint32_t p1, int32_t p2, int32_t p3, int32_t p4
   void* r = mmap(v0, v1, v2, v3, v4, v5);
   ((void**)p_ret->data)[0] = r;
 
+}
+void munmapSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t rc = munmap(v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t munmapFast(void* p, void* p0, uint32_t p1) {
+  void* v0 = reinterpret_cast<void*>(p0);
+  uint32_t v1 = p1;
+  return munmap(v0, v1);
 }
 void getcwdSlow(const FunctionCallbackInfo<Value> &args) {
   Local<Uint8Array> u80 = args[0].As<Uint8Array>();
@@ -463,17 +519,34 @@ int32_t mprotectFast(void* p, void* p0, uint32_t p1, int32_t p2) {
 void memcpySlow(const FunctionCallbackInfo<Value> &args) {
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
-  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
   void* rc = memcpy(v0, v1, v2);
   Local<ArrayBuffer> ab = args[3].As<Uint32Array>()->Buffer();
   ((void**)ab->Data())[0] = rc;
 }
 
-void memcpyFast(void* p, void* p0, void* p1, int32_t p2, struct FastApiTypedArray* const p_ret) {
+void memcpyFast(void* p, void* p0, void* p1, uint32_t p2, struct FastApiTypedArray* const p_ret) {
   void* v0 = reinterpret_cast<void*>(p0);
   void* v1 = reinterpret_cast<void*>(p1);
-  int32_t v2 = p2;
+  uint32_t v2 = p2;
   void* r = memcpy(v0, v1, v2);
+  ((void**)p_ret->data)[0] = r;
+
+}
+void memmoveSlow(const FunctionCallbackInfo<Value> &args) {
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  void* rc = memmove(v0, v1, v2);
+  Local<ArrayBuffer> ab = args[3].As<Uint32Array>()->Buffer();
+  ((void**)ab->Data())[0] = rc;
+}
+
+void memmoveFast(void* p, void* p0, void* p1, uint32_t p2, struct FastApiTypedArray* const p_ret) {
+  void* v0 = reinterpret_cast<void*>(p0);
+  void* v1 = reinterpret_cast<void*>(p1);
+  uint32_t v2 = p2;
+  void* r = memmove(v0, v1, v2);
   ((void**)p_ret->data)[0] = r;
 
 }
@@ -482,6 +555,10 @@ void exitSlow(const FunctionCallbackInfo<Value> &args) {
   exit(v0);
 }
 
+void exitFast(void* p, int32_t p0) {
+  int32_t v0 = p0;
+  exit(v0);
+}
 void usleepSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -809,16 +886,31 @@ void freeFast(void* p, void* p0) {
   void* v0 = reinterpret_cast<void*>(p0);
   free(v0);
 }
+void memfd_createSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t rc = memfd_create(*v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t memfd_createFast(void* p, struct FastOneByteString* const p0, uint32_t p1) {
+  struct FastOneByteString* const v0 = p0;
+  uint32_t v1 = p1;
+  return memfd_create(v0->data, v1);
+}
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
   SET_FAST_METHOD(isolate, module, "mmap", &pFmmap, mmapSlow);
+  SET_FAST_METHOD(isolate, module, "munmap", &pFmunmap, munmapSlow);
   SET_FAST_METHOD(isolate, module, "getcwd", &pFgetcwd, getcwdSlow);
   SET_FAST_METHOD(isolate, module, "eventfd", &pFeventfd, eventfdSlow);
   SET_FAST_METHOD(isolate, module, "clock_gettime", &pFclock_gettime, clock_gettimeSlow);
   SET_FAST_METHOD(isolate, module, "mprotect", &pFmprotect, mprotectSlow);
   SET_FAST_METHOD(isolate, module, "memcpy", &pFmemcpy, memcpySlow);
-  SET_METHOD(isolate, module, "exit", exitSlow);
+  SET_FAST_METHOD(isolate, module, "memmove", &pFmemmove, memmoveSlow);
+  SET_FAST_METHOD(isolate, module, "exit", &pFexit, exitSlow);
   SET_FAST_METHOD(isolate, module, "usleep", &pFusleep, usleepSlow);
   SET_FAST_METHOD(isolate, module, "getpid", &pFgetpid, getpidSlow);
   SET_FAST_METHOD(isolate, module, "getrusage", &pFgetrusage, getrusageSlow);
@@ -843,6 +935,11 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "getenv", &pFgetenv, getenvSlow);
   SET_FAST_METHOD(isolate, module, "calloc", &pFcalloc, callocSlow);
   SET_FAST_METHOD(isolate, module, "free", &pFfree, freeSlow);
+  SET_FAST_METHOD(isolate, module, "memfd_create", &pFmemfd_create, memfd_createSlow);
+
+  SET_VALUE(isolate, module, "_SC_CLK_TCK", Integer::New(isolate, _SC_CLK_TCK));
+  SET_VALUE(isolate, module, "UFFD_API", BigInt::New(isolate, UFFD_API));
+  SET_VALUE(isolate, module, "_UFFDIO_API", Integer::New(isolate, _UFFDIO_API));
 
   SET_MODULE(isolate, target, "system", module);
 }

@@ -106,6 +106,33 @@ CFunctionInfo infoutf8encodeinto = CFunctionInfo(rcutf8encodeinto, 3,
 CFunction pFutf8encodeinto = CFunction((const void*)&spin::fastUtf8EncodeInto, 
   &infoutf8encodeinto);
 
+CTypeInfo cargsutf8encodeintoatoffset[4] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
+  CTypeInfo(CTypeInfo::Type::kUint8,
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint32)
+};
+CTypeInfo rcutf8encodeintoatoffset = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoutf8encodeintoatoffset = CFunctionInfo(rcutf8encodeintoatoffset, 4, 
+  cargsutf8encodeintoatoffset);
+CFunction pFutf8encodeintoatoffset = CFunction((const void*)&spin::fastUtf8EncodeIntoAtOffset, 
+  &infoutf8encodeintoatoffset);
+
+CTypeInfo cargsutf8encodeinto2[4] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
+  CTypeInfo(CTypeInfo::Type::kUint8,
+  CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint32, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone)
+};
+CTypeInfo rcutf8encodeinto2 = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infoutf8encodeinto2 = CFunctionInfo(rcutf8encodeinto2, 4, 
+  cargsutf8encodeinto2);
+CFunction pFutf8encodeinto2 = CFunction((const void*)&spin::fastUtf8EncodeInto2, 
+  &infoutf8encodeinto2);
+
 CTypeInfo cargsreadmemory[4] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kUint8, 
@@ -118,6 +145,20 @@ CFunctionInfo inforeadmemory = CFunctionInfo(rcreadmemory, 4,
   cargsreadmemory);
 CFunction pFreadmemory = CFunction((const void*)&spin::fastReadMemory, 
   &inforeadmemory);
+
+CTypeInfo cargsreadmemoryatoffset[5] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint8, 
+    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kUint32)
+};
+CTypeInfo rcreadmemoryatoffset = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo inforeadmemoryatoffset = CFunctionInfo(rcreadmemoryatoffset, 5, 
+  cargsreadmemoryatoffset);
+CFunction pFreadmemoryatoffset = CFunction((const void*)&spin::fastReadMemoryAtOffset, 
+  &inforeadmemoryatoffset);
 
 CTypeInfo cargserrnoset[2] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
@@ -169,6 +210,10 @@ void spin::modules_add (const char* name, register_plugin plugin_handler) {
 
 void spin::FreeMemory(void* buf, size_t length, void* data) {
   free(buf);
+}
+
+void spin::FreeMemory2(void* buf, size_t length, void* data) {
+
 }
 
 // QN: how do we ensure an isolate doesn't allocate a bunch of external 
@@ -410,6 +455,7 @@ int spin::CreateIsolate(int argc, char** argv,
   int statusCode = 0;
   create_params.array_buffer_allocator = 
     ArrayBuffer::Allocator::NewDefaultAllocator();
+  //create_params.array_buffer_allocator = new SpecialArrayBufferAllocator();
   create_params.embedder_wrapper_type_index = 0;
   create_params.embedder_wrapper_object_index = 1;
   //create_params.snapshot_blob = startup_data;
@@ -638,8 +684,11 @@ void spin::RegisterCallback(const FunctionCallbackInfo<Value>& args) {
   Local<Function> fn = args[1].As<Function>();
   Isolate* isolate = args.GetIsolate();
   info->isolate = isolate;
+//  info->js_ctx.Reset(isolate, Global<Context>(isolate, isolate->GetCurrentContext()));
   info->js_fn.Reset(isolate, Global<Function>(isolate, fn));
 }
+
+// TODO: UnregisterCallback
 
 void spin::Utf8Decode(const FunctionCallbackInfo<Value> &args) {
   int size = Local<Integer>::Cast(args[1])->Value();
@@ -816,6 +865,12 @@ void spin::fastGetAddress(void* p, struct FastApiTypedArray* const p_buf,
   ((uint64_t*)p_ret->data)[0] = (uint64_t)p_buf->data;
 }
 
+void spin::GetAddress2(const FunctionCallbackInfo<Value> &args) {
+  Local<ArrayBuffer> ta = args[0].As<ArrayBuffer>();
+  uint8_t* ptr = (uint8_t*)ta->Data();
+  ((uint64_t*)args[1].As<Uint32Array>()->Buffer()->Data())[0] = (uint64_t)ptr;
+}
+
 void spin::Utf8Length(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   args.GetReturnValue().Set(args[0].As<String>()->Utf8Length(isolate));
@@ -823,6 +878,31 @@ void spin::Utf8Length(const FunctionCallbackInfo<Value> &args) {
 
 int32_t spin::fastUtf8Length (void* p, struct FastOneByteString* const p_str) {
   return p_str->length;
+}
+
+void spin::GetMeta(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<Context> context = isolate->GetCurrentContext();
+  Local<Object> meta = args[1].As<Object>();
+  bool isExternal = false;
+  bool isDetachable = false;
+  bool isShared = false;
+  if (args[0]->IsArrayBuffer()) {
+    Local<ArrayBuffer> buf = args[0].As<ArrayBuffer>();
+    isExternal = buf->IsExternal();
+    isDetachable = buf->IsDetachable();
+  } else if (args[0]->IsSharedArrayBuffer()) {
+    Local<SharedArrayBuffer> buf = args[0].As<SharedArrayBuffer>();
+    isExternal = buf->IsExternal();
+    isShared = true;
+  } else if (args[0]->IsTypedArray()) {
+    Local<ArrayBuffer> buf = args[0].As<TypedArray>()->Buffer();
+    isExternal = buf->IsExternal();
+    isDetachable = buf->IsDetachable();
+  }
+  meta->Set(context, String::NewFromUtf8Literal(isolate, "isExternal", NewStringType::kInternalized), v8::Boolean::New(isolate, isExternal)).Check();
+  meta->Set(context, String::NewFromUtf8Literal(isolate, "isDetachable", NewStringType::kInternalized), v8::Boolean::New(isolate, isDetachable)).Check();
+  meta->Set(context, String::NewFromUtf8Literal(isolate, "isShared", NewStringType::kInternalized), v8::Boolean::New(isolate, isShared)).Check();
 }
 
 // todo: version that wraps memory in place with an arraybuffer
@@ -840,17 +920,35 @@ void spin::fastReadMemory (void* p, struct FastApiTypedArray* const p_buf,
   memcpy(p_buf->data, start, size);
 }
 
+// todo: version that wraps memory in place with an arraybuffer
+void spin::ReadMemoryAtOffset(const FunctionCallbackInfo<Value> &args) {
+  Local<Uint8Array> u8 = args[0].As<Uint8Array>();
+  uint32_t off = Local<Integer>::Cast(args[3])->Value();
+  uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + off;
+  void* start = reinterpret_cast<void*>(
+    (uint64_t)Local<Integer>::Cast(args[1])->Value());
+  uint32_t size = Local<Integer>::Cast(args[2])->Value();
+  memcpy(dest, start, size);
+}
+
+void spin::fastReadMemoryAtOffset (void* p, struct FastApiTypedArray* const p_buf, 
+  void* start, uint32_t size, uint32_t off) {
+  uint8_t* ptr = (uint8_t*)p_buf->data + off;
+  memcpy(ptr, start, size);
+}
+
 void spin::WrapMemory(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
   uint64_t start64 = (uint64_t)Local<Integer>::Cast(args[0])->Value();
-  uint64_t end64 = (uint64_t)Local<Integer>::Cast(args[1])->Value();
-  const uint64_t size = end64 - start64;
+  uint32_t size = (uint32_t)Local<Integer>::Cast(args[1])->Value();
   void* start = reinterpret_cast<void*>(start64);
-  int free = 0;
-  if (args.Length() > 2) free = Local<Integer>::Cast(args[2])->Value();
-  if (free == 0) {
+  int32_t free_memory = 0;
+  if (args.Length() > 2) {
+    free_memory = (int32_t)Local<Integer>::Cast(args[2])->Value();
+  }
+  if (free_memory == 0) {
     std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
-        start, size, v8::BackingStore::EmptyDeleter, nullptr);
+        start, size, spin::FreeMemory2, nullptr);
     Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
     args.GetReturnValue().Set(ab);
     return;
@@ -859,6 +957,17 @@ void spin::WrapMemory(const FunctionCallbackInfo<Value> &args) {
       start, size, spin::FreeMemory, nullptr);
   Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
   args.GetReturnValue().Set(ab);
+}
+
+void spin::UnWrapMemory(const FunctionCallbackInfo<Value> &args) {
+  Local<ArrayBuffer> ab = args[0].As<ArrayBuffer>();
+  ab->Detach();
+}
+
+void spin::SetFlags(const FunctionCallbackInfo<Value> &args) {
+  String::Utf8Value flags(args.GetIsolate(), args[0]);
+  //V8::SetFlagsFromString(*flags, static_cast<size_t>(flags.length()));
+  V8::SetFlagsFromString(*flags);
 }
 
 void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
@@ -888,6 +997,66 @@ int32_t spin::fastUtf8EncodeInto (void* p, struct FastOneByteString*
   return p_str->length;
 }
 
+void spin::Utf8EncodeInto2(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<String> str = args[0].As<String>();
+  if (str->IsOneByte()) {
+    int size = str->Length();
+    Local<Uint8Array> u8 = args[1].As<Uint8Array>();
+    uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + u8->ByteOffset();
+    uint32_t* res = ((uint32_t*)args[2].As<Uint32Array>()->Buffer()->Data());
+    res[0] = str->WriteOneByte(isolate, dest, 0, size, 
+      String::NO_NULL_TERMINATION);
+    res[1] = size;
+    return;
+  }
+  int written = 0;
+  int size = str->Utf8Length(isolate);
+  Local<Uint8Array> u8 = args[1].As<Uint8Array>();
+  char* dest = (char*)u8->Buffer()->Data() + u8->ByteOffset();
+  uint32_t* res = ((uint32_t*)args[2].As<Uint32Array>()->Buffer()->Data());
+  res[0] = str->WriteUtf8(isolate, dest, size, &written, 
+    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
+  res[1] = written;
+}
+
+void spin::fastUtf8EncodeInto2 (void* p, struct FastOneByteString* 
+  const p_str, struct FastApiTypedArray* const p_buf,
+  struct FastApiTypedArray* const p_ret) {
+  memcpy(p_buf->data, p_str->data, p_str->length);
+  //((uint32_t*)p_ret->data)[0] = (uint32_t)p_str->length;
+  //((uint32_t*)p_ret->data)[1] = (uint32_t)p_str->length;
+}
+
+void spin::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<String> str = args[0].As<String>();
+  uint32_t off = Local<Integer>::Cast(args[2])->Value();
+  if (str->IsOneByte()) {
+    int size = str->Length();
+    Local<Uint8Array> u8 = args[1].As<Uint8Array>();
+    uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + off;
+    int written = str->WriteOneByte(isolate, dest, 0, size, 
+      String::NO_NULL_TERMINATION);
+    args.GetReturnValue().Set(Integer::New(isolate, written));
+    return;
+  }
+  int written = 0;
+  int size = str->Utf8Length(isolate);
+  Local<Uint8Array> u8 = args[1].As<Uint8Array>();
+  char* dest = (char*)u8->Buffer()->Data() + off;
+  str->WriteUtf8(isolate, dest, size, &written, 
+    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
+  args.GetReturnValue().Set(Integer::New(isolate, written));
+}
+
+int32_t spin::fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString* 
+  const p_str, struct FastApiTypedArray* const p_buf, uint32_t off) {
+  uint8_t* dest = (uint8_t*)p_buf->data + off;
+  memcpy(dest, p_str->data, p_str->length);
+  return p_str->length;
+}
+
 void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
   SET_VALUE(isolate, version, GLOBALOBJ, String::NewFromUtf8Literal(isolate, 
@@ -907,6 +1076,11 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
   SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
+  SET_METHOD(isolate, target, "unwrapMemory", UnWrapMemory);
+  SET_METHOD(isolate, target, "setFlags", SetFlags);
+  SET_METHOD(isolate, target, "getAddressSlow", GetAddress);
+  SET_METHOD(isolate, target, "getAddress2Slow", GetAddress2);
+  SET_METHOD(isolate, target, "getMeta", GetMeta);
   SET_FAST_PROP(isolate, target, "errno", &pFerrnoget, GetErrno, &pFerrnoset, 
     SetErrno);
   SET_FAST_METHOD(isolate, target, "hrtime", &pFhrtime, HRTime);
@@ -914,7 +1088,12 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, target, "utf8Length", &pFutf8length, Utf8Length);
   SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto, 
     Utf8EncodeInto);
+  SET_FAST_METHOD(isolate, target, "utf8EncodeIntoAtOffset", &pFutf8encodeintoatoffset, 
+    Utf8EncodeIntoAtOffset);
+  SET_FAST_METHOD(isolate, target, "utf8EncodeInto2", &pFutf8encodeinto2, 
+    Utf8EncodeInto2);
   SET_FAST_METHOD(isolate, target, "readMemory", &pFreadmemory, ReadMemory);
+  SET_FAST_METHOD(isolate, target, "readMemoryAtOffset", &pFreadmemoryatoffset, ReadMemoryAtOffset);
 }
 
 // C/FFI api for managing isolates

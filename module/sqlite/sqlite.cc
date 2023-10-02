@@ -59,6 +59,7 @@ using v8::ModuleRequest;
 using v8::CFunctionInfo;
 using v8::OOMDetails;
 using v8::V8;
+using v8::BigInt;
 
 typedef int (*callback)(void*,int,char**,char**);
 
@@ -73,11 +74,11 @@ v8::CTypeInfo rcversion = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infoversion = v8::CFunctionInfo(rcversion, 2, cargsversion);
 v8::CFunction pFversion = v8::CFunction((const void*)&versionFast, &infoversion);
 
-int32_t openFast(void* p, void* p0, void* p1);
+int32_t openFast(void* p, void* p0, struct FastApiTypedArray* const p1);
 v8::CTypeInfo cargsopen[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rcopen = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoopen = v8::CFunctionInfo(rcopen, 3, cargsopen);
@@ -378,6 +379,33 @@ v8::CTypeInfo rcblob_write = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoblob_write = v8::CFunctionInfo(rcblob_write, 5, cargsblob_write);
 v8::CFunction pFblob_write = v8::CFunction((const void*)&blob_writeFast, &infoblob_write);
 
+void serializeFast(void* p, void* p0, struct FastOneByteString* const p1, struct FastApiTypedArray* const p2, uint32_t p3, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsserialize[6] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcserialize = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoserialize = v8::CFunctionInfo(rcserialize, 6, cargsserialize);
+v8::CFunction pFserialize = v8::CFunction((const void*)&serializeFast, &infoserialize);
+
+int32_t deserializeFast(void* p, void* p0, struct FastOneByteString* const p1, struct FastApiTypedArray* const p2, uint32_t p3, uint32_t p4, uint32_t p5);
+v8::CTypeInfo cargsdeserialize[7] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcdeserialize = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infodeserialize = v8::CFunctionInfo(rcdeserialize, 7, cargsdeserialize);
+v8::CFunction pFdeserialize = v8::CFunction((const void*)&deserializeFast, &infodeserialize);
+
 
 
 void versionSlow(const FunctionCallbackInfo<Value> &args) {
@@ -396,14 +424,16 @@ void versionFast(void* p, struct FastApiTypedArray* const p_ret) {
 void openSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   const char* v0 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
-  sqlite3 ** v1 = reinterpret_cast<sqlite3 **>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  Local<Uint32Array> u321 = args[1].As<Uint32Array>();
+  uint8_t* ptr1 = (uint8_t*)u321->Buffer()->Data() + u321->ByteOffset();
+  sqlite3 ** v1 = reinterpret_cast<sqlite3 **>(ptr1);
   int32_t rc = sqlite3_open(v0, v1);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t openFast(void* p, void* p0, void* p1) {
+int32_t openFast(void* p, void* p0, struct FastApiTypedArray* const p1) {
   const char* v0 = reinterpret_cast<const char*>(p0);
-  sqlite3 ** v1 = reinterpret_cast<sqlite3 **>(p1);
+  sqlite3 ** v1 = reinterpret_cast<sqlite3 **>(p1->data);
   return sqlite3_open(v0, v1);
 }
 void open2Slow(const FunctionCallbackInfo<Value> &args) {
@@ -845,6 +875,51 @@ int32_t blob_writeFast(void* p, void* p0, struct FastApiTypedArray* const p1, in
   int32_t v3 = p3;
   return sqlite3_blob_write(v0, v1, v2, v3);
 }
+void serializeSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  String::Utf8Value v1(isolate, args[1]);
+  Local<Uint32Array> u322 = args[2].As<Uint32Array>();
+  uint8_t* ptr2 = (uint8_t*)u322->Buffer()->Data() + u322->ByteOffset();
+  sqlite3_int64* v2 = reinterpret_cast<sqlite3_int64*>(ptr2);
+  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  unsigned char* rc = sqlite3_serialize(v0, *v1, v2, v3);
+  Local<ArrayBuffer> ab = args[4].As<Uint32Array>()->Buffer();
+  ((unsigned char**)ab->Data())[0] = rc;
+}
+
+void serializeFast(void* p, void* p0, struct FastOneByteString* const p1, struct FastApiTypedArray* const p2, uint32_t p3, struct FastApiTypedArray* const p_ret) {
+  sqlite3* v0 = reinterpret_cast<sqlite3*>(p0);
+  struct FastOneByteString* const v1 = p1;
+  sqlite3_int64* v2 = reinterpret_cast<sqlite3_int64*>(p2->data);
+  uint32_t v3 = p3;
+  unsigned char* r = sqlite3_serialize(v0, v1->data, v2, v3);
+  ((unsigned char**)p_ret->data)[0] = r;
+
+}
+void deserializeSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  sqlite3* v0 = reinterpret_cast<sqlite3*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  String::Utf8Value v1(isolate, args[1]);
+  Local<Uint8Array> u82 = args[2].As<Uint8Array>();
+  uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
+  unsigned char* v2 = reinterpret_cast<unsigned char*>(ptr2);
+  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  uint32_t v4 = Local<Integer>::Cast(args[4])->Value();
+  uint32_t v5 = Local<Integer>::Cast(args[5])->Value();
+  int32_t rc = sqlite3_deserialize(v0, *v1, v2, v3, v4, v5);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t deserializeFast(void* p, void* p0, struct FastOneByteString* const p1, struct FastApiTypedArray* const p2, uint32_t p3, uint32_t p4, uint32_t p5) {
+  sqlite3* v0 = reinterpret_cast<sqlite3*>(p0);
+  struct FastOneByteString* const v1 = p1;
+  unsigned char* v2 = reinterpret_cast<unsigned char*>(p2->data);
+  uint32_t v3 = p3;
+  uint32_t v4 = p4;
+  uint32_t v5 = p5;
+  return sqlite3_deserialize(v0, v1->data, v2, v3, v4, v5);
+}
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
@@ -879,6 +954,9 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "blob_read", &pFblob_read, blob_readSlow);
   SET_FAST_METHOD(isolate, module, "blob_close", &pFblob_close, blob_closeSlow);
   SET_FAST_METHOD(isolate, module, "blob_write", &pFblob_write, blob_writeSlow);
+  SET_FAST_METHOD(isolate, module, "serialize", &pFserialize, serializeSlow);
+  SET_FAST_METHOD(isolate, module, "deserialize", &pFdeserialize, deserializeSlow);
+
 
   SET_MODULE(isolate, target, "sqlite", module);
 }

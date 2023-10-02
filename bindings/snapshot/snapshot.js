@@ -35,18 +35,36 @@ void create_snapshotSlow (const FunctionCallbackInfo<Value>& args) {
   v8::HandleScope scope(isolate);
   const char* embedded_source = reinterpret_cast<const char*>(
     (uint64_t)Local<Integer>::Cast(args[0])->Value());
-  v8::SnapshotCreator snapshot_creator(isolate);
-  {
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    if (embedded_source != nullptr &&
-        !RunExtraCode(isolate, context, embedded_source, "<embedded>")) {
-      return;
-    }
-    snapshot_creator.SetDefaultContext(context);
-  }
-  v8::StartupData sna = snapshot_creator.CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kClear);
-  ((uint64_t*)args[1].As<Uint32Array>()->Buffer()->Data())[0] = (uint64_t)sna.data;
-  args.GetReturnValue().Set(Integer::New(isolate, sna.raw_size));
+  Isolate::CreateParams create_params;
+  int statusCode = 0;
+  create_params.array_buffer_allocator = 
+    ArrayBuffer::Allocator::NewDefaultAllocator();
+  create_params.embedder_wrapper_type_index = 0;
+  create_params.embedder_wrapper_object_index = 1;
+  //create_params.fatal_error_callback = spin::fatalErrorcallback;
+  //create_params.oom_error_callback = spin::OOMErrorcallback;
+  Isolate::Initialize(isolate, create_params);
+  Isolate::Scope isolate_scope(isolate);
+
+  Local<ObjectTemplate> global = ObjectTemplate::New(isolate);
+  Local<ObjectTemplate> runtime = ObjectTemplate::New(isolate);
+  //runtime->SetImmutableProto();
+  spin::Init(isolate, runtime);
+  Local<Context> context = Context::New(isolate, NULL, global);
+  Context::Scope context_scope(context);
+
+  //v8::SnapshotCreator snapshot_creator(isolate);
+  //{
+    //v8::Local<v8::Context> context = v8::Context::New(isolate);
+    //if (embedded_source != nullptr &&
+    //    !RunExtraCode(isolate, context, embedded_source, "<embedded>")) {
+    //  return;
+    //}
+    //snapshot_creator.SetDefaultContext(context);
+  //}
+  //v8::StartupData sna = snapshot_creator.CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kClear);
+  //((uint64_t*)args[1].As<Uint32Array>()->Buffer()->Data())[0] = (uint64_t)sna.data;
+  //args.GetReturnValue().Set(Integer::New(isolate, sna.raw_size));
 }
 `
 const name = 'snapshot'

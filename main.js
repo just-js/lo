@@ -1,3 +1,8 @@
+const { fs } = spin.library('fs')
+const loader = spin.library('load')
+
+const { utf8Length, utf8EncodeInto, wrapMemory } = spin
+
 const AD = '\u001b[0m' // ANSI Default
 const A0 = '\u001b[30m' // ANSI Black
 const AR = '\u001b[31m' // ANSI Red
@@ -10,12 +15,22 @@ const AW = '\u001b[37m' // ANSI White
 
 spin.colors = { AD, A0, AR, AG, AY, AB, AM, AC, AW }
 
-const { fs } = spin.library('fs')
-const loader = spin.library('load')
-
 const STDIN = 0
 const STDOUT = 1
 const STDERR = 2
+
+const O_RDONLY = 0
+const O_WRONLY = 1
+const O_CREAT = 64
+const O_TRUNC = 512
+
+const S_IRUSR = 256
+const S_IWUSR = 128
+const S_IRGRP = S_IRUSR >> 3
+const S_IROTH = S_IRGRP >> 3
+
+const defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC
+const defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 
 globalThis.console = {
   log: str => fs.write_string(STDOUT, `${str}\n`),
@@ -26,8 +41,6 @@ globalThis.onUnhandledRejection = err => {
   console.error(`${AR}Unhandled Rejection${AD}`)
   console.error(err.stack)
 }
-
-const { utf8Length, utf8EncodeInto } = spin
 
 class TextEncoder {
   encoding = 'utf-8'
@@ -44,8 +57,6 @@ class TextEncoder {
   }
 }
 
-globalThis.TextEncoder = TextEncoder
-
 class TextDecoder {
   encoding = 'utf-8'
 
@@ -54,8 +65,6 @@ class TextDecoder {
     return spin.utf8Decode(u8.ptr, u8.size)
   }
 }
-
-globalThis.TextDecoder = TextDecoder
 
 function wrap (h, fn, plen = 0) {
   const call = fn
@@ -67,10 +76,10 @@ function wrap (h, fn, plen = 0) {
     call(${params}${plen > 0 ? ', ' : ''}h);
     return h[0] + ((2 ** 32) * h[1]);
   }`,)
-  return f(h, call)
+  const fun = f(h, call)
+  if (fn.state) fun.state = fn.state
+  return fun
 }
-
-const u32 = new Uint32Array(2)
 
 // todo: this is going to be the address of the underlying arraybuffer data,
 // need to apply the u8 offset
@@ -80,28 +89,15 @@ function ptr (u8) {
   return u8
 }
 
-const encoder = new TextEncoder()
-
 function C (str) {
-  return ptr(encoder.encode(`${str}\0`))
+  const buf = ptr(encoder.encode(`${str}\0`))
+  buf.size = buf.size - 1
+  return buf
 }
 
 function addr (u32) {
   return u32[0] + ((2 ** 32) * u32[1])  
 }
-
-const O_RDONLY = 0
-const O_WRONLY = 1
-const O_CREAT = 64
-const O_TRUNC = 512
-
-const S_IRUSR = 256
-const S_IWUSR = 128
-const S_IRGRP = S_IRUSR >> 3
-const S_IROTH = S_IRGRP >> 3
-
-const defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC
-const defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 
 function readFile (path, flags = O_RDONLY) {
   const fd = fs.open(path, flags)
@@ -143,8 +139,6 @@ function writeFile (path, u8, flags = defaultWriteFlags, mode = defaultWriteMode
   return total
 }
 
-const libCache = new Map()
-
 function load (name) {
   if (libCache.has(name)) return libCache.get(name)
   let lib = spin.library(name)
@@ -171,6 +165,7 @@ function assert (condition, message, ErrorType = Error) {
     }
     throw new ErrorType(message || "Assertion failed")
   }
+  return condition
 }
 
 async function globalMain () {
@@ -191,8 +186,6 @@ async function globalMain () {
     await serve(...spin.args.slice(2))
   }
 }
-
-const decoder = new TextDecoder()
 
 function loadSource (specifier) {
   let src = spin.builtin(specifier)
@@ -241,32 +234,57 @@ function onModuleInstantiate (specifier) {
   return mod.identity
 }
 
+function require (fileName) {
+  if (requireCache.has(fileName)) {
+    return requireCache.get(fileName).exports
+  }
+  const src = loadSource(fileName)
+  const f = new Function('exports', 'module', 'require', src)
+  const mod = { exports: {} }
+  f.call(globalThis, mod.exports, mod, require)
+  moduleCache.set(fileName, mod)
+  return mod.exports
+}
+
 const _builtin = spin.builtin
 spin.builtin = fp => {
   // todo - fix this hardcoding of name
   if (fp === 'thread.js') return spin.workerSource
   return _builtin(fp)
 }
+
+const encoder = new TextEncoder()
+const decoder = new TextDecoder()
+const handle = new Uint32Array(2)
+const stat = new Uint8Array(160)
+const st = new BigUint64Array(stat.buffer)
 const moduleCache = new Map()
+const requireCache = new Map()
+const libCache = new Map()
+
+globalThis.require = require
+globalThis.TextEncoder = TextEncoder
+globalThis.TextDecoder = TextDecoder
+
+spin.handle = handle
 spin.fs = fs
 spin.fs.readFile = readFile
 spin.fs.writeFile = writeFile
 spin.load = load
-const handle = new Uint32Array(2)
 spin.hrtime = wrap(handle, spin.hrtime)
 spin.getAddress = wrap(handle, spin.getAddress, 1)
+spin.getAddressSlow = wrap(handle, spin.getAddressSlow, 1)
+spin.getAddress2Slow = wrap(handle, spin.getAddress2Slow, 1)
 spin.dlopen = wrap(handle, loader.load.dlopen, 2)
 spin.dlsym = wrap(handle, loader.load.dlsym, 2)
 spin.dlclose = loader.load.dlclose
-const stat = new Uint8Array(160)
-const st = new BigUint64Array(stat.buffer)
 spin.assert = assert
 spin.moduleCache = moduleCache
 spin.libCache = libCache
+spin.requireCache = requireCache
 spin.wrap = wrap
 // todo: change anywhere that uses this
-const { wrapMemory } = spin
-spin.wrapMemory = (ptr, len) => new Uint8Array(wrapMemory(ptr, len))
+//spin.wrapMemory = (ptr, len, free = 0) => new Uint8Array(wrapMemory(ptr, len, free))
 spin.cstr = C
 spin.ptr = ptr
 spin.addr = addr
@@ -280,12 +298,12 @@ if (spin.args[1] === 'gen') {
   } = await import('lib/gen.js')
   let source = ''
   if (spin.args[2] === '--link') {
-    source += await linkerScript('main.js')
+    source += linkerScript('main.js')
     for (const fileName of spin.args.slice(3)) {
-      source += await linkerScript(fileName)
+      source += linkerScript(fileName)
     }
   } else if (spin.args[2] === '--header') {
-    source = await headerFile(spin.args.slice(3))
+    source = headerFile(spin.args.slice(3))
   } else if (spin.args[2] === '--make') {
     source = await makeFile(spin.args[3])
   } else {

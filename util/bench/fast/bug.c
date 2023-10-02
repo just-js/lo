@@ -1,7 +1,7 @@
 // gcc -O3 -march=native -mtune=native -shared -rdynamic -fPIC -o bug.so bug.c
 #include <stdio.h>
 
-int strnlen (const char* str, int len) {
+long unsigned int strnlen (const char* str, unsigned long int len) {
   return 5;
 }
 

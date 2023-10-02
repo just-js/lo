@@ -5,5 +5,5 @@ const bigUint8 = new Uint8Array([60, 33, 68, 79, 67, 84, 89, 80, 69, 32, 104, 11
 
 const decoder = new TextDecoder()
 
-//run('decodesmall', () => decoder.decode(smallUint8), 3000000, 10) // 10 ns per iter
-run('decodebig', () => decoder.decode(bigUint8), 500000, 10) // 10 ns per iter
+run('decodesmall', () => decoder.decode(smallUint8), 3000000, 10) // 10 ns per iter
+//run('decodebig', () => decoder.decode(bigUint8), 500000, 10) // 10 ns per iter

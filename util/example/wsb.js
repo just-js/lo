@@ -6,6 +6,7 @@ function createSocket (port = 3000, address = '127.0.0.1') {
   const sock = new WebSocket(eventLoop, port, address)
 
   sock.onopen = () => {
+    console.log('open')
     sock.send(msg)
     send++
   }
@@ -28,11 +29,12 @@ function onTimer () {
 let send = 0
 let recv = 0
 const eventLoop = new Loop()
-const msg = WebSocket.createMessage(1024)
+const msg = WebSocket.createMessage(100, 0)
 const timer = new Timer(eventLoop, 1000, onTimer)
 const sockets = []
+const numClients = 1
 
-for (let i = 0; i < 16; i++) {
+for (let i = 0; i < numClients; i++) {
   sockets.push(createSocket(3000))
 }
 

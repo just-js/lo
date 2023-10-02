@@ -417,6 +417,16 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "fcntl", &pFfcntl, fcntlSlow);
   SET_FAST_METHOD(isolate, module, "sendfile", &pFsendfile, sendfileSlow);
 
+  SET_VALUE(isolate, module, "S_IFBLK", Integer::New(isolate, S_IFBLK));
+  SET_VALUE(isolate, module, "S_IFCHR", Integer::New(isolate, S_IFCHR));
+  SET_VALUE(isolate, module, "S_IFIFO", Integer::New(isolate, S_IFIFO));
+  SET_VALUE(isolate, module, "S_IRUSR", Integer::New(isolate, S_IRUSR));
+  SET_VALUE(isolate, module, "S_IWUSR", Integer::New(isolate, S_IWUSR));
+  SET_VALUE(isolate, module, "S_IRGRP", Integer::New(isolate, S_IRGRP));
+  SET_VALUE(isolate, module, "S_IWGRP", Integer::New(isolate, S_IWGRP));
+  SET_VALUE(isolate, module, "S_IROTH", Integer::New(isolate, S_IROTH));
+  SET_VALUE(isolate, module, "S_IWOTH", Integer::New(isolate, S_IWOTH));
+
   SET_MODULE(isolate, target, "fs", module);
 }
 } // namespace fs

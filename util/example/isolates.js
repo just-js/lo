@@ -21,7 +21,7 @@ function spawn (code) {
   assert(spawnJS(code) === 0, 'could not run code')
 }
 
-const src = '1'
+const src = ''
 let done = 0
 
 const eventLoop = new Loop()

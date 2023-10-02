@@ -64,7 +64,12 @@ const api = {
   }
 }
 
+const constants = {
+  S_IFBLK: 'i32', S_IFCHR: 'i32', S_IFIFO: 'i32', 
+  S_IRUSR: 'i32', S_IWUSR: 'i32', S_IRGRP: 'i32', S_IWGRP: 'i32',
+  S_IROTH: 'i32', S_IWOTH: 'i32'
+}
 const includes = ['unistd.h', 'sys/stat.h', 'fcntl.h', 'dirent.h', 'sys/sendfile.h']
 const name = 'fs'
 
-export { api, includes, name }
+export { api, includes, name, constants }

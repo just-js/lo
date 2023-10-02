@@ -18,6 +18,16 @@ const api = {
     pointers: ['TCCState*', 'const char*'],
     result: 'void'
   },
+  tcc_add_library_path: {
+    parameters: ['pointer', 'string'],
+    pointers: ['TCCState*', 'const char*'],
+    result: 'i32'
+  },
+  tcc_add_library: {
+    parameters: ['pointer', 'string'],
+    pointers: ['TCCState*', 'const char*'],
+    result: 'i32'
+  },
   tcc_add_include_path: {
     parameters: ['pointer', 'string'],
     pointers: ['TCCState*', 'const char*'],

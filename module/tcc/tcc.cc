@@ -59,6 +59,7 @@ using v8::ModuleRequest;
 using v8::CFunctionInfo;
 using v8::OOMDetails;
 using v8::V8;
+using v8::BigInt;
 
 
 
@@ -100,6 +101,26 @@ v8::CTypeInfo cargstcc_set_options[3] = {
 v8::CTypeInfo rctcc_set_options = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infotcc_set_options = v8::CFunctionInfo(rctcc_set_options, 3, cargstcc_set_options);
 v8::CFunction pFtcc_set_options = v8::CFunction((const void*)&tcc_set_optionsFast, &infotcc_set_options);
+
+int32_t tcc_add_library_pathFast(void* p, void* p0, struct FastOneByteString* const p1);
+v8::CTypeInfo cargstcc_add_library_path[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+};
+v8::CTypeInfo rctcc_add_library_path = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infotcc_add_library_path = v8::CFunctionInfo(rctcc_add_library_path, 3, cargstcc_add_library_path);
+v8::CFunction pFtcc_add_library_path = v8::CFunction((const void*)&tcc_add_library_pathFast, &infotcc_add_library_path);
+
+int32_t tcc_add_libraryFast(void* p, void* p0, struct FastOneByteString* const p1);
+v8::CTypeInfo cargstcc_add_library[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+};
+v8::CTypeInfo rctcc_add_library = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infotcc_add_library = v8::CFunctionInfo(rctcc_add_library, 3, cargstcc_add_library);
+v8::CFunction pFtcc_add_library = v8::CFunction((const void*)&tcc_add_libraryFast, &infotcc_add_library);
 
 int32_t tcc_add_include_pathFast(void* p, void* p0, struct FastOneByteString* const p1);
 v8::CTypeInfo cargstcc_add_include_path[3] = {
@@ -222,6 +243,32 @@ void tcc_set_optionsFast(void* p, void* p0, struct FastOneByteString* const p1) 
   struct FastOneByteString* const v1 = p1;
   tcc_set_options(v0, v1->data);
 }
+void tcc_add_library_pathSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  String::Utf8Value v1(isolate, args[1]);
+  int32_t rc = tcc_add_library_path(v0, *v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t tcc_add_library_pathFast(void* p, void* p0, struct FastOneByteString* const p1) {
+  TCCState* v0 = reinterpret_cast<TCCState*>(p0);
+  struct FastOneByteString* const v1 = p1;
+  return tcc_add_library_path(v0, v1->data);
+}
+void tcc_add_librarySlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  String::Utf8Value v1(isolate, args[1]);
+  int32_t rc = tcc_add_library(v0, *v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t tcc_add_libraryFast(void* p, void* p0, struct FastOneByteString* const p1) {
+  TCCState* v0 = reinterpret_cast<TCCState*>(p0);
+  struct FastOneByteString* const v1 = p1;
+  return tcc_add_library(v0, v1->data);
+}
 void tcc_add_include_pathSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   TCCState* v0 = reinterpret_cast<TCCState*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -325,6 +372,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "tcc_delete", &pFtcc_delete, tcc_deleteSlow);
   SET_FAST_METHOD(isolate, module, "tcc_set_output_type", &pFtcc_set_output_type, tcc_set_output_typeSlow);
   SET_FAST_METHOD(isolate, module, "tcc_set_options", &pFtcc_set_options, tcc_set_optionsSlow);
+  SET_FAST_METHOD(isolate, module, "tcc_add_library_path", &pFtcc_add_library_path, tcc_add_library_pathSlow);
+  SET_FAST_METHOD(isolate, module, "tcc_add_library", &pFtcc_add_library, tcc_add_librarySlow);
   SET_FAST_METHOD(isolate, module, "tcc_add_include_path", &pFtcc_add_include_path, tcc_add_include_pathSlow);
   SET_FAST_METHOD(isolate, module, "tcc_add_file", &pFtcc_add_file, tcc_add_fileSlow);
   SET_FAST_METHOD(isolate, module, "tcc_compile_string", &pFtcc_compile_string, tcc_compile_stringSlow);
@@ -332,6 +381,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "tcc_get_symbol", &pFtcc_get_symbol, tcc_get_symbolSlow);
   SET_FAST_METHOD(isolate, module, "tcc_add_symbol", &pFtcc_add_symbol, tcc_add_symbolSlow);
   SET_FAST_METHOD(isolate, module, "tcc_output_file", &pFtcc_output_file, tcc_output_fileSlow);
+
 
   SET_MODULE(isolate, target, "tcc", module);
 }

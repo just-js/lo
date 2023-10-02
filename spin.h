@@ -19,6 +19,28 @@ extern "C"
 
 namespace spin {
 
+class SpecialArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
+ public:
+  void* Allocate(size_t length) override { 
+    return calloc(length, 1); 
+  }
+
+  void* AllocateUninitialized(size_t length) override {
+    return malloc(length);
+  }
+
+  void Free(void* data, size_t) override { free(data); }
+
+  void* Reallocate(void* data, size_t old_length, size_t new_length) override {
+    void* new_data = realloc(data, new_length);
+    if (new_length > old_length) {
+      memset(reinterpret_cast<uint8_t*>(new_data) + old_length, 0,
+             new_length - old_length);
+    }
+    return new_data;
+  }
+};
+
 // structs for passing typed arrays & strings in and out of v8 fast api calls
 struct FastApiTypedArray {
   uintptr_t length_;
@@ -28,6 +50,11 @@ struct FastApiTypedArray {
 struct FastOneByteString {
   const char* data;
   uint32_t length;
+};
+
+struct FastApiArrayBuffer {
+  void* data;
+  size_t byte_length;
 };
 
 // struct for builtin JS and text files that have been linked into the runtime
@@ -104,6 +131,7 @@ int CreateIsolate(int argc, char** argv,
 void PrintStackTrace(v8::Isolate* isolate, const v8::TryCatch& try_catch);
 void PromiseRejectCallback(v8::PromiseRejectMessage message);
 void FreeMemory(void* buf, size_t length, void* data);
+void FreeMemory2(void* buf, size_t length, void* data);
 
 // external JS api - these are bound to the "spin" object on JS global
 void Builtin(const v8::FunctionCallbackInfo<v8::Value> &args);
@@ -117,13 +145,21 @@ void RegisterCallback(const v8::FunctionCallbackInfo<v8::Value> &args);
 void RunMicroTasks(const v8::FunctionCallbackInfo<v8::Value> &args);
 void SetModuleCallbacks(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Utf8Decode(const v8::FunctionCallbackInfo<v8::Value> &args);
+void SetFlags(const v8::FunctionCallbackInfo<v8::Value> &args);
 
 // fast api methods
 void GetAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastGetAddress(void* p, struct FastApiTypedArray* const p_buf, 
   struct FastApiTypedArray* const p_ret);
+void GetAddress2(const v8::FunctionCallbackInfo<v8::Value> &args);
+void fastGetAddress2(void* p, struct FastApiArrayBuffer* const p_buf, 
+  struct FastApiTypedArray* const p_ret);
 void Utf8EncodeInto(const v8::FunctionCallbackInfo<v8::Value> &args);
 int32_t fastUtf8EncodeInto (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf);
+void Utf8EncodeInto2(const v8::FunctionCallbackInfo<v8::Value> &args);
+void fastUtf8EncodeInto2 (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf, struct FastApiTypedArray* const p_ret);
+void Utf8EncodeIntoAtOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
+int32_t fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf, uint32_t off);
 void Utf8Length(const v8::FunctionCallbackInfo<v8::Value> &args);
 int32_t fastUtf8Length (void* p, struct FastOneByteString* const p_ret);
 
@@ -131,7 +167,11 @@ void HRTime(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastHRTime (void* p, struct FastApiTypedArray* const p_ret);
 void ReadMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastReadMemory (void* p, struct FastApiTypedArray* const p_buf, void* start, uint32_t size);
+void ReadMemoryAtOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
+void fastReadMemoryAtOffset (void* p, struct FastApiTypedArray* const p_buf, void* start, uint32_t size, uint32_t off);
 void WrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
+void UnWrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
+void GetMeta(const v8::FunctionCallbackInfo<v8::Value> &args);
 
 // fast api properties
 void GetErrno(const v8::FunctionCallbackInfo<v8::Value> &args);

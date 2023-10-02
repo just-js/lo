@@ -16,8 +16,26 @@ extern char _binary_lib_asm_js_start[];
 extern char _binary_lib_asm_js_end[];
 extern char _binary_lib_bench_js_start[];
 extern char _binary_lib_bench_js_end[];
+extern char _binary_lib_net_js_start[];
+extern char _binary_lib_net_js_end[];
+extern char _binary_lib_loop_js_start[];
+extern char _binary_lib_loop_js_end[];
+extern char _binary_lib_pico_js_start[];
+extern char _binary_lib_pico_js_end[];
+extern char _binary_lib_timer_js_start[];
+extern char _binary_lib_timer_js_end[];
+extern char _binary_lib_binary_js_start[];
+extern char _binary_lib_binary_js_end[];
+extern char _binary_lib_acorn_js_start[];
+extern char _binary_lib_acorn_js_end[];
+extern char _binary_lib_path_js_start[];
+extern char _binary_lib_path_js_end[];
 extern char _binary_lib_thread_js_start[];
 extern char _binary_lib_thread_js_end[];
+extern char _binary_lib_fs_js_start[];
+extern char _binary_lib_fs_js_end[];
+extern char _binary_lib_websocket_js_start[];
+extern char _binary_lib_websocket_js_end[];
 
 extern "C" {
   extern void* _register_load();
@@ -26,6 +44,10 @@ extern "C" {
   extern void* _register_fast();
   extern void* _register_spin();
   extern void* _register_thread();
+  extern void* _register_net();
+  extern void* _register_epoll();
+  extern void* _register_pico();
+  extern void* _register_encode();
 }
 
 void register_builtins() {
@@ -35,13 +57,26 @@ void register_builtins() {
   spin::builtins_add("lib/fast.js", _binary_lib_fast_js_start, _binary_lib_fast_js_end - _binary_lib_fast_js_start);
   spin::builtins_add("lib/asm.js", _binary_lib_asm_js_start, _binary_lib_asm_js_end - _binary_lib_asm_js_start);
   spin::builtins_add("lib/bench.js", _binary_lib_bench_js_start, _binary_lib_bench_js_end - _binary_lib_bench_js_start);
+  spin::builtins_add("lib/net.js", _binary_lib_net_js_start, _binary_lib_net_js_end - _binary_lib_net_js_start);
+  spin::builtins_add("lib/loop.js", _binary_lib_loop_js_start, _binary_lib_loop_js_end - _binary_lib_loop_js_start);
+  spin::builtins_add("lib/pico.js", _binary_lib_pico_js_start, _binary_lib_pico_js_end - _binary_lib_pico_js_start);
+  spin::builtins_add("lib/timer.js", _binary_lib_timer_js_start, _binary_lib_timer_js_end - _binary_lib_timer_js_start);
+  spin::builtins_add("lib/binary.js", _binary_lib_binary_js_start, _binary_lib_binary_js_end - _binary_lib_binary_js_start);
+  spin::builtins_add("lib/acorn.js", _binary_lib_acorn_js_start, _binary_lib_acorn_js_end - _binary_lib_acorn_js_start);
+  spin::builtins_add("lib/path.js", _binary_lib_path_js_start, _binary_lib_path_js_end - _binary_lib_path_js_start);
   spin::builtins_add("lib/thread.js", _binary_lib_thread_js_start, _binary_lib_thread_js_end - _binary_lib_thread_js_start);
+  spin::builtins_add("lib/fs.js", _binary_lib_fs_js_start, _binary_lib_fs_js_end - _binary_lib_fs_js_start);
+  spin::builtins_add("lib/websocket.js", _binary_lib_websocket_js_start, _binary_lib_websocket_js_end - _binary_lib_websocket_js_start);
   spin::modules_add("load", &_register_load);
   spin::modules_add("fs", &_register_fs);
   spin::modules_add("system", &_register_system);
   spin::modules_add("fast", &_register_fast);
   spin::modules_add("spin", &_register_spin);
   spin::modules_add("thread", &_register_thread);
+  spin::modules_add("net", &_register_net);
+  spin::modules_add("epoll", &_register_epoll);
+  spin::modules_add("pico", &_register_pico);
+  spin::modules_add("encode", &_register_encode);
 }
 
 static unsigned int main_js_len = _binary_main_js_end - _binary_main_js_start;

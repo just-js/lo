@@ -1,7 +1,6 @@
 import { net } from 'lib/net.js'
 import { Loop } from 'lib/loop.js'
 import { parseHello } from 'lib/sni.js'
-import { stringify } from 'lib/stringify.js'
 
 const { assert } = spin
 const {

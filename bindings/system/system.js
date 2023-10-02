@@ -3,6 +3,10 @@ const api = {
     parameters: ['pointer', 'u32', 'i32', 'i32', 'i32', 'u32'],
     result: 'pointer'
   },
+  munmap: {
+    parameters: ['pointer', 'u32'],
+    result: 'i32'
+  },
   getcwd: {
     parameters: ['buffer', 'i32'],
     pointers: ['char*'],
@@ -23,13 +27,16 @@ const api = {
     result: 'i32'
   },
   memcpy: {
-    parameters: ['pointer', 'pointer', 'i32'],
+    parameters: ['pointer', 'pointer', 'u32'],
+    result: 'pointer'
+  },
+  memmove: {
+    parameters: ['pointer', 'pointer', 'u32'],
     result: 'pointer'
   },
   exit: {
     parameters: ['i32'],
-    result: 'void',
-    nofast: true
+    result: 'void'
   },
   usleep: {
     parameters: ['u32'],
@@ -87,6 +94,7 @@ const api = {
   // TODO: allow hardcoding a value as params here
   pidfd_open: {
     parameters: ['i32', 'i32', 'u32'],
+    values: [],
     result: 'i32',
     name: 'syscall'
   },
@@ -144,15 +152,25 @@ const api = {
   free: {
     parameters: ['pointer'],
     result: 'void'
+  },
+  memfd_create: {
+    parameters: ['string', 'u32'],
+    result: 'i32'
   }
+}
+
+const constants = {
+  _SC_CLK_TCK: 'u32',
+  UFFD_API: 'u64',
+  _UFFDIO_API: 'u32'
 }
 
 const includes = [
   'sys/eventfd.h', 'sys/times.h', 'sys/resource.h', 'unistd.h', 'sys/timerfd.h',
-  'sys/wait.h', 'sys/sysinfo.h', 'signal.h', 'sys/mman.h'
+  'sys/wait.h', 'sys/sysinfo.h', 'signal.h', 'sys/mman.h', 'linux/userfaultfd.h'
 ]
 const name = 'system'
 const libs = []
-const obj = ['system.a']
+const obj = []
 
-export { api, includes, name, libs, obj }
+export { api, includes, name, libs, obj, constants }

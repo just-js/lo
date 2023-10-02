@@ -37,7 +37,7 @@ const timer = new Timer(eventLoop, 1000, () => {
 while (1) {
   spawn(src)
   done++
-  spin.runMicroTasks()
+  //spin.runMicroTasks()
   eventLoop.poll(0)
   //gc()
 }

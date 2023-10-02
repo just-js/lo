@@ -5,6 +5,13 @@ const api = {
     result: 'i32',
     name: 'pthread_create'
   },
+  getcpuclockid: {
+    parameters: ['u64', 'u32array'],
+    pointers: [, '__clockid_t*'],
+    casts: ['(pthread_t)'],
+    result: 'i32',
+    name: 'pthread_getcpuclockid'
+  },
   cancel: {
     parameters: ['u64'],
     casts: ['(pthread_t)'],

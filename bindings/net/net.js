@@ -34,9 +34,19 @@ const api = {
     parameters: ['i32', 'buffer', 'i32', 'u32'],
     result: 'i32'
   },
+  send2: {
+    parameters: ['i32', 'pointer', 'i32', 'u32'],
+    result: 'i32',
+    name: 'send'
+  },
   recv: {
     parameters: ['i32', 'buffer', 'u32', 'i32'],
     result: 'i32'
+  },
+  recv2: {
+    parameters: ['i32', 'pointer', 'u32', 'i32'],
+    result: 'i32',
+    name: 'recv'
   },
   recvfrom: {
     parameters: ['i32', 'buffer', 'u32', 'i32', 'buffer', 'buffer'],
@@ -69,6 +79,7 @@ const api = {
   },
   write_string: {
     parameters: ['i32', 'string', 'i32'],
+//    override: [, , { param: 1, fastfield: '->length', slowfield: '.length()' }],
     result: 'i32',
     name: 'write'
   },

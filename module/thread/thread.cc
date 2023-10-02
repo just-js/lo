@@ -75,6 +75,16 @@ v8::CTypeInfo rccreate = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infocreate = v8::CFunctionInfo(rccreate, 5, cargscreate);
 v8::CFunction pFcreate = v8::CFunction((const void*)&createFast, &infocreate);
 
+int32_t getcpuclockidFast(void* p, uint64_t p0, struct FastApiTypedArray* const p1);
+v8::CTypeInfo cargsgetcpuclockid[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcgetcpuclockid = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infogetcpuclockid = v8::CFunctionInfo(rcgetcpuclockid, 3, cargsgetcpuclockid);
+v8::CFunction pFgetcpuclockid = v8::CFunction((const void*)&getcpuclockidFast, &infogetcpuclockid);
+
 int32_t cancelFast(void* p, uint64_t p0);
 v8::CTypeInfo cargscancel[2] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -186,6 +196,21 @@ int32_t createFast(void* p, struct FastApiTypedArray* const p0, void* p1, void* 
   start_routine v2 = reinterpret_cast<start_routine>(p2);
   void* v3 = reinterpret_cast<void*>(p3->data);
   return pthread_create(v0, v1, v2, v3);
+}
+void getcpuclockidSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  uint64_t v0 = Local<Integer>::Cast(args[0])->Value();
+  Local<Uint32Array> u321 = args[1].As<Uint32Array>();
+  uint8_t* ptr1 = (uint8_t*)u321->Buffer()->Data() + u321->ByteOffset();
+  __clockid_t* v1 = reinterpret_cast<__clockid_t*>(ptr1);
+  int32_t rc = pthread_getcpuclockid((pthread_t)v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t getcpuclockidFast(void* p, uint64_t p0, struct FastApiTypedArray* const p1) {
+  uint64_t v0 = p0;
+  __clockid_t* v1 = reinterpret_cast<__clockid_t*>(p1->data);
+  return pthread_getcpuclockid((pthread_t)v0, v1);
 }
 void cancelSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -314,6 +339,7 @@ int32_t getAffinityFast(void* p, uint64_t p0, uint32_t p1, struct FastApiTypedAr
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
   SET_FAST_METHOD(isolate, module, "create", &pFcreate, createSlow);
+  SET_FAST_METHOD(isolate, module, "getcpuclockid", &pFgetcpuclockid, getcpuclockidSlow);
   SET_FAST_METHOD(isolate, module, "cancel", &pFcancel, cancelSlow);
   SET_FAST_METHOD(isolate, module, "self", &pFself, selfSlow);
   SET_FAST_METHOD(isolate, module, "detach", &pFdetach, detachSlow);
@@ -323,6 +349,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "setName", &pFsetName, setNameSlow);
   SET_FAST_METHOD(isolate, module, "setAffinity", &pFsetAffinity, setAffinitySlow);
   SET_FAST_METHOD(isolate, module, "getAffinity", &pFgetAffinity, getAffinitySlow);
+
 
   SET_MODULE(isolate, target, "thread", module);
 }

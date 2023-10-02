@@ -3,7 +3,7 @@ import { run } from 'lib/bench.js'
 const { pico } = spin.load('pico')
 const { assert } = spin
 
-const req = 'GET / HTTP/1.1\r\nHost: home.billywhizz.io\r\n\r\n'
+const req = 'GET / HTTP/1.1\r\nHost: 127.0.0.1:3000\r\n\r\n'
 //const req = 'GET / HTTP/1.1\r\nHost: www.reddit.com\r\nUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:15.0) Gecko/20100101 Firefox/15.0.1\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nAccept-Language: en-us,en;q=0.5\r\nAccept-Encoding: gzip, deflate\r\nConnection: keep-alive\r\n\r\n'
 
 const HTTP_CTX_SZ = 32

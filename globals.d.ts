@@ -32,28 +32,34 @@ interface RuntimeVersion {
 }
 
 interface Runtime {
+  start: number;
   errno: number;
-  assert(expression: any, message?: String | Function): void;
-  cstr(str: String): Uint8Array;
-  load(name: String): any;
-  library(name: String): any;
+  assert(expression: any, message?: string | Function): any;
+  cstr(str: string): Uint8Array;
+  load(name: string): any;
+  library(name: string): any;
   runMicroTasks(): void;
   hrtime(): number;
   nextTick(callback: function): void;
   getAddress(buf: TypedArray): number;
-  utf8Length(str: String): number;
-  utf8EncodeInto(str: String, buf: TypedArray): number;
+  utf8Length(str: string): number;
+  utf8EncodeInto(str: string, buf: TypedArray): number;
   utf8Decode(buf: TypedArray, len: number): string;
-  wrap(handle: TypedArray, fn: Function, plen: number): void;
+  wrap(handle: TypedArray, fn: Function, plen: number): function;
   addr(handle: TypedArray): number;
-  dlsym(handle: number, name: String): number;
-  dlopen(path: String, flags: number): number;
+  dlsym(handle: number, name: string): number;
+  dlopen(path: string, flags: number): number;
   version: RuntimeVersion;
-  args: Array<String>;
-  workerSource: String;
-  builtin(path: String): String;
-  async evaluateModule(identifier: String): Promise<object>;
-  loadModule(src: String, specifier: String): Object;
+  args: Array<string>;
+  workerSource: string;
+  builtin(path: string): string;
+  async evaluateModule(identifier: string): Promise<object>;
+  loadModule(src: string, specifier: string): Object;
+  readMemory(dest: TypedArray, start: number, len: number): void;
+  wrapMemory(start: number, end: number, free?: number);
+  unwrapMemory(buffer: ArrayBuffer);
+  ptr(u8: TypedArray): TypedArray;
+  registerCallback(ptr: number, fn: Function);
 }
 
 declare var spin: Runtime & typeof globalThis;

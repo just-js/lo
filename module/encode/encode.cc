@@ -59,7 +59,27 @@ using v8::ModuleRequest;
 using v8::CFunctionInfo;
 using v8::OOMDetails;
 using v8::V8;
+using v8::BigInt;
 
+
+const int8_t unbase64_table[256] =
+  { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -2, -1, -1, -2, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, 62, -1, 63,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1,
+    -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, 63,
+    -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+  };
 
 const int8_t unhex_table[256] =
   { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -111,6 +131,157 @@ size_t hex_decode(char* buf,
   return i;
 }
 
+inline int8_t unbase64(uint8_t x) {
+  return unbase64_table[x];
+}
+
+inline constexpr size_t base64_encoded_size(size_t size) {
+  return ((size + 2 - ((size + 2) % 3)) / 3 * 4);
+}
+
+// Doesn't check for padding at the end.  Can be 1-2 bytes over.
+inline size_t base64_decoded_size_fast(size_t size) {
+  size_t remainder = size % 4;
+
+  size = (size / 4) * 3;
+  if (remainder) {
+    if (size == 0 && remainder == 1) {
+      // special case: 1-byte input cannot be decoded
+      size = 0;
+    } else {
+      // non-padded input, add 1 or 2 extra bytes
+      size += 1 + (remainder == 3);
+    }
+  }
+
+  return size;
+}
+
+size_t base64_decoded_size(const char* src, size_t size) {
+  if (size == 0)
+    return 0;
+
+  if (src[size - 1] == '=')
+    size--;
+  if (size > 0 && src[size - 1] == '=')
+    size--;
+
+  return base64_decoded_size_fast(size);
+}
+
+bool base64_decode_group_slow(char* dst, const size_t dstlen,
+                              const char* src, const size_t srclen,
+                              size_t* const i, size_t* const k) {
+  uint8_t hi;
+  uint8_t lo;
+#define V(expr)                                                                 for (;;) {                                                                      const uint8_t c = src[*i];                                                    lo = unbase64(c);                                                             *i += 1;                                                                      if (lo < 64)                                                                    break;  /* Legal character. */                                              if (c == '=' || *i >= srclen)                                                   return false;  /* Stop decoding. */                                       }                                                                             expr;                                                                         if (*i >= srclen)                                                               return false;                                                               if (*k >= dstlen)                                                               return false;                                                               hi = lo;
+  V(/* Nothing. */);
+  V(dst[(*k)++] = ((hi & 0x3F) << 2) | ((lo & 0x30) >> 4));
+  V(dst[(*k)++] = ((hi & 0x0F) << 4) | ((lo & 0x3C) >> 2));
+  V(dst[(*k)++] = ((hi & 0x03) << 6) | ((lo & 0x3F) >> 0));
+#undef V
+  return true;  // Continue decoding.
+}
+
+size_t base64_decode_fast(char* dst, const size_t dstlen,
+                          const char* src, const size_t srclen,
+                          const size_t decoded_size) {
+  const size_t available = dstlen < decoded_size ? dstlen : decoded_size;
+  const size_t max_k = available / 3 * 3;
+  size_t max_i = srclen / 4 * 4;
+  size_t i = 0;
+  size_t k = 0;
+  while (i < max_i && k < max_k) {
+    const uint32_t v =
+        unbase64(src[i + 0]) << 24 |
+        unbase64(src[i + 1]) << 16 |
+        unbase64(src[i + 2]) << 8 |
+        unbase64(src[i + 3]);
+    // If MSB is set, input contains whitespace or is not valid base64.
+    if (v & 0x80808080) {
+      if (!base64_decode_group_slow(dst, dstlen, src, srclen, &i, &k))
+        return k;
+      max_i = i + (srclen - i) / 4 * 4;  // Align max_i again.
+    } else {
+      dst[k + 0] = ((v >> 22) & 0xFC) | ((v >> 20) & 0x03);
+      dst[k + 1] = ((v >> 12) & 0xF0) | ((v >> 10) & 0x0F);
+      dst[k + 2] = ((v >>  2) & 0xC0) | ((v >>  0) & 0x3F);
+      i += 4;
+      k += 3;
+    }
+  }
+  if (i < srclen && k < dstlen) {
+    base64_decode_group_slow(dst, dstlen, src, srclen, &i, &k);
+  }
+  return k;
+}
+
+size_t base64_decode(char* dst, const size_t dstlen,
+                     const char* src, const size_t srclen) {
+  const size_t decoded_size = base64_decoded_size(src, srclen);
+  return base64_decode_fast(dst, dstlen, src, srclen, decoded_size);
+}
+
+size_t base64_encode(const char* src,
+                            size_t slen,
+                            char* dst,
+                            size_t dlen) {
+  // We know how much we'll write, just make sure that there's space.
+  dlen = base64_encoded_size(slen);
+
+  unsigned a;
+  unsigned b;
+  unsigned c;
+  unsigned i;
+  unsigned k;
+  unsigned n;
+
+  static const char table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                              "abcdefghijklmnopqrstuvwxyz"
+                              "0123456789+/";
+
+  i = 0;
+  k = 0;
+  n = slen / 3 * 3;
+
+  while (i < n) {
+    a = src[i + 0] & 0xff;
+    b = src[i + 1] & 0xff;
+    c = src[i + 2] & 0xff;
+
+    dst[k + 0] = table[a >> 2];
+    dst[k + 1] = table[((a & 3) << 4) | (b >> 4)];
+    dst[k + 2] = table[((b & 0x0f) << 2) | (c >> 6)];
+    dst[k + 3] = table[c & 0x3f];
+
+    i += 3;
+    k += 4;
+  }
+
+  if (n != slen) {
+    switch (slen - n) {
+      case 1:
+        a = src[i + 0] & 0xff;
+        dst[k + 0] = table[a >> 2];
+        dst[k + 1] = table[(a & 3) << 4];
+        dst[k + 2] = '=';
+        dst[k + 3] = '=';
+        break;
+
+      case 2:
+        a = src[i + 0] & 0xff;
+        b = src[i + 1] & 0xff;
+        dst[k + 0] = table[a >> 2];
+        dst[k + 1] = table[((a & 3) << 4) | (b >> 4)];
+        dst[k + 2] = table[(b & 0x0f) << 2];
+        dst[k + 3] = '=';
+        break;
+    }
+  }
+
+  return dlen;
+}
+
 
 
 uint32_t hex_encodeFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, uint32_t p3);
@@ -136,6 +307,30 @@ v8::CTypeInfo cargshex_decode[5] = {
 v8::CTypeInfo rchex_decode = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
 v8::CFunctionInfo infohex_decode = v8::CFunctionInfo(rchex_decode, 5, cargshex_decode);
 v8::CFunction pFhex_decode = v8::CFunction((const void*)&hex_decodeFast, &infohex_decode);
+
+uint32_t base64_encodeFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, uint32_t p3);
+v8::CTypeInfo cargsbase64_encode[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcbase64_encode = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+v8::CFunctionInfo infobase64_encode = v8::CFunctionInfo(rcbase64_encode, 5, cargsbase64_encode);
+v8::CFunction pFbase64_encode = v8::CFunction((const void*)&base64_encodeFast, &infobase64_encode);
+
+uint32_t base64_decodeFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, uint32_t p3);
+v8::CTypeInfo cargsbase64_decode[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcbase64_decode = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+v8::CFunctionInfo infobase64_decode = v8::CFunctionInfo(rcbase64_decode, 5, cargsbase64_decode);
+v8::CFunction pFbase64_decode = v8::CFunction((const void*)&base64_decodeFast, &infobase64_decode);
 
 
 
@@ -181,11 +376,56 @@ uint32_t hex_decodeFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1
   uint32_t v3 = p3;
   return hex_decode(v0, v1, v2, v3);
 }
+void base64_encodeSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
+  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
+  const char* v0 = reinterpret_cast<const char*>(ptr0);
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  Local<Uint8Array> u82 = args[2].As<Uint8Array>();
+  uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
+  char* v2 = reinterpret_cast<char*>(ptr2);
+  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  uint32_t rc = base64_encode(v0, v1, v2, v3);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+uint32_t base64_encodeFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, uint32_t p3) {
+  const char* v0 = reinterpret_cast<const char*>(p0->data);
+  uint32_t v1 = p1;
+  char* v2 = reinterpret_cast<char*>(p2->data);
+  uint32_t v3 = p3;
+  return base64_encode(v0, v1, v2, v3);
+}
+void base64_decodeSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
+  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
+  char* v0 = reinterpret_cast<char*>(ptr0);
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  Local<Uint8Array> u82 = args[2].As<Uint8Array>();
+  uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
+  const char* v2 = reinterpret_cast<const char*>(ptr2);
+  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  uint32_t rc = base64_decode(v0, v1, v2, v3);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+uint32_t base64_decodeFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, uint32_t p3) {
+  char* v0 = reinterpret_cast<char*>(p0->data);
+  uint32_t v1 = p1;
+  const char* v2 = reinterpret_cast<const char*>(p2->data);
+  uint32_t v3 = p3;
+  return base64_decode(v0, v1, v2, v3);
+}
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
   SET_FAST_METHOD(isolate, module, "hex_encode", &pFhex_encode, hex_encodeSlow);
   SET_FAST_METHOD(isolate, module, "hex_decode", &pFhex_decode, hex_decodeSlow);
+  SET_FAST_METHOD(isolate, module, "base64_encode", &pFbase64_encode, base64_encodeSlow);
+  SET_FAST_METHOD(isolate, module, "base64_decode", &pFbase64_decode, base64_decodeSlow);
+
 
   SET_MODULE(isolate, target, "encode", module);
 }

@@ -1,6 +1,7 @@
 CC=g++
 FLAGS=${CFLAGS}
 LFLAG=${LFLAGS}
+#LFLAG=${LFLAGS} -static-libgcc -static-libstdc++ 
 # v8 monolithic lib release (from just-js)
 RELEASE=0.1.15
 # binary name
@@ -16,11 +17,11 @@ SPIN_HOME=$(shell pwd)
 # list of c++ library archive (.a) files to link into runtime
 #MODULES=module/load/load.a module/fs/fs.a module/ffi/ffi.a module/tcc/tcc.a
 #MODULES=module/load/load.a module/fs/fs.a module/fast/fast.a module/system/system.a
-MODULES=module/load/load.a module/fs/fs.a module/system/system.a module/fast/fast.a module/spin/spin.a module/thread/thread.a
+MODULES=module/load/load.a module/fs/fs.a module/system/system.a module/fast/fast.a module/spin/spin.a module/thread/thread.a module/net/net.a module/epoll/epoll.a module/pico/pico.a module/encode/encode.a
 # list of JS modules to link into runtime
 #LIBS=lib/ansi.js lib/bench.js lib/binary.js lib/ffi.js lib/gen.js lib/packet.js lib/path.js lib/stringify.js
 #LIBS=lib/gen.js lib/fast.js lib/asm.js lib/system.js lib/bench.js
-LIBS=lib/gen.js lib/system.js lib/fast.js lib/asm.js lib/bench.js lib/thread.js
+LIBS=lib/gen.js lib/system.js lib/fast.js lib/asm.js lib/bench.js lib/net.js lib/loop.js lib/pico.js lib/timer.js lib/binary.js lib/acorn.js lib/path.js lib/thread.js lib/fs.js lib/websocket.js
 # list of arbitrary assets to link into runtime
 ASSETS=
 # when initializing a module, the path to the api defintion
@@ -34,6 +35,7 @@ SCC_DIR=/home/andrew/go/bin
 V8_FLAGS=
 DEPS=deps/v8/libv8_monolith.a
 WARNFLAGS=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
+#WARNFLAGS=
 
 .PHONY: help clean
 
@@ -46,26 +48,35 @@ deps: ## download v8 headers and monolithic lib for compiling and linking
 	tar -zxvf v8lib-$(RELEASE).tar.gz
 	rm -f v8lib-$(RELEASE).tar.gz
 
-builtins.o: main.js builtins.S ## link the assets into an object file
+builtins.o: main.js builtins.S ${LIBS} ## link the assets into an object file
 	gcc -flto builtins.S -c -o builtins.o
 
-builtins.S: ## generate the assembly file for linking assets into runtime
-	./${TARGET} gen --link ${LIBS} ${ASSETS} > builtins.S
+builtins.S: ${LIBS} ${ASSETS} ## generate the assembly file for linking assets into runtime
+#ifeq (,$(wildcard ./${TARGET}))
+#	./${TARGET} gen --link ${LIBS} ${ASSETS} > builtins.new.S
+#	mv builtins.new.S builtins.S
+#endif
 
-main.h: ## generate the main.h to initialize libs and modules
-	./${TARGET} gen --header ${LIBS} ${MODULES} ${ASSETS} > main.h
+main.h: ${LIBS} ${MODULES} ${ASSETS} ## generate the main.h to initialize libs and modules
+#ifeq (,$(wildcard ./${TARGET}))
+#	./${TARGET} gen --header ${LIBS} ${MODULES} ${ASSETS} > main.new.h
+#	mv main.new.h main.h
+#endif
 
 main.o: main.h ## compile the main app
-	$(CC) -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native ${WARNFLAGS} main.cc
+	$(CC) -fno-rtti -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native ${WARNFLAGS} main.cc
 
 ${TARGET}.o: ${TARGET}.h ${TARGET}.cc ## compile the main library
-	$(CC) -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native ${WARNFLAGS} ${TARGET}.cc
+	$(CC) -fno-rtti -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native ${WARNFLAGS} ${TARGET}.cc
 
 ${TARGET}: ${TARGET}.o main.o builtins.o ## link the runtime
-	$(CC) -flto -g -O3 ${V8_FLAGS} -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
+	$(CC) -fno-rtti -flto -g -O3 ${V8_FLAGS} -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 	objcopy --only-keep-debug ${TARGET} ${TARGET}.debug
 	strip --strip-debug --strip-unneeded ${TARGET}
 	objcopy --add-gnu-debuglink=${TARGET}.debug ${TARGET}
+
+${TARGET}-debug: ${TARGET}.o main.o builtins.o ## link the runtime
+	$(CC) -flto -g3 -O3 ${V8_FLAGS} -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 
 ${TARGET}.so: ${TARGET}.o main.o builtins.o ## link the runtime
 	$(CC) -flto -g -O3 ${V8_FLAGS} -rdynamic -shared -m64 -Wl,--start-group ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}.so
@@ -85,6 +96,18 @@ all:
 
 ${MODULE_DIR}/${MODULE}: ## initialize a new module from an api definition
 	mkdir -p ${MODULE_DIR}/${MODULE}
+
+stdlibs:
+	${MAKE} MODULE=load library
+	${MAKE} MODULE=fs library
+	${MAKE} MODULE=system library
+	${MAKE} MODULE=fast library
+	${MAKE} MODULE=spin library
+	${MAKE} MODULE=thread library
+	${MAKE} MODULE=net library
+	${MAKE} MODULE=epoll library
+	${MAKE} MODULE=pico library
+	${MAKE} MODULE=encode library
 
 libs:
 	${MAKE} MODULE=adaurl gen library
@@ -122,6 +145,17 @@ scc: ## generate report on lines of code, number of files, code complexity
 
 library: ## build a spin shared library
 	CFLAGS="$(FLAGS)" LFLAGS="${LFLAG}" SPIN_HOME="$(SPIN_HOME)" $(MAKE) -C ${MODULE_DIR}/${MODULE}/ clean library
+
+check:
+	cppcheck --std=c++17 --language=c++ -j2 --enable=style ./*.cc
+	cppcheck --std=c++17 --language=c++ -j2 --enable=style ./*.h
+	cppcheck --std=c++17 --language=c++ -j2 --enable=style ./module/**/*.cc
+	cppcheck --std=c++17 --language=c++ -j2 --enable=style ./module/**/*.h
+
+boot:
+	rm -f builtins.S
+	rm -f main.h
+	rm -f *.o
 
 clean: ## tidy up
 	rm -f *.o
