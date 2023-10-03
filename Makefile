@@ -49,7 +49,7 @@ deps: ## download v8 headers and monolithic lib for compiling and linking
 	tar -zxvf v8lib-$(RELEASE).tar.gz
 	rm -f v8lib-$(RELEASE).tar.gz
 
-builtins.o: ${MAIN} builtins.S ${LIBS} ## link the assets into an object file
+builtins.o: ${MAIN} builtins.S ## link the assets into an object file
 	gcc -flto builtins.S -c -o builtins.o
 
 builtins.S: ## generate the assembly file for linking assets into runtime
@@ -64,28 +64,28 @@ ifneq (,$(wildcard ./${TARGET}))
 	mv main.new.h main.h
 endif
 
-main.o: main.h ## compile the main app
+main.o: main.h ## compile the main app object file
 	$(CC) -fno-rtti -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_NO_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native ${WARNFLAGS} main.cc
 
-${TARGET}.o: ${TARGET}.h ${TARGET}.cc ## compile the main library
+${TARGET}.o: ${TARGET}.h ${TARGET}.cc ## compile the runtime object file
 	$(CC) -fno-rtti -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_NO_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native ${WARNFLAGS} ${TARGET}.cc
 
-${TARGET}: ${TARGET}.o main.o builtins.o ## link the runtime
+${TARGET}: ${TARGET}.o main.o builtins.o ## link the runtime with debug symbols stripped and placed in a separate file 
 	$(CC) -fno-rtti -flto -g -O3 ${V8_FLAGS} -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 	objcopy --only-keep-debug ${TARGET} ${TARGET}.debug
 	strip --strip-debug --strip-unneeded ${TARGET}
 	objcopy --add-gnu-debuglink=${TARGET}.debug ${TARGET}
 
-${TARGET}-debug: ${TARGET}.o main.o builtins.o ## link the runtime
+${TARGET}-debug: ${TARGET}.o main.o builtins.o ## link the runtime with debug symbols inline
 	$(CC) -flto -g3 -O3 ${V8_FLAGS} -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 
-${TARGET}.so: ${TARGET}.o main.o builtins.o ## link the runtime
+${TARGET}.so: ${TARGET}.o main.o builtins.o ## link the runtime as a shared library
 	$(CC) -flto -g -O3 ${V8_FLAGS} -rdynamic -shared -m64 -Wl,--start-group ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}.so
 	objcopy --only-keep-debug ${TARGET}.so ${TARGET}.so.debug
 	strip --strip-debug --strip-unneeded ${TARGET}.so
 	objcopy --add-gnu-debuglink=${TARGET}.so.debug ${TARGET}.so
 
-${TARGET}-static: ${TARGET}.o main.o builtins.o ## link the runtime
+${TARGET}-static: ${TARGET}.o main.o builtins.o ## link the runtime fully static
 	$(CC) -flto -g -O3 ${V8_FLAGS} -static -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 	objcopy --only-keep-debug ${TARGET} ${TARGET}.debug
 	strip --strip-debug --strip-unneeded ${TARGET}
@@ -98,7 +98,7 @@ all:
 ${MODULE_DIR}/${MODULE}: ## initialize a new module from an api definition
 	mkdir -p ${MODULE_DIR}/${MODULE}
 
-stdlibs:
+stdlibs: # build the core standard libraries
 	${MAKE} MODULE=load library
 	${MAKE} MODULE=fs library
 	${MAKE} MODULE=system library
@@ -110,7 +110,7 @@ stdlibs:
 	${MAKE} MODULE=pico library
 	${MAKE} MODULE=encode library
 
-libs:
+libs: # build all the libraries
 	${MAKE} MODULE=adaurl gen library
 #	${MAKE} MODULE=bestline gen library
 	${MAKE} MODULE=dynasm gen library
@@ -147,17 +147,17 @@ scc: ## generate report on lines of code, number of files, code complexity
 library: ## build a spin shared library
 	CFLAGS="$(FLAGS)" LFLAGS="${LFLAG}" SPIN_HOME="$(SPIN_HOME)" $(MAKE) -C ${MODULE_DIR}/${MODULE}/ clean library
 
-check:
+check: # run cppcheck on everything
 	cppcheck --std=c++17 --language=c++ -j2 --enable=style ./*.cc
 	cppcheck --std=c++17 --language=c++ -j2 --enable=style ./*.h
 	cppcheck --std=c++17 --language=c++ -j2 --enable=style ./module/**/*.cc
 	cppcheck --std=c++17 --language=c++ -j2 --enable=style ./module/**/*.h
 
-v8lib: ## build v8 library
+v8lib: ## build v8 static library using docker
 	docker build -t v8-build .
 #	docker build -t v8-build-alpine -f Dockerfile.alpine .
 
-v8deps: ## copy libs and includes from docker image
+v8deps: ## copy v8 libs and includes from docker image
 	rm -fr debian
 	rm -fr deps/v8
 	mkdir -p deps/v8
@@ -171,14 +171,14 @@ v8deps: ## copy libs and includes from docker image
 #	docker cp v8-build-alpine:/build/v8/out.gn/x64.release/obj/libv8_monolith.a alpine/libv8_monolith.a
 #	docker kill v8-build-alpine
 
-v8src: ## copy v8 source for ide integration
+v8src: ## copy v8 source for ide integration and intellisense
 	mkdir -p deps/v8
 	docker run -dt --rm --name v8-build v8-build /bin/sh
 	docker cp v8-build:/build/v8/src deps/v8/
 	docker cp v8-build:/build/v8/out.gn/x64.release/gen deps/v8/
 	docker kill v8-build
 
-dist: ## make distribution package with v8 lib and headers
+dist: ## make gzip archive with v8 lib and headers
 	make clean
 	make v8deps
 	cp -f debian/libv8_monolith.a deps/v8
@@ -187,7 +187,7 @@ dist: ## make distribution package with v8 lib and headers
 #	tar -cv deps | gzip --best > v8-alpine.tar.gz
 	make clean
 
-dist-dev: ## make distribution package with v8 lib headers and source
+dist-dev: ## make gzip archive with v8 lib headers and source
 	make clean
 	make v8deps
 	sleep 1
@@ -196,12 +196,12 @@ dist-dev: ## make distribution package with v8 lib headers and source
 	tar -cv deps | gzip --best > v8src.tar.gz
 	make clean
 
-boot:
+boot: ## clean up the auto generated header and bultins
 	rm -f builtins.S
 	rm -f main.h
 	rm -f *.o
 
-clean: ## tidy up
+clean: ## clean up object files and delete target
 	rm -f *.o
 	rm -f ${TARGET}
 	rm -f ${TARGET}.so
