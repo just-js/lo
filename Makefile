@@ -53,16 +53,16 @@ builtins.o: ${MAIN} builtins.S ${LIBS} ## link the assets into an object file
 	gcc -flto builtins.S -c -o builtins.o
 
 builtins.S: ## generate the assembly file for linking assets into runtime
-#ifeq (,$(wildcard ./${TARGET}))
+ifneq (,$(wildcard ./${TARGET}))
 	./${TARGET} gen --link ${MAIN} ${LIBS} ${ASSETS} > builtins.new.S
 	mv builtins.new.S builtins.S
-#endif
+endif
 
 main.h: ## generate the main.h to initialize libs and modules
-#ifeq (,$(wildcard ./${TARGET}))
+ifneq (,$(wildcard ./${TARGET}))
 	./${TARGET} gen --header ${LIBS} ${MODULES} ${ASSETS} > main.new.h
 	mv main.new.h main.h
-#endif
+endif
 
 main.o: main.h ## compile the main app
 	$(CC) -fno-rtti -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_NO_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native ${WARNFLAGS} main.cc
