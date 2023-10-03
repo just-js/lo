@@ -60,6 +60,7 @@ using v8::ModuleRequest;
 using v8::CFunctionInfo;
 using v8::OOMDetails;
 using v8::V8;
+using v8::BigInt;
 
 
 
@@ -297,6 +298,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "link", &pFlink, linkSlow);
   SET_FAST_METHOD(isolate, module, "encode", &pFencode, encodeSlow);
   SET_FAST_METHOD(isolate, module, "getpclabel", &pFgetpclabel, getpclabelSlow);
+
 
   SET_MODULE(isolate, target, "dynasm", module);
 }

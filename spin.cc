@@ -212,10 +212,6 @@ void spin::FreeMemory(void* buf, size_t length, void* data) {
   free(buf);
 }
 
-void spin::FreeMemory2(void* buf, size_t length, void* data) {
-
-}
-
 // QN: how do we ensure an isolate doesn't allocate a bunch of external 
 // memory and never free it? how do we ensure all memory created by an isolate
 // is free when the isolate is destroyed?
@@ -948,7 +944,7 @@ void spin::WrapMemory(const FunctionCallbackInfo<Value> &args) {
   }
   if (free_memory == 0) {
     std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
-        start, size, spin::FreeMemory2, nullptr);
+        start, size, v8::BackingStore::EmptyDeleter, nullptr);
     Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
     args.GetReturnValue().Set(ab);
     return;

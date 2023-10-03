@@ -131,7 +131,6 @@ int CreateIsolate(int argc, char** argv,
 void PrintStackTrace(v8::Isolate* isolate, const v8::TryCatch& try_catch);
 void PromiseRejectCallback(v8::PromiseRejectMessage message);
 void FreeMemory(void* buf, size_t length, void* data);
-void FreeMemory2(void* buf, size_t length, void* data);
 
 // external JS api - these are bound to the "spin" object on JS global
 void Print(const v8::FunctionCallbackInfo<v8::Value> &args);
