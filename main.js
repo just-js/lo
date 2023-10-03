@@ -298,7 +298,7 @@ if (spin.args[1] === 'gen') {
   } = await import('lib/gen.js')
   let source = ''
   if (spin.args[2] === '--link') {
-    source += linkerScript('main.js')
+    //source += linkerScript('main.js')
     for (const fileName of spin.args.slice(3)) {
       source += linkerScript(fileName)
     }

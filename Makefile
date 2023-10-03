@@ -23,7 +23,7 @@ MODULES=module/load/load.a module/fs/fs.a module/system/system.a module/fast/fas
 #LIBS=lib/gen.js lib/fast.js lib/asm.js lib/system.js lib/bench.js
 LIBS=lib/gen.js lib/system.js lib/fast.js lib/asm.js lib/bench.js lib/net.js lib/loop.js lib/pico.js lib/timer.js lib/binary.js lib/acorn.js lib/path.js lib/thread.js lib/fs.js lib/websocket.js
 # list of arbitrary assets to link into runtime
-ASSETS=
+ASSETS=Makefile main.cc main.h spin.cc spin.h bindings/encode/encode.js bindings/epoll/epoll.js bindings/fast/fast.js bindings/fs/fs.js bindings/load/load.js bindings/net/net.js bindings/pico/pico.js bindings/spin/spin.js bindings/system/system.js bindings/thread/thread.js
 # when initializing a module, the path to the api defintion
 MODULE_DEF=
 # directory to look for native api bindings
@@ -35,6 +35,7 @@ SCC_DIR=/home/andrew/go/bin
 V8_FLAGS=
 DEPS=deps/v8/libv8_monolith.a
 WARNFLAGS=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
+MAIN=main.js
 #WARNFLAGS=
 
 .PHONY: help clean
@@ -48,19 +49,19 @@ deps: ## download v8 headers and monolithic lib for compiling and linking
 	tar -zxvf v8lib-$(RELEASE).tar.gz
 	rm -f v8lib-$(RELEASE).tar.gz
 
-builtins.o: main.js builtins.S ${LIBS} ## link the assets into an object file
+builtins.o: ${MAIN} builtins.S ${LIBS} ## link the assets into an object file
 	gcc -flto builtins.S -c -o builtins.o
 
-builtins.S: ${LIBS} ${ASSETS} ## generate the assembly file for linking assets into runtime
+builtins.S: ## generate the assembly file for linking assets into runtime
 #ifeq (,$(wildcard ./${TARGET}))
-#	./${TARGET} gen --link ${LIBS} ${ASSETS} > builtins.new.S
-#	mv builtins.new.S builtins.S
+	./${TARGET} gen --link ${MAIN} ${LIBS} ${ASSETS} > builtins.new.S
+	mv builtins.new.S builtins.S
 #endif
 
-main.h: ${LIBS} ${MODULES} ${ASSETS} ## generate the main.h to initialize libs and modules
+main.h: ## generate the main.h to initialize libs and modules
 #ifeq (,$(wildcard ./${TARGET}))
-#	./${TARGET} gen --header ${LIBS} ${MODULES} ${ASSETS} > main.new.h
-#	mv main.new.h main.h
+	./${TARGET} gen --header ${LIBS} ${MODULES} ${ASSETS} > main.new.h
+	mv main.new.h main.h
 #endif
 
 main.o: main.h ## compile the main app

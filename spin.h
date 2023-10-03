@@ -134,6 +134,7 @@ void FreeMemory(void* buf, size_t length, void* data);
 void FreeMemory2(void* buf, size_t length, void* data);
 
 // external JS api - these are bound to the "spin" object on JS global
+void Print(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Builtin(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Builtins(const v8::FunctionCallbackInfo<v8::Value> &args);
 void EvaluateModule(const v8::FunctionCallbackInfo<v8::Value> &args);

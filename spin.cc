@@ -1028,6 +1028,13 @@ void spin::fastUtf8EncodeInto2 (void* p, struct FastOneByteString*
   //((uint32_t*)p_ret->data)[1] = (uint32_t)p_str->length;
 }
 
+void spin::Print(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  if (args[0].IsEmpty()) return;
+  String::Utf8Value str(isolate, args[0]);
+  fprintf(stdout, "%s", *str);
+}
+
 void spin::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
@@ -1065,6 +1072,7 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
     V8::GetVersion()).ToLocalChecked());
   SET_MODULE(isolate, target, "version", version);
   SET_METHOD(isolate, target, "nextTick", NextTick);
+  SET_METHOD(isolate, target, "print", Print);
   SET_METHOD(isolate, target, "registerCallback", RegisterCallback);
   SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);
   SET_METHOD(isolate, target, "builtin", Builtin);
