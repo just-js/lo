@@ -3,7 +3,7 @@ FLAGS=${CFLAGS}
 LFLAG=${LFLAGS}
 #LFLAG=${LFLAGS} -static-libgcc -static-libstdc++ 
 # v8 monolithic lib release (from just-js)
-RELEASE=0.1.15
+RELEASE=0.1.16
 # binary name
 TARGET=spin
 # name of runtime object on globalThis in JS
@@ -152,6 +152,49 @@ check:
 	cppcheck --std=c++17 --language=c++ -j2 --enable=style ./*.h
 	cppcheck --std=c++17 --language=c++ -j2 --enable=style ./module/**/*.cc
 	cppcheck --std=c++17 --language=c++ -j2 --enable=style ./module/**/*.h
+
+v8lib: ## build v8 library
+	docker build -t v8-build .
+#	docker build -t v8-build-alpine -f Dockerfile.alpine .
+
+v8deps: ## copy libs and includes from docker image
+	rm -fr debian
+	rm -fr deps/v8
+	mkdir -p deps/v8
+	mkdir -p debian
+	docker run -dt --rm --name v8-build v8-build /bin/sh
+	docker cp v8-build:/build/v8/out.gn/x64.release/obj/libv8_monolith.a debian/libv8_monolith.a
+	docker cp v8-build:/build/v8/include deps/v8/
+	docker kill v8-build
+#	mkdir -p alpine
+#	docker run -dt --rm --name v8-build-alpine v8-build-alpine /bin/sh
+#	docker cp v8-build-alpine:/build/v8/out.gn/x64.release/obj/libv8_monolith.a alpine/libv8_monolith.a
+#	docker kill v8-build-alpine
+
+v8src: ## copy v8 source for ide integration
+	mkdir -p deps/v8
+	docker run -dt --rm --name v8-build v8-build /bin/sh
+	docker cp v8-build:/build/v8/src deps/v8/
+	docker cp v8-build:/build/v8/out.gn/x64.release/gen deps/v8/
+	docker kill v8-build
+
+dist: ## make distribution package with v8 lib and headers
+	make clean
+	make v8deps
+	cp -f debian/libv8_monolith.a deps/v8
+	tar -cv deps | gzip --best > v8.tar.gz
+#	cp -f alpine/libv8_monolith.a deps/v8
+#	tar -cv deps | gzip --best > v8-alpine.tar.gz
+	make clean
+
+dist-dev: ## make distribution package with v8 lib headers and source
+	make clean
+	make v8deps
+	sleep 1
+	cp -f debian/libv8_monolith.a deps/v8
+	make v8src
+	tar -cv deps | gzip --best > v8src.tar.gz
+	make clean
 
 boot:
 	rm -f builtins.S
