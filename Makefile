@@ -1,6 +1,9 @@
 CC=g++
+#CC=clang++
 FLAGS=${CFLAGS}
 LFLAG=${LFLAGS}
+FLAGS += -flto
+LFLAG += -flto
 #LFLAG=${LFLAGS} -static-libgcc -static-libstdc++ 
 # v8 monolithic lib release (from just-js)
 RELEASE=0.1.16
@@ -65,28 +68,28 @@ ifneq (,$(wildcard ./${TARGET}))
 endif
 
 main.o: main.h ## compile the main app object file
-	$(CC) -fno-rtti -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_NO_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native ${WARNFLAGS} main.cc
+	$(CC) -fno-rtti -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_NO_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native ${WARNFLAGS} main.cc
 
 ${TARGET}.o: ${TARGET}.h ${TARGET}.cc ## compile the runtime object file
-	$(CC) -fno-rtti -flto -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_NO_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native ${WARNFLAGS} ${TARGET}.cc
+	$(CC) -fno-rtti -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_NO_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native ${WARNFLAGS} ${TARGET}.cc
 
 ${TARGET}: ${TARGET}.o main.o builtins.o ## link the runtime with debug symbols stripped and placed in a separate file 
-	$(CC) -fno-rtti -flto -g -O3 ${V8_FLAGS} -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
+	$(CC) -fno-rtti -g -O3 ${V8_FLAGS} -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 	objcopy --only-keep-debug ${TARGET} ${TARGET}.debug
 	strip --strip-debug --strip-unneeded ${TARGET}
 	objcopy --add-gnu-debuglink=${TARGET}.debug ${TARGET}
 
 ${TARGET}-debug: ${TARGET}.o main.o builtins.o ## link the runtime with debug symbols inline
-	$(CC) -flto -g3 -O3 ${V8_FLAGS} -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
+	$(CC) -g3 -O3 ${V8_FLAGS} -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 
 ${TARGET}.so: ${TARGET}.o main.o builtins.o ## link the runtime as a shared library
-	$(CC) -flto -g -O3 ${V8_FLAGS} -rdynamic -shared -m64 -Wl,--start-group ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}.so
+	$(CC) -g -O3 ${V8_FLAGS} -static-libstdc++ -static-libgcc -rdynamic -shared -m64 -Wl,--start-group ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}.so
 	objcopy --only-keep-debug ${TARGET}.so ${TARGET}.so.debug
 	strip --strip-debug --strip-unneeded ${TARGET}.so
 	objcopy --add-gnu-debuglink=${TARGET}.so.debug ${TARGET}.so
 
 ${TARGET}-static: ${TARGET}.o main.o builtins.o ## link the runtime fully static
-	$(CC) -flto -g -O3 ${V8_FLAGS} -static -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
+	$(CC) -g -O3 ${V8_FLAGS} -static -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 	objcopy --only-keep-debug ${TARGET} ${TARGET}.debug
 	strip --strip-debug --strip-unneeded ${TARGET}
 	objcopy --add-gnu-debuglink=${TARGET}.debug ${TARGET}

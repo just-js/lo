@@ -273,8 +273,6 @@ spin.fs.writeFile = writeFile
 spin.load = load
 spin.hrtime = wrap(handle, spin.hrtime)
 spin.getAddress = wrap(handle, spin.getAddress, 1)
-spin.getAddressSlow = wrap(handle, spin.getAddressSlow, 1)
-spin.getAddress2Slow = wrap(handle, spin.getAddress2Slow, 1)
 spin.dlopen = wrap(handle, loader.load.dlopen, 2)
 spin.dlsym = wrap(handle, loader.load.dlsym, 2)
 spin.dlclose = loader.load.dlclose
@@ -298,7 +296,7 @@ if (spin.args[1] === 'gen') {
   } = await import('lib/gen.js')
   let source = ''
   if (spin.args[2] === '--link') {
-    //source += linkerScript('main.js')
+    source += linkerScript('main.js')
     for (const fileName of spin.args.slice(3)) {
       source += linkerScript(fileName)
     }

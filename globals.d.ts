@@ -56,7 +56,7 @@ interface Runtime {
   async evaluateModule(identifier: string): Promise<object>;
   loadModule(src: string, specifier: string): Object;
   readMemory(dest: TypedArray, start: number, len: number): void;
-  wrapMemory(start: number, end: number, free?: number);
+  wrapMemory(start: number, size: number, free?: number);
   unwrapMemory(buffer: ArrayBuffer);
   ptr(u8: TypedArray): TypedArray;
   registerCallback(ptr: number, fn: Function);

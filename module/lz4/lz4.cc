@@ -59,38 +59,70 @@ using v8::ModuleRequest;
 using v8::CFunctionInfo;
 using v8::OOMDetails;
 using v8::V8;
+using v8::BigInt;
 
 
 
-void LZ4_compress_defaultSlow(const FunctionCallbackInfo<Value> &args) {
+int32_t compress_defaultFast(void* p, void* p0, void* p1, int32_t p2, int32_t p3);
+v8::CTypeInfo cargscompress_default[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rccompress_default = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infocompress_default = v8::CFunctionInfo(rccompress_default, 5, cargscompress_default);
+v8::CFunction pFcompress_default = v8::CFunction((const void*)&compress_defaultFast, &infocompress_default);
+
+int32_t compress_hcFast(void* p, void* p0, void* p1, int32_t p2, int32_t p3, int32_t p4);
+v8::CTypeInfo cargscompress_hc[6] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rccompress_hc = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infocompress_hc = v8::CFunctionInfo(rccompress_hc, 6, cargscompress_hc);
+v8::CFunction pFcompress_hc = v8::CFunction((const void*)&compress_hcFast, &infocompress_hc);
+
+int32_t decompress_safeFast(void* p, void* p0, void* p1, int32_t p2, int32_t p3);
+v8::CTypeInfo cargsdecompress_safe[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcdecompress_safe = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infodecompress_safe = v8::CFunctionInfo(rcdecompress_safe, 5, cargsdecompress_safe);
+v8::CFunction pFdecompress_safe = v8::CFunction((const void*)&decompress_safeFast, &infodecompress_safe);
+
+
+
+void compress_defaultSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
-  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
-  const char* v0 = reinterpret_cast<const char*>(ptr0);
-  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
-  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
-  char* v1 = reinterpret_cast<char*>(ptr1);
+  const char* v0 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  char* v1 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t v3 = Local<Integer>::Cast(args[3])->Value();
   int32_t rc = LZ4_compress_default(v0, v1, v2, v3);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t LZ4_compress_defaultFast(void* p, struct FastApiTypedArray* const p0, struct FastApiTypedArray* const p1, int32_t p2, int32_t p3) {
-  const char* v0 = reinterpret_cast<const char*>(p0->data);
-  char* v1 = reinterpret_cast<char*>(p1->data);
+int32_t compress_defaultFast(void* p, void* p0, void* p1, int32_t p2, int32_t p3) {
+  const char* v0 = reinterpret_cast<const char*>(p0);
+  char* v1 = reinterpret_cast<char*>(p1);
   int32_t v2 = p2;
   int32_t v3 = p3;
   return LZ4_compress_default(v0, v1, v2, v3);
 }
-void LZ4_compress_HCSlow(const FunctionCallbackInfo<Value> &args) {
+void compress_hcSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
-  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
-  const char* v0 = reinterpret_cast<const char*>(ptr0);
-  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
-  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
-  char* v1 = reinterpret_cast<char*>(ptr1);
+  const char* v0 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  char* v1 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t v3 = Local<Integer>::Cast(args[3])->Value();
   int32_t v4 = Local<Integer>::Cast(args[4])->Value();
@@ -98,40 +130,38 @@ void LZ4_compress_HCSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t LZ4_compress_HCFast(void* p, struct FastApiTypedArray* const p0, struct FastApiTypedArray* const p1, int32_t p2, int32_t p3, int32_t p4) {
-  const char* v0 = reinterpret_cast<const char*>(p0->data);
-  char* v1 = reinterpret_cast<char*>(p1->data);
+int32_t compress_hcFast(void* p, void* p0, void* p1, int32_t p2, int32_t p3, int32_t p4) {
+  const char* v0 = reinterpret_cast<const char*>(p0);
+  char* v1 = reinterpret_cast<char*>(p1);
   int32_t v2 = p2;
   int32_t v3 = p3;
   int32_t v4 = p4;
   return LZ4_compress_HC(v0, v1, v2, v3, v4);
 }
+void decompress_safeSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  const char* v0 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  char* v1 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  int32_t rc = LZ4_decompress_safe(v0, v1, v2, v3);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t decompress_safeFast(void* p, void* p0, void* p1, int32_t p2, int32_t p3) {
+  const char* v0 = reinterpret_cast<const char*>(p0);
+  char* v1 = reinterpret_cast<char*>(p1);
+  int32_t v2 = p2;
+  int32_t v3 = p3;
+  return LZ4_decompress_safe(v0, v1, v2, v3);
+}
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
+  SET_FAST_METHOD(isolate, module, "compress_default", &pFcompress_default, compress_defaultSlow);
+  SET_FAST_METHOD(isolate, module, "compress_hc", &pFcompress_hc, compress_hcSlow);
+  SET_FAST_METHOD(isolate, module, "decompress_safe", &pFdecompress_safe, decompress_safeSlow);
 
-  v8::CTypeInfo* cargsLZ4_compress_default = (v8::CTypeInfo*)calloc(5, sizeof(v8::CTypeInfo));
-  cargsLZ4_compress_default[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsLZ4_compress_default[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsLZ4_compress_default[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsLZ4_compress_default[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsLZ4_compress_default[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcLZ4_compress_default = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoLZ4_compress_default = new v8::CFunctionInfo(*rcLZ4_compress_default, 5, cargsLZ4_compress_default);
-  v8::CFunction* pFLZ4_compress_default = new v8::CFunction((const void*)&LZ4_compress_defaultFast, infoLZ4_compress_default);
-  SET_FAST_METHOD(isolate, module, "LZ4_compress_default", pFLZ4_compress_default, LZ4_compress_defaultSlow);
-
-  v8::CTypeInfo* cargsLZ4_compress_HC = (v8::CTypeInfo*)calloc(6, sizeof(v8::CTypeInfo));
-  cargsLZ4_compress_HC[0] = v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value);
-  cargsLZ4_compress_HC[1] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsLZ4_compress_HC[2] = v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone);
-  cargsLZ4_compress_HC[3] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsLZ4_compress_HC[4] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  cargsLZ4_compress_HC[5] = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CTypeInfo* rcLZ4_compress_HC = new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  v8::CFunctionInfo* infoLZ4_compress_HC = new v8::CFunctionInfo(*rcLZ4_compress_HC, 6, cargsLZ4_compress_HC);
-  v8::CFunction* pFLZ4_compress_HC = new v8::CFunction((const void*)&LZ4_compress_HCFast, infoLZ4_compress_HC);
-  SET_FAST_METHOD(isolate, module, "LZ4_compress_HC", pFLZ4_compress_HC, LZ4_compress_HCSlow);
 
   SET_MODULE(isolate, target, "lz4", module);
 }

@@ -50,6 +50,7 @@ class MemoryFile {
     this.size = 0
     this.mode = 0
     this.fileName = ''
+    this.view = undefined
   }
 
   open (fileName, u8) {
@@ -379,6 +380,7 @@ class Database extends MemoryFile {
 const dbb = spin.fs.readFile('blob.db')
 const decoder = new TextDecoder()
 const db = new Database()
+
 db.open('blob.db', dbb)
 console.log(`header ${db.header}`)
 console.log(`pageSize ${db.pageSize}`)

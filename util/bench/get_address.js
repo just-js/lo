@@ -16,7 +16,7 @@ assert(getAddress2Slow(ab) === getAddress(u8))
 console.log(getAddress2Slow.state)
 
 while (1) {
-/*
+
   for (let i = 0; i < 5; i++) {
   bench.start('getAddress')
   for (let j = 0; j < runs; j++) {
@@ -32,7 +32,7 @@ for (let i = 0; i < 5; i++) {
   }
   bench.end(runs)
 }
-*/
+
 for (let i = 0; i < 5; i++) {
   bench.start('getAddress2Slow')
   for (let j = 0; j < runs; j++) {

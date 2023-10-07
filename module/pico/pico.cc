@@ -61,7 +61,7 @@ using v8::OOMDetails;
 using v8::V8;
 
 
-#define JUST_MAX_HEADERS 14
+#define JUST_MAX_HEADERS 128
 
 typedef struct httpHeader httpHeader;
 struct httpHeader {

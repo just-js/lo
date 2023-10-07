@@ -145,19 +145,15 @@ void RegisterCallback(const v8::FunctionCallbackInfo<v8::Value> &args);
 void RunMicroTasks(const v8::FunctionCallbackInfo<v8::Value> &args);
 void SetModuleCallbacks(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Utf8Decode(const v8::FunctionCallbackInfo<v8::Value> &args);
+void Utf8Encode(const v8::FunctionCallbackInfo<v8::Value> &args);
 void SetFlags(const v8::FunctionCallbackInfo<v8::Value> &args);
 
 // fast api methods
 void GetAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastGetAddress(void* p, struct FastApiTypedArray* const p_buf, 
   struct FastApiTypedArray* const p_ret);
-void GetAddress2(const v8::FunctionCallbackInfo<v8::Value> &args);
-void fastGetAddress2(void* p, struct FastApiArrayBuffer* const p_buf, 
-  struct FastApiTypedArray* const p_ret);
 void Utf8EncodeInto(const v8::FunctionCallbackInfo<v8::Value> &args);
 int32_t fastUtf8EncodeInto (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf);
-void Utf8EncodeInto2(const v8::FunctionCallbackInfo<v8::Value> &args);
-void fastUtf8EncodeInto2 (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf, struct FastApiTypedArray* const p_ret);
 void Utf8EncodeIntoAtOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
 int32_t fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf, uint32_t off);
 void Utf8Length(const v8::FunctionCallbackInfo<v8::Value> &args);
