@@ -11,7 +11,7 @@ const expectedsha256 = [ 44,242,77,186,95,176,163,14,38,232,59,42,197,185,226,15
 
 md5.hashString('hello').forEach((v, i) => assert(v === expected[i]))
 md5.hash(hello).forEach((v, i) => assert(v === expected[i]))
-md5.hashonce(hello).forEach((v, i) => assert(v === expected[i]))
+//md5.hashonce(hello).forEach((v, i) => assert(v === expected[i]))
 
 //run('hash', () => md5.hash(hello), 12000000, 20)
 run('hashString', () => md5.hashString('hello'), 12000000, 20)

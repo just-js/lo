@@ -94,15 +94,26 @@ const stats = {
   send: 0, recv: 0
 }
 
+function to_size_string (bytes) {
+  if (bytes < 1000) {
+    return `${bytes} Bps`
+  } else if (bytes < 1000 * 1000) {
+    return `${Math.floor((bytes / 1000) * 100) / 100} KBps`
+  } else if (bytes < 1000 * 1000 * 1000) {
+    return `${Math.floor((bytes / (1000 * 1000)) * 100) / 100} MBps`
+  }
+  return `${Math.floor((bytes / (1000 * 1000 * 1000)) * 100) / 100} GBps`
+}
+
 const timer = new Timer(eventLoop, 1000, () => {
-  console.log(`${AY}send${AD} ${stats.send} ${AY}recv${AD} ${stats.recv}`)
+  console.log(`${AY}send${AD} ${to_size_string(stats.send)} ${AY}recv${AD} ${to_size_string(stats.recv)}`)
   stats.send = stats.recv = 0
 })
 
-for (let i = 0; i < 8; i++) client()
+for (let i = 0; i < 512; i++) client()
 
 while (1) {
-  spin.runMicroTasks()
+  //spin.runMicroTasks()
   if (eventLoop.poll(-1) <= 0) break
 }
 

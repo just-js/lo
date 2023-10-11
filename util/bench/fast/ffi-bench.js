@@ -1,7 +1,7 @@
 import { system } from 'lib/system.js'
 import { bind, fastcall } from './lib/fast.js'
 import { run } from 'lib/bench.js'
-import { Library } from 'lib/ffi.js'
+//import { Library } from 'lib/ffi.js'
 
 
 const { dlopen, dlsym, ptr, assert } = spin
@@ -26,7 +26,7 @@ const strnlen2 = bind(dlsym(0, 'strnlen'), 'i32', ['string', 'u32'])
 assert(strnlen2.state.ptr)
 const strnlen3 = bind(dlsym(0, 'strnlen'), 'i32', ['buffer', 'u32'])
 assert(strnlen3.state.ptr)
-
+/*
 const ffi = (new Library()).open('./bug.so').bind({
   noop: {
     result: 'void',
@@ -39,9 +39,9 @@ const ffi = (new Library()).open('./bug.so').bind({
     nofast: true
   }
 })
-
+*/
 assert(noop() === undefined)
-assert(ffi.noop() === undefined)
+//assert(ffi.noop() === undefined)
 assert(getpid() === system.getpid())
 const encoder = new TextEncoder()
 const strb = ptr(encoder.encode('hello\0'))

@@ -68,13 +68,17 @@ const api = {
 const TCC_VERSION='0.9.27'
 
 const make = `
-deps/tcc-${TCC_VERSION}/libtcc.a: ## dependencies
+# TODO: you need to do 'sudo apt install libtcc-dev' to get this to work as it needs a system lib to link against 
+# TODO: you also seem to need to have the tcc system library here. this sucks. /usr/local/lib/tcc/libtcc1.a
+
+libtcc.a: ## dependencies
 	mkdir -p deps
 	curl -L -o deps/tcc-${TCC_VERSION}.tar.bz2 http://download.savannah.gnu.org/releases/tinycc/tcc-${TCC_VERSION}.tar.bz2
 	tar -jxvf deps/tcc-${TCC_VERSION}.tar.bz2	-C deps/
 	cd deps/tcc-${TCC_VERSION} && CFLAGS='-mstackrealign -fPIC -flto -O3' ./configure && cd ../../
 	make -C deps/tcc-${TCC_VERSION}/ libtcc.a
 	cp deps/tcc-0.9.27/libtcc.a ./
+	cp deps/tcc-0.9.27/libtcc.h ./
 
 `
 const name = 'tcc'

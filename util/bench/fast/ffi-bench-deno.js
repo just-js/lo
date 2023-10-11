@@ -38,8 +38,8 @@ assert(add2(1, 2) === 3)
 //run('strnlen', () => strnlen(ptr, 1024), 200000000, 10)
 //run('getpid', api.getpid, 2000000, 10)
 //run('add1', () => add1(1), 400000000, 10)
-run('add2', () => add2(1, 2), 400000000, 10)
-//run('noop', noop, 400000000, 10)
+//run('add2', () => add2(1, 2), 400000000, 10)
+run('noop', noop, 400000000, 10)
 
 // a benchmarking tool that runs on node.js, bun, spin and Deno
 
