@@ -59,6 +59,7 @@ using v8::ModuleRequest;
 using v8::CFunctionInfo;
 using v8::OOMDetails;
 using v8::V8;
+using v8::BigInt;
 
 
 
@@ -92,6 +93,7 @@ void parseFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedA
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
   SET_FAST_METHOD(isolate, module, "parse", &pFparse, parseSlow);
+
 
   SET_MODULE(isolate, target, "adaurl", module);
 }
