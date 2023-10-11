@@ -34,7 +34,7 @@ const OPEN_NOMUTEX = 0x00008000
 const ROW = 100
 const defaultFlags = OPEN_READWRITE | OPEN_NOMUTEX | OPEN_CREATE
 const pHandle = new Uint32Array(2)
-const path = './scratch/libsqlite3.so'
+const path = 'libsqlite3.so'
 const handle = dlopen(path, 1)
 assert(handle)
 const binding = {}

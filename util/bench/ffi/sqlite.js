@@ -34,7 +34,7 @@ const ROW = 100
 const defaultFlags = OPEN_READWRITE | OPEN_NOMUTEX | OPEN_CREATE
 const pHandle = new Uint32Array(2)
 
-const path = './scratch/libsqlite3.so'
+const path = 'libsqlite3.so'
 const {
   version, open2, exec, prepare2, reset, column_int, step
 } = (new Library()).open(path).bind(sqlite.api)
