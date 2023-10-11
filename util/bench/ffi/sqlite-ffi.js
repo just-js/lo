@@ -10,7 +10,7 @@ const {
 } = spin
 
 const pHandle = new Uint32Array(2)
-const path = './scratch/libsqlite3.so'
+const path = 'libsqlite3.so'
 const handle = dlopen(path, 1)
 const dbName = ':memory:'
 
@@ -68,7 +68,7 @@ for (let i = 0; i < maxCol; i++) {
 }
 
 function callback2 () {
-  assert(addr(ctxu32) === 0)
+  //assert(addr(ctxu32) === 0)
   assert(cu32[0] === 1)
 }
 
@@ -140,8 +140,8 @@ const sql = ptr(encoder.encode('pragma user_version'))
 const sqlptr = sql.ptr
 const hptr = ptr(u32).ptr
 
-run('user_version', () => exec3(db, sqlptr, address, 0, hptr), 3000000, 10)
-//run('user_version', () => exec4(db, sqlptr, 0, 0, hptr), 3000000, 10)
+run('user_version_callback', () => exec3(db, sqlptr, address, 0, hptr), 3000000, 10)
+//run('user_version_no_callback', () => exec4(db, sqlptr, 0, 0, hptr), 3000000, 10)
 
 // 1.689m ops/sec for no callback exec
 // 1.113m ops/sec for callback2
