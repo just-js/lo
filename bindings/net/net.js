@@ -31,13 +31,18 @@ const api = {
     result: 'i32'
   },
   send: {
-    parameters: ['i32', 'buffer', 'i32', 'u32'],
+    parameters: ['i32', 'buffer', 'u32', 'i32'],
     result: 'i32'
   },
   send2: {
     parameters: ['i32', 'pointer', 'i32', 'u32'],
     result: 'i32',
     name: 'send'
+  },
+  sendto: {
+    parameters: ['i32', 'buffer', 'u32', 'i32', 'buffer', 'u32'],
+    pointers: [,,,, 'const struct sockaddr*'],
+    result: 'i32'
   },
   recv: {
     parameters: ['i32', 'buffer', 'u32', 'i32'],

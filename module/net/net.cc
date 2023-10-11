@@ -150,13 +150,13 @@ v8::CTypeInfo rcaccept4 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoaccept4 = v8::CFunctionInfo(rcaccept4, 5, cargsaccept4);
 v8::CFunction pFaccept4 = v8::CFunction((const void*)&accept4Fast, &infoaccept4);
 
-int32_t sendFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2, uint32_t p3);
+int32_t sendFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, uint32_t p2, int32_t p3);
 v8::CTypeInfo cargssend[5] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
 };
 v8::CTypeInfo rcsend = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infosend = v8::CFunctionInfo(rcsend, 5, cargssend);
@@ -173,6 +173,20 @@ v8::CTypeInfo cargssend2[5] = {
 v8::CTypeInfo rcsend2 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infosend2 = v8::CFunctionInfo(rcsend2, 5, cargssend2);
 v8::CFunction pFsend2 = v8::CFunction((const void*)&send2Fast, &infosend2);
+
+int32_t sendtoFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, uint32_t p2, int32_t p3, struct FastApiTypedArray* const p4, uint32_t p5);
+v8::CTypeInfo cargssendto[7] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcsendto = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infosendto = v8::CFunctionInfo(rcsendto, 7, cargssendto);
+v8::CFunction pFsendto = v8::CFunction((const void*)&sendtoFast, &infosendto);
 
 int32_t recvFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, uint32_t p2, int32_t p3);
 v8::CTypeInfo cargsrecv[5] = {
@@ -453,17 +467,17 @@ void sendSlow(const FunctionCallbackInfo<Value> &args) {
   Local<Uint8Array> u81 = args[1].As<Uint8Array>();
   uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
   void* v1 = reinterpret_cast<void*>(ptr1);
-  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
-  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t v3 = Local<Integer>::Cast(args[3])->Value();
   int32_t rc = send(v0, v1, v2, v3);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t sendFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2, uint32_t p3) {
+int32_t sendFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, uint32_t p2, int32_t p3) {
   int32_t v0 = p0;
   void* v1 = reinterpret_cast<void*>(p1->data);
-  int32_t v2 = p2;
-  uint32_t v3 = p3;
+  uint32_t v2 = p2;
+  int32_t v3 = p3;
   return send(v0, v1, v2, v3);
 }
 void send2Slow(const FunctionCallbackInfo<Value> &args) {
@@ -482,6 +496,31 @@ int32_t send2Fast(void* p, int32_t p0, void* p1, int32_t p2, uint32_t p3) {
   int32_t v2 = p2;
   uint32_t v3 = p3;
   return send(v0, v1, v2, v3);
+}
+void sendtoSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  void* v1 = reinterpret_cast<void*>(ptr1);
+  uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  Local<Uint8Array> u84 = args[4].As<Uint8Array>();
+  uint8_t* ptr4 = (uint8_t*)u84->Buffer()->Data() + u84->ByteOffset();
+  const struct sockaddr* v4 = reinterpret_cast<const struct sockaddr*>(ptr4);
+  uint32_t v5 = Local<Integer>::Cast(args[5])->Value();
+  int32_t rc = sendto(v0, v1, v2, v3, v4, v5);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t sendtoFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, uint32_t p2, int32_t p3, struct FastApiTypedArray* const p4, uint32_t p5) {
+  int32_t v0 = p0;
+  void* v1 = reinterpret_cast<void*>(p1->data);
+  uint32_t v2 = p2;
+  int32_t v3 = p3;
+  const struct sockaddr* v4 = reinterpret_cast<const struct sockaddr*>(p4->data);
+  uint32_t v5 = p5;
+  return sendto(v0, v1, v2, v3, v4, v5);
 }
 void recvSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -743,6 +782,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "accept4", &pFaccept4, accept4Slow);
   SET_FAST_METHOD(isolate, module, "send", &pFsend, sendSlow);
   SET_FAST_METHOD(isolate, module, "send2", &pFsend2, send2Slow);
+  SET_FAST_METHOD(isolate, module, "sendto", &pFsendto, sendtoSlow);
   SET_FAST_METHOD(isolate, module, "recv", &pFrecv, recvSlow);
   SET_FAST_METHOD(isolate, module, "recv2", &pFrecv2, recv2Slow);
   SET_FAST_METHOD(isolate, module, "recvfrom", &pFrecvfrom, recvfromSlow);

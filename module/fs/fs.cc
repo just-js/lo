@@ -63,6 +63,7 @@ using v8::ModuleRequest;
 using v8::CFunctionInfo;
 using v8::OOMDetails;
 using v8::V8;
+using v8::BigInt;
 
 
 
@@ -151,6 +152,15 @@ v8::CTypeInfo cargsfstat[3] = {
 v8::CTypeInfo rcfstat = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infofstat = v8::CFunctionInfo(rcfstat, 3, cargsfstat);
 v8::CFunction pFfstat = v8::CFunction((const void*)&fstatFast, &infofstat);
+
+int32_t unlinkFast(void* p, struct FastOneByteString* const p0);
+v8::CTypeInfo cargsunlink[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+};
+v8::CTypeInfo rcunlink = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infounlink = v8::CFunctionInfo(rcunlink, 2, cargsunlink);
+v8::CFunction pFunlink = v8::CFunction((const void*)&unlinkFast, &infounlink);
 
 void readdirFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargsreaddir[3] = {
@@ -330,6 +340,17 @@ int32_t fstatFast(void* p, int32_t p0, struct FastApiTypedArray* const p1) {
   struct stat * v1 = reinterpret_cast<struct stat *>(p1->data);
   return fstat(v0, v1);
 }
+void unlinkSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  int32_t rc = unlink(*v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t unlinkFast(void* p, struct FastOneByteString* const p0) {
+  struct FastOneByteString* const v0 = p0;
+  return unlink(v0->data);
+}
 void readdirSlow(const FunctionCallbackInfo<Value> &args) {
   DIR* v0 = reinterpret_cast<DIR*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   dirent* rc = readdir(v0);
@@ -411,6 +432,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "write_string", &pFwrite_string, write_stringSlow);
   SET_FAST_METHOD(isolate, module, "write", &pFwrite, writeSlow);
   SET_FAST_METHOD(isolate, module, "fstat", &pFfstat, fstatSlow);
+  SET_FAST_METHOD(isolate, module, "unlink", &pFunlink, unlinkSlow);
   SET_FAST_METHOD(isolate, module, "readdir", &pFreaddir, readdirSlow);
   SET_FAST_METHOD(isolate, module, "opendir", &pFopendir, opendirSlow);
   SET_FAST_METHOD(isolate, module, "closedir", &pFclosedir, closedirSlow);

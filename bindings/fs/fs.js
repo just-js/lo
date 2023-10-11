@@ -36,6 +36,10 @@ const api = {
     pointers: [, 'struct stat *'],
     result: 'i32'
   },
+  unlink: {
+    parameters: ['string'],
+    result: 'i32'
+  },
   readdir: {
     parameters: ['pointer'],
     result: 'pointer',

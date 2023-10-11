@@ -59,6 +59,7 @@ using v8::ModuleRequest;
 using v8::CFunctionInfo;
 using v8::OOMDetails;
 using v8::V8;
+using v8::BigInt;
 
 
 /*
@@ -238,6 +239,9 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
       break;
     case FastTypes::u32:
       args.GetReturnValue().Set((uint32_t)state->args[0]);
+      break;
+    case FastTypes::boolean:
+      args.GetReturnValue().Set((bool)state->args[0]);
       break;
     case FastTypes::buffer:
     case FastTypes::u32array:

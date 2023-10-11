@@ -286,6 +286,9 @@ spin.wrap = wrap
 spin.cstr = C
 spin.ptr = ptr
 spin.addr = addr
+// so we can override
+spin.onModuleLoad = onModuleLoad
+spin.onModuleInstantiate = onModuleInstantiate
 spin.setModuleCallbacks(onModuleLoad, onModuleInstantiate)
 
 // Object.freeze(spin)

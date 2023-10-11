@@ -194,6 +194,9 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
     case FastTypes::u32:
       args.GetReturnValue().Set((uint32_t)state->args[0]);
       break;
+    case FastTypes::boolean:
+      args.GetReturnValue().Set((bool)state->args[0]);
+      break;
     case FastTypes::buffer:
     case FastTypes::u32array:
     case FastTypes::u64:
