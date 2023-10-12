@@ -88,6 +88,9 @@ ${TARGET}.so: ${TARGET}.o main.o builtins.o ## link the runtime as a shared libr
 	strip --strip-debug --strip-unneeded ${TARGET}.so
 	objcopy --add-gnu-debuglink=${TARGET}.so.debug ${TARGET}.so
 
+${TARGET}.a: ${TARGET}.o main.o builtins.o ## link the runtime as a static library
+	ar crsT ${TARGET}.a ${TARGET}.o builtins.o ${DEPS} ${MODULES}
+
 ${TARGET}-static: ${TARGET}.o main.o builtins.o ## link the runtime fully static
 	$(CC) -g -O3 ${V8_FLAGS} -static -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 	objcopy --only-keep-debug ${TARGET} ${TARGET}.debug
