@@ -69,6 +69,7 @@ using v8::ModuleRequest;
 using v8::CFunctionInfo;
 using v8::OOMDetails;
 using v8::V8;
+using v8::BigInt;
 
 
 
@@ -827,6 +828,15 @@ v8::CTypeInfo cargsSSL_set_accept_state[2] = {
 v8::CTypeInfo rcSSL_set_accept_state = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infoSSL_set_accept_state = v8::CFunctionInfo(rcSSL_set_accept_state, 2, cargsSSL_set_accept_state);
 v8::CFunction pFSSL_set_accept_state = v8::CFunction((const void*)&SSL_set_accept_stateFast, &infoSSL_set_accept_state);
+
+int32_t SSL_connectFast(void* p, void* p0);
+v8::CTypeInfo cargsSSL_connect[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcSSL_connect = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoSSL_connect = v8::CFunctionInfo(rcSSL_connect, 2, cargsSSL_connect);
+v8::CFunction pFSSL_connect = v8::CFunction((const void*)&SSL_connectFast, &infoSSL_connect);
 
 int32_t SSL_acceptFast(void* p, void* p0);
 v8::CTypeInfo cargsSSL_accept[2] = {
@@ -2012,6 +2022,17 @@ void SSL_set_accept_stateFast(void* p, void* p0) {
   SSL* v0 = reinterpret_cast<SSL*>(p0);
   SSL_set_accept_state(v0);
 }
+void SSL_connectSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t rc = SSL_connect(v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t SSL_connectFast(void* p, void* p0) {
+  SSL* v0 = reinterpret_cast<SSL*>(p0);
+  return SSL_connect(v0);
+}
 void SSL_acceptSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   SSL* v0 = reinterpret_cast<SSL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -2314,6 +2335,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "SSL_set_fd", &pFSSL_set_fd, SSL_set_fdSlow);
   SET_FAST_METHOD(isolate, module, "SSL_set_bio", &pFSSL_set_bio, SSL_set_bioSlow);
   SET_FAST_METHOD(isolate, module, "SSL_set_accept_state", &pFSSL_set_accept_state, SSL_set_accept_stateSlow);
+  SET_FAST_METHOD(isolate, module, "SSL_connect", &pFSSL_connect, SSL_connectSlow);
   SET_FAST_METHOD(isolate, module, "SSL_accept", &pFSSL_accept, SSL_acceptSlow);
   SET_FAST_METHOD(isolate, module, "SSL_set_connect_state", &pFSSL_set_connect_state, SSL_set_connect_stateSlow);
   SET_FAST_METHOD(isolate, module, "SSL_do_handshake", &pFSSL_do_handshake, SSL_do_handshakeSlow);
@@ -2331,6 +2353,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "SSL_ctrl", &pFSSL_ctrl, SSL_ctrlSlow);
   SET_FAST_METHOD(isolate, module, "RSA_pkey_ctx_ctrl", &pFRSA_pkey_ctx_ctrl, RSA_pkey_ctx_ctrlSlow);
   SET_FAST_METHOD(isolate, module, "EVP_sha512_224", &pFEVP_sha512_224, EVP_sha512_224Slow);
+
 
   SET_MODULE(isolate, target, "libssl", module);
 }

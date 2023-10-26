@@ -32,6 +32,12 @@ const S_IROTH = S_IRGRP >> 3
 const defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC
 const defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 
+const { toUtf8, fromUtf8, isOneByte } = globalThis
+delete globalThis.toUtf8
+delete globalThis.fromUtf8
+delete globalThis.isOneByte
+const utf8Encode = input => new Uint8Array(toUtf8(input))
+
 globalThis.console = {
   log: str => fs.write_string(STDOUT, `${str}\n`),
   error: str => fs.write_string(STDERR, `${str}\n`)
@@ -46,9 +52,9 @@ class TextEncoder {
   encoding = 'utf-8'
 
   encode (input = '') {
-    const u8 = new Uint8Array(utf8Length(input))
-    utf8EncodeInto(input, u8)
-    return u8
+    // todo: empty string
+    // todo: result cache
+    return utf8Encode(input)
   }
 
   encodeInto (src, dest) {
@@ -61,8 +67,8 @@ class TextDecoder {
   encoding = 'utf-8'
 
   decode (u8) {
-    if (!u8.ptr) ptr(u8)
-    return spin.utf8Decode(u8.ptr, u8.size)
+    // todo: result cache
+    return fromUtf8(u8, true)
   }
 }
 
@@ -266,6 +272,8 @@ globalThis.require = require
 globalThis.TextEncoder = TextEncoder
 globalThis.TextDecoder = TextDecoder
 
+spin.utf8Encode = utf8Encode
+spin.isOneByte = isOneByte
 spin.handle = handle
 spin.fs = fs
 spin.fs.readFile = readFile

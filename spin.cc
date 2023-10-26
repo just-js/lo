@@ -52,6 +52,7 @@ using v8::V8;
 using v8::kPromiseRejectAfterResolved;
 using v8::kPromiseResolveAfterResolved;
 using v8::kPromiseHandlerAddedAfterReject;
+using v8::Script;
 
 // TODO: thread safety
 std::map<std::string, spin::builtin*> builtins;
@@ -672,17 +673,6 @@ void spin::RegisterCallback(const FunctionCallbackInfo<Value>& args) {
 
 // TODO: UnregisterCallback
 
-void spin::Utf8Decode(const FunctionCallbackInfo<Value> &args) {
-  int size = -1;
-  if (args.Length() > 1) {
-    size = Local<Integer>::Cast(args[1])->Value();
-  }
-  char* str = reinterpret_cast<char*>(
-    (uint64_t)Local<Integer>::Cast(args[0])->Value());
-  args.GetReturnValue().Set(String::NewFromUtf8(args.GetIsolate(), 
-    str, NewStringType::kNormal, size).ToLocalChecked());
-}
-
 void spin::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
@@ -726,7 +716,7 @@ void spin::LoadModule(const FunctionCallbackInfo<Value> &args) {
     path, // resource name
     0, // line offset
     0,  // column offset
-    true, // is shared cross-origin
+    false, // is shared cross-origin
     -1,  // script id
     Local<Value>(), // source map url
     false, // is opaque
@@ -735,7 +725,6 @@ void spin::LoadModule(const FunctionCallbackInfo<Value> &args) {
     opts);
   ScriptCompiler::Source base(source, baseorigin);
   Local<Module> module;
-  String::Utf8Value path2(isolate, args[1]);
   bool ok = ScriptCompiler::CompileModule(isolate, &base).ToLocal(&module);
   if (!ok) {
     printf("Error compiling module!\n");
@@ -948,6 +937,7 @@ void spin::SetFlags(const FunctionCallbackInfo<Value> &args) {
   V8::SetFlagsFromString(*flags);
 }
 
+/*
 void spin::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
@@ -969,6 +959,18 @@ void spin::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
     String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
   Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
   args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
+}
+*/
+
+void spin::Utf8Decode(const FunctionCallbackInfo<Value> &args) {
+  int size = -1;
+  if (args.Length() > 1) {
+    size = Local<Integer>::Cast(args[1])->Value();
+  }
+  char* str = reinterpret_cast<char*>(
+    (uint64_t)Local<Integer>::Cast(args[0])->Value());
+  args.GetReturnValue().Set(String::NewFromUtf8(args.GetIsolate(), 
+    str, NewStringType::kNormal, size).ToLocalChecked());
 }
 
 void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
@@ -996,13 +998,6 @@ int32_t spin::fastUtf8EncodeInto (void* p, struct FastOneByteString*
   const p_str, struct FastApiTypedArray* const p_buf) {
   memcpy(p_buf->data, p_str->data, p_str->length);
   return p_str->length;
-}
-
-void spin::Print(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  if (args[0].IsEmpty()) return;
-  String::Utf8Value str(isolate, args[0]);
-  fprintf(stdout, "%s", *str);
 }
 
 void spin::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
@@ -1034,6 +1029,49 @@ int32_t spin::fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString*
   return p_str->length;
 }
 
+void spin::Print(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  if (args[0].IsEmpty()) return;
+  String::Utf8Value str(isolate, args[0]);
+  fprintf(stdout, "%s", *str);
+}
+
+void spin::RunScript(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<Context> context = isolate->GetCurrentContext();
+  TryCatch try_catch(isolate);
+  Local<String> source = args[0].As<String>();
+  Local<String> path = args[1].As<String>();
+  Local<v8::PrimitiveArray> opts =
+      v8::PrimitiveArray::New(isolate, 1);
+  opts->Set(isolate, 0, v8::Number::New(isolate, 1));
+  ScriptOrigin baseorigin(isolate, path, // resource name
+    0, // line offset
+    0,  // column offset
+    false, // is shared cross-origin
+    -1,  // script id
+    Local<Value>(), // source map url
+    false, // is opaque
+    false, // is wasm
+    false, // is module
+    opts);
+  ScriptCompiler::Source basescript(source, baseorigin);
+  Local<Script> script;
+  bool ok = ScriptCompiler::Compile(context, &basescript).ToLocal(&script);
+  if (!ok) {
+    if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
+      try_catch.ReThrow();
+    }
+    return;
+  }
+  MaybeLocal<Value> result = script->Run(context);
+  if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
+    try_catch.ReThrow();
+    return;
+  }
+  args.GetReturnValue().Set(result.ToLocalChecked());
+}
+
 void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
   SET_VALUE(isolate, version, GLOBALOBJ, String::NewFromUtf8Literal(isolate, 
@@ -1053,11 +1091,12 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "loadModule", LoadModule);
   SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
-  SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
+  //SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
   SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
   SET_METHOD(isolate, target, "unwrapMemory", UnWrapMemory);
   SET_METHOD(isolate, target, "setFlags", SetFlags);
   SET_METHOD(isolate, target, "getMeta", GetMeta);
+  SET_METHOD(isolate, target, "runScript", RunScript);
   SET_FAST_PROP(isolate, target, "errno", &pFerrnoget, GetErrno, &pFerrnoset, 
     SetErrno);
   SET_FAST_METHOD(isolate, target, "hrtime", &pFhrtime, HRTime);

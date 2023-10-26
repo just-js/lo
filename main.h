@@ -36,6 +36,8 @@ extern char _binary_lib_fs_js_start[];
 extern char _binary_lib_fs_js_end[];
 extern char _binary_lib_websocket_js_start[];
 extern char _binary_lib_websocket_js_end[];
+extern char _binary_lib_compat_js_start[];
+extern char _binary_lib_compat_js_end[];
 extern char _binary_Makefile_start[];
 extern char _binary_Makefile_end[];
 extern char _binary_main_cc_start[];
@@ -97,6 +99,7 @@ void register_builtins() {
   spin::builtins_add("lib/thread.js", _binary_lib_thread_js_start, _binary_lib_thread_js_end - _binary_lib_thread_js_start);
   spin::builtins_add("lib/fs.js", _binary_lib_fs_js_start, _binary_lib_fs_js_end - _binary_lib_fs_js_start);
   spin::builtins_add("lib/websocket.js", _binary_lib_websocket_js_start, _binary_lib_websocket_js_end - _binary_lib_websocket_js_start);
+  spin::builtins_add("lib/compat.js", _binary_lib_compat_js_start, _binary_lib_compat_js_end - _binary_lib_compat_js_start);
   spin::builtins_add("Makefile", _binary_Makefile_start, _binary_Makefile_end - _binary_Makefile_start);
   spin::builtins_add("main.cc", _binary_main_cc_start, _binary_main_cc_end - _binary_main_cc_start);
   spin::builtins_add("main.h", _binary_main_h_start, _binary_main_h_end - _binary_main_h_start);

@@ -378,6 +378,11 @@ const api = {
     pointers: ['SSL*'],
     result: 'void'
   },
+  SSL_connect: {
+    parameters: ['pointer'],
+    pointers: ['SSL*'],
+    result: 'i32'
+  },
   SSL_accept: {
     parameters: ['pointer'],
     pointers: ['SSL*'],

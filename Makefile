@@ -24,7 +24,7 @@ MODULES=module/load/load.a module/fs/fs.a module/system/system.a module/fast/fas
 # list of JS modules to link into runtime
 #LIBS=lib/ansi.js lib/bench.js lib/binary.js lib/ffi.js lib/gen.js lib/packet.js lib/path.js lib/stringify.js
 #LIBS=lib/gen.js lib/fast.js lib/asm.js lib/system.js lib/bench.js
-LIBS=lib/gen.js lib/system.js lib/fast.js lib/asm.js lib/bench.js lib/net.js lib/loop.js lib/pico.js lib/timer.js lib/binary.js lib/acorn.js lib/path.js lib/thread.js lib/fs.js lib/websocket.js
+LIBS=lib/gen.js lib/system.js lib/fast.js lib/asm.js lib/bench.js lib/net.js lib/loop.js lib/pico.js lib/timer.js lib/binary.js lib/acorn.js lib/path.js lib/thread.js lib/fs.js lib/websocket.js lib/compat.js
 # list of arbitrary assets to link into runtime
 ASSETS=Makefile main.cc main.h spin.cc spin.h bindings/encode/encode.js bindings/epoll/epoll.js bindings/fast/fast.js bindings/fs/fs.js bindings/load/load.js bindings/net/net.js bindings/pico/pico.js bindings/spin/spin.js bindings/system/system.js bindings/thread/thread.js
 # when initializing a module, the path to the api defintion
@@ -57,7 +57,7 @@ builtins.o: ${MAIN} builtins.S ## link the assets into an object file
 
 builtins.S: ## generate the assembly file for linking assets into runtime
 ifneq (,$(wildcard ./${TARGET}))
-	./${TARGET} gen --link ${MAIN} ${LIBS} ${ASSETS} > builtins.new.S
+	./${TARGET} gen --link ${LIBS} ${ASSETS} > builtins.new.S
 	mv builtins.new.S builtins.S
 endif
 
@@ -74,25 +74,25 @@ ${TARGET}.o: ${TARGET}.h ${TARGET}.cc ## compile the runtime object file
 	$(CC) -fno-rtti -g -O3 -c ${FLAGS} ${V8_FLAGS} -DGLOBALOBJ='${GLOBALOBJ}' -DVERSION='"${RELEASE}"' -std=c++17 -DV8_NO_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -I. -I./deps/v8/include -I./deps/v8 -msse4 -march=native -mtune=native ${WARNFLAGS} ${TARGET}.cc
 
 ${TARGET}: ${TARGET}.o main.o builtins.o ## link the runtime with debug symbols stripped and placed in a separate file 
-	$(CC) -fno-rtti -g -O3 ${V8_FLAGS} -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
+	$(CC) -fno-rtti -g -O3 ${V8_FLAGS} -rdynamic -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 	objcopy --only-keep-debug ${TARGET} ${TARGET}.debug
 	strip --strip-debug --strip-unneeded ${TARGET}
 	objcopy --add-gnu-debuglink=${TARGET}.debug ${TARGET}
 
 ${TARGET}-debug: ${TARGET}.o main.o builtins.o ## link the runtime with debug symbols inline
-	$(CC) -g3 -O3 ${V8_FLAGS} -rdynamic -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
+	$(CC) -g3 -O3 ${V8_FLAGS} -rdynamic -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 
 ${TARGET}.so: ${TARGET}.o main.o builtins.o ## link the runtime as a shared library
-	$(CC) -g -O3 ${V8_FLAGS} -static-libstdc++ -static-libgcc -rdynamic -shared -m64 -Wl,--start-group ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}.so
+	$(CC) -g -O3 ${V8_FLAGS} -static-libstdc++ -static-libgcc -rdynamic -shared -Wl,--start-group ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}.so
 	objcopy --only-keep-debug ${TARGET}.so ${TARGET}.so.debug
 	strip --strip-debug --strip-unneeded ${TARGET}.so
 	objcopy --add-gnu-debuglink=${TARGET}.so.debug ${TARGET}.so
 
-${TARGET}.a: ${TARGET}.o main.o builtins.o ## link the runtime as a static library
+${TARGET}.a: ${TARGET}.o builtins.o ## link the runtime as a static library
 	ar crsT ${TARGET}.a ${TARGET}.o builtins.o ${DEPS} ${MODULES}
 
 ${TARGET}-static: ${TARGET}.o main.o builtins.o ## link the runtime fully static
-	$(CC) -g -O3 ${V8_FLAGS} -static -m64 -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
+	$(CC) -g -O3 ${V8_FLAGS} -static -Wl,--start-group main.o ${TARGET}.o builtins.o ${DEPS} ${MODULES} -Wl,--end-group ${LFLAG} ${LIB} -o ${TARGET}
 	objcopy --only-keep-debug ${TARGET} ${TARGET}.debug
 	strip --strip-debug --strip-unneeded ${TARGET}
 	objcopy --add-gnu-debuglink=${TARGET}.debug ${TARGET}

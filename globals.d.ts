@@ -44,7 +44,9 @@ interface Runtime {
   getAddress(buf: TypedArray): number;
   utf8Length(str: string): number;
   utf8EncodeInto(str: string, buf: TypedArray): number;
-  utf8Decode(buf: TypedArray, len: number): string;
+  utf8EncodeIntoAtOffset(str: string, buf: TypedArray, off: number): number;
+  utf8Decode(address: number, len?: number): string;
+  utf8Encode(str: sring): TypedArray;
   wrap(handle: TypedArray, fn: Function, plen: number): function;
   addr(handle: TypedArray): number;
   dlsym(handle: number, name: string): number;

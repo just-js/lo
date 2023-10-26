@@ -145,7 +145,7 @@ void RegisterCallback(const v8::FunctionCallbackInfo<v8::Value> &args);
 void RunMicroTasks(const v8::FunctionCallbackInfo<v8::Value> &args);
 void SetModuleCallbacks(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Utf8Decode(const v8::FunctionCallbackInfo<v8::Value> &args);
-void Utf8Encode(const v8::FunctionCallbackInfo<v8::Value> &args);
+void RunScript(const v8::FunctionCallbackInfo<v8::Value> &args);
 void SetFlags(const v8::FunctionCallbackInfo<v8::Value> &args);
 
 // fast api methods

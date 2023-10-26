@@ -78,6 +78,11 @@ _binary_lib_websocket_js_start:
         .incbin "lib/websocket.js"
         .global _binary_lib_websocket_js_end
 _binary_lib_websocket_js_end:
+.global _binary_lib_compat_js_start
+_binary_lib_compat_js_start:
+        .incbin "lib/compat.js"
+        .global _binary_lib_compat_js_end
+_binary_lib_compat_js_end:
 .global _binary_Makefile_start
 _binary_Makefile_start:
         .incbin "Makefile"
