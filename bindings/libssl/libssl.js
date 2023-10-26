@@ -425,12 +425,12 @@ const api = {
     result: 'u64'
   },
   SSL_CTX_set_cipher_list: {
-    parameters: ['pointer', 'pointer'],
+    parameters: ['pointer', 'string'],
     pointers: ['SSL_CTX*', 'const char*'],
     result: 'i32'
   },
   SSL_set_cipher_list: {
-    parameters: ['pointer', 'pointer'],
+    parameters: ['pointer', 'string'],
     pointers: ['SSL*', 'const char*'],
     result: 'i32'
   },
@@ -450,7 +450,7 @@ const api = {
     rpointer: 'const SSL_METHOD*'
   },
   SSL_CTX_set_ciphersuites: {
-    parameters: ['pointer', 'pointer'],
+    parameters: ['pointer', 'string'],
     pointers: ['SSL_CTX*', 'const char*'],
     result: 'i32'
   },
@@ -469,6 +469,19 @@ const api = {
     result: 'pointer',
     rpointer: 'const EVP_MD*'
   }
+}
+
+const constants = {
+  SSL_OP_ALL: 'u64',
+  SSL_OP_NO_RENEGOTIATION: 'u64',
+  SSL_OP_NO_SSLv3: 'u64',
+  SSL_OP_NO_TLSv1: 'u64',
+  SSL_OP_NO_TLSv1_1: 'u64',
+  SSL_OP_NO_DTLSv1: 'u64',
+  SSL_OP_NO_DTLSv1_2: 'u64',
+  SSL_OP_NO_TLSv1_2: 'u64',
+  SSL_OP_NO_SSLv2: 'u64',
+  SSL_OP_NO_COMPRESSION: 'u64'
 }
 
 const name = 'libssl'
@@ -502,4 +515,4 @@ libcrypto.a libssl_o.a: deps
 	cp deps/openssl-1.1.1t/libcrypto.a ./
 `
 
-export { api, name, includes, libs, obj, make }
+export { api, name, includes, libs, obj, make, constants }
