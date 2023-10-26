@@ -56,8 +56,8 @@ const request = {
 let bytes = SSL_read(ssl, start, len)
 while (bytes > 0) {
   if (headers_done) {
-    bytes = SSL_read(ssl, start + off, len - off)
     request.body.push(recv_buf.slice(0, bytes))
+    bytes = SSL_read(ssl, start + off, len - off)
     continue
   }
   const parsed = pico.parseResponse(recv_buf.subarray(0, off + bytes), off + bytes, state)
@@ -88,6 +88,7 @@ while (bytes > 0) {
   } else if (parsed === -2) {
     off += bytes
   }
+  bytes = SSL_read(ssl, start + off, len - off)
 }
 
 if (bytes < 0) {
