@@ -28,4 +28,4 @@ make spin
 
 ## build and run with gitpod in your browser
 
-https://gitpod.io/new#https://github.com/just-js/lo/tree/experimental
+[launch on gitpod](https://gitpod.io/new#https://github.com/just-js/lo/tree/experimental)
