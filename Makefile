@@ -104,7 +104,7 @@ all:
 ${MODULE_DIR}/${MODULE}: ## initialize a new module from an api definition
 	mkdir -p ${MODULE_DIR}/${MODULE}
 
-stdlibs: # build the core standard libraries
+stdlibs: ## build the core standard libraries
 	${MAKE} MODULE=load library
 	${MAKE} MODULE=fs library
 	${MAKE} MODULE=system library
@@ -116,7 +116,7 @@ stdlibs: # build the core standard libraries
 	${MAKE} MODULE=pico library
 	${MAKE} MODULE=encode library
 
-libs: # build all the libraries
+libs: ## build all the libraries
 	${MAKE} MODULE=adaurl gen library
 #	${MAKE} MODULE=bestline gen library
 	${MAKE} MODULE=dynasm gen library
@@ -153,7 +153,7 @@ scc: ## generate report on lines of code, number of files, code complexity
 library: ## build a spin shared library
 	CFLAGS="$(FLAGS)" LFLAGS="${LFLAG}" SPIN_HOME="$(SPIN_HOME)" $(MAKE) -C ${MODULE_DIR}/${MODULE}/ clean library
 
-check: # run cppcheck on everything
+check: ## run cppcheck on everything
 	cppcheck --std=c++17 --language=c++ -j2 --enable=style ./*.cc
 	cppcheck --std=c++17 --language=c++ -j2 --enable=style ./*.h
 	cppcheck --std=c++17 --language=c++ -j2 --enable=style ./module/**/*.cc
