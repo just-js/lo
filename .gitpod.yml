@@ -1,0 +1,8 @@
+tasks:
+  - init: |
+      make deps
+      make stdlibs
+      make spin
+    command: |
+      ./spin
+

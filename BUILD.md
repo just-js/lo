@@ -25,3 +25,7 @@ make stdlibs
 ```
 make spin
 ```
+
+## build and run with gitpod in your browser
+
+https://gitpod.io/new#https://github.com/just-js/lo/tree/experimental
