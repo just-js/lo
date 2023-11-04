@@ -1,7 +1,7 @@
 const { fs } = spin.library('fs')
 const loader = spin.library('load')
 
-const { utf8Length, utf8EncodeInto, wrapMemory } = spin
+const { utf8Length, utf8EncodeInto, wrapMemory, utf8Encode } = spin
 
 const AD = '\u001b[0m' // ANSI Default
 const A0 = '\u001b[30m' // ANSI Black
@@ -32,11 +32,11 @@ const S_IROTH = S_IRGRP >> 3
 const defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC
 const defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 
-const { toUtf8, fromUtf8, isOneByte } = globalThis
-delete globalThis.toUtf8
-delete globalThis.fromUtf8
-delete globalThis.isOneByte
-const utf8Encode = input => new Uint8Array(toUtf8(input))
+//const { toUtf8, fromUtf8, isOneByte } = globalThis
+//delete globalThis.toUtf8
+//delete globalThis.fromUtf8
+//delete globalThis.isOneByte
+//const utf8Encode = input => new Uint8Array(toUtf8(input))
 
 globalThis.console = {
   log: str => fs.write_string(STDOUT, `${str}\n`),
@@ -68,7 +68,8 @@ class TextDecoder {
 
   decode (u8) {
     // todo: result cache
-    return fromUtf8(u8, true)
+    if (!u8.ptr) ptr(u8)
+    return spin.utf8Decode(u8.ptr, u8.size)
   }
 }
 
@@ -273,7 +274,7 @@ globalThis.TextEncoder = TextEncoder
 globalThis.TextDecoder = TextDecoder
 
 spin.utf8Encode = utf8Encode
-spin.isOneByte = isOneByte
+//spin.isOneByte = isOneByte
 spin.handle = handle
 spin.fs = fs
 spin.fs.readFile = readFile

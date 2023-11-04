@@ -937,7 +937,6 @@ void spin::SetFlags(const FunctionCallbackInfo<Value> &args) {
   V8::SetFlagsFromString(*flags);
 }
 
-/*
 void spin::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
@@ -960,7 +959,6 @@ void spin::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
   args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
 }
-*/
 
 void spin::Utf8Decode(const FunctionCallbackInfo<Value> &args) {
   int size = -1;
@@ -1091,7 +1089,7 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "loadModule", LoadModule);
   SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
-  //SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
+  SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
   SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
   SET_METHOD(isolate, target, "unwrapMemory", UnWrapMemory);
   SET_METHOD(isolate, target, "setFlags", SetFlags);
