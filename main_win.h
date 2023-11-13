@@ -53,7 +53,7 @@ const char _binary_main_js_start[] = {
 static unsigned int main_js_len = 499;
 
 void register_builtins() {
-  spin::builtins_add("main.js", _binary_main_js_start, main_js_len);
+  lo::builtins_add("main.js", _binary_main_js_start, main_js_len);
 }
 
 static const char* main_js = _binary_main_js_start;
