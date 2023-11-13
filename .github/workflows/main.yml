@@ -26,8 +26,8 @@ jobs:
           path: ${{ github.workspace }}/lo
           name: lo-mac-${{ matrix.platform }}
 
-  build-linux:
-    name: linux
+  build-linux-x64:
+    name: linux-x64
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
@@ -44,4 +44,27 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           path: ${{ github.workspace }}/lo
-          name: lo-linux-${{ matrix.platform }}
+          name: lo-linux-x64
+
+  build-linux-arm:
+    name: linux-arm
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [x64]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: install cross compile tools
+        run: |
+          apt-get install -qy binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+      - name: compile
+        run: |
+          make ARCH=arm64 C=aarch64-linux-gnu-gcc CC=aarch64-linux-gnu-g++ cleanall lo
+      - name: Upload binary
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{ github.workspace }}/lo
+          name: lo-linux-arm64
