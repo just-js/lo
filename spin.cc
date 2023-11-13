@@ -816,7 +816,11 @@ void spin::fastSetErrno (void* p, int32_t e) {
 }
 
 uint64_t spin::hrtime() {
+#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+
+#else
   if (clock_gettime(clock_id, &t)) return 0;
+#endif
   return (t.tv_sec * (uint64_t) 1e9) + t.tv_nsec;
 }
 
