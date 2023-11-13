@@ -9,6 +9,7 @@ V8_VERSION=12.0
 RUNTIME=lo
 SPIN_HOME=$(shell pwd)
 MODULES=module/core/core.a
+BUILTINS=builtins.S
 
 os=linux
 arch=x64
@@ -21,6 +22,7 @@ else
     ifeq ($(UNAME_S),Linux)
 		os=linux
 		LARGS += -static-libstdc++ -static-libgcc
+		BUILTINS=builtins_linux.S
     else ifeq ($(UNAME_S),Darwin)
 		os=mac
     endif
@@ -48,7 +50,7 @@ ${RUNTIME}: v8/include v8/libv8_monolith.a
 	@echo building ${RUNTIME} for ${os} on ${arch}
 	$(CC) -std=${STD} ${OPT} -c -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} main.cc
 	$(CC) -std=${STD} ${OPT} -c -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} spin.cc
-	$(C) builtins.S -c -o builtins.o
+	$(C) ${BUILTINS} -c -o builtins.o
 	$(CC) $(LARGS) ${OPT} -s main.o spin.o builtins.o v8/libv8_monolith.a -o ${RUNTIME}
 
 module:
