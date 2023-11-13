@@ -1,5 +1,5 @@
 name: build runtime
-on: [push]
+on: [push, pull_request]
 
 defaults:
   run:

@@ -32,8 +32,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: lo-mac-${{ matrix.platform }}.tar.gz
-          asset_name: lo-mac-${{ matrix.platform }}.tar.gz
+          asset_path: lo-mac-${{ matrix.platform }}.gz
+          asset_name: lo-mac-${{ matrix.platform }}.gz
           asset_content_type: application/gzip
 
   build-linux-x64:
@@ -58,8 +58,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: lo-linux-x64.tar.gz
-          asset_name: lo-linux-x64.tar.gz
+          asset_path: lo-linux-x64.gz
+          asset_name: lo-linux-x64.gz
           asset_content_type: application/gzip
 
   build-linux-arm:
@@ -80,13 +80,13 @@ jobs:
           make ARCH=arm64 C=aarch64-linux-gnu-gcc CC=aarch64-linux-gnu-g++ cleanall lo
       - name: compress runtime
         run: |
-          gzip -9 -c lo > lo-linux-arm64.tar.gz
+          gzip -9 -c lo > lo-linux-arm64.gz
       - name: upload compressed artifact
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: lo-linux-arm64.tar.gz
-          asset_name: lo-linux-arm64.tar.gz
+          asset_path: lo-linux-arm64.gz
+          asset_name: lo-linux-arm64.gz
           asset_content_type: application/gzip
