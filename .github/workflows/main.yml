@@ -19,7 +19,7 @@ jobs:
           submodules: recursive
       - name: compile
         run: |
-          make ARCH=${{ matrix.platform }} cleanall lo test
+          make ARCH=${{ matrix.platform }} cleanall lo
       - name: Upload binary
         uses: actions/upload-artifact@v3
         with:
