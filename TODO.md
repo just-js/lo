@@ -8,3 +8,4 @@
 - [ ] **todo**: get ffi working on arm64
 - [ ] **issue**: clang does not work on raspberry pi linux
 - [ ] **todo**: a cleaner way to expose module resolution to JS
+- [ ] **todo**: use [this](https://github.com/marketplace/actions/run-on-architecture) to run tests on arm

@@ -1,4 +1,4 @@
-name: build lo runtime
+name: build runtime
 on: [push]
 
 defaults:
@@ -16,12 +16,10 @@ jobs:
         platform: [x64, arm64]
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: recursive
       - name: compile
         run: |
           make ARCH=${{ matrix.platform }} cleanall lo
-      - name: Upload binary
+      - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
           path: ${{ github.workspace }}/lo
@@ -37,12 +35,10 @@ jobs:
         platform: [x64]
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: recursive
       - name: compile
         run: |
           make cleanall lo test
-      - name: Upload binary
+      - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
           path: ${{ github.workspace }}/lo
@@ -58,15 +54,13 @@ jobs:
         platform: [x64]
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: install cross compile tools
+      - name: install arm64 tools
         run: |
           sudo apt-get install -qy binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
       - name: compile
         run: |
           make ARCH=arm64 C=aarch64-linux-gnu-gcc CC=aarch64-linux-gnu-g++ cleanall lo
-      - name: Upload binary
+      - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
           path: ${{ github.workspace }}/lo
