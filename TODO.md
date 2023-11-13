@@ -1,7 +1,9 @@
-- fix clock_gettime/hrtime for macos
-- fix assembly [issue](https://stackoverflow.com/questions/1034852/adding-leading-underscores-to-assembly-symbols-with-gcc-on-win32) for underscore on macos/windows
-- get windows build working
-- add core module
-- add lib/gen.js and other parts necessary to generate bindings
-- add ffi
-- get ffi working on arm64
+- [ ] **todo**: fix clock_gettime/hrtime for macos
+- [ ] **todo**: get arm build working in github actions with sysroot
+- [ ] **todo**: fix assembly [issue](https://stackoverflow.com/questions/1034852/adding-leading-underscores-to-assembly-symbols-with-gcc-on-win32) - extra underscore on macos/windows
+- [ ] **todo**: get windows build working
+- [ ] **todo**: add core module
+- [ ] **todo**: add lib/gen.js and other parts necessary to generate bindings
+- [ ] **todo**: add ffi
+- [ ] **todo**: get ffi working on arm64
+- [ ] **issue**: clang does not work on raspberry pi linux

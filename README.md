@@ -25,7 +25,7 @@ make ARCH=arm64 cleanall lo
 
 ### clang
 ```
-make C="clang" CC="clang++ clean lo
+make C="clang" CC="clang++" clean lo
 ```
 
 ### ccache and mold for fast rebuilds
