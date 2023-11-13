@@ -10,7 +10,6 @@ V8_VERSION=12.0
 RUNTIME=lo
 LO_HOME=$(shell pwd)
 MODULES=module/core/core.a
-BUILTINS=builtins.S
 ARCH=x64
 os=linux
 
@@ -23,7 +22,6 @@ else
 		CC=g++
 		os=linux
 		LARGS += -static-libstdc++ -static-libgcc
-		BUILTINS=builtins_linux.S
     else ifeq ($(UNAME_S),Darwin)
 		os=mac
 		ifeq ($(ARCH),arm64)
@@ -50,24 +48,26 @@ v8/v8_monolith.lib:
 	curl -L -o v8/v8_monolith.lib.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.lib.tar.gz
 	gzip -d v8/v8_monolith.lib.gz
 
-${RUNTIME}: v8/include v8/libv8_monolith.a
+${RUNTIME}: v8/include v8/libv8_monolith.a main.js
 	@echo building ${RUNTIME} for ${os} on ${ARCH}
 ifeq (${os},linux)
 	sed 's/__*/_/g' builtins.S > builtins_linux.S
+	$(C) ${CARGS} builtins_linux.S -o builtins.o
+	rm -f builtins_linux.S
+else
+	$(C) ${CARGS} builtins.S -o builtins.o
 endif
-	$(CC) ${CCARGS} ${OPT} -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} main.cc
-	$(CC) ${CCARGS} ${OPT} -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
-	$(C) ${CARGS} ${BUILTINS} -o builtins.o
+	$(CC) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I./v8 -I./v8/include ${WARN} main.cc
+	$(CC) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
 	$(CC) $(LARGS) ${OPT} -s main.o ${RUNTIME}.o builtins.o v8/libv8_monolith.a -o ${RUNTIME}
 
-${RUNTIME}.exe: v8/include v8/v8_monolith.lib
-	cl /EHsc /std:c++17 /DGLOBALOBJ='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I. /I./v8 /I./v8/include /c main.cc
-	cl /EHsc /std:c++17 /DGLOBALOBJ='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I. /I./v8 /I./v8/include /c ${RUNTIME}.cc
+${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js
+	cl /EHsc /std:c++17 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I./v8 /I./v8/include /c main.cc
+	cl /EHsc /std:c++17 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I./v8 /I./v8/include /c ${RUNTIME}.cc
 	cl v8/v8_monolith.lib ${RUNTIME}.obj main.obj winmm.lib dbghelp.lib advapi32.lib /link /out:${RUNTIME}.exe
 
 test:
-	./${RUNTIME}
-	./${RUNTIME} 1
+	./${RUNTIME} --test
 
 module:
 	make ${RUNTIME}_HOME=$(pwd) -C module/${MODULE}/ module

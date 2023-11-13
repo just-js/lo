@@ -12,3 +12,4 @@
 - [ ] **todo**: use [this](https://github.com/marketplace/actions/run-on-architecture) to run tests on arm
 - [ ] **todo**: v8 inspector protocol support for debugging in vscode
 - [ ] **todo**: types and dx configurations for IDEs - autogenerate as much as possible
+- [ ] **todo**: fix hrtime() on windows

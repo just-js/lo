@@ -24,7 +24,7 @@ bool EntropySource(unsigned char* buffer, size_t length) {
 int main(int argc, char** argv) {
   // if we are called with no arguments, just dump the version and exit
   if (argc == 1) {
-    fprintf(stdout, "%s %s\nv8 %s\n", GLOBALOBJ, VERSION, v8::V8::GetVersion());
+    fprintf(stdout, "%s %s\nv8 %s\n", RUNTIME, VERSION, v8::V8::GetVersion());
     return 0;
   }
   // record the start time - this will be made available to JS so we can 
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
   // create a new isolate on the main thread. this will block until the 
   // isolate exits
   lo::CreateIsolate(argc, argv, main_js, main_js_len, starttime, 
-    GLOBALOBJ, _v8_cleanup, _on_exit, nullptr);
+    RUNTIME, _v8_cleanup, _on_exit, nullptr);
   // if we have the cleanup flag set, clean up memory left behind when isolate
   // exits. this flag should be set if you want to spawn multiple isolates
   // in the same process without memory leaks.

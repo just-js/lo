@@ -59,7 +59,7 @@ std::map<std::string, lo::builtin*> builtins;
 std::map<std::string, lo::register_plugin> modules;
 std::map<int, Global<Module>> module_map;
 
-#ifndef _WIN32
+#ifndef _WIN64
 clock_t clock_id = CLOCK_MONOTONIC;
 #endif
 
@@ -1085,9 +1085,46 @@ void lo::RunScript(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(result.ToLocalChecked());
 }
 
+void lo::Os(const FunctionCallbackInfo<Value> &args) {
+#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+  args.GetReturnValue().Set(String::NewFromOneByte(args.GetIsolate(), 
+    (uint8_t*)"mac", NewStringType::kInternalized).ToLocalChecked());
+#elif defined(_WIN64)
+  args.GetReturnValue().Set(String::NewFromOneByte(args.GetIsolate(), 
+    (uint8_t*)"win", NewStringType::kInternalized).ToLocalChecked());
+#else
+  args.GetReturnValue().Set(String::NewFromOneByte(args.GetIsolate(), 
+    (uint8_t*)"linux", NewStringType::kInternalized).ToLocalChecked());
+#endif
+}
+
+void lo::Arch(const FunctionCallbackInfo<Value> &args) {
+#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+  #ifdef __x86_64__
+  args.GetReturnValue().Set(String::NewFromOneByte(args.GetIsolate(), 
+    (uint8_t*)"x64", NewStringType::kInternalized).ToLocalChecked());
+  #else
+  args.GetReturnValue().Set(String::NewFromOneByte(args.GetIsolate(), 
+    (uint8_t*)"arm64", NewStringType::kInternalized).ToLocalChecked());
+  #endif
+#elif defined(_WIN64)
+  args.GetReturnValue().Set(String::NewFromOneByte(args.GetIsolate(), 
+    (uint8_t*)"x64", NewStringType::kInternalized).ToLocalChecked());
+#else
+  #ifdef __x86_64__
+  args.GetReturnValue().Set(String::NewFromOneByte(args.GetIsolate(), 
+    (uint8_t*)"x64", NewStringType::kInternalized).ToLocalChecked());
+  #else
+  args.GetReturnValue().Set(String::NewFromOneByte(args.GetIsolate(), 
+    (uint8_t*)"arm64", NewStringType::kInternalized).ToLocalChecked());
+  #endif
+#endif
+}
+
+
 void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
-  SET_VALUE(isolate, version, GLOBALOBJ, String::NewFromUtf8Literal(isolate, 
+  SET_VALUE(isolate, version, RUNTIME, String::NewFromUtf8Literal(isolate, 
     VERSION));
   SET_VALUE(isolate, version, "v8", String::NewFromUtf8(isolate, 
     V8::GetVersion()).ToLocalChecked());
@@ -1110,6 +1147,9 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "setFlags", SetFlags);
   SET_METHOD(isolate, target, "getMeta", GetMeta);
   SET_METHOD(isolate, target, "runScript", RunScript);
+
+  SET_METHOD(isolate, target, "arch", Arch);
+  SET_METHOD(isolate, target, "os", Os);
 
 // arch, os
 
