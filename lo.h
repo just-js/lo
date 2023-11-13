@@ -22,7 +22,7 @@ extern "C"
     }
 #endif
 
-namespace spin {
+namespace lo {
 
 // structs for passing typed arrays & strings in and out of v8 fast api calls
 struct FastApiTypedArray {
@@ -98,7 +98,7 @@ void SET_FAST_PROP(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> exports,
   const char * name, v8::CFunction* fastGetter, v8::FunctionCallback slowGetter,
   v8::CFunction* fastSetter, v8::FunctionCallback slowSetter);
 
-// internal API - on the spin:: namespace so can be used from other modules
+// internal API - on the lo:: namespace so can be used from other modules
 uint64_t hrtime();
 void builtins_add (const char* name, const char* source, 
   unsigned int size);
@@ -115,7 +115,7 @@ void PrintStackTrace(v8::Isolate* isolate, const v8::TryCatch& try_catch);
 void PromiseRejectCallback(v8::PromiseRejectMessage message);
 void FreeMemory(void* buf, size_t length, void* data);
 
-// external JS api - these are bound to the "spin" object on JS global
+// external JS api - these are bound to the "lo" object on JS global
 void Print(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Builtin(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Builtins(const v8::FunctionCallbackInfo<v8::Value> &args);
@@ -188,25 +188,25 @@ struct isolate_context {
   void* isolate;
 };
 
-int spin_create_isolate (int argc, char** argv, 
+int lo_create_isolate (int argc, char** argv, 
   const char* main, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname,
   int cleanup, int onexit, void* startup_data);
-int spin_context_size ();
-void spin_create_isolate_context (int argc, char** argv, 
+int lo_context_size ();
+void lo_create_isolate_context (int argc, char** argv, 
   const char* main, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname,
   int cleanup, int onexit, void* startup_data, struct isolate_context* ctx);
-void spin_start_isolate (void* ptr);
-void spin_destroy_isolate_context (struct isolate_context* ctx);
+void lo_start_isolate (void* ptr);
+void lo_destroy_isolate_context (struct isolate_context* ctx);
 
 struct exec_info {
   v8::Global<v8::Function> js_fn;
   v8::Isolate* isolate;
 };
-void spin_callback (exec_info* info);
+void lo_callback (exec_info* info);
 
 #ifdef __cplusplus
     }

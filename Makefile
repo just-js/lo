@@ -8,7 +8,7 @@ OPT=-O3
 VERSION=0.0.1
 V8_VERSION=12.0
 RUNTIME=lo
-SPIN_HOME=$(shell pwd)
+LO_HOME=$(shell pwd)
 MODULES=module/core/core.a
 BUILTINS=builtins.S
 ARCH=x64
@@ -54,16 +54,16 @@ ifeq (${os},linux)
 	sed 's/__*/_/g' builtins.S > builtins_linux.S
 endif
 	$(CC) ${CCARGS} ${OPT} -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} main.cc
-	$(CC) ${CCARGS} ${OPT} -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} spin.cc
+	$(CC) ${CCARGS} ${OPT} -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} lo.cc
 	$(C) ${CARGS} ${BUILTINS} -o builtins.o
-	$(CC) $(LARGS) ${OPT} -s main.o spin.o builtins.o v8/libv8_monolith.a -o ${RUNTIME}
+	$(CC) $(LARGS) ${OPT} -s main.o lo.o builtins.o v8/libv8_monolith.a -o ${RUNTIME}
 
 test:
 	./lo
 	./lo 1
 
 module:
-	make SPIN_HOME=$(pwd) -C module/${MODULE}/ module
+	make LO_HOME=$(pwd) -C module/${MODULE}/ module
 
 clean:
 	rm -f *.o
