@@ -3,5 +3,9 @@ v8
 *.a
 *.gz
 *.sh
+*.exe
+*.obj
+*.exp
+*.lib
 lo
 builtins_linux.S
