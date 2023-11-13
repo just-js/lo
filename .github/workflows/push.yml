@@ -80,7 +80,7 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
       - name: compile
         run: |
-          make cleanall lo.exe test
+          make lo.exe test
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
