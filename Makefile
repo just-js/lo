@@ -55,6 +55,10 @@ ${RUNTIME}: v8/include v8/libv8_monolith.a
 	$(C) ${CARGS} ${BUILTINS} -o builtins.o
 	$(CC) $(LARGS) ${OPT} -s main.o spin.o builtins.o v8/libv8_monolith.a -o ${RUNTIME}
 
+test:
+	./lo
+	./lo 1
+
 module:
 	make SPIN_HOME=$(pwd) -C module/${MODULE}/ module
 
