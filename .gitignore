@@ -4,3 +4,4 @@ v8
 *.gz
 *.sh
 lo
+builtins_linux.S
