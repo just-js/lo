@@ -37,9 +37,7 @@ endif
 v8/include:
 	curl -L -o v8-include.tar.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/include.tar.gz
 	tar -xvf v8-include.tar.gz
-ifeq ($(os),win)
-#	@del /q v8-include.tar.gz > NUL 2>&1
-else
+ifneq ($(os),win)
 	rm -f v8-include.tar.gz
 endif
 

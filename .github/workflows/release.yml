@@ -90,3 +90,32 @@ jobs:
           asset_path: lo-linux-arm64.gz
           asset_name: lo-linux-arm64.gz
           asset_content_type: application/gzip
+
+  build-windows:
+#    if: ${{ false }}  # disable
+    name: windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [x64]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.platform }}
+      - name: compile
+        run: |
+          make lo.exe test
+      - name: compress runtime
+        run: |
+          gzip -9 -c lo.exe > lo.exe.gz
+      - name: upload compressed artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: lo.exe.gz
+          asset_name: lo.exe.gz
+          asset_content_type: application/gzip
