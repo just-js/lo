@@ -7,3 +7,4 @@
 - [ ] **todo**: add ffi
 - [ ] **todo**: get ffi working on arm64
 - [ ] **issue**: clang does not work on raspberry pi linux
+- [ ] **todo**: a cleaner way to expose module resolution to JS

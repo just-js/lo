@@ -50,6 +50,9 @@ endif
 
 ${RUNTIME}: v8/include v8/libv8_monolith.a
 	@echo building ${RUNTIME} for ${os} on ${ARCH}
+ifeq (${os},linux)
+	sed 's/__*/_/g' builtins.S > builtins_linux.S
+endif
 	$(CC) ${CCARGS} ${OPT} -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} main.cc
 	$(CC) ${CCARGS} ${OPT} -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} spin.cc
 	$(C) ${CARGS} ${BUILTINS} -o builtins.o
