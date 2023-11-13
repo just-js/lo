@@ -65,7 +65,7 @@ jobs:
         with:
           path: ${{ github.workspace }}/lo
           name: lo-linux-arm64
-
+  
   build-windows:
 #    if: ${{ false }}  # disable
     name: windows
@@ -75,7 +75,7 @@ jobs:
       matrix:
         platform: [x64]
     steps:
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       - name: install msbuild
         uses: microsoft/setup-msbuild@v1.0.2
       - name: compile
