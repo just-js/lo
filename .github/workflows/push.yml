@@ -79,6 +79,7 @@ jobs:
       - name: install msbuild
         uses: microsoft/setup-msbuild@v1.0.2
       - name: compile
+        shell: pwsh
         run: |
           make lo.exe test
       - name: upload artifact
