@@ -5,6 +5,11 @@
 #include <map>
 #include <v8-fast-api-calls.h>
 
+#ifdef __MACH__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
+
 #ifdef __cplusplus
 extern "C"
     {
