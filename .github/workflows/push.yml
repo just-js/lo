@@ -76,10 +76,10 @@ jobs:
         platform: [x64]
     steps:
       - uses: actions/checkout@v3
-      - name: install msbuild
-        uses: microsoft/setup-msbuild@v1.0.2
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.platform }}
       - name: compile
-        shell: pwsh
         run: |
           make lo.exe test
       - name: upload artifact
