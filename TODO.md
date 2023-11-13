@@ -1,1 +1,7 @@
 - fix clock_gettime/hrtime for macos
+- fix assembly [issue](https://stackoverflow.com/questions/1034852/adding-leading-underscores-to-assembly-symbols-with-gcc-on-win32) for underscore on macos/windows
+- get windows build working
+- add core module
+- add lib/gen.js and other parts necessary to generate bindings
+- add ffi
+- get ffi working on arm64
