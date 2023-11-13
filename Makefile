@@ -58,21 +58,21 @@ ifeq (${os},linux)
 	sed 's/__*/_/g' builtins.S > builtins_linux.S
 endif
 	$(CC) ${CCARGS} ${OPT} -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} main.cc
-	$(CC) ${CCARGS} ${OPT} -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} lo.cc
+	$(CC) ${CCARGS} ${OPT} -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
 	$(C) ${CARGS} ${BUILTINS} -o builtins.o
-	$(CC) $(LARGS) ${OPT} -s main.o lo.o builtins.o v8/libv8_monolith.a -o ${RUNTIME}
+	$(CC) $(LARGS) ${OPT} -s main.o ${RUNTIME}.o builtins.o v8/libv8_monolith.a -o ${RUNTIME}
 
 ${RUNTIME}.exe: v8/include v8/v8_monolith.lib
 	cl /EHsc /std:c++17 /DGLOBALOBJ='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I. /I./v8 /I./v8/include /c main.cc
-	cl /EHsc /std:c++17 /DGLOBALOBJ='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I. /I./v8 /I./v8/include /c spin.cc
-	link /out:lo.exe v8/v8_monolith.lib spin.obj main.obj winmm.lib dbghelp.lib advapi32.lib
+	cl /EHsc /std:c++17 /DGLOBALOBJ='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I. /I./v8 /I./v8/include /c ${RUNTIME}.cc
+	link /out:${RUNTIME}.exe v8/v8_monolith.lib ${RUNTIME}.obj main.obj winmm.lib dbghelp.lib advapi32.lib
 
 test:
-	./lo
-	./lo 1
+	./${RUNTIME}
+	./${RUNTIME} 1
 
 module:
-	make LO_HOME=$(pwd) -C module/${MODULE}/ module
+	make ${RUNTIME}_HOME=$(pwd) -C module/${MODULE}/ module
 
 clean:
 ifeq ($(os),win)
