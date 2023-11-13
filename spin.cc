@@ -1095,6 +1095,9 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "setFlags", SetFlags);
   SET_METHOD(isolate, target, "getMeta", GetMeta);
   SET_METHOD(isolate, target, "runScript", RunScript);
+
+// arch, os
+
   SET_FAST_PROP(isolate, target, "errno", &pFerrnoget, GetErrno, &pFerrnoset, 
     SetErrno);
   SET_FAST_METHOD(isolate, target, "hrtime", &pFhrtime, HRTime);

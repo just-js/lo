@@ -20,7 +20,7 @@ bool EntropySource(unsigned char* buffer, size_t length) {
 int main(int argc, char** argv) {
   // if we are called with no arguments, just dump the version and exit
   if (argc == 1) {
-    fprintf(stdout, "spin %s\nv8 %s\n", VERSION, v8::V8::GetVersion());
+    fprintf(stdout, "%s %s\nv8 %s\n", GLOBALOBJ, VERSION, v8::V8::GetVersion());
     return 0;
   }
   // record the start time - this will be made available to JS so we can 

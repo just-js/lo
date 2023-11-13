@@ -13,5 +13,6 @@ function wrap (h, fn, plen = 0) {
   return fun
 }
 
-const hrtime = wrap(new Uint32Array(2), spin.hrtime)
-spin.print(`${hrtime() - spin.start}\n`)
+const { start, print } = lo
+const hrtime = wrap(new Uint32Array(2), lo.hrtime)
+print(`${hrtime() - start}\n`)
