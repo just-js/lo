@@ -65,7 +65,7 @@ endif
 ${RUNTIME}.exe: v8/include v8/v8_monolith.lib
 	cl /EHsc /std:c++17 /DGLOBALOBJ='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I. /I./v8 /I./v8/include /c main.cc
 	cl /EHsc /std:c++17 /DGLOBALOBJ='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I. /I./v8 /I./v8/include /c ${RUNTIME}.cc
-	link /out:${RUNTIME}.exe v8/v8_monolith.lib ${RUNTIME}.obj main.obj winmm.lib dbghelp.lib advapi32.lib
+	cl v8/v8_monolith.lib ${RUNTIME}.obj main.obj winmm.lib dbghelp.lib advapi32.lib /link /out:${RUNTIME}.exe
 
 test:
 	./${RUNTIME}
