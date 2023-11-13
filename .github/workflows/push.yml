@@ -18,7 +18,11 @@ jobs:
       - uses: actions/checkout@v3
       - name: compile
         run: |
-          make ARCH=${{ matrix.platform }} cleanall lo
+          make ARCH=${{ matrix.platform }} lo
+      - name: test
+        if: ${{ matrix.platform == 'x64' }}      
+        run: |
+          make test
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -37,7 +41,10 @@ jobs:
       - uses: actions/checkout@v3
       - name: compile
         run: |
-          make cleanall lo test
+          make lo
+      - name: test
+        run: |
+          make test
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -59,7 +66,7 @@ jobs:
           sudo apt-get install -qy binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
       - name: compile
         run: |
-          make ARCH=arm64 C=aarch64-linux-gnu-gcc CC=aarch64-linux-gnu-g++ cleanall lo
+          make ARCH=arm64 C=aarch64-linux-gnu-gcc CC=aarch64-linux-gnu-g++ lo
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -81,7 +88,10 @@ jobs:
           arch: ${{ matrix.platform }}
       - name: compile
         run: |
-          make lo.exe test
+          make lo.exe
+      - name: test
+        run: |
+          make test
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:

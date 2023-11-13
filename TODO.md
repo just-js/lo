@@ -13,3 +13,5 @@
 - [ ] **todo**: v8 inspector protocol support for debugging in vscode
 - [ ] **todo**: types and dx configurations for IDEs - autogenerate as much as possible
 - [ ] **todo**: fix hrtime() on windows
+- [ ] **todo**: get binary includes working for windows
+- [ ] **todo**: add method in github actions to test arm64 builds in a vm/emulator
