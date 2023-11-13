@@ -1,8 +1,8 @@
 C=clang
 CC=clang++
 LARGS=
+CARGS=-std=c++17 -c
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
-STD=c++17
 OPT=-O3
 VERSION=0.0.1
 V8_VERSION=12.0
@@ -26,7 +26,8 @@ else
     else ifeq ($(UNAME_S),Darwin)
 		os=mac
 		ifeq ($(ARCH),arm64)
-			LARGS += -arch arm64
+			LARGS+=-arch arm64
+			CARGS+=-arch arm64
 		endif
     endif
 endif
@@ -47,8 +48,8 @@ endif
 
 ${RUNTIME}: v8/include v8/libv8_monolith.a
 	@echo building ${RUNTIME} for ${os} on ${ARCH}
-	$(CC) -std=${STD} ${OPT} -c -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} main.cc
-	$(CC) -std=${STD} ${OPT} -c -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} spin.cc
+	$(CC) ${CARGS} ${OPT} -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} main.cc
+	$(CC) ${CARGS} ${OPT} -DGLOBALOBJ='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I. -I./v8 -I./v8/include ${WARN} spin.cc
 	$(C) ${BUILTINS} -c -o builtins.o
 	$(CC) $(LARGS) ${OPT} -s main.o spin.o builtins.o v8/libv8_monolith.a -o ${RUNTIME}
 
