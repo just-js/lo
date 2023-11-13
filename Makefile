@@ -1,6 +1,6 @@
 C=clang
 CC=clang++
-LARGS=-static-libstdc++ -static-libgcc 
+LARGS=
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 STD=c++17
 OPT=-O3
@@ -12,6 +12,7 @@ MODULES=module/core/core.a
 
 os=linux
 arch=x64
+
 ifeq ($(OS),Windows_NT)
 	os=win
 	arch=x64
@@ -19,15 +20,12 @@ else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
 		os=linux
-    endif
-    ifeq ($(UNAME_S),Darwin)
+		LARGS += -static-libstdc++ -static-libgcc
+    else ifeq ($(UNAME_S),Darwin)
 		os=mac
     endif
-    UNAME_P := $(shell uname -m)
-    ifeq ($(UNAME_P),x86_64)
-		arch=x64
-    endif
-    ifeq ($(UNAME_P),aarch64)
+    UNAME_M := $(shell uname -m)
+    ifneq ($(UNAME_M),x86_64)
 		arch=arm64
     endif
 endif
