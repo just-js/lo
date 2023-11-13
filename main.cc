@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
   }
   // record the start time - this will be made available to JS so we can 
   // measure time to bootstrap the runtime
-  uint64_t starttime = spin::hrtime();
+  uint64_t starttime = lo::hrtime();
   // turn off buffering of stdout and stderr - this is required by V8
   // https://en.cppreference.com/w/c/io/setvbuf
   setvbuf(stdout, nullptr, _IONBF, 0);
@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
   register_builtins();
   // create a new isolate on the main thread. this will block until the 
   // isolate exits
-  spin::CreateIsolate(argc, argv, main_js, main_js_len, starttime, 
+  lo::CreateIsolate(argc, argv, main_js, main_js_len, starttime, 
     GLOBALOBJ, _v8_cleanup, _on_exit, nullptr);
   // if we have the cleanup flag set, clean up memory left behind when isolate
   // exits. this flag should be set if you want to spawn multiple isolates

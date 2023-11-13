@@ -1,4 +1,4 @@
-#include "spin.h"
+#include "lo.h"
 
 using v8::String;
 using v8::FunctionCallbackInfo;
@@ -55,8 +55,8 @@ using v8::kPromiseHandlerAddedAfterReject;
 using v8::Script;
 
 // TODO: thread safety
-std::map<std::string, spin::builtin*> builtins;
-std::map<std::string, spin::register_plugin> modules;
+std::map<std::string, lo::builtin*> builtins;
+std::map<std::string, lo::register_plugin> modules;
 std::map<int, Global<Module>> module_map;
 
 clock_t clock_id = CLOCK_MONOTONIC;
@@ -69,7 +69,7 @@ CTypeInfo cargshrtime[2] = {
 };
 CTypeInfo rchrtime = CTypeInfo(CTypeInfo::Type::kVoid);
 CFunctionInfo infohrtime = CFunctionInfo(rchrtime, 2, cargshrtime);
-CFunction pFhrtime = CFunction((const void*)&spin::fastHRTime, 
+CFunction pFhrtime = CFunction((const void*)&lo::fastHRTime, 
   &infohrtime);
 
 CTypeInfo cargsgetaddress[3] = {
@@ -82,7 +82,7 @@ CTypeInfo cargsgetaddress[3] = {
 CTypeInfo rcgetaddress = CTypeInfo(CTypeInfo::Type::kVoid);
 CFunctionInfo infogetaddress = CFunctionInfo(rcgetaddress, 3, 
   cargsgetaddress);
-CFunction pFgetaddress = CFunction((const void*)&spin::fastGetAddress, 
+CFunction pFgetaddress = CFunction((const void*)&lo::fastGetAddress, 
   &infogetaddress);
 
 CTypeInfo cargsutf8length[2] = {
@@ -92,7 +92,7 @@ CTypeInfo cargsutf8length[2] = {
 CTypeInfo rcutf8length = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infoutf8length = CFunctionInfo(rcutf8length, 2, 
   cargsutf8length);
-CFunction pFutf8length = CFunction((const void*)&spin::fastUtf8Length, 
+CFunction pFutf8length = CFunction((const void*)&lo::fastUtf8Length, 
   &infoutf8length);
 
 CTypeInfo cargsutf8encodeinto[3] = {
@@ -104,7 +104,7 @@ CTypeInfo cargsutf8encodeinto[3] = {
 CTypeInfo rcutf8encodeinto = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infoutf8encodeinto = CFunctionInfo(rcutf8encodeinto, 3, 
   cargsutf8encodeinto);
-CFunction pFutf8encodeinto = CFunction((const void*)&spin::fastUtf8EncodeInto, 
+CFunction pFutf8encodeinto = CFunction((const void*)&lo::fastUtf8EncodeInto, 
   &infoutf8encodeinto);
 
 CTypeInfo cargsutf8encodeintoatoffset[4] = {
@@ -117,7 +117,7 @@ CTypeInfo cargsutf8encodeintoatoffset[4] = {
 CTypeInfo rcutf8encodeintoatoffset = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infoutf8encodeintoatoffset = CFunctionInfo(rcutf8encodeintoatoffset, 4, 
   cargsutf8encodeintoatoffset);
-CFunction pFutf8encodeintoatoffset = CFunction((const void*)&spin::fastUtf8EncodeIntoAtOffset, 
+CFunction pFutf8encodeintoatoffset = CFunction((const void*)&lo::fastUtf8EncodeIntoAtOffset, 
   &infoutf8encodeintoatoffset);
 
 CTypeInfo cargsreadmemory[4] = {
@@ -130,7 +130,7 @@ CTypeInfo cargsreadmemory[4] = {
 CTypeInfo rcreadmemory = CTypeInfo(CTypeInfo::Type::kVoid);
 CFunctionInfo inforeadmemory = CFunctionInfo(rcreadmemory, 4, 
   cargsreadmemory);
-CFunction pFreadmemory = CFunction((const void*)&spin::fastReadMemory, 
+CFunction pFreadmemory = CFunction((const void*)&lo::fastReadMemory, 
   &inforeadmemory);
 
 CTypeInfo cargsreadmemoryatoffset[5] = {
@@ -144,7 +144,7 @@ CTypeInfo cargsreadmemoryatoffset[5] = {
 CTypeInfo rcreadmemoryatoffset = CTypeInfo(CTypeInfo::Type::kVoid);
 CFunctionInfo inforeadmemoryatoffset = CFunctionInfo(rcreadmemoryatoffset, 5, 
   cargsreadmemoryatoffset);
-CFunction pFreadmemoryatoffset = CFunction((const void*)&spin::fastReadMemoryAtOffset, 
+CFunction pFreadmemoryatoffset = CFunction((const void*)&lo::fastReadMemoryAtOffset, 
   &inforeadmemoryatoffset);
 
 CTypeInfo cargserrnoset[2] = {
@@ -154,7 +154,7 @@ CTypeInfo cargserrnoset[2] = {
 CTypeInfo rcerrnoset = CTypeInfo(CTypeInfo::Type::kVoid);
 CFunctionInfo infoerrnoset = CFunctionInfo(rcerrnoset, 2, 
   cargserrnoset);
-CFunction pFerrnoset = CFunction((const void*)&spin::fastSetErrno, 
+CFunction pFerrnoset = CFunction((const void*)&lo::fastSetErrno, 
   &infoerrnoset);
 CTypeInfo cargserrnoget[1] = {
   CTypeInfo(CTypeInfo::Type::kV8Value)
@@ -162,11 +162,11 @@ CTypeInfo cargserrnoget[1] = {
 CTypeInfo rcerrnoget = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infoerrnoget = CFunctionInfo(rcerrnoget, 1, 
   cargserrnoget);
-CFunction pFerrnoget = CFunction((const void*)&spin::fastGetErrno, 
+CFunction pFerrnoget = CFunction((const void*)&lo::fastGetErrno, 
   &infoerrnoget);
 
 // v8 isolate callbacks
-size_t spin::nearHeapLimitCallback(void* data, size_t current_heap_limit,
+size_t lo::nearHeapLimitCallback(void* data, size_t current_heap_limit,
   size_t initial_heap_limit) {
   fprintf(stderr, "nearHeapLimitCallback\n");
   return 0;
@@ -183,7 +183,7 @@ void OOMErrorcallback (const char* location, const OOMDetails& details) {
 
 // TODO: it would be faster to just encode all the assets into a big buffer, with
 // length prefixes and just receive them in one call
-void spin::builtins_add (const char* name, const char* source, 
+void lo::builtins_add (const char* name, const char* source, 
   unsigned int size) {
   struct builtin* b = new builtin();
   b->size = size;
@@ -191,11 +191,11 @@ void spin::builtins_add (const char* name, const char* source,
   builtins[name] = b;
 }
 
-void spin::modules_add (const char* name, register_plugin plugin_handler) {
+void lo::modules_add (const char* name, register_plugin plugin_handler) {
   modules[name] = plugin_handler;
 }
 
-void spin::FreeMemory(void* buf, size_t length, void* data) {
+void lo::FreeMemory(void* buf, size_t length, void* data) {
   free(buf);
 }
 
@@ -208,7 +208,7 @@ void cleanupIsolate (Isolate* isolate) {
   isolate->Dispose();
 }
 
-void spin::SET_PROP(Isolate *isolate, Local<ObjectTemplate> 
+void lo::SET_PROP(Isolate *isolate, Local<ObjectTemplate> 
   recv, const char *name, FunctionCallback getter,
   FunctionCallback setter) {
   enum PropertyAttribute attributes =
@@ -222,28 +222,28 @@ void spin::SET_PROP(Isolate *isolate, Local<ObjectTemplate>
   );
 }
 
-void spin::SET_METHOD(Isolate *isolate, Local<ObjectTemplate> 
+void lo::SET_METHOD(Isolate *isolate, Local<ObjectTemplate> 
   recv, const char *name, FunctionCallback callback) {
   recv->Set(String::NewFromUtf8(isolate, name, 
     NewStringType::kInternalized).ToLocalChecked(), 
     FunctionTemplate::New(isolate, callback));
 }
 
-void spin::SET_MODULE(Isolate *isolate, Local<ObjectTemplate> 
+void lo::SET_MODULE(Isolate *isolate, Local<ObjectTemplate> 
   recv, const char *name, Local<ObjectTemplate> module) {
   recv->Set(String::NewFromUtf8(isolate, name, 
     NewStringType::kInternalized).ToLocalChecked(), 
     module);
 }
 
-void spin::SET_VALUE(Isolate *isolate, Local<ObjectTemplate> 
+void lo::SET_VALUE(Isolate *isolate, Local<ObjectTemplate> 
   recv, const char *name, Local<Value> value) {
   recv->Set(String::NewFromUtf8(isolate, name, 
     NewStringType::kInternalized).ToLocalChecked(), 
     value);
 }
 
-void spin::SET_FAST_METHOD(Isolate* isolate, Local<ObjectTemplate> 
+void lo::SET_FAST_METHOD(Isolate* isolate, Local<ObjectTemplate> 
   exports, const char * name, CFunction* fastCFunc, FunctionCallback slowFunc) {
   Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(
     isolate,
@@ -261,7 +261,7 @@ void spin::SET_FAST_METHOD(Isolate* isolate, Local<ObjectTemplate>
   );
 }
 
-void spin::SET_FAST_PROP(Isolate* isolate, Local<ObjectTemplate> 
+void lo::SET_FAST_PROP(Isolate* isolate, Local<ObjectTemplate> 
   exports, const char * name, CFunction* fastGetter, FunctionCallback slowGetter,
   CFunction* fastSetter, FunctionCallback slowSetter) {
   Local<FunctionTemplate> getter = FunctionTemplate::New(
@@ -295,7 +295,7 @@ void spin::SET_FAST_PROP(Isolate* isolate, Local<ObjectTemplate>
   );
 }
 
-void spin::PrintStackTrace(Isolate* isolate, const TryCatch& try_catch) {
+void lo::PrintStackTrace(Isolate* isolate, const TryCatch& try_catch) {
   Local<Message> message = try_catch.Message();
   Local<StackTrace> stack = message->GetStackTrace();
   Local<Value> scriptName = message->GetScriptResourceName();
@@ -332,7 +332,7 @@ void spin::PrintStackTrace(Isolate* isolate, const TryCatch& try_catch) {
   fflush(stderr);
 }
 
-void spin::PromiseRejectCallback(PromiseRejectMessage data) {
+void lo::PromiseRejectCallback(PromiseRejectMessage data) {
   if (data.GetEvent() == kPromiseRejectAfterResolved ||
       data.GetEvent() == kPromiseResolveAfterResolved) {
     return;
@@ -375,7 +375,7 @@ void spin::PromiseRejectCallback(PromiseRejectMessage data) {
   }
 }
 
-MaybeLocal<Module> spin::OnModuleInstantiate(Local<Context> context,
+MaybeLocal<Module> lo::OnModuleInstantiate(Local<Context> context,
   Local<String> specifier,
   Local<FixedArray> import_assertions, 
   Local<Module> referrer) {
@@ -429,7 +429,7 @@ void LogEvent (const char* name, int status) {
   fprintf(stderr, "log %i %s\n", status, name);
 }
 
-int spin::CreateIsolate(int argc, char** argv, 
+int lo::CreateIsolate(int argc, char** argv, 
   const char* main_src, unsigned int main_len, 
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname, int cleanup,
@@ -460,7 +460,7 @@ int spin::CreateIsolate(int argc, char** argv,
     //isolate->SetRAILMode(v8::RAILMode::PERFORMANCE_RESPONSE);
     isolate->SetCaptureStackTraceForUncaughtExceptions(true, 1000, 
       StackTrace::kDetailed);
-    //isolate->AddNearHeapLimitCallback(spin::nearHeapLimitCallback, 0);
+    //isolate->AddNearHeapLimitCallback(lo::nearHeapLimitCallback, 0);
     //isolate->SetAbortOnUncaughtExceptionCallback(AbortOnUncaughtException);
     isolate->SetPromiseRejectCallback(PromiseRejectCallback);
     isolate->SetHostImportModuleDynamicallyCallback(OnDynamicImport);
@@ -473,7 +473,7 @@ int spin::CreateIsolate(int argc, char** argv,
     Local<ObjectTemplate> global = ObjectTemplate::New(isolate);
     Local<ObjectTemplate> runtime = ObjectTemplate::New(isolate);
     //runtime->SetImmutableProto();
-    spin::Init(isolate, runtime);
+    lo::Init(isolate, runtime);
     Local<Context> context = Context::New(isolate, NULL, global);
     Context::Scope context_scope(context);
     Local<Object> globalInstance = context->Global();
@@ -524,9 +524,9 @@ int spin::CreateIsolate(int argc, char** argv,
       runtimeInstance).Check();
     TryCatch try_catch(isolate);
     Local<PrimitiveArray> opts =
-        PrimitiveArray::New(isolate, spin::HostDefinedOptions::kLength);
-    opts->Set(isolate, spin::HostDefinedOptions::kType, 
-      Number::New(isolate, spin::ScriptType::kModule));
+        PrimitiveArray::New(isolate, lo::HostDefinedOptions::kLength);
+    opts->Set(isolate, lo::HostDefinedOptions::kType, 
+      Number::New(isolate, lo::ScriptType::kModule));
     ScriptOrigin baseorigin(
       isolate,
       String::NewFromUtf8(isolate, scriptname, NewStringType::kInternalized, 
@@ -551,7 +551,7 @@ int spin::CreateIsolate(int argc, char** argv,
       return 1;
     }
     Maybe<bool> ok2 = module->InstantiateModule(context, 
-      spin::OnModuleInstantiate);
+      lo::OnModuleInstantiate);
     if (ok2.IsNothing()) {
       if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
         try_catch.ReThrow();
@@ -577,7 +577,7 @@ int spin::CreateIsolate(int argc, char** argv,
           statusCode = result.ToLocalChecked()->Uint32Value(context).ToChecked();
         }
         if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
-          spin::PrintStackTrace(isolate, try_catch);
+          lo::PrintStackTrace(isolate, try_catch);
           return 2;
         }
         statusCode = result.ToLocalChecked()->Uint32Value(context).ToChecked();
@@ -593,7 +593,7 @@ int spin::CreateIsolate(int argc, char** argv,
   return statusCode;
 }
 
-int spin::CreateIsolate(int argc, char** argv, const char* main_src, 
+int lo::CreateIsolate(int argc, char** argv, const char* main_src, 
   unsigned int main_len, uint64_t start, const char* globalobj, int cleanup,
   int onexit, const v8::StartupData* startup_data) {
   return CreateIsolate(argc, argv, main_src, main_len, NULL, 0, NULL, 0, 0, 
@@ -603,7 +603,7 @@ int spin::CreateIsolate(int argc, char** argv, const char* main_src,
 // TODO: in libraries, the init code is very slow and it never frees the
 // fastcall structures it creates
 // TODO: this is very slow
-void spin::Library(const FunctionCallbackInfo<Value> &args) {
+void lo::Library(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
   Local<ObjectTemplate> exports = ObjectTemplate::New(isolate);
@@ -630,7 +630,7 @@ void spin::Library(const FunctionCallbackInfo<Value> &args) {
 
 // TODO: this is very slow. we need a better data structure and/or to cache
 // the results
-void spin::Builtin(const FunctionCallbackInfo<Value> &args) {
+void lo::Builtin(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value name(isolate, args[0]);
   auto iter = builtins.find(*name);
@@ -638,7 +638,7 @@ void spin::Builtin(const FunctionCallbackInfo<Value> &args) {
     args.GetReturnValue().Set(Null(isolate));
     return;
   }
-  spin::builtin* b = (iter->second);
+  lo::builtin* b = (iter->second);
   if (args.Length() == 1) {
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, b->source, 
       NewStringType::kNormal, b->size).ToLocalChecked());
@@ -652,16 +652,16 @@ void spin::Builtin(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(ab);
 }
 
-void spin::RunMicroTasks(const FunctionCallbackInfo<Value> &args) {
+void lo::RunMicroTasks(const FunctionCallbackInfo<Value> &args) {
   args.GetIsolate()->PerformMicrotaskCheckpoint();
   //TODO: args.GetIsolate()->SetMicrotasksPolicy()
 }
 
-void spin::NextTick(const FunctionCallbackInfo<Value>& args) {
+void lo::NextTick(const FunctionCallbackInfo<Value>& args) {
   args.GetIsolate()->EnqueueMicrotask(args[0].As<Function>());
 }
 
-void spin::RegisterCallback(const FunctionCallbackInfo<Value>& args) {
+void lo::RegisterCallback(const FunctionCallbackInfo<Value>& args) {
   struct exec_info* info = reinterpret_cast<struct exec_info*>(
     (uint64_t)Local<Integer>::Cast(args[0])->Value());
   Local<Function> fn = args[1].As<Function>();
@@ -673,7 +673,7 @@ void spin::RegisterCallback(const FunctionCallbackInfo<Value>& args) {
 
 // TODO: UnregisterCallback
 
-void spin::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
+void lo::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
   int identity = Local<Integer>::Cast(args[0])->Value();
@@ -683,7 +683,7 @@ void spin::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
     return;
   }
   Maybe<bool> result = module->InstantiateModule(context, 
-    spin::OnModuleInstantiate);
+    lo::OnModuleInstantiate);
   if (result.IsNothing()) {
     printf("\nCan't instantiate module.\n");
     return;
@@ -702,16 +702,16 @@ void spin::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
 }
 
 // TODO: this is terribly slow
-void spin::LoadModule(const FunctionCallbackInfo<Value> &args) {
+void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
   TryCatch try_catch(isolate);
   Local<String> source = args[0].As<String>();
   Local<String> path = args[1].As<String>();
   Local<PrimitiveArray> opts =
-      PrimitiveArray::New(isolate, spin::HostDefinedOptions::kLength);
-  opts->Set(isolate, spin::HostDefinedOptions::kType,
-                            Number::New(isolate, spin::ScriptType::kModule));
+      PrimitiveArray::New(isolate, lo::HostDefinedOptions::kLength);
+  opts->Set(isolate, lo::HostDefinedOptions::kType,
+                            Number::New(isolate, lo::ScriptType::kModule));
   ScriptOrigin baseorigin(isolate,
     path, // resource name
     0, // line offset
@@ -767,7 +767,7 @@ void spin::LoadModule(const FunctionCallbackInfo<Value> &args) {
 
 // TODO: these could both be fast calls if we just wrote to a buffer
 // and parse on the other side - probably not any quicker though
-void spin::Builtins(const FunctionCallbackInfo<Value> &args) {
+void lo::Builtins(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
   Local<Array> b = Array::New(isolate);
@@ -779,7 +779,7 @@ void spin::Builtins(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(b);
 }
 
-void spin::Libraries(const FunctionCallbackInfo<Value> &args) {
+void lo::Libraries(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
   Local<Array> m = Array::New(isolate);
@@ -791,7 +791,7 @@ void spin::Libraries(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(m);
 }
 
-void spin::SetModuleCallbacks(const FunctionCallbackInfo<Value> &args) {
+void lo::SetModuleCallbacks(const FunctionCallbackInfo<Value> &args) {
   // todo: is putting this in context correct?
   Local<Context> context = args.GetIsolate()->GetCurrentContext();
   context->SetEmbedderData(1, args[0].As<Function>()); // async resolver
@@ -799,23 +799,23 @@ void spin::SetModuleCallbacks(const FunctionCallbackInfo<Value> &args) {
 }
 
 // fast api calls
-void spin::GetErrno(const FunctionCallbackInfo<Value> &args) {
+void lo::GetErrno(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(errno);
 }
 
-int spin::fastGetErrno (void* p) {
+int lo::fastGetErrno (void* p) {
   return errno;
 }
 
-void spin::SetErrno(const FunctionCallbackInfo<Value> &args) {
+void lo::SetErrno(const FunctionCallbackInfo<Value> &args) {
   errno = Local<Integer>::Cast(args[0])->Value();
 }
 
-void spin::fastSetErrno (void* p, int32_t e) {
+void lo::fastSetErrno (void* p, int32_t e) {
   errno = e;
 }
 
-uint64_t spin::hrtime() {
+uint64_t lo::hrtime() {
 #ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
   clock_serv_t cclock;
   mach_timespec_t mts;
@@ -830,35 +830,35 @@ uint64_t spin::hrtime() {
   return (t.tv_sec * (uint64_t) 1e9) + t.tv_nsec;
 }
 
-void spin::HRTime(const FunctionCallbackInfo<Value> &args) {
+void lo::HRTime(const FunctionCallbackInfo<Value> &args) {
   ((uint64_t*)args[0].As<Uint32Array>()->Buffer()->Data())[0] = hrtime();
 }
 
-void spin::fastHRTime (void* p, struct FastApiTypedArray* const p_ret) {
+void lo::fastHRTime (void* p, struct FastApiTypedArray* const p_ret) {
   ((uint64_t*)p_ret->data)[0] = hrtime();
 }
 
-void spin::GetAddress(const FunctionCallbackInfo<Value> &args) {
+void lo::GetAddress(const FunctionCallbackInfo<Value> &args) {
   Local<TypedArray> ta = args[0].As<TypedArray>();
   uint8_t* ptr = (uint8_t*)ta->Buffer()->Data() + ta->ByteOffset();
   ((uint64_t*)args[1].As<Uint32Array>()->Buffer()->Data())[0] = (uint64_t)ptr;
 }
 
-void spin::fastGetAddress(void* p, struct FastApiTypedArray* const p_buf, 
+void lo::fastGetAddress(void* p, struct FastApiTypedArray* const p_buf, 
   struct FastApiTypedArray* const p_ret) {
   ((uint64_t*)p_ret->data)[0] = (uint64_t)p_buf->data;
 }
 
-void spin::Utf8Length(const FunctionCallbackInfo<Value> &args) {
+void lo::Utf8Length(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   args.GetReturnValue().Set(args[0].As<String>()->Utf8Length(isolate));
 }
 
-int32_t spin::fastUtf8Length (void* p, struct FastOneByteString* const p_str) {
+int32_t lo::fastUtf8Length (void* p, struct FastOneByteString* const p_str) {
   return p_str->length;
 }
 
-void spin::GetMeta(const FunctionCallbackInfo<Value> &args) {
+void lo::GetMeta(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
   Local<Object> meta = args[1].As<Object>();
@@ -883,7 +883,7 @@ void spin::GetMeta(const FunctionCallbackInfo<Value> &args) {
   meta->Set(context, String::NewFromUtf8Literal(isolate, "isShared", NewStringType::kInternalized), v8::Boolean::New(isolate, isShared)).Check();
 }
 
-void spin::ReadMemory(const FunctionCallbackInfo<Value> &args) {
+void lo::ReadMemory(const FunctionCallbackInfo<Value> &args) {
   Local<Uint8Array> u8 = args[0].As<Uint8Array>();
   uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + u8->ByteOffset();
   void* start = reinterpret_cast<void*>(
@@ -892,13 +892,13 @@ void spin::ReadMemory(const FunctionCallbackInfo<Value> &args) {
   memcpy(dest, start, size);
 }
 
-void spin::fastReadMemory (void* p, struct FastApiTypedArray* const p_buf, 
+void lo::fastReadMemory (void* p, struct FastApiTypedArray* const p_buf, 
   void* start, uint32_t size) {
   memcpy(p_buf->data, start, size);
 }
 
 // todo: version that wraps memory in place with an arraybuffer
-void spin::ReadMemoryAtOffset(const FunctionCallbackInfo<Value> &args) {
+void lo::ReadMemoryAtOffset(const FunctionCallbackInfo<Value> &args) {
   Local<Uint8Array> u8 = args[0].As<Uint8Array>();
   uint32_t off = Local<Integer>::Cast(args[3])->Value();
   uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + off;
@@ -908,13 +908,13 @@ void spin::ReadMemoryAtOffset(const FunctionCallbackInfo<Value> &args) {
   memcpy(dest, start, size);
 }
 
-void spin::fastReadMemoryAtOffset (void* p, struct FastApiTypedArray* const p_buf, 
+void lo::fastReadMemoryAtOffset (void* p, struct FastApiTypedArray* const p_buf, 
   void* start, uint32_t size, uint32_t off) {
   uint8_t* ptr = (uint8_t*)p_buf->data + off;
   memcpy(ptr, start, size);
 }
 
-void spin::WrapMemory(const FunctionCallbackInfo<Value> &args) {
+void lo::WrapMemory(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
   uint64_t start64 = (uint64_t)Local<Number>::Cast(args[0])->Value();
   uint32_t size = (uint32_t)Local<Integer>::Cast(args[1])->Value();
@@ -931,23 +931,23 @@ void spin::WrapMemory(const FunctionCallbackInfo<Value> &args) {
     return;
   }
   std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
-      start, size, spin::FreeMemory, nullptr);
+      start, size, lo::FreeMemory, nullptr);
   Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
   args.GetReturnValue().Set(ab);
 }
 
-void spin::UnWrapMemory(const FunctionCallbackInfo<Value> &args) {
+void lo::UnWrapMemory(const FunctionCallbackInfo<Value> &args) {
   Local<ArrayBuffer> ab = args[0].As<ArrayBuffer>();
   ab->Detach();
 }
 
-void spin::SetFlags(const FunctionCallbackInfo<Value> &args) {
+void lo::SetFlags(const FunctionCallbackInfo<Value> &args) {
   String::Utf8Value flags(args.GetIsolate(), args[0]);
   //V8::SetFlagsFromString(*flags, static_cast<size_t>(flags.length()));
   V8::SetFlagsFromString(*flags);
 }
 
-void spin::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
+void lo::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
   if (str->IsOneByte()) {
@@ -970,7 +970,7 @@ void spin::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
 }
 
-void spin::Utf8Decode(const FunctionCallbackInfo<Value> &args) {
+void lo::Utf8Decode(const FunctionCallbackInfo<Value> &args) {
   int size = -1;
   if (args.Length() > 1) {
     size = Local<Integer>::Cast(args[1])->Value();
@@ -981,7 +981,7 @@ void spin::Utf8Decode(const FunctionCallbackInfo<Value> &args) {
     str, NewStringType::kNormal, size).ToLocalChecked());
 }
 
-void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
+void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
   if (str->IsOneByte()) {
@@ -1002,13 +1002,13 @@ void spin::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Integer::New(isolate, written));
 }
 
-int32_t spin::fastUtf8EncodeInto (void* p, struct FastOneByteString* 
+int32_t lo::fastUtf8EncodeInto (void* p, struct FastOneByteString* 
   const p_str, struct FastApiTypedArray* const p_buf) {
   memcpy(p_buf->data, p_str->data, p_str->length);
   return p_str->length;
 }
 
-void spin::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
+void lo::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
   uint32_t off = Local<Integer>::Cast(args[2])->Value();
@@ -1030,21 +1030,21 @@ void spin::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Integer::New(isolate, written));
 }
 
-int32_t spin::fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString* 
+int32_t lo::fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString* 
   const p_str, struct FastApiTypedArray* const p_buf, uint32_t off) {
   uint8_t* dest = (uint8_t*)p_buf->data + off;
   memcpy(dest, p_str->data, p_str->length);
   return p_str->length;
 }
 
-void spin::Print(const FunctionCallbackInfo<Value> &args) {
+void lo::Print(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   if (args[0].IsEmpty()) return;
   String::Utf8Value str(isolate, args[0]);
   fprintf(stdout, "%s", *str);
 }
 
-void spin::RunScript(const FunctionCallbackInfo<Value> &args) {
+void lo::RunScript(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
   TryCatch try_catch(isolate);
@@ -1080,7 +1080,7 @@ void spin::RunScript(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(result.ToLocalChecked());
 }
 
-void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
+void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
   SET_VALUE(isolate, version, GLOBALOBJ, String::NewFromUtf8Literal(isolate, 
     VERSION));
@@ -1122,21 +1122,21 @@ void spin::Init(Isolate* isolate, Local<ObjectTemplate> target) {
 }
 
 // C/FFI api for managing isolates
-int spin_create_isolate (int argc, char** argv, 
+int lo_create_isolate (int argc, char** argv, 
   const char* main, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname,
   int cleanup, int onexit, void* startup_data) {
   const v8::StartupData* data = (const v8::StartupData*) startup_data;
-  return spin::CreateIsolate(argc, argv, main, main_len, js, js_len, 
+  return lo::CreateIsolate(argc, argv, main, main_len, js, js_len, 
   buf, buflen, fd, start, globalobj, scriptname, cleanup, onexit, data);
 }
 
-int spin_context_size () {
+int lo_context_size () {
   return sizeof(struct isolate_context);
 }
 
-void spin_create_isolate_context (int argc, char** argv, 
+void lo_create_isolate_context (int argc, char** argv, 
   const char* main, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname,
@@ -1168,21 +1168,21 @@ void spin_create_isolate_context (int argc, char** argv,
   ctx->startup_data = startup_data;
 }
 
-// todo: spin_destroy_isolate_context
-void spin_start_isolate (void* ptr) {
+// todo: lo_destroy_isolate_context
+void lo_start_isolate (void* ptr) {
   struct isolate_context* ctx = (struct isolate_context*)ptr;
-  ctx->rc = spin_create_isolate(ctx->argc, ctx->argv, ctx->main, ctx->main_len,
+  ctx->rc = lo_create_isolate(ctx->argc, ctx->argv, ctx->main, ctx->main_len,
     ctx->js, ctx->js_len, ctx->buf, ctx->buflen, ctx->fd, ctx->start,
     ctx->globalobj, ctx->scriptname, ctx->cleanup, ctx->onexit, 
     ctx->startup_data);
 }
 
-void spin_destroy_isolate_context (struct isolate_context* ctx) {
+void lo_destroy_isolate_context (struct isolate_context* ctx) {
   free(ctx);
 }
 
 // generic callback used to trampoline ffi callbacks back into JS
-void spin_callback (exec_info* info) {
+void lo_callback (exec_info* info) {
   Isolate* isolate = info->isolate;
   HandleScope scope(isolate);
   info->js_fn.Get(isolate)->Call(isolate->GetCurrentContext(), 
