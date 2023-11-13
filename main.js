@@ -55,9 +55,9 @@ function test () {
     assert(args[0] === './lo.exe' || args[0] === 'lo.exe' || args[0] === 'lo' || args[0] === './lo')
   } else {
     assert(args[0] === './lo' || args[0] === 'lo')
+    assert(start > 0)
     assert(hrtime() > start)
   }
-  assert(start > 0)
   assert(lo.hasOwnProperty('version'))
   assert(lo.version.constructor.name === 'Object')
   assert(lo.version.hasOwnProperty('lo'))
