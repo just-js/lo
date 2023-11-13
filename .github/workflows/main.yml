@@ -1,0 +1,47 @@
+name: build lo runtime
+on: [push]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-mac:
+    name: mac
+    runs-on: macos-12
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [x64, arm64]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: compile
+        run: |
+          make cleanall lo
+      - name: Upload binary
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{ github.workspace }}/lo
+          name: lo-mac-${{ matrix.platform }}
+
+  build-linux:
+    name: linux
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [x64]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: compile
+        run: |
+          make cleanall lo
+      - name: Upload binary
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{ github.workspace }}/lo
+          name: lo-linux-${{ matrix.platform }}
