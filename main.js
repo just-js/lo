@@ -42,9 +42,10 @@ const console = {
 function rejectedPromiseHandler (err) {
   print(`${AR}Unhandled Rejection${AD}\n`)
   print(`${err.stack}\n`)
+  lo.exit(1)
 }
 
-//globalThis.onUnhandledRejection = rejectedPromiseHandler
+globalThis.onUnhandledRejection = rejectedPromiseHandler
 const hrtime = wrap(new Uint32Array(2), lo.hrtime)
 const os = lo.os()
 const arch = lo.arch()

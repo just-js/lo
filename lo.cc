@@ -1121,6 +1121,10 @@ void lo::Arch(const FunctionCallbackInfo<Value> &args) {
 #endif
 }
 
+void lo::Exit(const FunctionCallbackInfo<Value> &args) {
+  int32_t status = Local<Integer>::Cast(args[0])->Value();
+  exit(status);
+}
 
 void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
@@ -1150,6 +1154,7 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
 
   SET_METHOD(isolate, target, "arch", Arch);
   SET_METHOD(isolate, target, "os", Os);
+  SET_METHOD(isolate, target, "exit", Exit);
 
 // arch, os
 
