@@ -1,4 +1,8 @@
+#ifdef _WIN32
+#include "main_win.h"
+#else
 #include "main.h"
+#endif
 
 using v8::V8;
 using v8::Platform;

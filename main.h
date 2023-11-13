@@ -7,10 +7,6 @@
 extern char _binary_main_js_start[];
 extern char _binary_main_js_end[];
 
-extern "C" {
-
-}
-
 void register_builtins() {
   lo::builtins_add("main.js", _binary_main_js_start, _binary_main_js_end - _binary_main_js_start);
 }

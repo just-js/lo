@@ -59,7 +59,10 @@ std::map<std::string, lo::builtin*> builtins;
 std::map<std::string, lo::register_plugin> modules;
 std::map<int, Global<Module>> module_map;
 
+#ifndef _WIN32
 clock_t clock_id = CLOCK_MONOTONIC;
+#endif
+
 struct timespec t;
 
 CTypeInfo cargshrtime[2] = { 
@@ -824,6 +827,8 @@ uint64_t lo::hrtime() {
   mach_port_deallocate(mach_task_self(), cclock);
   t.tv_sec = mts.tv_sec;
   t.tv_nsec = mts.tv_nsec;
+#elif defined(_WIN32)
+  // TODO
 #else
   if (clock_gettime(clock_id, &t)) return 0;
 #endif

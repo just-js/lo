@@ -1,7 +1,8 @@
-- [ ] **todo**: fix clock_gettime/hrtime for macos
-- [ ] **todo**: get arm build working in github actions with sysroot
-- [ ] **todo**: fix assembly [issue](https://stackoverflow.com/questions/1034852/adding-leading-underscores-to-assembly-symbols-with-gcc-on-win32) - extra underscore on macos/windows
-- [ ] **todo**: get windows build working
+- [x] **todo**: fix clock_gettime/hrtime for macos
+- [x] **todo**: change namespace from spin to lo
+- [x] **todo**: get arm build working in github actions
+- [x] **todo**: fix assembly [issue](https://stackoverflow.com/questions/1034852/adding-leading-underscores-to-assembly-symbols-with-gcc-on-win32) - extra underscore on macos/windows
+- [x] **todo**: get windows build working
 - [ ] **todo**: add core module
 - [ ] **todo**: add lib/gen.js and other parts necessary to generate bindings
 - [ ] **todo**: add ffi
@@ -9,3 +10,5 @@
 - [ ] **issue**: clang does not work on raspberry pi linux
 - [ ] **todo**: a cleaner way to expose module resolution to JS
 - [ ] **todo**: use [this](https://github.com/marketplace/actions/run-on-architecture) to run tests on arm
+- [ ] **todo**: v8 inspector protocol support for debugging in vscode
+- [ ] **todo**: types and dx configurations for IDEs - autogenerate as much as possible
