@@ -52,7 +52,7 @@ const arch = lo.arch()
 
 function test () {
   if (os === 'win') {
-    //assert(args[0] === './lo.exe' || args[0] === 'lo.exe' || args[0] === 'lo' || args[0] === './lo')
+    assert(args[0] === './lo.exe' || args[0] === 'lo.exe' || args[0] === 'lo' || args[0] === './lo')
   } else {
     assert(args[0] === './lo' || args[0] === 'lo')
     assert(hrtime() > start)
