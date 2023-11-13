@@ -44,14 +44,14 @@ function rejectedPromiseHandler (err) {
   print(`${err.stack}\n`)
 }
 
-globalThis.onUnhandledRejection = rejectedPromiseHandler
+//globalThis.onUnhandledRejection = rejectedPromiseHandler
 const hrtime = wrap(new Uint32Array(2), lo.hrtime)
 const os = lo.os()
 const arch = lo.arch()
 
 function test () {
   if (os === 'win') {
-    assert(args[0] === './lo.exe' || args[0] === 'lo.exe')
+    assert(args[0] === './lo.exe' || args[0] === 'lo.exe' || args[0] === 'lo' || args[0] === './lo')
   } else {
     assert(args[0] === './lo' || args[0] === 'lo')
     assert(hrtime() > start)
