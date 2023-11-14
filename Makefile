@@ -69,7 +69,10 @@ ${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js
 test:
 	./${RUNTIME} --test
 
-module:
+binding/${BINDING}/${BINDING}.a: v8/include v8/libv8_monolith.a
+	ARCH="${ARCH}" os="${os}" LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C binding/${BINDING}/ ${BINDING}.a
+
+binding/${BINDING}/${BINDING}.so: v8/include v8/libv8_monolith.a binding/${BINDING}/${BINDING}.a
 	ARCH="${ARCH}" os="${os}" LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C binding/${BINDING}/ ${BINDING}.so
 
 clean:
