@@ -9,7 +9,7 @@ VERSION=0.0.1
 V8_VERSION=12.0
 RUNTIME=lo
 LO_HOME=$(shell pwd)
-MODULES=module/core/core.a
+BINDINGS=
 ARCH=x64
 os=linux
 
@@ -21,7 +21,7 @@ else
 		C=gcc
 		CC=g++
 		os=linux
-		LARGS += -static-libstdc++ -static-libgcc
+		LARGS += -static-libstdc++ -static-libgcc -s
     else ifeq ($(UNAME_S),Darwin)
 		os=mac
 		ifeq ($(ARCH),arm64)
@@ -59,7 +59,7 @@ else
 endif
 	$(CC) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I./v8 -I./v8/include ${WARN} main.cc
 	$(CC) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
-	$(CC) $(LARGS) ${OPT} -s main.o ${RUNTIME}.o builtins.o v8/libv8_monolith.a -o ${RUNTIME}
+	$(CC) $(LARGS) ${OPT} main.o ${RUNTIME}.o builtins.o ${BINDINGS} v8/libv8_monolith.a -o ${RUNTIME}
 
 ${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js
 	cl /EHsc /std:c++17 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I./v8 /I./v8/include /c main.cc
@@ -70,7 +70,7 @@ test:
 	./${RUNTIME} --test
 
 module:
-	make ${RUNTIME}_HOME=$(pwd) -C module/${MODULE}/ module
+	LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C binding/${BINDING}/ binding
 
 clean:
 ifeq ($(os),win)

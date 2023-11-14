@@ -6,12 +6,12 @@
 
 extern char _binary_main_js_start[];
 extern char _binary_main_js_end[];
+static unsigned int main_js_len = _binary_main_js_end - _binary_main_js_start;
 
 void register_builtins() {
   lo::builtins_add("main.js", _binary_main_js_start, _binary_main_js_end - _binary_main_js_start);
 }
 
-static unsigned int main_js_len = _binary_main_js_end - _binary_main_js_start;
 static const char* main_js = _binary_main_js_start;
 static const char* v8flags = "--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init";
 static unsigned int _v8flags_from_commandline = 1;

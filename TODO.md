@@ -21,3 +21,5 @@
 - [ ] **bug**: static link on linux/arm64 is broken: ```mold -run make LARGS="-static" ARCH=arm64 C="ccache gcc" CC="ccache g++" clean lo```
 - [ ] **todo**: support android, libcosmo and risc-v. all 64 bit only.
 - [ ] **todo**: run release workflow on release created event and add changelog automatically
+- [ ] **todo**: add v8 LICENSE file from build
+- [ ] **todo**: path translation in core for lib/gen.js and modules

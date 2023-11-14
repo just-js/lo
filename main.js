@@ -33,15 +33,15 @@ function wrap (h, fn, plen = 0) {
   return fun
 }
 
-const { start, print, args } = lo
+const { start, args } = lo
 
-const console = {
-  log: str => print(`${str}\n`)
+globalThis.console = {
+  log: str => lo.print(`${str}\n`)
 }
 
 function rejectedPromiseHandler (err) {
-  print(`${AR}Unhandled Rejection${AD}\n`)
-  print(`${err.stack}\n`)
+  lo.print(`${AR}Unhandled Rejection${AD}\n`)
+  lo.print(`${err.stack}\n`)
   lo.exit(1)
 }
 
@@ -94,6 +94,13 @@ ${AG}arch${AD}    ${arch}
 ${AG}boot${AD}    ${(elapsed / 1000000).toFixed(2)} ms  
 ${AG}version${AD} ${lo.version.lo}  
 ${AG}v8${AD}      ${lo.version.v8}`)
+for (const lib_name of lo.libraries()) {
+  console.log(`${AY}${lib_name}${AD}`)
+  const lib = lo.library(lib_name)
+  assert(lib)
+  assert(lib.hasOwnProperty(lib_name))
+  console.log(Object.getOwnPropertyNames(lib[lib_name]))
+}
 }
 
 main()
