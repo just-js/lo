@@ -16,9 +16,13 @@ jobs:
         platform: [x64, arm64]
     steps:
       - uses: actions/checkout@v3
-      - name: compile
+      - name: compile runtime
         run: |
           make ARCH=${{ matrix.platform }} lo
+      - name: compile core.dylib
+        if: success() || failure()
+        run: |
+          make ARCH=${{ matrix.platform }} BINDING=core module
       - name: test
         if: ${{ matrix.platform == 'x64' }}      
         run: |
