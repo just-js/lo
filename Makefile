@@ -18,17 +18,17 @@ ifeq ($(OS),Windows_NT)
 else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
-		C=gcc
-		CC=g++
-		os=linux
-		LARGS += -static-libstdc++ -static-libgcc -s
+			C=gcc
+			CC=g++
+			os=linux
+			LARGS += -static-libstdc++ -static-libgcc -s
     else ifeq ($(UNAME_S),Darwin)
-		os=mac
-		ifeq ($(ARCH),arm64)
-			LARGS+=-arch arm64
-			CARGS+=-arch arm64
-			CCARGS+=-arch arm64
-		endif
+			os=mac
+			ifeq ($(ARCH),arm64)
+				LARGS+=-arch arm64
+				CARGS+=-arch arm64
+				CCARGS+=-arch arm64
+			endif
     endif
 endif
 

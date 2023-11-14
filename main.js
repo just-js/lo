@@ -329,7 +329,7 @@ function test_main () {
         ${AY}lo.js${AD}
 ------------------------`)
   console.log(`${AG}args${AD}    ${args}`)  
-  if (args.length > 1 && args[1] === '--test') test()
+  test()
   console.log(`${AG}os${AD}      ${os}  
 ${AG}arch${AD}    ${arch}  
 ${AG}boot${AD}    ${(elapsed / 1000000).toFixed(2)} ms  
