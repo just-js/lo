@@ -19,19 +19,18 @@ jobs:
       - name: compile runtime
         run: |
           make ARCH=${{ matrix.platform }} lo
-      - name: compile core.dylib
-        if: success() || failure()
+      - name: compile core.so
         run: |
           make ARCH=${{ matrix.platform }} BINDING=core module
       - name: test
         if: ${{ matrix.platform == 'x64' }}      
         run: |
           make test
-      - name: upload core.dylib artifact
+      - name: upload core.so artifact
         uses: actions/upload-artifact@v3
         with:
-          path: ${{ github.workspace }}/binding/core/core.dylib
-          name: core-mac-${{ matrix.platform }}.dylib
+          path: ${{ github.workspace }}/binding/core/core.so
+          name: core-mac-${{ matrix.platform }}.so
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
         with:
