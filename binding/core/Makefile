@@ -2,7 +2,6 @@
 C=gcc
 CC=g++
 BINDING=core
-os=linux
 
 .PHONY: help clean
 
