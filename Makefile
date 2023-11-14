@@ -9,7 +9,7 @@ VERSION=0.0.1
 V8_VERSION=12.0
 RUNTIME=lo
 LO_HOME=$(shell pwd)
-BINDINGS=
+BINDINGS=binding/core/core.a
 ARCH=x64
 os=linux
 

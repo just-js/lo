@@ -16,21 +16,16 @@ jobs:
         platform: [x64, arm64]
     steps:
       - uses: actions/checkout@v3
+      - name: compile core.o
+        run: |
+          make ARCH=${{ matrix.platform }} BINDING=core module
       - name: compile runtime
         run: |
           make ARCH=${{ matrix.platform }} lo
-      - name: compile core.so
-        run: |
-          make ARCH=${{ matrix.platform }} BINDING=core module
       - name: test
         if: ${{ matrix.platform == 'x64' }}      
         run: |
           make test
-      - name: upload core.so artifact
-        uses: actions/upload-artifact@v3
-        with:
-          path: ${{ github.workspace }}/binding/core/core.so
-          name: core-mac-${{ matrix.platform }}.so
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
         with:
@@ -47,6 +42,9 @@ jobs:
         platform: [x64]
     steps:
       - uses: actions/checkout@v3
+      - name: compile core.o
+        run: |
+          make BINDING=core module
       - name: compile
         run: |
           make lo
@@ -72,6 +70,9 @@ jobs:
       - name: install arm64 tools
         run: |
           sudo apt-get install -qy binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+      - name: compile core.o
+        run: |
+          make ARCH=arm64 C=aarch64-linux-gnu-gcc CC=aarch64-linux-gnu-g++ BINDING=core module
       - name: compile
         run: |
           make ARCH=arm64 C=aarch64-linux-gnu-gcc CC=aarch64-linux-gnu-g++ lo
@@ -82,7 +83,7 @@ jobs:
           name: lo-linux-arm64
   
   build-windows:
-#    if: ${{ false }}  # disable
+    if: ${{ false }}  # disable
     name: windows
     runs-on: windows-latest
     strategy:

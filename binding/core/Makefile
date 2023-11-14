@@ -10,7 +10,7 @@ $(BINDING).so: ## compile shared library and dependencies
 	$(CC) -fPIC $(CCARGS) $(OPT) -I$(LO_HOME) -I$(LO_HOME)/v8 -I$(LO_HOME)/v8/include $(WARN) -o $(BINDING).o $(BINDING).cc
 	ar crsT $(BINDING).a $(BINDING).o 
 ifeq ($(os),mac)
-	$(CC) -v -fPIC $(LARGS) $(OPT) -bundle $(WARN) -o $(BINDING).so $(BINDING).o -ldl  $(LO_HOME)/v8/libv8_monolith.a $(LO_HOME)/lo.o
+#	$(CC) -v -fPIC $(LARGS) $(OPT) -dynamiclib $(WARN) -o $(BINDING).dylib $(BINDING).o -ldl  $(LO_HOME)/v8/libv8_monolith.a $(LO_HOME)/lo.o
 else
 	$(CC) $(LARGS) $(OPT) -shared $(WARN) -o $(BINDING).so $(BINDING).o -ldl 
 endif

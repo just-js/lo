@@ -7,8 +7,19 @@
 #include "builtins.h"
 static unsigned int main_js_len = _binary_main_js_len;
 
+extern "C" {
+  extern void* _register_core();
+}
+
 void register_builtins() {
   lo::builtins_add("main.js", _binary_main_js_start, _binary_main_js_len);
+  lo::builtins_add("lib/gen.js", _binary_lib_gen_js_start, _binary_lib_gen_js_len);
+  lo::builtins_add("Makefile", _binary_Makefile_start, _binary_Makefile_len);
+  lo::builtins_add("binding/core/core.js", _binary_binding_core_core_js_start, _binary_binding_core_core_js_len);
+  lo::builtins_add("main.cc", _binary_main_cc_start, _binary_main_cc_len);
+  lo::builtins_add("lo.cc", _binary_lo_cc_start, _binary_lo_cc_len);
+  lo::builtins_add("lo.h", _binary_lo_h_start, _binary_lo_h_len);
+  lo::modules_add("core", &_register_core);
 }
 
 static const char* main_js = _binary_main_js_start;

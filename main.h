@@ -7,9 +7,32 @@
 extern char _binary_main_js_start[];
 extern char _binary_main_js_end[];
 static unsigned int main_js_len = _binary_main_js_end - _binary_main_js_start;
+extern char _binary_lib_gen_js_start[];
+extern char _binary_lib_gen_js_end[];
+extern char _binary_Makefile_start[];
+extern char _binary_Makefile_end[];
+extern char _binary_binding_core_core_js_start[];
+extern char _binary_binding_core_core_js_end[];
+extern char _binary_main_cc_start[];
+extern char _binary_main_cc_end[];
+extern char _binary_lo_cc_start[];
+extern char _binary_lo_cc_end[];
+extern char _binary_lo_h_start[];
+extern char _binary_lo_h_end[];
+
+extern "C" {
+  extern void* _register_core();
+}
 
 void register_builtins() {
   lo::builtins_add("main.js", _binary_main_js_start, _binary_main_js_end - _binary_main_js_start);
+  lo::builtins_add("lib/gen.js", _binary_lib_gen_js_start, _binary_lib_gen_js_end - _binary_lib_gen_js_start);
+  lo::builtins_add("Makefile", _binary_Makefile_start, _binary_Makefile_end - _binary_Makefile_start);
+  lo::builtins_add("binding/core/core.js", _binary_binding_core_core_js_start, _binary_binding_core_core_js_end - _binary_binding_core_core_js_start);
+  lo::builtins_add("main.cc", _binary_main_cc_start, _binary_main_cc_end - _binary_main_cc_start);
+  lo::builtins_add("lo.cc", _binary_lo_cc_start, _binary_lo_cc_end - _binary_lo_cc_start);
+  lo::builtins_add("lo.h", _binary_lo_h_start, _binary_lo_h_end - _binary_lo_h_start);
+  lo::modules_add("core", &_register_core);
 }
 
 static const char* main_js = _binary_main_js_start;
