@@ -15,3 +15,9 @@
 - [ ] **todo**: fix hrtime() on windows
 - [ ] **todo**: get binary includes working for windows
 - [ ] **todo**: add method in github actions to test arm64 builds in a vm/emulator
+- [ ] **todo**: ffi support for arm64 on macos and linux and for x64 on windows
+- [ ] **todo**: ffi support for floats, structs and callbacks
+- [ ] **todo**: snapshot support - expose api to JS if possible
+- [ ] **bug**: static link on linux/arm64 is broken: ```mold -run make LARGS="-static" ARCH=arm64 C="ccache gcc" CC="ccache g++" clean lo```
+- [ ] **todo**: support android, libcosmo and risc-v. all 64 bit only.
+- [ ] **todo**: run release workflow on release created event and add changelog automatically
