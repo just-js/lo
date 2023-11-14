@@ -27,7 +27,12 @@ jobs:
         if: ${{ matrix.platform == 'x64' }}      
         run: |
           make test
-      - name: upload artifact
+      - name: upload core.dylib artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{ github.workspace }}/binding/core/core.dylib
+          name: core-mac-${{ matrix.platform }}.dylib
+      - name: upload runtime artifact
         uses: actions/upload-artifact@v3
         with:
           path: ${{ github.workspace }}/lo
