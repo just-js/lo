@@ -5,6 +5,7 @@
 #include "lo.h"
 
 #include "builtins.h"
+static unsigned int main_js_len = _binary_main_js_len;
 
 void register_builtins() {
   lo::builtins_add("main.js", _binary_main_js_start, _binary_main_js_len);
