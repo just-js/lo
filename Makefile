@@ -67,7 +67,7 @@ ${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js
 	cl v8/v8_monolith.lib ${RUNTIME}.obj main.obj winmm.lib dbghelp.lib advapi32.lib /link /out:${RUNTIME}.exe
 
 test:
-	./${RUNTIME} --test
+	./${RUNTIME} test
 
 binding/${BINDING}/${BINDING}.a: v8/include v8/libv8_monolith.a
 	ARCH="${ARCH}" os="${os}" LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C binding/${BINDING}/ ${BINDING}.a

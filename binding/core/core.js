@@ -41,6 +41,13 @@ const api = {
     parameters: ['i32', 'buffer', 'i32'],
     result: 'i32'
   },
+  write_string: {
+    parameters: ['i32', 'string', 'i32'],
+    pointers: [, 'const char*'],
+    override: [, , { param: 1, fastfield: '->length', slowfield: '.length()' }],
+    result: 'i32',
+    name: 'write'
+  },
   fstat: {
     parameters: ['i32', 'buffer'],
     pointers: [, 'struct stat *'],
@@ -105,10 +112,15 @@ const api = {
 const constants = {
   S_IFBLK: 'i32', S_IFCHR: 'i32', S_IFIFO: 'i32', 
   S_IRUSR: 'i32', S_IWUSR: 'i32', S_IRGRP: 'i32', S_IWGRP: 'i32',
-  S_IROTH: 'i32', S_IWOTH: 'i32'
+  S_IROTH: 'i32', S_IWOTH: 'i32',
+  O_RDONLY: 'i32',
+  O_WRONLY: 'i32',
+  O_CREAT: 'i32',
+  O_TRUNC: 'i32',
 }
 const includes = [
-  'unistd.h', 'sys/stat.h', 'fcntl.h', 'dirent.h', 'dlfcn.h', 'sys/mman.h'
+  'unistd.h', 'sys/stat.h', 'fcntl.h', 'dirent.h', 'dlfcn.h', 'sys/mman.h',
+  'stdio.h'
 ]
 
 const preamble = `

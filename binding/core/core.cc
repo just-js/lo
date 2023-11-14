@@ -7,6 +7,7 @@
 #include <dirent.h>
 #include <dlfcn.h>
 #include <sys/mman.h>
+#include <stdio.h>
 #include <lo.h>
 
 namespace lo {
@@ -413,6 +414,17 @@ v8::CTypeInfo rcwrite = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infowrite = v8::CFunctionInfo(rcwrite, 4, cargswrite);
 v8::CFunction pFwrite = v8::CFunction((const void*)&writeFast, &infowrite);
 
+int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1);
+v8::CTypeInfo cargswrite_string[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcwrite_string = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infowrite_string = v8::CFunctionInfo(rcwrite_string, 4, cargswrite_string);
+v8::CFunction pFwrite_string = v8::CFunction((const void*)&write_stringFast, &infowrite_string);
+
 int32_t fstatFast(void* p, int32_t p0, struct FastApiTypedArray* const p1);
 v8::CTypeInfo cargsfstat[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -655,6 +667,21 @@ int32_t writeFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32
   int32_t v2 = p2;
   return write(v0, v1, v2);
 }
+void write_stringSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  String::Utf8Value v1(isolate, args[1]);
+  int32_t v2 = v1.length();
+  int32_t rc = write(v0, *v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1) {
+  int32_t v0 = p0;
+  struct FastOneByteString* const v1 = p1;
+  int32_t v2 = p1->length;
+  return write(v0, v1->data, v2);
+}
 void fstatSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -804,6 +831,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "pread", &pFpread, preadSlow);
   SET_FAST_METHOD(isolate, module, "lseek", &pFlseek, lseekSlow);
   SET_FAST_METHOD(isolate, module, "write", &pFwrite, writeSlow);
+  SET_FAST_METHOD(isolate, module, "write_string", &pFwrite_string, write_stringSlow);
   SET_FAST_METHOD(isolate, module, "fstat", &pFfstat, fstatSlow);
   SET_FAST_METHOD(isolate, module, "unlink", &pFunlink, unlinkSlow);
   SET_FAST_METHOD(isolate, module, "readdir", &pFreaddir, readdirSlow);
@@ -826,6 +854,10 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "S_IWGRP", Integer::New(isolate, S_IWGRP));
   SET_VALUE(isolate, module, "S_IROTH", Integer::New(isolate, S_IROTH));
   SET_VALUE(isolate, module, "S_IWOTH", Integer::New(isolate, S_IWOTH));
+  SET_VALUE(isolate, module, "O_RDONLY", Integer::New(isolate, O_RDONLY));
+  SET_VALUE(isolate, module, "O_WRONLY", Integer::New(isolate, O_WRONLY));
+  SET_VALUE(isolate, module, "O_CREAT", Integer::New(isolate, O_CREAT));
+  SET_VALUE(isolate, module, "O_TRUNC", Integer::New(isolate, O_TRUNC));
 
   SET_MODULE(isolate, target, "core", module);
 }
