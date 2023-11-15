@@ -23,3 +23,4 @@
 - [ ] **todo**: run release workflow on release created event and add changelog automatically
 - [ ] **todo**: add v8 LICENSE file from build
 - [ ] **todo**: path translation in core for lib/gen.js and modules
+- [ ] **todo**: tests for all build options

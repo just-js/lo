@@ -1,6 +1,6 @@
 C=clang
 CC=clang++
-LARGS=
+LARGS=-rdynamic
 CCARGS=-std=c++17 -c
 CARGS=-c
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
@@ -21,8 +21,7 @@ else
 			C=gcc
 			CC=g++
 			os=linux
-			LARGS=-rdynamic -s
-#			LARGS += -static-libstdc++ -static-libgcc -s
+			LARGS += -s
     else ifeq ($(UNAME_S),Darwin)
 			os=mac
 			ifeq ($(ARCH),arm64)
@@ -71,12 +70,15 @@ test:
 	./${RUNTIME} test
 
 binding/core/core.a:
-	ARCH="${ARCH}" os="${os}" LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C binding/core/ core.a
+	$(MAKE) BINDING=core staticlib
 
-binding/${BINDING}/${BINDING}.a: v8/include v8/libv8_monolith.a
+binding/${BINDING}/${BINDING}.a:
+	$(MAKE) BINDING=${BINDING} staticlib
+
+staticlib: v8/include v8/libv8_monolith.a
 	ARCH="${ARCH}" os="${os}" LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C binding/${BINDING}/ ${BINDING}.a
 
-binding/${BINDING}/${BINDING}.so: v8/include v8/libv8_monolith.a binding/${BINDING}/${BINDING}.a
+sharedlib: v8/include v8/libv8_monolith.a binding/${BINDING}/${BINDING}.a
 	ARCH="${ARCH}" os="${os}" LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C binding/${BINDING}/ ${BINDING}.so
 
 clean:

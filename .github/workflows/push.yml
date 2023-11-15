@@ -83,7 +83,7 @@ jobs:
           name: lo-linux-arm64
   
   build-windows:
-    if: ${{ false }}  # disable
+#    if: ${{ false }}  # disable
     name: windows
     runs-on: windows-latest
     strategy:
@@ -97,7 +97,7 @@ jobs:
           arch: ${{ matrix.platform }}
       - name: compile
         run: |
-          make lo.exe
+          make BINDINGS= lo.exe
       - name: test
         run: |
           make test
