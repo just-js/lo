@@ -9,6 +9,5 @@ v8
 *.lib
 *.so
 lo
-builtins_linux.S
 .vscode
 scratch
