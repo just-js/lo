@@ -30,6 +30,9 @@
 - [ ] **todo**:  consolidate method for generating builtins on win/unix currently takes 11.4 ms for win and 8.1ms for unix for link the windows method is crazy slow the more files you have to do
 - [ ] **todo**:  set something up to record build sizes and metrics/benches so we can track over time
 - [ ] **todo**:  commands - install, uninstall, update
+- [ ] **todo**:  change to using lib for bindings and libs
+- [ ] **todo**:  overriding and hooking of module resolution
+
 ## features
 
 - [ ] **fetch**: a robust and fast fetch implementation

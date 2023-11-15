@@ -10,11 +10,11 @@ __binary_lib_gen_js_end:.global __binary_Makefile_start
 __binary_Makefile_start:
         .incbin "Makefile"
         .global __binary_Makefile_end
-__binary_Makefile_end:.global __binary_binding_core_core_js_start
-__binary_binding_core_core_js_start:
-        .incbin "binding/core/core.js"
-        .global __binary_binding_core_core_js_end
-__binary_binding_core_core_js_end:.global __binary_main_cc_start
+__binary_Makefile_end:.global __binary_lib_core_api_js_start
+__binary_lib_core_api_js_start:
+        .incbin "lib/core/api.js"
+        .global __binary_lib_core_api_js_end
+__binary_lib_core_api_js_end:.global __binary_main_cc_start
 __binary_main_cc_start:
         .incbin "main.cc"
         .global __binary_main_cc_end

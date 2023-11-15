@@ -184,6 +184,7 @@ async function globalMain () {
 }
 
 function loadSource (specifier) {
+  // todo: we don't need to go into c to check if it exists
   let src = lo.builtin(specifier)
   if (!src) {
     src = decoder.decode(readFile(specifier))
@@ -201,6 +202,7 @@ async function onModuleLoad (specifier, resource) {
     }
     return mod.namespace
   }
+  // todo: allow overriding loadSource - return a promise
   const src = loadSource(specifier)
   const mod = loadModule(src, specifier)
   mod.resource = resource

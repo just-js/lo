@@ -9,7 +9,7 @@ VERSION=0.0.1
 V8_VERSION=12.0
 RUNTIME=lo
 LO_HOME=$(shell pwd)
-BINDINGS=binding/core/core.a
+BINDINGS=lib/core/core.a
 ARCH=x64
 os=linux
 
@@ -67,17 +67,17 @@ ${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js
 test:
 	./${RUNTIME} test
 
-binding/core/core.a:
+lib/core/core.a:
 	$(MAKE) BINDING=core staticlib
 
-binding/${BINDING}/${BINDING}.a:
+lib/${BINDING}/${BINDING}.a:
 	$(MAKE) BINDING=${BINDING} staticlib
 
 staticlib: v8/include v8/libv8_monolith.a
-	ARCH="${ARCH}" os="${os}" LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C binding/${BINDING}/ ${BINDING}.a
+	ARCH="${ARCH}" os="${os}" LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C lib/${BINDING}/ ${BINDING}.a
 
-sharedlib: v8/include v8/libv8_monolith.a binding/${BINDING}/${BINDING}.a
-	ARCH="${ARCH}" os="${os}" LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C binding/${BINDING}/ ${BINDING}.so
+sharedlib: v8/include v8/libv8_monolith.a lib/${BINDING}/${BINDING}.a
+	ARCH="${ARCH}" os="${os}" LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C lib/${BINDING}/ ${BINDING}.so
 
 clean:
 ifeq ($(os),win)
