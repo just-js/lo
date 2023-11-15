@@ -21,7 +21,8 @@ else
 			C=gcc
 			CC=g++
 			os=linux
-			LARGS += -static-libstdc++ -static-libgcc -s
+			LARGS=-rdynamic -s
+#			LARGS += -static-libstdc++ -static-libgcc -s
     else ifeq ($(UNAME_S),Darwin)
 			os=mac
 			ifeq ($(ARCH),arm64)
@@ -48,7 +49,7 @@ v8/v8_monolith.lib:
 	curl -L -o v8/v8_monolith.lib.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.lib.tar.gz
 	gzip -d v8/v8_monolith.lib.gz
 
-${RUNTIME}: v8/include v8/libv8_monolith.a main.js
+${RUNTIME}: v8/include v8/libv8_monolith.a main.js ${BINDINGS}
 	@echo building ${RUNTIME} for ${os} on ${ARCH}
 ifeq (${os},linux)
 	sed 's/__*/_/g' builtins.S > builtins_linux.S
@@ -68,6 +69,9 @@ ${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js
 
 test:
 	./${RUNTIME} test
+
+binding/core/core.a:
+	ARCH="${ARCH}" os="${os}" LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C binding/core/ core.a
 
 binding/${BINDING}/${BINDING}.a: v8/include v8/libv8_monolith.a
 	ARCH="${ARCH}" os="${os}" LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C binding/${BINDING}/ ${BINDING}.a

@@ -152,13 +152,13 @@ function load (name) {
     libCache.set(name, lib)
     return lib
   }
-  const handle = core.dlopen(`module/${name}/${name}.so`, 1)
+  const handle = lo.dlopen(`binding/${name}/${name}.so`, 1)
   if (!handle) return
-  const sym = core.dlsym(handle, `_register_${name}`)
+  const sym = lo.dlsym(handle, `_register_${name}`)
   if (!sym) return
   lib = library(sym)
   if (!lib) return
-  lib.fileName = `module/${name}/${name}.so`
+  lib.fileName = `binding/${name}/${name}.so`
   libCache.set(name, lib)
   return lib
 }
@@ -348,16 +348,26 @@ ${AG}v8${AD}      ${lo.version.v8}`)
 // TODO: freeze intrinsics - maybe make these optional so can be overriden with cli flags/env vars?
 if (args[1] === 'gen') {
   const {
-    bindings, linkerScript, headerFile, makeFile
+    bindings, linkerScript, headerFile, makeFile, config
   } = await import('lib/gen.js')
   let source = ''
   if (args[2] === '--link') {
+    let next = 3
+    if (args[3] === '--win') {
+      config.os = 'win'
+      next = 4
+    }
     source += linkerScript('main.js')
-    for (const fileName of args.slice(3)) {
+    for (const fileName of args.slice(next)) {
       source += linkerScript(fileName)
     }
   } else if (args[2] === '--header') {
-    source = headerFile(args.slice(3))
+    let next = 3
+    if (args[3] === '--win') {
+      config.os = 'win'
+      next = 4
+    }
+    source = headerFile(args.slice(next))
   } else if (args[2] === '--make') {
     source = await makeFile(args[3])
   } else {
