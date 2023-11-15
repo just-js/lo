@@ -20,7 +20,7 @@ jobs:
         run: |
           make ARCH=${{ matrix.platform }} lo
       - name: check
-        if: ${{ matrix.platform == 'x64' }}      
+        if: ${{ matrix.platform == 'x64' }}
         run: |
           make check
       - name: upload runtime artifact

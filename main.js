@@ -76,7 +76,14 @@ function readFile (path, flags = O_RDONLY) {
   assert(fd > 0, `failed to open ${path} with flags ${flags}`)
   let r = fstat(fd, stat)
   assert(r === 0)
-  const size = Number(st[6])
+  let size = 0
+  if (core.os === 'mac') {
+    console.log(st)
+    size = Number(st[12])
+    console.log(size)
+  } else {
+    size = Number(st[6])
+  }
   const buf = new Uint8Array(size)
   let off = 0
   let len = read(fd, buf, size)
@@ -283,6 +290,10 @@ lo.onModuleInstantiate = onModuleInstantiate
 lo.setModuleCallbacks(onModuleLoad, onModuleInstantiate)
 core.readFile = readFile
 core.writeFile = writeFile
+// todo: move os() and arch() to a binding
+// todo: optimize this - return numbers and make a single call to get both
+core.os = lo.os()
+core.arch = lo.arch()
 if (args[1] === 'gen') {
   (await import('lib/gen.js')).gen(lo.args.slice(2))
 } else {
