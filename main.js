@@ -78,9 +78,7 @@ function readFile (path, flags = O_RDONLY) {
   assert(r === 0)
   let size = 0
   if (core.os === 'mac') {
-    console.log(st)
     size = Number(st[12])
-    console.log(size)
   } else {
     size = Number(st[6])
   }
