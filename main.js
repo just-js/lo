@@ -10,7 +10,7 @@ const AW = '\u001b[37m' // ANSI White
 
 const { 
   utf8EncodeInto, utf8Encode, utf8Decode, getAddress, start, args, exit,
-  library, workerSource, loadModule, evaluateModule, hrtime
+  library, workerSource, loadModule, evaluateModule, hrtime, wrapMemory
 } = lo
 lo.colors = { AD, A0, AR, AG, AY, AB, AM, AC, AW }
 
@@ -125,7 +125,8 @@ function readFile (path, flags = O_RDONLY) {
   return buf
 }
 
-function writeFile (path, u8, flags = defaultWriteFlags, mode = defaultWriteMode) {
+function writeFile (path, u8, flags = defaultWriteFlags, 
+  mode = defaultWriteMode) {
   const len = u8.length
   if (!len) return -1
   const fd = open(path, flags, mode)
@@ -195,7 +196,6 @@ async function onModuleLoad (specifier, resource) {
   if (moduleCache.has(specifier)) {
     const mod = moduleCache.get(specifier)
     if (!mod.evaluated) {
-      //console.log(`main.evaluateModule.1 ${mod.identity} ${specifier} ${resource}`)
       mod.namespace = await evaluateModule(mod.identity)
       mod.evaluated = true
     }
@@ -212,7 +212,6 @@ async function onModuleLoad (specifier, resource) {
     moduleCache.set(request, mod)
   }
   if (!mod.evaluated) {
-    //console.log(`main.evaluateModule.2 ${mod.identity} ${specifier} ${resource}`)
     mod.namespace = await evaluateModule(mod.identity)
     mod.evaluated = true
   }
@@ -265,7 +264,6 @@ globalThis.TextEncoder = TextEncoder
 globalThis.TextDecoder = TextDecoder
 
 lo.utf8Encode = utf8Encode
-//lo.isOneByte = isOneByte
 lo.handle = handle
 lo.core = core
 core.readFile = readFile
@@ -281,19 +279,19 @@ lo.moduleCache = moduleCache
 lo.libCache = libCache
 lo.requireCache = requireCache
 lo.wrap = wrap
-// todo: change anywhere that uses this
-//lo.wrapMemory = (ptr, len, free = 0) => new Uint8Array(wrapMemory(ptr, len, free))
+lo.wrapMemory = (ptr, len, free = 0) => 
+  new Uint8Array(wrapMemory(ptr, len, free))
 lo.cstr = C
 lo.ptr = ptr
 lo.addr = addr
-// so we can override
 lo.onModuleLoad = onModuleLoad
 lo.onModuleInstantiate = onModuleInstantiate
 lo.setModuleCallbacks(onModuleLoad, onModuleInstantiate)
 
 function test () {
   if (os === 'win') {
-    assert(args[0] === './lo.exe' || args[0] === 'lo.exe' || args[0] === 'lo' || args[0] === './lo')
+    assert(args[0] === './lo.exe' || args[0] === 'lo.exe' || args[0] === 'lo' 
+      || args[0] === './lo')
   } else {
     assert(args[0] === './lo' || args[0] === 'lo')
     assert(start > 0)
@@ -309,14 +307,14 @@ function test () {
   lo.errno = 0
   assert(lo.errno === 0)
   const names = [
-    'nextTick', 'print', 'registerCallback', 'runMicroTasks', 'builtin', 'library',
-    'builtins', 'libraries', 'setModuleCallbacks', 'loadModule', 'evaluateModule',
-    'utf8Decode', 'utf8Encode', 'wrapMemory', 'unwrapMemory', 'setFlags', 'getMeta',
-    'runScript', 'arch', 'os', 'hrtime', 'getAddress', 'utf8Length', 'utf8EncodeInto',
-    'utf8EncodeIntoAtOffset', 'readMemory', 'readMemoryAtOffset'
+    'nextTick', 'print', 'registerCallback', 'runMicroTasks', 'builtin', 
+    'library', 'builtins', 'libraries', 'setModuleCallbacks', 'loadModule', 
+    'evaluateModule', 'utf8Decode', 'utf8Encode', 'wrapMemory', 'unwrapMemory', 
+    'setFlags', 'getMeta', 'runScript', 'arch', 'os', 'hrtime', 'getAddress', 
+    'utf8Length', 'utf8EncodeInto', 'utf8EncodeIntoAtOffset', 'readMemory', 
+    'readMemoryAtOffset'
   ]
   for (const name of names) {
-    //console.log(`checking ${AM}${name}${AD}`)
     assert(lo.hasOwnProperty(name))
     assert(lo[name].constructor.name === 'Function')
   }
@@ -345,35 +343,10 @@ ${AG}v8${AD}      ${lo.version.v8}`)
 }
 
 // Object.freeze(lo)
-// TODO: freeze intrinsics - maybe make these optional so can be overriden with cli flags/env vars?
+// TODO: freeze intrinsics - maybe make these optional so can be 
+// overridden with cli flags/env vars?
 if (args[1] === 'gen') {
-  const {
-    bindings, linkerScript, headerFile, makeFile, config
-  } = await import('lib/gen.js')
-  let source = ''
-  if (args[2] === '--link') {
-    let next = 3
-    if (args[3] === '--win') {
-      config.os = 'win'
-      next = 4
-    }
-    source += linkerScript('main.js')
-    for (const fileName of args.slice(next)) {
-      source += linkerScript(fileName)
-    }
-  } else if (args[2] === '--header') {
-    let next = 3
-    if (args[3] === '--win') {
-      config.os = 'win'
-      next = 4
-    }
-    source = headerFile(args.slice(next))
-  } else if (args[2] === '--make') {
-    source = await makeFile(args[3])
-  } else {
-    source = await bindings(args[2])
-  }
-  console.log(source)
+  (await import('lib/gen.js')).gen(lo.args.slice(2))
 } else if (args[1] === 'test') {
   test_main()
 } else {
