@@ -51,9 +51,7 @@ v8/v8_monolith.lib:
 ${RUNTIME}: v8/include v8/libv8_monolith.a main.js ${BINDINGS}
 	@echo building ${RUNTIME} for ${os} on ${ARCH}
 ifeq (${os},linux)
-	sed 's/__*/_/g' builtins.S > builtins_linux.S
 	$(C) ${CARGS} builtins_linux.S -o builtins.o
-	rm -f builtins_linux.S
 else
 	$(C) ${CARGS} builtins.S -o builtins.o
 endif
