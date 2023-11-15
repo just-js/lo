@@ -16,9 +16,6 @@ jobs:
         platform: [x64, arm64]
     steps:
       - uses: actions/checkout@v3
-      - name: compile core.o
-        run: |
-          make ARCH=${{ matrix.platform }} BINDING=core binding/core/core.a
       - name: compile runtime
         run: |
           make ARCH=${{ matrix.platform }} lo
@@ -42,9 +39,6 @@ jobs:
         platform: [x64]
     steps:
       - uses: actions/checkout@v3
-      - name: compile core.o
-        run: |
-          make BINDING=core binding/core/core.a
       - name: compile
         run: |
           make lo
@@ -70,9 +64,6 @@ jobs:
       - name: install arm64 tools
         run: |
           sudo apt-get install -qy binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-      - name: compile core.o
-        run: |
-          make ARCH=arm64 C=aarch64-linux-gnu-gcc CC=aarch64-linux-gnu-g++ BINDING=core binding/core/core.a
       - name: compile
         run: |
           make ARCH=arm64 C=aarch64-linux-gnu-gcc CC=aarch64-linux-gnu-g++ lo
