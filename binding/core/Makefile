@@ -12,7 +12,7 @@ $(BINDING).a: ## compile static library and dependencies
 
 $(BINDING).so: $(BINDING).a ## compile shared library
 ifeq ($(os),mac)
-	$(CC) -v -fPIC $(LARGS) $(OPT) -dynamiclib $(WARN) -o $(BINDING).dylib $(BINDING).o -ldl  $(LO_HOME)/v8/libv8_monolith.a $(LO_HOME)/lo.o
+	$(CC) -fPIC $(LARGS) $(OPT) -dynamiclib $(WARN) -o $(BINDING).dylib $(BINDING).o -ldl  $(LO_HOME)/v8/libv8_monolith.a $(LO_HOME)/lo.o
 else
 	$(CC) $(LARGS) $(OPT) -shared $(WARN) -o $(BINDING).so $(BINDING).o -ldl 
 endif
