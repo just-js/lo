@@ -32,6 +32,7 @@
 - [ ] **todo**:  commands - install, uninstall, update
 - [ ] **todo**:  change to using lib for bindings and libs
 - [ ] **todo**:  overriding and hooking of module resolution
+- [ ] **todo**:  language server
 
 ## features
 

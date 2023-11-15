@@ -1,42 +1,9 @@
-const AD = '\u001b[0m' // ANSI Default
-const A0 = '\u001b[30m' // ANSI Black
-const AR = '\u001b[31m' // ANSI Red
-const AG = '\u001b[32m' // ANSI Green
-const AY = '\u001b[33m' // ANSI Yellow
-const AB = '\u001b[34m' // ANSI Blue
-const AM = '\u001b[35m' // ANSI Magenta
-const AC = '\u001b[36m' // ANSI Cyan
-const AW = '\u001b[37m' // ANSI White
 
 const { 
-  utf8EncodeInto, utf8Encode, utf8Decode, getAddress, start, args, exit,
+  utf8EncodeInto, utf8Encode, utf8Decode, getAddress, args, exit,
   library, workerSource, loadModule, evaluateModule, hrtime, wrapMemory
 } = lo
-lo.colors = { AD, A0, AR, AG, AY, AB, AM, AC, AW }
-
 const { core } = library('core')
-const {
-  O_WRONLY, O_CREAT, O_TRUNC, O_RDONLY, S_IWUSR, S_IRUSR, S_IRGRP, S_IROTH
-} = core
-const {
-  write_string, open, fstat, read, write, close
-} = core
-const defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC
-const defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
-
-const STDOUT = 1
-const STDERR = 2
-
-globalThis.console = {
-  log: str => write_string(STDOUT, `${str}\n`),
-  error: str => write_string(STDERR, `${str}\n`)
-}
-
-globalThis.onUnhandledRejection = err => {
-  console.error(`${AR}Unhandled Rejection${AD}`)
-  console.error(err.stack)
-  exit(1)
-}
 
 function assert (condition, message, ErrorType = Error) {
   if (!condition) {
@@ -94,7 +61,7 @@ function ptr (u8) {
   return u8
 }
 
-function C (str) {
+function cstr (str) {
   const buf = ptr(encoder.encode(`${str}\0`))
   buf.size = buf.size - 1
   return buf
@@ -153,13 +120,13 @@ function load (name) {
     libCache.set(name, lib)
     return lib
   }
-  const handle = lo.dlopen(`binding/${name}/${name}.so`, 1)
+  const handle = lo.dlopen(`lib/${name}/${name}.so`, 1)
   if (!handle) return
   const sym = lo.dlsym(handle, `_register_${name}`)
   if (!sym) return
   lib = library(sym)
   if (!lib) return
-  lib.fileName = `binding/${name}/${name}.so`
+  lib.fileName = `lib/${name}/${name}.so`
   libCache.set(name, lib)
   return lib
 }
@@ -249,7 +216,37 @@ lo.builtin = fp => {
   return _builtin(fp)
 }
 
+// todo: check errors
+globalThis.console = {
+  log: str => write_string(STDOUT, `${str}\n`),
+  error: str => write_string(STDERR, `${str}\n`)
+}
 
+globalThis.onUnhandledRejection = err => {
+  console.error(`${AR}Unhandled Rejection${AD}`)
+  console.error(err.stack)
+  exit(1)
+}
+
+const {
+  O_WRONLY, O_CREAT, O_TRUNC, O_RDONLY, S_IWUSR, S_IRUSR, S_IRGRP, S_IROTH
+} = core
+const {
+  write_string, open, fstat, read, write, close
+} = core
+const AD = '\u001b[0m' // ANSI Default
+const A0 = '\u001b[30m' // ANSI Black
+const AR = '\u001b[31m' // ANSI Red
+const AG = '\u001b[32m' // ANSI Green
+const AY = '\u001b[33m' // ANSI Yellow
+const AB = '\u001b[34m' // ANSI Blue
+const AM = '\u001b[35m' // ANSI Magenta
+const AC = '\u001b[36m' // ANSI Cyan
+const AW = '\u001b[37m' // ANSI White
+const defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC
+const defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
+const STDOUT = 1
+const STDERR = 2
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 const handle = new Uint32Array(2)
@@ -258,18 +255,13 @@ const st = new BigUint64Array(stat.buffer)
 const moduleCache = new Map()
 const requireCache = new Map()
 const libCache = new Map()
-const os = lo.os()
-const arch = lo.arch()
-
+lo.colors = { AD, A0, AR, AG, AY, AB, AM, AC, AW }
 globalThis.require = require
 globalThis.TextEncoder = TextEncoder
 globalThis.TextDecoder = TextDecoder
-
 lo.utf8Encode = utf8Encode
 lo.handle = handle
 lo.core = core
-core.readFile = readFile
-core.writeFile = writeFile
 lo.load = load
 lo.hrtime = wrap(handle, hrtime)
 lo.getAddress = wrap(handle, getAddress, 1)
@@ -283,74 +275,16 @@ lo.requireCache = requireCache
 lo.wrap = wrap
 lo.wrapMemory = (ptr, len, free = 0) => 
   new Uint8Array(wrapMemory(ptr, len, free))
-lo.cstr = C
+lo.cstr = cstr
 lo.ptr = ptr
 lo.addr = addr
 lo.onModuleLoad = onModuleLoad
 lo.onModuleInstantiate = onModuleInstantiate
 lo.setModuleCallbacks(onModuleLoad, onModuleInstantiate)
-
-function test () {
-  if (os === 'win') {
-    assert(args[0] === './lo.exe' || args[0] === 'lo.exe' || args[0] === 'lo' 
-      || args[0] === './lo')
-  } else {
-    assert(args[0] === './lo' || args[0] === 'lo')
-    assert(start > 0)
-    assert(lo.hrtime() > start)
-  }
-  assert(lo.hasOwnProperty('version'))
-  assert(lo.version.constructor.name === 'Object')
-  assert(lo.version.hasOwnProperty('lo'))
-  assert(lo.version.hasOwnProperty('v8'))
-  assert(lo.version.lo.constructor.name === 'String')
-  assert(lo.version.v8.constructor.name === 'String')
-  assert(lo.hasOwnProperty('errno'))
-  lo.errno = 0
-  assert(lo.errno === 0)
-  const names = [
-    'nextTick', 'print', 'registerCallback', 'runMicroTasks', 'builtin', 
-    'library', 'builtins', 'libraries', 'setModuleCallbacks', 'loadModule', 
-    'evaluateModule', 'utf8Decode', 'utf8Encode', 'wrapMemory', 'unwrapMemory', 
-    'setFlags', 'getMeta', 'runScript', 'arch', 'os', 'hrtime', 'getAddress', 
-    'utf8Length', 'utf8EncodeInto', 'utf8EncodeIntoAtOffset', 'readMemory', 
-    'readMemoryAtOffset'
-  ]
-  for (const name of names) {
-    assert(lo.hasOwnProperty(name))
-    assert(lo[name].constructor.name === 'Function')
-  }
-  console.log(`${AM}tests${AD}   ok`)
-}
-
-function test_main () {
-  const elapsed = lo.hrtime() - start
-  console.log(`------------------------
-        ${AY}lo.js${AD}
-------------------------`)
-  console.log(`${AG}args${AD}    ${args}`)  
-  test()
-  console.log(`${AG}os${AD}      ${os}  
-${AG}arch${AD}    ${arch}  
-${AG}boot${AD}    ${(elapsed / 1000000).toFixed(2)} ms  
-${AG}version${AD} ${lo.version.lo}  
-${AG}v8${AD}      ${lo.version.v8}`)
-  for (const lib_name of lo.libraries()) {
-    console.log(`${AY}${lib_name}${AD}`)
-    const lib = lo.library(lib_name)
-    assert(lib)
-    assert(lib.hasOwnProperty(lib_name))
-    console.log(Object.getOwnPropertyNames(lib[lib_name]))
-  }
-}
-
-// Object.freeze(lo)
-// TODO: freeze intrinsics - maybe make these optional so can be 
-// overridden with cli flags/env vars?
+core.readFile = readFile
+core.writeFile = writeFile
 if (args[1] === 'gen') {
   (await import('lib/gen.js')).gen(lo.args.slice(2))
-} else if (args[1] === 'test') {
-  test_main()
 } else {
   if (workerSource) {
     import('thread.js')

@@ -23,10 +23,10 @@ jobs:
       - name: compile
         run: |
           make ARCH=${{ matrix.platform }} lo
-      - name: test
+      - name: check
         if: ${{ matrix.platform == 'x64' }}      
         run: |
-          make test
+          make check
       - name: compress runtime
         run: |
           gzip -9 -c lo > lo-mac-${{ matrix.platform }}.gz
@@ -53,9 +53,9 @@ jobs:
       - name: compile
         run: |
           make lo
-      - name: test
+      - name: check
         run: |
-          make test
+          make check
       - name: compress runtime
         run: |
           gzip -9 -c lo > lo-linux-x64.gz
@@ -114,9 +114,9 @@ jobs:
       - name: compile
         run: |
           make lo.exe
-      - name: test
+      - name: check
         run: |
-          make test
+          make check
       - name: compress runtime
         run: |
           gzip -9 -c lo.exe > lo.exe.gz

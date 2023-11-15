@@ -68,46 +68,6 @@ using v8::V8;
 using v8::BigInt;
 
 
-/*
-caller
-- generates machine code to call the C function
-- generates machine code for the wrapper v8 fastcall wrapper
-- creates a new instance of the fastcall struct
-- calls bind_fastcall(struct) -> fn
-
-- when you have created the struct you can populate it yourself and call 
-  fast.fastcall(struct) to invoke it directly, or you can wrap it in a 
-  fastcall using bind_fastcall
-
-
-// https://wiki.cdot.senecacollege.ca/wiki/X86_64_Register_and_Instruction_Quick_Start
-
-const gp = [      // general purpose registers (64 bit), (P) = preserve
-  'rax',          // register a extended (out: return value, in: syscall_nr / 0)
-  'rdi',          // register destination index (arg 1)
-  'rsi',          // register source index      (arg 2)
-  'rdx',          // register d extended        (arg 3)
-  'rcx',          // register c extended        (arg 4)
-  'r8',           // register 8                 (arg 5)
-  'r9',           // register 9                 (arg 6)
-  'rsp',          // register stack pointer (all other args on stack)    (P)
-  'rbx',          // register b extended                                 (P)
-  'rbp',          // register base pointer (base of stack)               (P)
-  'r10',          // register 10
-  'r11',          // register 11
-  'r12',          // register 12                                         (P)
-  'r13',          // register 13                                         (P)
-  'r14',          // register 14                                         (P)
-  'r15',          // register 15                                         (P)
-]
-
-const sse = [     // sse registers (128 bit)
-  'xmm0', 'xmm1', 'xmm2',  'xmm3',  'xmm4',  'xmm5',  'xmm6',  'xmm7',
-  'xmm8', 'xmm9', 'xmm10', 'xmm11', 'xmm12', 'xmm13', 'xmm14', 'xmm15' 
-]
-
-*/
-
 struct fastcall {
   void* wrapper;
   uint8_t result;
@@ -308,9 +268,6 @@ void bind_slowcallSlow(const FunctionCallbackInfo<Value> &args) {
     SlowCallback, data, Local<Signature>(), 0, ConstructorBehavior::kThrow,
     SideEffectType::kHasNoSideEffect, 0
   );
-
-  //Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(isolate, 
-  //  SlowCallback);
   Local<Function> fun = 
     funcTemplate->GetFunction(context).ToLocalChecked();
   args.GetReturnValue().Set(fun);

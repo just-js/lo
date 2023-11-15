@@ -5,7 +5,7 @@ CCARGS=-std=c++17 -c
 CARGS=-c
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3
-VERSION=0.0.1
+VERSION=0.0.3-pre
 V8_VERSION=12.0
 RUNTIME=lo
 LO_HOME=$(shell pwd)
@@ -18,10 +18,10 @@ ifeq ($(OS),Windows_NT)
 else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
-			C=gcc
-			CC=g++
+#			C=gcc
+#			CC=g++
 			os=linux
-			LARGS += -s
+			LARGS+=-s
     else ifeq ($(UNAME_S),Darwin)
 			os=mac
 			ifeq ($(ARCH),arm64)
@@ -64,8 +64,8 @@ ${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js
 	cl /EHsc /std:c++17 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I./v8 /I./v8/include /c ${RUNTIME}.cc
 	cl v8/v8_monolith.lib ${RUNTIME}.obj main.obj winmm.lib dbghelp.lib advapi32.lib /link /out:${RUNTIME}.exe
 
-test:
-	./${RUNTIME} test
+check:
+	./${RUNTIME} test/runtime.js
 
 lib/core/core.a:
 	$(MAKE) BINDING=core staticlib

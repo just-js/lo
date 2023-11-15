@@ -22,10 +22,10 @@ jobs:
       - name: compile runtime
         run: |
           make ARCH=${{ matrix.platform }} lo
-      - name: test
+      - name: check
         if: ${{ matrix.platform == 'x64' }}      
         run: |
-          make test
+          make check
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
         with:
@@ -48,9 +48,9 @@ jobs:
       - name: compile
         run: |
           make lo
-      - name: test
+      - name: check
         run: |
-          make test
+          make check
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -98,9 +98,9 @@ jobs:
       - name: compile
         run: |
           make BINDINGS= lo.exe
-      - name: test
+      - name: check
         run: |
-          make test
+          make check
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:

@@ -27,13 +27,15 @@ declare class TextEncoder {
 }
 
 interface RuntimeVersion {
-  lo: number,
-  v8: number
+  lo: string,
+  v8: string
 }
 
 interface Runtime {
   start: number;
   errno: number;
+  colors: any;
+  libraries(): Array<string>;
   assert(expression: any, message?: string | Function): any;
   cstr(str: string): Uint8Array;
   load(name: string): any;
