@@ -32,7 +32,9 @@ interface RuntimeVersion {
 }
 
 interface Runtime {
-  moduleCache: Map<String>;
+  moduleCache: Map<String, object>;
+  libCache: Map<String, object>;
+  requireCache: Map<String, object>;
   start: number;
   errno: number;
   colors: any;

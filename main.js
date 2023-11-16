@@ -169,7 +169,7 @@ async function on_module_load (specifier, resource) {
   moduleCache.set(specifier, mod)
   const { requests } = mod
   for (const request of requests) {
-    const src = loadSource(request)
+    const src = load_source(request)
     const mod = loadModule(src, request)
     moduleCache.set(request, mod)
   }
@@ -283,9 +283,9 @@ lo.load = load
 lo.hrtime = wrap(handle, hrtime, 0)
 lo.getAddress = wrap(handle, getAddress, 1)
 lo.assert = assert
-//lo.moduleCache = moduleCache
-//lo.libCache = libCache
-//lo.requireCache = requireCache
+lo.moduleCache = moduleCache
+lo.libCache = libCache
+lo.requireCache = requireCache
 lo.wrap = wrap
 lo.wrapMemory = (ptr, len, free = 0) => 
   new Uint8Array(wrapMemory(ptr, len, free))
