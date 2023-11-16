@@ -33,6 +33,8 @@
 - [ ] **todo**:  change to using lib for bindings and libs
 - [ ] **todo**:  overriding and hooking of module resolution
 - [ ] **todo**:  language server
+- [ ] **todo**:  snake case
+- [ ] **todo**:  can we unload bindings and modules? have a look into this
 
 ## features
 
@@ -42,6 +44,9 @@
 - [ ] **ffi**: a robust and fast ffi implementation
 - [ ] **spawn**: a robust and fast process spawning and control implementation
 - [ ] **Worker**: a robust and fast Web Worker implementation
+- [ ] **resources**: a solution for tracking handles, pointers and file descriptors
+- [ ] **hot loading**: look at ability to easily swap code out on the fly
+- [ ] **v8 api**: create a simple c api around v8 (like rusty_v8) so we can use it in bindings and compile/link bindings with tcc (maybe - i think so - the bindings libraries can be plain c)
 
 ## modules
 

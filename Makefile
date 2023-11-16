@@ -5,7 +5,7 @@ CCARGS=-std=c++17 -c
 CARGS=-c
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3
-VERSION=0.0.3-pre
+VERSION=0.0.4-pre
 V8_VERSION=12.0
 RUNTIME=lo
 LO_HOME=$(shell pwd)
@@ -18,8 +18,6 @@ ifeq ($(OS),Windows_NT)
 else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
-#			C=gcc
-#			CC=g++
 			os=linux
 			LARGS+=-s
     else ifeq ($(UNAME_S),Darwin)

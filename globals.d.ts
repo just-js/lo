@@ -32,10 +32,13 @@ interface RuntimeVersion {
 }
 
 interface Runtime {
+  moduleCache: Map<String>;
   start: number;
   errno: number;
   colors: any;
+  core: any;
   libraries(): Array<string>;
+  builtins(): Array<string>;
   assert(expression: any, message?: string | Function): any;
   cstr(str: string): Uint8Array;
   load(name: string): any;
@@ -66,12 +69,14 @@ interface Runtime {
   os(): string;
   arch(): string;
   async evaluateModule(identifier: string): Promise<object>;
-  loadModule(src: string, specifier: string): Object;
+  loadModule(src: string, specifier: string): any;
   readMemory(dest: TypedArray, start: number, len: number): void;
   wrapMemory(start: number, size: number, free?: number);
   unwrapMemory(buffer: ArrayBuffer);
   ptr(u8: TypedArray): TypedArray;
   registerCallback(ptr: number, fn: Function);
+  setModuleCallbacks(on_module_load: Function, 
+    on_module_instantiate: Function);
 }
 
 declare var lo: Runtime & typeof globalThis;

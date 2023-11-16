@@ -476,6 +476,21 @@ v8::CTypeInfo rcmemmove = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infomemmove = v8::CFunctionInfo(rcmemmove, 5, cargsmemmove);
 v8::CFunction pFmemmove = v8::CFunction((const void*)&memmoveFast, &infomemmove);
 
+void mmapFast(void* p, void* p0, uint32_t p1, int32_t p2, int32_t p3, int32_t p4, uint32_t p5, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsmmap[8] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcmmap = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infommap = v8::CFunctionInfo(rcmmap, 8, cargsmmap);
+v8::CFunction pFmmap = v8::CFunction((const void*)&mmapFast, &infommap);
+
 void fastcallFast(void* p, void* p0);
 v8::CTypeInfo cargsfastcall[2] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -767,6 +782,29 @@ void memmoveFast(void* p, void* p0, void* p1, uint32_t p2, struct FastApiTypedAr
   ((void**)p_ret->data)[0] = r;
 
 }
+void mmapSlow(const FunctionCallbackInfo<Value> &args) {
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  int32_t v4 = Local<Integer>::Cast(args[4])->Value();
+  uint32_t v5 = Local<Integer>::Cast(args[5])->Value();
+  void* rc = mmap(v0, v1, v2, v3, v4, v5);
+  Local<ArrayBuffer> ab = args[6].As<Uint32Array>()->Buffer();
+  ((void**)ab->Data())[0] = rc;
+}
+
+void mmapFast(void* p, void* p0, uint32_t p1, int32_t p2, int32_t p3, int32_t p4, uint32_t p5, struct FastApiTypedArray* const p_ret) {
+  void* v0 = reinterpret_cast<void*>(p0);
+  uint32_t v1 = p1;
+  int32_t v2 = p2;
+  int32_t v3 = p3;
+  int32_t v4 = p4;
+  uint32_t v5 = p5;
+  void* r = mmap(v0, v1, v2, v3, v4, v5);
+  ((void**)p_ret->data)[0] = r;
+
+}
 void fastcallSlow(const FunctionCallbackInfo<Value> &args) {
   struct fastcall* v0 = reinterpret_cast<struct fastcall*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   lo_fastcall(v0);
@@ -798,6 +836,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "mprotect", &pFmprotect, mprotectSlow);
   SET_FAST_METHOD(isolate, module, "memcpy", &pFmemcpy, memcpySlow);
   SET_FAST_METHOD(isolate, module, "memmove", &pFmemmove, memmoveSlow);
+  SET_FAST_METHOD(isolate, module, "mmap", &pFmmap, mmapSlow);
   SET_METHOD(isolate, module, "bind_fastcall", bind_fastcallSlow);
   SET_METHOD(isolate, module, "bind_slowcall", bind_slowcallSlow);
   SET_FAST_METHOD(isolate, module, "fastcall", &pFfastcall, fastcallSlow);
@@ -815,6 +854,9 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "O_WRONLY", Integer::New(isolate, O_WRONLY));
   SET_VALUE(isolate, module, "O_CREAT", Integer::New(isolate, O_CREAT));
   SET_VALUE(isolate, module, "O_TRUNC", Integer::New(isolate, O_TRUNC));
+  SET_VALUE(isolate, module, "STDIN", Integer::New(isolate, 0));
+  SET_VALUE(isolate, module, "STDOUT", Integer::New(isolate, 1));
+  SET_VALUE(isolate, module, "STDERR", Integer::New(isolate, 2));
 
   SET_MODULE(isolate, target, "core", module);
 }
