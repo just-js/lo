@@ -1,34 +1,11 @@
 
 const { 
-  utf8EncodeInto, utf8Encode, utf8Decode, getAddress, args, exit,
+  utf8EncodeInto, utf8Encode, utf8Decode, getAddress, args, exit, builtin,
   library, workerSource, loadModule, evaluateModule, hrtime, wrapMemory
 } = lo
 const { core } = library('core')
 
-function assert (condition, message, ErrorType = Error) {
-  if (!condition) {
-    if (message && message.constructor.name === 'Function') {
-      throw new ErrorType(message())
-    }
-    throw new ErrorType(message || "Assertion failed")
-  }
-  return condition
-}
-
-function wrap (h, fn, plen = 0) {
-  const call = fn
-  const params = (new Array(plen)).fill(0).map((_, i) => `p${i}`).join(', ')
-  const f = new Function(
-    'h',
-    'call',
-    `return function ${fn.name} (${params}) {
-    call(${params}${plen > 0 ? ', ' : ''}h);
-    return h[0] + ((2 ** 32) * h[1]);
-  }`,)
-  const fun = f(h, call)
-  if (fn.state) fun.state = fn.state
-  return fun
-}
+// global classes
 
 class TextEncoder {
   encoding = 'utf-8'
@@ -55,6 +32,33 @@ class TextDecoder {
   }
 }
 
+// externally exposed functions
+
+function assert (condition, message, ErrorType = Error) {
+  if (!condition) {
+    if (message && message.constructor.name === 'Function') {
+      throw new ErrorType(message())
+    }
+    throw new ErrorType(message || "Assertion failed")
+  }
+  return condition
+}
+
+function wrap (h, fn, plen = 0) {
+  const call = fn
+  const params = (new Array(plen)).fill(0).map((_, i) => `p${i}`).join(', ')
+  const f = new Function(
+    'h',
+    'call',
+    `return function ${fn.name} (${params}) {
+    call(${params}${plen > 0 ? ', ' : ''}h);
+    return h[0] + ((2 ** 32) * h[1]);
+  }`,)
+  const fun = f(h, call)
+  if (fn.state) fun.state = fn.state
+  return fun
+}
+
 function ptr (u8) {
   u8.ptr = lo.getAddress(u8)
   u8.size = u8.byteLength
@@ -71,7 +75,7 @@ function addr (u32) {
   return u32[0] + ((2 ** 32) * u32[1])  
 }
 
-function readFile (path, flags = O_RDONLY) {
+function read_file (path, flags = O_RDONLY) {
   const fd = open(path, flags)
   assert(fd > 0, `failed to open ${path} with flags ${flags}`)
   let r = fstat(fd, stat)
@@ -97,7 +101,7 @@ function readFile (path, flags = O_RDONLY) {
   return buf
 }
 
-function writeFile (path, u8, flags = defaultWriteFlags, 
+function write_file (path, u8, flags = defaultWriteFlags, 
   mode = defaultWriteMode) {
   const len = u8.length
   if (!len) return -1
@@ -125,9 +129,10 @@ function load (name) {
     libCache.set(name, lib)
     return lib
   }
-  const handle = lo.dlopen(`lib/${name}/${name}.so`, 1)
+  // todo: we leak this handle - need to be able to unload
+  const handle = core.dlopen(`lib/${name}/${name}.so`, 1)
   if (!handle) return
-  const sym = lo.dlsym(handle, `_register_${name}`)
+  const sym = core.dlsym(handle, `_register_${name}`)
   if (!sym) return
   lib = library(sym)
   if (!lib) return
@@ -136,35 +141,18 @@ function load (name) {
   return lib
 }
 
-async function globalMain () {
-  if (args[1] === 'eval') return (new Function(`return (${args[2]})`))()
-  let filePath = args[1]
-  if (workerSource) filePath = 'thread.js'
-  const { main, serve, test, bench } = await import(filePath)
-  if (test) {
-    await test(...args.slice(2))
-  }
-  if (bench) {
-    await bench(...args.slice(2))
-  }
-  if (main) {
-    await main(...args.slice(2))
-  }
-  if (serve) {
-    await serve(...args.slice(2))
-  }
-}
+// internal functions
 
-function loadSource (specifier) {
+function load_source (specifier) {
   // todo: we don't need to go into c to check if it exists
   let src = lo.builtin(specifier)
   if (!src) {
-    src = decoder.decode(readFile(specifier))
+    src = decoder.decode(read_file(specifier))
   }
   return src
 }
 
-async function onModuleLoad (specifier, resource) {
+async function on_module_load (specifier, resource) {
   if (!specifier) return
   if (moduleCache.has(specifier)) {
     const mod = moduleCache.get(specifier)
@@ -175,7 +163,7 @@ async function onModuleLoad (specifier, resource) {
     return mod.namespace
   }
   // todo: allow overriding loadSource - return a promise
-  const src = loadSource(specifier)
+  const src = load_source(specifier)
   const mod = loadModule(src, specifier)
   mod.resource = resource
   moduleCache.set(specifier, mod)
@@ -192,11 +180,11 @@ async function onModuleLoad (specifier, resource) {
   return mod.namespace
 }
 
-function onModuleInstantiate (specifier) {
+function on_module_instantiate (specifier) {
   if (moduleCache.has(specifier)) {
     return moduleCache.get(specifier).identity
   }
-  const src = loadSource(specifier)
+  const src = load_source(specifier)
   const mod = loadModule(src, specifier)
   moduleCache.set(specifier, mod)
   return mod.identity
@@ -206,7 +194,7 @@ function require (fileName) {
   if (requireCache.has(fileName)) {
     return requireCache.get(fileName).exports
   }
-  const src = loadSource(fileName)
+  const src = load_source(fileName)
   const f = new Function('exports', 'module', 'require', src)
   const mod = { exports: {} }
   f.call(globalThis, mod.exports, mod, require)
@@ -214,27 +202,48 @@ function require (fileName) {
   return mod.exports
 }
 
-const _builtin = lo.builtin
-lo.builtin = fp => {
-  // todo - fix this hardcoding of name
-  if (fp === 'thread.js') return workerSource
-  return _builtin(fp)
-}
-
-// todo: check errors
-globalThis.console = {
-  log: str => write_string(STDOUT, `${str}\n`),
-  error: str => write_string(STDERR, `${str}\n`)
-}
-
-globalThis.onUnhandledRejection = err => {
+function on_unhandled_rejection (err) {
   console.error(`${AR}Unhandled Rejection${AD}`)
   console.error(err.stack)
   exit(1)
 }
 
+function on_load_builtin (identifier) {
+  if (identifier === '@thread') return workerSource
+  return builtin(identifier)
+}
+
+async function global_main () {
+  if (args[1] === 'gen') {
+    (await import('lib/gen.js')).gen(lo.args.slice(2))
+  } else {
+    if (workerSource) {
+      import('@thread')
+        .catch(err => console.error(err.stack))
+    } else {
+      if (args[1] === 'eval') return (new Function(`return (${args[2]})`))()
+      let filePath = args[1]
+      if (workerSource) filePath = 'thread.js'
+      const { main, serve, test, bench } = await import(filePath)
+      if (test) {
+        await test(...args.slice(2))
+      }
+      if (bench) {
+        await bench(...args.slice(2))
+      }
+      if (main) {
+        await main(...args.slice(2))
+      }
+      if (serve) {
+        await serve(...args.slice(2))
+      }
+    }
+  }
+}
+
 const {
-  O_WRONLY, O_CREAT, O_TRUNC, O_RDONLY, S_IWUSR, S_IRUSR, S_IRGRP, S_IROTH
+  O_WRONLY, O_CREAT, O_TRUNC, O_RDONLY, S_IWUSR, S_IRUSR, S_IRGRP, S_IROTH,
+  STDIN, STDOUT, STDERR
 } = core
 const {
   write_string, open, fstat, read, write, close
@@ -250,8 +259,6 @@ const AC = '\u001b[36m' // ANSI Cyan
 const AW = '\u001b[37m' // ANSI White
 const defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC
 const defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
-const STDOUT = 1
-const STDERR = 2
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 const handle = new Uint32Array(2)
@@ -260,47 +267,42 @@ const st = new BigUint64Array(stat.buffer)
 const moduleCache = new Map()
 const requireCache = new Map()
 const libCache = new Map()
-lo.colors = { AD, A0, AR, AG, AY, AB, AM, AC, AW }
+// todo: check errors
+globalThis.console = {
+  log: str => write_string(STDOUT, `${str}\n`),
+  error: str => write_string(STDERR, `${str}\n`)
+}
+globalThis.onUnhandledRejection = on_unhandled_rejection
 globalThis.require = require
 globalThis.TextEncoder = TextEncoder
 globalThis.TextDecoder = TextDecoder
+lo.colors = { AD, A0, AR, AG, AY, AB, AM, AC, AW }
+lo.builtin = on_load_builtin
 lo.utf8Encode = utf8Encode
-lo.handle = handle
-lo.core = core
 lo.load = load
-lo.hrtime = wrap(handle, hrtime)
+lo.hrtime = wrap(handle, hrtime, 0)
 lo.getAddress = wrap(handle, getAddress, 1)
-lo.dlopen = wrap(handle, core.dlopen, 2)
-lo.dlsym = wrap(handle, core.dlsym, 2)
-lo.dlclose = core.dlclose
 lo.assert = assert
-lo.moduleCache = moduleCache
-lo.libCache = libCache
-lo.requireCache = requireCache
+//lo.moduleCache = moduleCache
+//lo.libCache = libCache
+//lo.requireCache = requireCache
 lo.wrap = wrap
 lo.wrapMemory = (ptr, len, free = 0) => 
   new Uint8Array(wrapMemory(ptr, len, free))
 lo.cstr = cstr
 lo.ptr = ptr
 lo.addr = addr
-lo.onModuleLoad = onModuleLoad
-lo.onModuleInstantiate = onModuleInstantiate
-lo.setModuleCallbacks(onModuleLoad, onModuleInstantiate)
-core.readFile = readFile
-core.writeFile = writeFile
+lo.core = core
+core.dlopen = wrap(handle, core.dlopen, 2)
+core.dlsym = wrap(handle, core.dlsym, 2)
+core.mmap = wrap(handle, core.mmap, 6)
+core.readFile = read_file
+core.writeFile = write_file
 // todo: move os() and arch() to a binding
 // todo: optimize this - return numbers and make a single call to get both
 core.os = lo.os()
 core.arch = lo.arch()
-if (args[1] === 'gen') {
-  (await import('lib/gen.js')).gen(lo.args.slice(2))
-} else {
-  if (workerSource) {
-    import('thread.js')
-      .catch(err => console.error(err.stack))
-  } else {
-    globalMain().catch(err => console.error(err.stack))
-  }
-}
+lo.setModuleCallbacks(on_module_load, on_module_instantiate)
+global_main().catch(err => console.error(err.stack))
 
 export {}
