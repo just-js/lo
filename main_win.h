@@ -18,6 +18,8 @@ void register_builtins() {
   lo::builtins_add("main.cc", _binary_main_cc_start, _binary_main_cc_len);
   lo::builtins_add("lo.cc", _binary_lo_cc_start, _binary_lo_cc_len);
   lo::builtins_add("lo.h", _binary_lo_h_start, _binary_lo_h_len);
+  lo::builtins_add("globals.d.ts", _binary_globals_d_ts_start, _binary_globals_d_ts_len);
+  lo::builtins_add("jsconfig.json", _binary_jsconfig_json_start, _binary_jsconfig_json_len);
   lo::builtins_add("lib/core/api.js", _binary_lib_core_api_js_start, _binary_lib_core_api_js_len);
 }
 

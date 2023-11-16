@@ -1,3 +1,5 @@
+import { mem } from 'lib/proc.js'
+
 const os = lo.os()
 const arch = lo.arch()
 
@@ -44,6 +46,7 @@ async function test () {
 ${AG}arch${AD}       ${arch}  
 ${AG}boot${AD}       ${(elapsed / 1000000).toFixed(2)} ms  
 ${AG}version${AD}    ${lo.version.lo}  
+${AG}rss${AD}        ${mem()}  
 ${AG}v8${AD}         ${lo.version.v8}`)
   console.log(`${AG}builtins${AD}`)
   const builtins = lo.builtins().map(n => ({ name: n, src: lo.builtin(n)})).sort((a, b) => b.src.length - a.src.length)

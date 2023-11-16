@@ -213,6 +213,15 @@ function on_load_builtin (identifier) {
   return builtin(identifier)
 }
 
+function wrap_getenv () {
+  const getenv = wrap(new Uint32Array(2), core.getenv, 1)
+  return str => {
+    const ptr = getenv(str)
+    if (!ptr) return ''
+    return lo.utf8Decode(ptr, -1)
+  }
+}
+
 async function global_main () {
   if (args[1] === 'gen') {
     (await import('lib/gen.js')).gen(lo.args.slice(2))
@@ -293,6 +302,8 @@ lo.cstr = cstr
 lo.ptr = ptr
 lo.addr = addr
 lo.core = core
+lo.getenv = wrap_getenv()
+//const module_caching = parseInt(lo.getenv('LO_CACHE') || '0', 10)
 core.dlopen = wrap(handle, core.dlopen, 2)
 core.dlsym = wrap(handle, core.dlsym, 2)
 core.mmap = wrap(handle, core.mmap, 6)
