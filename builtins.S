@@ -48,6 +48,16 @@ __binary_lo_h_start:
         .incbin "lo.h"
         .global __binary_lo_h_end
 __binary_lo_h_end:
+.global __binary_globals_d_ts_start
+__binary_globals_d_ts_start:
+        .incbin "globals.d.ts"
+        .global __binary_globals_d_ts_end
+__binary_globals_d_ts_end:
+.global __binary_jsconfig_json_start
+__binary_jsconfig_json_start:
+        .incbin "jsconfig.json"
+        .global __binary_jsconfig_json_end
+__binary_jsconfig_json_end:
 .global __binary_lib_core_api_js_start
 __binary_lib_core_api_js_start:
         .incbin "lib/core/api.js"

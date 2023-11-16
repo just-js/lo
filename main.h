@@ -25,6 +25,10 @@ extern char _binary_lo_cc_start[];
 extern char _binary_lo_cc_end[];
 extern char _binary_lo_h_start[];
 extern char _binary_lo_h_end[];
+extern char _binary_globals_d_ts_start[];
+extern char _binary_globals_d_ts_end[];
+extern char _binary_jsconfig_json_start[];
+extern char _binary_jsconfig_json_end[];
 extern char _binary_lib_core_api_js_start[];
 extern char _binary_lib_core_api_js_end[];
 
@@ -43,6 +47,8 @@ void register_builtins() {
   lo::builtins_add("main.cc", _binary_main_cc_start, _binary_main_cc_end - _binary_main_cc_start);
   lo::builtins_add("lo.cc", _binary_lo_cc_start, _binary_lo_cc_end - _binary_lo_cc_start);
   lo::builtins_add("lo.h", _binary_lo_h_start, _binary_lo_h_end - _binary_lo_h_start);
+  lo::builtins_add("globals.d.ts", _binary_globals_d_ts_start, _binary_globals_d_ts_end - _binary_globals_d_ts_start);
+  lo::builtins_add("jsconfig.json", _binary_jsconfig_json_start, _binary_jsconfig_json_end - _binary_jsconfig_json_start);
   lo::builtins_add("lib/core/api.js", _binary_lib_core_api_js_start, _binary_lib_core_api_js_end - _binary_lib_core_api_js_start);
   lo::modules_add("core", &_register_core);
 }

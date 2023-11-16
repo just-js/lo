@@ -371,6 +371,17 @@ v8::CTypeInfo rcwrite = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infowrite = v8::CFunctionInfo(rcwrite, 4, cargswrite);
 v8::CFunction pFwrite = v8::CFunction((const void*)&writeFast, &infowrite);
 
+void getcwdFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsgetcwd[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcgetcwd = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infogetcwd = v8::CFunctionInfo(rcgetcwd, 4, cargsgetcwd);
+v8::CFunction pFgetcwd = v8::CFunction((const void*)&getcwdFast, &infogetcwd);
+
 int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1);
 v8::CTypeInfo cargswrite_string[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -420,6 +431,16 @@ v8::CTypeInfo cargsopendir[3] = {
 v8::CTypeInfo rcopendir = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infoopendir = v8::CFunctionInfo(rcopendir, 3, cargsopendir);
 v8::CFunction pFopendir = v8::CFunction((const void*)&opendirFast, &infoopendir);
+
+int32_t mkdirFast(void* p, struct FastOneByteString* const p0, uint32_t p1);
+v8::CTypeInfo cargsmkdir[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcmkdir = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infomkdir = v8::CFunctionInfo(rcmkdir, 3, cargsmkdir);
+v8::CFunction pFmkdir = v8::CFunction((const void*)&mkdirFast, &infomkdir);
 
 int32_t closedirFast(void* p, void* p0);
 v8::CTypeInfo cargsclosedir[2] = {
@@ -499,6 +520,26 @@ v8::CTypeInfo cargsfastcall[2] = {
 v8::CTypeInfo rcfastcall = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infofastcall = v8::CFunctionInfo(rcfastcall, 2, cargsfastcall);
 v8::CFunction pFfastcall = v8::CFunction((const void*)&fastcallFast, &infofastcall);
+
+void getenvFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsgetenv[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcgetenv = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infogetenv = v8::CFunctionInfo(rcgetenv, 3, cargsgetenv);
+v8::CFunction pFgetenv = v8::CFunction((const void*)&getenvFast, &infogetenv);
+
+int32_t dup2Fast(void* p, int32_t p0, int32_t p1);
+v8::CTypeInfo cargsdup2[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcdup2 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infodup2 = v8::CFunctionInfo(rcdup2, 3, cargsdup2);
+v8::CFunction pFdup2 = v8::CFunction((const void*)&dup2Fast, &infodup2);
 
 
 
@@ -639,6 +680,21 @@ int32_t writeFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32
   int32_t v2 = p2;
   return write(v0, v1, v2);
 }
+void getcwdSlow(const FunctionCallbackInfo<Value> &args) {
+  char* v0 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  void* rc = getcwd(v0, v1);
+  Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
+  ((void**)ab->Data())[0] = rc;
+}
+
+void getcwdFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* const p_ret) {
+  char* v0 = reinterpret_cast<char*>(p0);
+  int32_t v1 = p1;
+  void* r = getcwd(v0, v1);
+  ((void**)p_ret->data)[0] = r;
+
+}
 void write_stringSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -706,6 +762,19 @@ void opendirFast(void* p, struct FastOneByteString* const p0, struct FastApiType
   DIR* r = opendir(v0->data);
   ((DIR**)p_ret->data)[0] = r;
 
+}
+void mkdirSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t rc = mkdir(*v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t mkdirFast(void* p, struct FastOneByteString* const p0, uint32_t p1) {
+  struct FastOneByteString* const v0 = p0;
+  uint32_t v1 = p1;
+  return mkdir(v0->data, v1);
 }
 void closedirSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -814,6 +883,33 @@ void fastcallFast(void* p, void* p0) {
   struct fastcall* v0 = reinterpret_cast<struct fastcall*>(p0);
   lo_fastcall(v0);
 }
+void getenvSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  char* rc = getenv(*v0);
+  Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
+  ((char**)ab->Data())[0] = rc;
+}
+
+void getenvFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p_ret) {
+  struct FastOneByteString* const v0 = p0;
+  char* r = getenv(v0->data);
+  ((char**)p_ret->data)[0] = r;
+
+}
+void dup2Slow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t rc = dup2(v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t dup2Fast(void* p, int32_t p0, int32_t p1) {
+  int32_t v0 = p0;
+  int32_t v1 = p1;
+  return dup2(v0, v1);
+}
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
@@ -826,11 +922,13 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "pread", &pFpread, preadSlow);
   SET_FAST_METHOD(isolate, module, "lseek", &pFlseek, lseekSlow);
   SET_FAST_METHOD(isolate, module, "write", &pFwrite, writeSlow);
+  SET_FAST_METHOD(isolate, module, "getcwd", &pFgetcwd, getcwdSlow);
   SET_FAST_METHOD(isolate, module, "write_string", &pFwrite_string, write_stringSlow);
   SET_FAST_METHOD(isolate, module, "fstat", &pFfstat, fstatSlow);
   SET_FAST_METHOD(isolate, module, "unlink", &pFunlink, unlinkSlow);
   SET_FAST_METHOD(isolate, module, "readdir", &pFreaddir, readdirSlow);
   SET_FAST_METHOD(isolate, module, "opendir", &pFopendir, opendirSlow);
+  SET_FAST_METHOD(isolate, module, "mkdir", &pFmkdir, mkdirSlow);
   SET_FAST_METHOD(isolate, module, "closedir", &pFclosedir, closedirSlow);
   SET_FAST_METHOD(isolate, module, "fcntl", &pFfcntl, fcntlSlow);
   SET_FAST_METHOD(isolate, module, "mprotect", &pFmprotect, mprotectSlow);
@@ -840,6 +938,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, module, "bind_fastcall", bind_fastcallSlow);
   SET_METHOD(isolate, module, "bind_slowcall", bind_slowcallSlow);
   SET_FAST_METHOD(isolate, module, "fastcall", &pFfastcall, fastcallSlow);
+  SET_FAST_METHOD(isolate, module, "getenv", &pFgetenv, getenvSlow);
+  SET_FAST_METHOD(isolate, module, "dup2", &pFdup2, dup2Slow);
 
   SET_VALUE(isolate, module, "S_IFBLK", Integer::New(isolate, S_IFBLK));
   SET_VALUE(isolate, module, "S_IFCHR", Integer::New(isolate, S_IFCHR));
@@ -853,6 +953,9 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "O_RDONLY", Integer::New(isolate, O_RDONLY));
   SET_VALUE(isolate, module, "O_WRONLY", Integer::New(isolate, O_WRONLY));
   SET_VALUE(isolate, module, "O_CREAT", Integer::New(isolate, O_CREAT));
+  SET_VALUE(isolate, module, "S_IRWXU", Integer::New(isolate, S_IRWXU));
+  SET_VALUE(isolate, module, "S_IRWXG", Integer::New(isolate, S_IRWXG));
+  SET_VALUE(isolate, module, "S_IXOTH", Integer::New(isolate, S_IXOTH));
   SET_VALUE(isolate, module, "O_TRUNC", Integer::New(isolate, O_TRUNC));
   SET_VALUE(isolate, module, "STDIN", Integer::New(isolate, 0));
   SET_VALUE(isolate, module, "STDOUT", Integer::New(isolate, 1));

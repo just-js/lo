@@ -35,6 +35,8 @@
 - [ ] **todo**:  language server
 - [ ] **todo**:  snake case
 - [ ] **todo**:  can we unload bindings and modules? have a look into this
+- [ ] **bug**:   if i embed the binding definition and change it then the lib won't rebuild as it uses embedded one
+- [ ] **todo**:  change binding defs so we can have multiple entries with same name but with different options for arch and platform
 
 ## features
 
