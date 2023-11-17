@@ -31,6 +31,8 @@ extern char _binary_jsconfig_json_start[];
 extern char _binary_jsconfig_json_end[];
 extern char _binary_lib_core_api_js_start[];
 extern char _binary_lib_core_api_js_end[];
+extern char _binary_lib_pthreads_api_js_start[];
+extern char _binary_lib_pthreads_api_js_end[];
 
 extern "C" {
   extern void* _register_core();
@@ -50,6 +52,7 @@ void register_builtins() {
   lo::builtins_add("globals.d.ts", _binary_globals_d_ts_start, _binary_globals_d_ts_end - _binary_globals_d_ts_start);
   lo::builtins_add("jsconfig.json", _binary_jsconfig_json_start, _binary_jsconfig_json_end - _binary_jsconfig_json_start);
   lo::builtins_add("lib/core/api.js", _binary_lib_core_api_js_start, _binary_lib_core_api_js_end - _binary_lib_core_api_js_start);
+  lo::builtins_add("lib/pthreads/api.js", _binary_lib_pthreads_api_js_start, _binary_lib_pthreads_api_js_end - _binary_lib_pthreads_api_js_start);
   lo::modules_add("core", &_register_core);
 }
 

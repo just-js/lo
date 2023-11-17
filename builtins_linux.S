@@ -63,4 +63,9 @@ _binary_lib_core_api_js_start:
         .incbin "lib/core/api.js"
         .global _binary_lib_core_api_js_end
 _binary_lib_core_api_js_end:
+.global _binary_lib_pthreads_api_js_start
+_binary_lib_pthreads_api_js_start:
+        .incbin "lib/pthreads/api.js"
+        .global _binary_lib_pthreads_api_js_end
+_binary_lib_pthreads_api_js_end:
 
