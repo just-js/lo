@@ -4,6 +4,7 @@
 C=gcc
 CC=g++
 BINDING=core
+LO_HOME=../../
 
 .PHONY: help clean
 

@@ -1,10 +1,4 @@
 
-const { 
-  utf8EncodeInto, utf8Encode, utf8Decode, getAddress, args, exit, builtin,
-  library, workerSource, loadModule, evaluateModule, hrtime, wrapMemory
-} = lo
-const { core } = library('core')
-
 // global classes
 
 class TextEncoder {
@@ -44,17 +38,18 @@ function assert (condition, message, ErrorType = Error) {
   return condition
 }
 
-function wrap (h, fn, plen = 0) {
+function wrap (handle, fn, plen = 0) {
   const call = fn
   const params = (new Array(plen)).fill(0).map((_, i) => `p${i}`).join(', ')
+  // TODO: Number.IsSafeInteger check - return BigInt if not safe
   const f = new Function(
-    'h',
+    'handle',
     'call',
     `return function ${fn.name} (${params}) {
-    call(${params}${plen > 0 ? ', ' : ''}h);
-    return h[0] + ((2 ** 32) * h[1]);
+    call(${params}${plen > 0 ? ', ' : ''}handle);
+    return handle[0] + ((2 ** 32) * handle[1]);
   }`,)
-  const fun = f(h, call)
+  const fun = f(handle, call)
   if (fn.state) fun.state = fn.state
   return fun
 }
@@ -143,12 +138,13 @@ function load (name) {
 
 // internal functions
 
+// todo: expose this to JS so it can be overridden
 function load_source (specifier) {
-  // todo: we don't need to go into c to check if it exists
-  let src = lo.builtin(specifier)
-  if (!src) {
-    src = decoder.decode(read_file(specifier))
+  let src = ''
+  if (!builtins.includes(specifier)) {
+    src = decoder.decode(read_file(`${LO_HOME}${specifier}`))
   }
+  src = assert(lo.builtin(specifier))
   return src
 }
 
@@ -190,26 +186,37 @@ function on_module_instantiate (specifier) {
   return mod.identity
 }
 
-function require (fileName) {
-  if (requireCache.has(fileName)) {
-    return requireCache.get(fileName).exports
+/**
+* an approximation of node.js synchronous require. not sure if this should
+* be here at all but it's useful for compatibility testing
+* ```
+* @param file_path {string} path to the file to be required
+*/
+function require (file_path) {
+  if (requireCache.has(file_path)) {
+    return requireCache.get(file_path).exports
   }
-  const src = load_source(fileName)
+  const src = load_source(file_path)
   const f = new Function('exports', 'module', 'require', src)
   const mod = { exports: {} }
   f.call(globalThis, mod.exports, mod, require)
-  moduleCache.set(fileName, mod)
+  moduleCache.set(file_path, mod)
   return mod.exports
 }
 
+/**
+* handle any exceptions in async code that did not have a handler
+* the best thing to do is die gracefully and log as much as possible
+* we should make what happens here configurable
+* @param err { Error } a javascript Error object
+*/
 function on_unhandled_rejection (err) {
   console.error(`${AR}Unhandled Rejection${AD}`)
-  console.error(err.stack)
-  exit(1)
+  die(err, true)
 }
 
 function on_load_builtin (identifier) {
-  if (identifier === '@thread') return workerSource
+  if (identifier === '@workerSource') return workerSource
   return builtin(identifier)
 }
 
@@ -222,34 +229,18 @@ function wrap_getenv () {
   }
 }
 
-async function global_main () {
-  if (args[1] === 'gen') {
-    (await import('lib/gen.js')).gen(lo.args.slice(2))
-  } else {
-    if (workerSource) {
-      import('@thread')
-        .catch(err => console.error(err.stack))
-    } else {
-      if (args[1] === 'eval') return (new Function(`return (${args[2]})`))()
-      let filePath = args[1]
-      if (workerSource) filePath = 'thread.js'
-      const { main, serve, test, bench } = await import(filePath)
-      if (test) {
-        await test(...args.slice(2))
-      }
-      if (bench) {
-        await bench(...args.slice(2))
-      }
-      if (main) {
-        await main(...args.slice(2))
-      }
-      if (serve) {
-        await serve(...args.slice(2))
-      }
-    }
-  }
+function die (err, hide_fatal = false) {
+  if (!hide_fatal) console.error(`${AR}Fatal Exception${AD}`)
+  console.error(err.stack)
+  console.error(`${AY}process will exit${AD}`)
+  lo.exit(1)
 }
 
+const { 
+  utf8EncodeInto, utf8Encode, utf8Decode, getAddress, args, exit, builtin,
+  library, workerSource, loadModule, evaluateModule, hrtime, wrapMemory
+} = lo
+const { core } = library('core')
 const {
   O_WRONLY, O_CREAT, O_TRUNC, O_RDONLY, S_IWUSR, S_IRUSR, S_IRGRP, S_IROTH,
   STDIN, STDOUT, STDERR
@@ -303,6 +294,7 @@ lo.ptr = ptr
 lo.addr = addr
 lo.core = core
 lo.getenv = wrap_getenv()
+const LO_HOME = lo.getenv('LO_HOME')
 //const module_caching = parseInt(lo.getenv('LO_CACHE') || '0', 10)
 core.dlopen = wrap(handle, core.dlopen, 2)
 core.dlsym = wrap(handle, core.dlsym, 2)
@@ -314,6 +306,38 @@ core.writeFile = write_file
 core.os = lo.os()
 core.arch = lo.arch()
 lo.setModuleCallbacks(on_module_load, on_module_instantiate)
-global_main().catch(err => console.error(err.stack))
+
+const builtins = lo.builtins()
+const libraries = lo.libraries()
+
+async function global_main () {
+  if (args[1] === 'gen') {
+    (await import('lib/gen.js')).gen(lo.args.slice(2))
+  } else {
+    if (workerSource) {
+      import('@workerSource')
+        .catch(die)
+    } else {
+      if (args[1] === 'eval') return (new Function(`return (${args[2]})`))()
+      let filePath = args[1]
+      if (workerSource) filePath = 'thread.js'
+      const { main, serve, test, bench } = await import(filePath)
+      if (test) {
+        await test(...args.slice(2))
+      }
+      if (bench) {
+        await bench(...args.slice(2))
+      }
+      if (main) {
+        await main(...args.slice(2))
+      }
+      if (serve) {
+        await serve(...args.slice(2))
+      }
+    }
+  }
+}
+
+global_main().catch(die)
 
 export {}

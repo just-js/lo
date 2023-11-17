@@ -39,6 +39,7 @@
 - [ ] **todo**:  change binding defs so we can have multiple entries with same name but with different options for arch and platform
 - [ ] **todo**:  pass a flag to gen to tell it what os/arch we want to generate for
 - [ ] **bug**:   when rebuilding after changing bindings defs, they don't get re-generated as the ones on disk are not re-loaded.
+- [ ] **todo**:  clean up lib/gen.js. it's a real mess
 
 ## features
 
