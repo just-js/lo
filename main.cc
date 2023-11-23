@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
   // find a more efficient way of providing entropy at startup
   V8::SetEntropySource(EntropySource);
   V8::Initialize();
+  V8::InitializeICU();
   // register any builtins and modules that have been generated in main.h 
   register_builtins();
   // create a new isolate on the main thread. this will block until the 

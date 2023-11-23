@@ -730,7 +730,8 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
   Local<Module> module;
   bool ok = ScriptCompiler::CompileModule(isolate, &base).ToLocal(&module);
   if (!ok) {
-    printf("Error compiling module!\n");
+    String::Utf8Value path(args.GetIsolate(), args[1]);
+    fprintf(stderr, "Error compiling %s\n", *path);
     if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
       try_catch.ReThrow();
     }
@@ -978,6 +979,7 @@ void lo::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
 }
 
+// todo - we should have latin1 methods 
 void lo::Utf8Decode(const FunctionCallbackInfo<Value> &args) {
   int size = -1;
   if (args.Length() > 1) {

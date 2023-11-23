@@ -31,7 +31,7 @@ class TextDecoder {
 function assert (condition, message, ErrorType = Error) {
   if (!condition) {
     if (message && message.constructor.name === 'Function') {
-      throw new ErrorType(message())
+      throw new ErrorType(message(condition))
     }
     throw new ErrorType(message || "Assertion failed")
   }
@@ -81,6 +81,7 @@ function read_file (path, flags = O_RDONLY) {
   } else {
     size = Number(st[6])
   }
+  // todo: this isn't correct, is it?
   const buf = new Uint8Array(size)
   let off = 0
   let len = read(fd, buf, size)
@@ -118,7 +119,13 @@ function write_file (path, u8, flags = defaultWriteFlags,
 
 function load (name) {
   if (libCache.has(name)) return libCache.get(name)
-  let lib = library(name)
+  let lib
+  if (core.binding_loader) {
+    lib = core.binding_loader(name)
+    if (!lib) lib = library(name)
+  } else {
+    lib = library(name)
+  }
   if (lib) {
     lib.internal = true
     libCache.set(name, lib)
@@ -138,13 +145,39 @@ function load (name) {
 
 // internal functions
 
-// todo: expose this to JS so it can be overridden
-function load_source (specifier) {
+function load_source_sync (specifier) {
   let src = ''
-  if (!builtins.includes(specifier)) {
-    src = decoder.decode(read_file(`${LO_HOME}${specifier}`))
+  if (core.sync_loader) {
+    src = core.sync_loader(specifier)
+    if (src) return src
   }
-  src = assert(lo.builtin(specifier))
+  src = lo.builtin(specifier)
+  if (!src || (LO_CACHE === 1)) {
+    // todo: path.join
+    try {
+      src = decoder.decode(read_file(specifier))
+    } catch (err) {
+      src = decoder.decode(read_file(`${LO_HOME}${specifier}`))
+    }
+  }
+  return src
+}
+
+async function load_source (specifier) {
+  let src = ''
+  if (core.loader) {
+    src = await core.loader(specifier)
+    if (src) return src
+  }
+  src = lo.builtin(specifier)
+  if (!src || (LO_CACHE === 1)) {
+    // todo: path.join
+    try {
+      src = decoder.decode(read_file(specifier))
+    } catch (err) {
+      src = decoder.decode(read_file(`${LO_HOME}${specifier}`))
+    }
+  }
   return src
 }
 
@@ -159,13 +192,14 @@ async function on_module_load (specifier, resource) {
     return mod.namespace
   }
   // todo: allow overriding loadSource - return a promise
-  const src = load_source(specifier)
+  // todo: this should be async
+  const src = await load_source(specifier)
   const mod = loadModule(src, specifier)
   mod.resource = resource
   moduleCache.set(specifier, mod)
   const { requests } = mod
   for (const request of requests) {
-    const src = load_source(request)
+    const src = await load_source(request)
     const mod = loadModule(src, request)
     moduleCache.set(request, mod)
   }
@@ -177,10 +211,11 @@ async function on_module_load (specifier, resource) {
 }
 
 function on_module_instantiate (specifier) {
+  //lo.print(`on_module_instantiate: ${specifier}\n`)
   if (moduleCache.has(specifier)) {
     return moduleCache.get(specifier).identity
   }
-  const src = load_source(specifier)
+  const src = load_source_sync(specifier)
   const mod = loadModule(src, specifier)
   moduleCache.set(specifier, mod)
   return mod.identity
@@ -196,7 +231,8 @@ function require (file_path) {
   if (requireCache.has(file_path)) {
     return requireCache.get(file_path).exports
   }
-  const src = load_source(file_path)
+  // todo: this is now async
+  const src = load_source_sync(file_path)
   const f = new Function('exports', 'module', 'require', src)
   const mod = { exports: {} }
   f.call(globalThis, mod.exports, mod, require)
@@ -221,11 +257,22 @@ function on_load_builtin (identifier) {
 }
 
 function wrap_getenv () {
-  const getenv = wrap(new Uint32Array(2), core.getenv, 1)
+  const getenv = wrap(handle, core.getenv, 1)
   return str => {
     const ptr = getenv(str)
     if (!ptr) return ''
     return lo.utf8Decode(ptr, -1)
+  }
+}
+
+function wrap_getcwd () {
+  const getcwd = wrap(handle, core.getcwd, 2)
+  const cwdbuf = new Uint8Array(1024)
+
+  return () => {
+    const ptr = getcwd(cwdbuf, cwdbuf.length)
+    if (!ptr) return ''
+    return utf8Decode(ptr, -1)
   }
 }
 
@@ -248,6 +295,7 @@ const {
 const {
   write_string, open, fstat, read, write, close
 } = core
+const noop = () => {}
 const AD = '\u001b[0m' // ANSI Default
 const A0 = '\u001b[30m' // ANSI Black
 const AR = '\u001b[31m' // ANSI Red
@@ -294,8 +342,9 @@ lo.ptr = ptr
 lo.addr = addr
 lo.core = core
 lo.getenv = wrap_getenv()
+lo.getcwd = wrap_getcwd()
 const LO_HOME = lo.getenv('LO_HOME')
-//const module_caching = parseInt(lo.getenv('LO_CACHE') || '0', 10)
+const LO_CACHE = parseInt(lo.getenv('LO_CACHE') || '0', 10)
 core.dlopen = wrap(handle, core.dlopen, 2)
 core.dlsym = wrap(handle, core.dlsym, 2)
 core.mmap = wrap(handle, core.mmap, 6)
@@ -305,13 +354,15 @@ core.writeFile = write_file
 // todo: optimize this - return numbers and make a single call to get both
 core.os = lo.os()
 core.arch = lo.arch()
+core.loader = core.sync_loader = noop
 lo.setModuleCallbacks(on_module_load, on_module_instantiate)
 
-const builtins = lo.builtins()
-const libraries = lo.libraries()
+//const builtins = lo.builtins()
+//const libraries = lo.libraries()
 
 async function global_main () {
-  if (args[1] === 'gen') {
+  const [ command ] = args
+  if (command === 'gen') {
     (await import('lib/gen.js')).gen(lo.args.slice(2))
   } else {
     if (workerSource) {
@@ -320,7 +371,6 @@ async function global_main () {
     } else {
       if (args[1] === 'eval') return (new Function(`return (${args[2]})`))()
       let filePath = args[1]
-      if (workerSource) filePath = 'thread.js'
       const { main, serve, test, bench } = await import(filePath)
       if (test) {
         await test(...args.slice(2))

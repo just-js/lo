@@ -36,7 +36,7 @@ async function test () {
     'setFlags', 'getMeta', 'runScript', 'arch', 'os', 'hrtime', 'getAddress', 
     'utf8Length', 'utf8EncodeInto', 'utf8EncodeIntoAtOffset', 'readMemory', 
     'readMemoryAtOffset'
-  ]
+  ].sort()
   for (const name of names) {
     assert(lo.hasOwnProperty(name))
     assert(lo[name].constructor.name === 'Function')
@@ -49,24 +49,25 @@ ${AG}version${AD}    ${lo.version.lo}
 ${AG}rss${AD}        ${mem()}  
 ${AG}v8${AD}         ${lo.version.v8}`)
   console.log(`${AG}builtins${AD}`)
-  const builtins = lo.builtins().map(n => ({ name: n, src: lo.builtin(n)})).sort((a, b) => b.src.length - a.src.length)
+  const builtins = lo.builtins().sort()
   for (const builtin of builtins) {
-    console.log(`  ${AM}${builtin.name.padEnd(32, ' ')}${AD}: ${builtin.src.length} bytes`)
+    console.log(`  ${AM}${builtin.padEnd(32, ' ')}${AD}: ${lo.builtin(builtin).length} bytes`)
   }
   console.log(`${AG}bindings${AD}`)
-  for (const lib_name of lo.libraries()) {
+  for (const lib_name of lo.libraries().sort()) {
     console.log(`  ${AY}${lib_name}${AD}`)
     const lib = lo.library(lib_name)
     assert(lib)
     assert(lib.hasOwnProperty(lib_name))
-    const bindings = await import(`lib/${lib_name}/api.js`)
     const binding = lib[lib_name]
-    for (const fn_name of Object.keys(bindings.api)) {
-      const api = bindings.api[fn_name]
-      const descriptor = Object.getOwnPropertyDescriptor(binding, fn_name)
-      const prop = binding[fn_name]
-      console.log(`    ${AC}${fn_name}${AD} (${prop.constructor.name})`)
-      //console.log(JSON.stringify({ descriptor, api }, null, '  '))
+    const entries = Object.entries(binding)
+    entries.sort((a, b) => a < b ? -1 : (a === b ? 0 : 1))
+    for (const [key, value] of entries) {
+      if (['Function', 'Object'].includes(value.constructor.name)) {
+        console.log(`    ${AC}${key}${AD}: ${value.constructor.name}`)
+      } else {
+        console.log(`    ${AY}${key}${AD}: ${value.constructor.name} = ${value}`)
+      }
     }
   }
 }

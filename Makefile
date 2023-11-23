@@ -1,6 +1,6 @@
 C=clang
 CC=clang++
-LARGS=-rdynamic
+LARGS=-"rdynamic"
 CCARGS=-std=c++17 -c
 CARGS=-c
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
@@ -20,7 +20,7 @@ else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
 			os=linux
-			LARGS+=-s
+			LARGS+=" -s"
     else ifeq ($(UNAME_S),Darwin)
 			os=mac
 			ifeq ($(ARCH),arm64)

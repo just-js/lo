@@ -10,10 +10,13 @@ static unsigned int main_js_len = _binary_main_js_len;
 void register_builtins() {
   lo::builtins_add("main.js", _binary_main_js_start, _binary_main_js_len);
   lo::builtins_add("lib/asm.js", _binary_lib_asm_js_start, _binary_lib_asm_js_len);
+  lo::builtins_add("lib/bench.js", _binary_lib_bench_js_start, _binary_lib_bench_js_len);
+  lo::builtins_add("lib/binary.js", _binary_lib_binary_js_start, _binary_lib_binary_js_len);
   lo::builtins_add("lib/ffi.js", _binary_lib_ffi_js_start, _binary_lib_ffi_js_len);
   lo::builtins_add("lib/gen.js", _binary_lib_gen_js_start, _binary_lib_gen_js_len);
   lo::builtins_add("lib/path.js", _binary_lib_path_js_start, _binary_lib_path_js_len);
   lo::builtins_add("lib/proc.js", _binary_lib_proc_js_start, _binary_lib_proc_js_len);
+  lo::builtins_add("lib/repl.js", _binary_lib_repl_js_start, _binary_lib_repl_js_len);
   lo::builtins_add("Makefile", _binary_Makefile_start, _binary_Makefile_len);
   lo::builtins_add("main.cc", _binary_main_cc_start, _binary_main_cc_len);
   lo::builtins_add("lo.cc", _binary_lo_cc_start, _binary_lo_cc_len);

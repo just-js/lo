@@ -8,6 +8,16 @@ __binary_lib_asm_js_start:
         .incbin "lib/asm.js"
         .global __binary_lib_asm_js_end
 __binary_lib_asm_js_end:
+.global __binary_lib_bench_js_start
+__binary_lib_bench_js_start:
+        .incbin "lib/bench.js"
+        .global __binary_lib_bench_js_end
+__binary_lib_bench_js_end:
+.global __binary_lib_binary_js_start
+__binary_lib_binary_js_start:
+        .incbin "lib/binary.js"
+        .global __binary_lib_binary_js_end
+__binary_lib_binary_js_end:
 .global __binary_lib_ffi_js_start
 __binary_lib_ffi_js_start:
         .incbin "lib/ffi.js"
@@ -28,6 +38,11 @@ __binary_lib_proc_js_start:
         .incbin "lib/proc.js"
         .global __binary_lib_proc_js_end
 __binary_lib_proc_js_end:
+.global __binary_lib_repl_js_start
+__binary_lib_repl_js_start:
+        .incbin "lib/repl.js"
+        .global __binary_lib_repl_js_end
+__binary_lib_repl_js_end:
 .global __binary_Makefile_start
 __binary_Makefile_start:
         .incbin "Makefile"
