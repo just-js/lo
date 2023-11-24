@@ -169,7 +169,7 @@ const v8_path = getenv('LO_V8_PATH') || 'v8/releases/download'
 const v8_url_prefix = `${url_prefix}/${v8_path}`
 
 config.os = os
-const all = ['curl', 'zlib', 'libssl', 'sqlite', 'core', 'pthreads']
+const all = ['curl', 'zlib', 'libssl', 'sqlite', 'core', 'pthread']
 
 let verbose = false
 let args = lo.args
@@ -177,8 +177,8 @@ if (args.includes('-v')) {
   args = args.filter(a => a !== '-v')
   verbose = true
 }
-//await create_lo_home(LO_HOME)
-//create_builtins()
-//create_header()
+await create_lo_home(LO_HOME)
+create_builtins()
+create_header()
 const libs = args.length > 2 ? args.slice(2) : all
 for (const lib of libs) await compile_bindings(lib, verbose)
