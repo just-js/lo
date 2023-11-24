@@ -9,14 +9,6 @@ static unsigned int main_js_len = _binary_main_js_len;
 
 void register_builtins() {
   lo::builtins_add("main.js", _binary_main_js_start, _binary_main_js_len);
-  lo::builtins_add("lib/asm.js", _binary_lib_asm_js_start, _binary_lib_asm_js_len);
-  lo::builtins_add("lib/bench.js", _binary_lib_bench_js_start, _binary_lib_bench_js_len);
-  lo::builtins_add("lib/binary.js", _binary_lib_binary_js_start, _binary_lib_binary_js_len);
-  lo::builtins_add("lib/ffi.js", _binary_lib_ffi_js_start, _binary_lib_ffi_js_len);
-  lo::builtins_add("lib/gen.js", _binary_lib_gen_js_start, _binary_lib_gen_js_len);
-  lo::builtins_add("lib/path.js", _binary_lib_path_js_start, _binary_lib_path_js_len);
-  lo::builtins_add("lib/proc.js", _binary_lib_proc_js_start, _binary_lib_proc_js_len);
-  lo::builtins_add("lib/repl.js", _binary_lib_repl_js_start, _binary_lib_repl_js_len);
   lo::builtins_add("Makefile", _binary_Makefile_start, _binary_Makefile_len);
   lo::builtins_add("main.cc", _binary_main_cc_start, _binary_main_cc_len);
   lo::builtins_add("lo.cc", _binary_lo_cc_start, _binary_lo_cc_len);
@@ -24,7 +16,25 @@ void register_builtins() {
   lo::builtins_add("globals.d.ts", _binary_globals_d_ts_start, _binary_globals_d_ts_len);
   lo::builtins_add("jsconfig.json", _binary_jsconfig_json_start, _binary_jsconfig_json_len);
   lo::builtins_add("lib/core/api.js", _binary_lib_core_api_js_start, _binary_lib_core_api_js_len);
-  lo::builtins_add("lib/pthreads/api.js", _binary_lib_pthreads_api_js_start, _binary_lib_pthreads_api_js_len);
+  lo::builtins_add("lib/curl/api.js", _binary_lib_curl_api_js_start, _binary_lib_curl_api_js_len);
+  lo::builtins_add("lib/libssl/api.js", _binary_lib_libssl_api_js_start, _binary_lib_libssl_api_js_len);
+  lo::builtins_add("lib/pthread/api.js", _binary_lib_pthread_api_js_start, _binary_lib_pthread_api_js_len);
+  lo::builtins_add("lib/sqlite/api.js", _binary_lib_sqlite_api_js_start, _binary_lib_sqlite_api_js_len);
+  lo::builtins_add("lib/zlib/api.js", _binary_lib_zlib_api_js_start, _binary_lib_zlib_api_js_len);
+  lo::builtins_add("lib/asm.js", _binary_lib_asm_js_start, _binary_lib_asm_js_len);
+  lo::builtins_add("lib/bench.js", _binary_lib_bench_js_start, _binary_lib_bench_js_len);
+  lo::builtins_add("lib/binary.js", _binary_lib_binary_js_start, _binary_lib_binary_js_len);
+  lo::builtins_add("lib/curl.js", _binary_lib_curl_js_start, _binary_lib_curl_js_len);
+  lo::builtins_add("lib/ffi.js", _binary_lib_ffi_js_start, _binary_lib_ffi_js_len);
+  lo::builtins_add("lib/fs.js", _binary_lib_fs_js_start, _binary_lib_fs_js_len);
+  lo::builtins_add("lib/gen.js", _binary_lib_gen_js_start, _binary_lib_gen_js_len);
+  lo::builtins_add("lib/libssl.js", _binary_lib_libssl_js_start, _binary_lib_libssl_js_len);
+  lo::builtins_add("lib/path.js", _binary_lib_path_js_start, _binary_lib_path_js_len);
+  lo::builtins_add("lib/proc.js", _binary_lib_proc_js_start, _binary_lib_proc_js_len);
+  lo::builtins_add("lib/repl.js", _binary_lib_repl_js_start, _binary_lib_repl_js_len);
+  lo::builtins_add("lib/sqlite.js", _binary_lib_sqlite_js_start, _binary_lib_sqlite_js_len);
+  lo::builtins_add("lib/untar.js", _binary_lib_untar_js_start, _binary_lib_untar_js_len);
+  lo::builtins_add("lib/zlib.js", _binary_lib_zlib_js_start, _binary_lib_zlib_js_len);
 }
 
 static const char* main_js = _binary_main_js_start;

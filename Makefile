@@ -1,7 +1,7 @@
 C=clang
 CC=clang++
-LARGS=-"rdynamic"
-CCARGS=-std=c++17 -c
+LARGS=-rdynamic
+CCARGS=-std=c++17 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
 CARGS=-c
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3
@@ -13,6 +13,7 @@ BINDINGS=lib/core/core.a
 ARCH=x64
 os=linux
 TARGET=${RUNTIME}
+LIBS=
 
 ifeq ($(OS),Windows_NT)
 	os=win
@@ -20,7 +21,7 @@ else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
 			os=linux
-			LARGS+=" -s"
+			LARGS+=-s
     else ifeq ($(UNAME_S),Darwin)
 			os=mac
 			ifeq ($(ARCH),arm64)
@@ -32,6 +33,11 @@ else
 endif
 
 .PHONY: help clean
+
+mbedtls:
+	mkdir -p deps/mbedtls
+	curl -L -o deps/mbedtls/v3.5.1.tar.gz https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v3.5.1.tar.gz
+	tar -zxvf deps/mbedtls/v3.5.1.tar.gz -C deps/mbedtls
 
 help:
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9\/_\.-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -67,7 +73,7 @@ ${RUNTIME}.o: ## compile runtime into an object file
 
 ${RUNTIME}: v8/include v8/libv8_monolith.a main.js ${BINDINGS} main.o ${RUNTIME}.o ## link the runtime for linux/macos
 	@echo building ${RUNTIME} for ${os} on ${ARCH}
-	$(CC) $(LARGS) ${OPT} main.o ${RUNTIME}.o builtins.o ${BINDINGS} v8/libv8_monolith.a -o ${TARGET}
+	$(CC) $(LARGS) ${OPT} main.o ${RUNTIME}.o builtins.o ${BINDINGS} v8/libv8_monolith.a ${LIBS} -o ${TARGET}
 
 ${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js ## link the runtime for windows
 	cl /EHsc /std:c++17 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I./v8 /I./v8/include /c main.cc

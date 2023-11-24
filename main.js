@@ -280,7 +280,7 @@ function die (err, hide_fatal = false) {
   if (!hide_fatal) console.error(`${AR}Fatal Exception${AD}`)
   console.error(err.stack)
   console.error(`${AY}process will exit${AD}`)
-  lo.exit(1)
+  exit(1)
 }
 
 const { 
@@ -350,41 +350,27 @@ core.dlsym = wrap(handle, core.dlsym, 2)
 core.mmap = wrap(handle, core.mmap, 6)
 core.readFile = read_file
 core.writeFile = write_file
-// todo: move os() and arch() to a binding
 // todo: optimize this - return numbers and make a single call to get both
 core.os = lo.os()
 core.arch = lo.arch()
 core.loader = core.sync_loader = noop
 lo.setModuleCallbacks(on_module_load, on_module_instantiate)
 
-//const builtins = lo.builtins()
-//const libraries = lo.libraries()
-
 async function global_main () {
-  const [ command ] = args
+  const command = args[1]
   if (command === 'gen') {
-    (await import('lib/gen.js')).gen(lo.args.slice(2))
+    (await import('lib/gen.js')).gen(args.slice(2))
+  } else if (workerSource) {
+    import('@workerSource').catch(die)
   } else {
-    if (workerSource) {
-      import('@workerSource')
-        .catch(die)
-    } else {
-      if (args[1] === 'eval') return (new Function(`return (${args[2]})`))()
-      let filePath = args[1]
-      const { main, serve, test, bench } = await import(filePath)
-      if (test) {
-        await test(...args.slice(2))
-      }
-      if (bench) {
-        await bench(...args.slice(2))
-      }
-      if (main) {
-        await main(...args.slice(2))
-      }
-      if (serve) {
-        await serve(...args.slice(2))
-      }
-    }
+    if (command === 'eval') return (new Function(`return (${args[2]})`))()
+    let filePath = command
+    const { main, serve, test, bench } = await import(filePath)
+    const pargs = args.slice(2)
+    if (test) await test(...pargs)
+    if (bench) await bench(...pargs)
+    if (main) await main(...pargs)
+    if (serve) await serve(...pargs)
   }
 }
 

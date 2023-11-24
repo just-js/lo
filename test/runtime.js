@@ -55,7 +55,7 @@ ${AG}v8${AD}         ${lo.version.v8}`)
   }
   console.log(`${AG}bindings${AD}`)
   for (const lib_name of lo.libraries().sort()) {
-    console.log(`  ${AY}${lib_name}${AD}`)
+    console.log(`  ${AM}${lib_name}${AD}`)
     const lib = lo.library(lib_name)
     assert(lib)
     assert(lib.hasOwnProperty(lib_name))
