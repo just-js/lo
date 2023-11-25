@@ -4,41 +4,15 @@ import { fetch } from 'lib/curl.js'
 import { untar } from 'lib/untar.js'
 import { bindings, linkerScript, headerFile, config, linkArgs } from 'lib/gen.js'
 import { exec } from 'lib/proc.js'
-import { baseName } from 'lib/path.js'
+import { baseName, extName } from 'lib/path.js'
 
-// todo: if LO_HOME env var is not present then create it in .lo in current dir
-// todo: if LO_HOME or .lo do not exist, create them
 // todo: async fetch and process spawn so we can parallelize tasks
-// todo: we need include_paths in the bindings
-//       exec('ccache', [CC, ...CFLAGS, OPT, `-I${LO_HOME}`, `-I${LO_HOME}/v8`, `-I${LO_HOME}/v8/include`, ...def.includes.map(i => `-I${i}`), ...WARN, '-o', `${def.name}.o`, `${def.name}.cc`], status)
-
-/*
-if we don't modify LO_HOME other than when installing or upgrading then
-we can have multiple builds for different projects happening at in parallel and
-all outputting artifacts into their own directories
-
-so here i can load a library from builtins() or from local directory or from LO_HOME or from just-js/lo github
-
-todo: do ccache checking in JS
-
-
-LO_TARGET and LO_HOME
-
-todo: make fetch and exec async and parallelize them
-
-
-*/
-
 const { core, getenv, getcwd, assert, colors } = lo
 const { AM, AY, AG, AD } = colors
 const {
   writeFile, chdir, mkdir, readFile, unlink,
   S_IXOTH, S_IRWXU, S_IRWXG, S_IROTH
 } = core
-
-function uniquify (...arrays) {
-  return Array.from(new Set(arrays.flat()))
-}
 
 function exec2 (args, verbose = false) {
   if (verbose) console.log(args.join(' '))
@@ -129,7 +103,7 @@ async function compile_bindings (lib, verbose = false) {
 
   console.log(`${AY}static lib ${AD} ${def.name}.a`)
   if (def.obj && def.obj.length) {
-    exec2(['ar', 'crsT', `${def.name}.a`, `${def.name}.o`, ...def.obj], verbose)
+    exec2(['ar', 'crsT', `${def.name}.a`, `${def.name}.o`, ...def.obj.filter(f => extName(f) === 'o')], verbose)
   } else {
     exec2(['ar', 'crsT', `${def.name}.a`, `${def.name}.o`], verbose)
   }
@@ -141,6 +115,9 @@ async function compile_bindings (lib, verbose = false) {
 
   console.log(`${AY}change dir to ${AD} ${cwd}`)
   assert(chdir(cwd) === 0)
+
+  if (!def.obj) return []
+  return def.obj.filter(f => extName(f) === 'a').map(f => `${lib_dir}/${f}`)
 }
 
 function create_builtins (libs = [], os) {
@@ -159,7 +136,7 @@ function create_header (libs = [], bindings = [], opts) {
   writeFile(`${LO_HOME}/main.h`, encoder.encode(main_h))
 }
 
-async function build_runtime (libs = lo.builtins(), bindings = lo.libraries()) {
+async function build_runtime ({ libs = lo.builtins(), bindings = lo.libraries() }) {
   create_builtins(libs, 'win')
   if (os !== 'linux') create_builtins(libs, 'linux')
   create_builtins(libs, os)
@@ -185,26 +162,25 @@ async function build_runtime (libs = lo.builtins(), bindings = lo.libraries()) {
     verbose)
 
   console.log(`${AY}link runtime ${AD}`)
-  const static_libs = bindings.map(n => `lib/${n}/${n}.a`)
-  //const dynamic_libs = await linkArgs(uniquify(lo.builtins(), ['lib/inflate/api.js']))
+
+  let static_libs = bindings.map(n => `lib/${n}/${n}.a`)
+  for (const binding of bindings) {
+    static_libs = static_libs.concat(await compile_bindings(binding, verbose))
+  }
   const dynamic_libs = await linkArgs(bindings.map(n => `lib/${n}/api.js`))
-  //const mbed_tls = ['lib/mbedtls/deps/mbedtls/library/libmbedcrypto.a', 'lib/mbedtls/deps/mbedtls/library/libmbedtls.a', 'lib/mbedtls/deps/mbedtls/library/libmbedx509.a']
   const mbed_tls = []
   console.log(dynamic_libs)
   exec2([...LINK.split(' '), ...LARGS, OPT, '-rdynamic', ...WARN, '-o', 
     `${TARGET}`, `${TARGET}.o`, 'main.o', 'builtins.o', 'v8/libv8_monolith.a', 
-    ...static_libs, ...mbed_tls, ...dynamic_libs], verbose)
-  
+    ...static_libs, ...mbed_tls, ...dynamic_libs], verbose) 
 }
 
 const encoder = new TextEncoder()
 const status = new Int32Array(2)
 
-// use ```lo LINK="mold -run g++" CC="ccache g++" build.js```  for fast builds
-
 const VERSION = '"0.0.4pre"'
 const RUNTIME = '"lo"'
-const TARGET = 'lo'
+const TARGET = getenv('TARGET') || 'lo'
 const C = getenv('C') || 'gcc'
 const CC = getenv('CC') || 'g++'
 const LINK = getenv('LINK') || 'g++'
@@ -228,19 +204,26 @@ const defaultOpts = {
 
 config.os = os
 
-const mini = {
+const builder_mini = {
   bindings: ['core'],
   libs: []
 }
 
-const builder = {
+const builder_curl = {
   bindings: ['core', 'inflate', 'curl'],
-  libs: ['lib/bench.js', 'lib/gen.js', 'lib/fs.js', 'lib/untar.js', 'lib/proc.js', 'lib/path.js', 'lib/inflate.js', 'lib/curl.js']
+  libs: [
+    'lib/bench.js', 'lib/gen.js', 'lib/fs.js', 'lib/untar.js', 'lib/proc.js', 
+    'lib/path.js', 'lib/inflate.js', 'lib/curl.js'
+  ]
 }
 
-//const all = [
-//  'curl', 'zlib', 'libssl', 'sqlite', 'core', 'pthread', 'inflate', 'mbedtls', 'encode', 'epoll', 'libffi', 'lz4', 'net', 'pico', 'seccomp', 'system'
-//]
+const builder_mbedtls = {
+  bindings: ['core', 'inflate', 'mbedtls'],
+  libs: [
+    'lib/bench.js', 'lib/gen.js', 'lib/fs.js', 'lib/untar.js', 'lib/proc.js', 
+    'lib/path.js', 'lib/inflate.js'
+  ]
+}
 
 let verbose = false
 let args = lo.args
@@ -248,8 +231,7 @@ if (args.includes('-v')) {
   args = args.filter(a => a !== '-v')
   verbose = true
 }
+
+// use ```lo LINK="mold -run g++" CC="ccache g++" build.js```  for fast builds
 await create_lo_home(LO_HOME)
-const libs = args.length > 2 ? args.slice(2) : all
-for (const lib of libs) await compile_bindings(lib, verbose)
-//await build_runtime(lo.builtins())
-await build_runtime(builder.libs, builder.bindings)
+await build_runtime(builder_curl)
