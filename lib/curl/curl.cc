@@ -344,6 +344,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "CURLOPT_WRITEFUNCTION", Integer::New(isolate, CURLOPT_WRITEFUNCTION));
   SET_VALUE(isolate, module, "CURLOPT_WRITEDATA", Integer::New(isolate, CURLOPT_WRITEDATA));
 
+
   SET_MODULE(isolate, target, "curl", module);
 }
 } // namespace curl

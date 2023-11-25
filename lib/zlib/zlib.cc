@@ -180,6 +180,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "inflate", &pFinflate, inflateSlow);
 
 
+
   SET_MODULE(isolate, target, "zlib", module);
 }
 } // namespace zlib

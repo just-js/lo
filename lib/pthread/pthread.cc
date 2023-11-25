@@ -352,6 +352,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "getAffinity", &pFgetAffinity, getAffinitySlow);
 
 
+
   SET_MODULE(isolate, target, "pthread", module);
 }
 } // namespace pthread

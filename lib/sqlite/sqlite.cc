@@ -965,6 +965,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "SQLITE_OK", Integer::New(isolate, SQLITE_OK));
   SET_VALUE(isolate, module, "SQLITE_OPEN_READONLY", Integer::New(isolate, SQLITE_OPEN_READONLY));
 
+
   SET_MODULE(isolate, target, "sqlite", module);
 }
 } // namespace sqlite

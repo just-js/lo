@@ -47,6 +47,10 @@
 - [ ] **todo**:  in assert, strip the assert line from the stack trace on the error
 - [ ] **question**: should we have something like __dirname on each module?
 - [ ] **todo**:  make lib/proc exec() async and used pidfd_open to monitor process on event loop
+- [ ] **todo**:  freeze core apis/intrinsics
+- [ ] **question**: how do we handle compiling dependencies of bindings cross platform if we don't depend on make?
+                    we could just write the build script as js?
+- [ ] **question**: how do we align structs in memory?
 
 ## features
 

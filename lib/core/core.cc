@@ -1587,6 +1587,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "S_IFDIR", Integer::New(isolate, S_IFDIR));
   SET_VALUE(isolate, module, "S_IFREG", Integer::New(isolate, S_IFREG));
 
+
   SET_MODULE(isolate, target, "core", module);
 }
 } // namespace core
