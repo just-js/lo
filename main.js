@@ -70,31 +70,38 @@ function addr (u32) {
   return u32[0] + ((2 ** 32) * u32[1])  
 }
 
-function read_file (path, flags = O_RDONLY) {
+function read_file_bytes (path, size = 0) {
+  let off = 0
+  let len = 0
+  const fd = open(path, O_RDONLY)
+  assert(fd > 0, `failed to open ${path} with flags ${flags}`)
+  if (size === 0) {
+    fstat(fd, stat)
+    size = stat32[12] || 64 * 1024
+  }
+  const u8 = new Uint8Array(size)
+  while ((len = read(fd, u8, size - off)) > 0) off += len
+  assert(close(fd) === 0)
+  return u8
+}
+
+
+function read_file (path, flags = O_RDONLY, size = 0) {
   const fd = open(path, flags)
   assert(fd > 0, `failed to open ${path} with flags ${flags}`)
-  let r = fstat(fd, stat)
-  assert(r === 0)
-  let size = 0
-  if (core.os === 'mac') {
-    size = Number(st[12])
-  } else {
-    size = Number(st[6])
+  if (size === 0) {
+    assert(fstat(fd, stat) === 0)
+    if (core.os === 'mac') {
+      size = Number(st[12])
+    } else {
+      size = Number(st[6])
+    }
   }
-  // todo: this isn't correct, is it?
-  const buf = new Uint8Array(size)
   let off = 0
-  let len = read(fd, buf, size)
-  while (len > 0) {
-    off += len
-    if (off === size) break
-    len = read(fd, buf, size)
-  }
-  off += len
-  r = close(fd)
-  assert(r === 0)
-  assert(off >= size)
-  return buf
+  let len = 0
+  const u8 = new Uint8Array(size)
+  while ((len = read(fd, u8, size - off)) > 0) off += len
+  return u8
 }
 
 function write_file (path, u8, flags = defaultWriteFlags, 

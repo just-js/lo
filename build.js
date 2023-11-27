@@ -1,4 +1,4 @@
-import { isFile, isDir } from 'lib/fs.js'
+import { isFile, isDir, mkDirAll } from 'lib/fs.js'
 import { inflate } from 'lib/inflate.js'
 import { fetch } from 'lib/curl.js'
 import { untar } from 'lib/untar.js'
@@ -7,11 +7,11 @@ import { exec } from 'lib/proc.js'
 import { baseName, extName } from 'lib/path.js'
 
 // todo: async fetch and process spawn so we can parallelize tasks
+// todo: check timestamps on dependencies and only compile if changed
 const { core, getenv, getcwd, assert, colors } = lo
 const { AM, AY, AG, AD } = colors
 const {
-  writeFile, chdir, mkdir, readFile, unlink,
-  S_IXOTH, S_IRWXU, S_IRWXG, S_IROTH
+  writeFile, chdir, mkdir, readFile, unlink, S_IXOTH, S_IRWXU, S_IRWXG, S_IROTH
 } = core
 
 function exec2 (args, verbose = false) {
@@ -136,10 +136,12 @@ function create_header (libs = [], bindings = [], opts) {
   writeFile(`${LO_HOME}/main.h`, encoder.encode(main_h))
 }
 
-async function build_runtime ({ libs = lo.builtins(), bindings = lo.libraries() }) {
+async function build_runtime ({ libs = lo.builtins(), bindings = lo.libraries() }, verbose = false) {
   create_builtins(libs, 'win')
   if (os !== 'linux') create_builtins(libs, 'linux')
+  console.log(`${AY}create${AD} builtins`)
   create_builtins(libs, os)
+  console.log(`${AY}create${AD} main header`)
   create_header(libs, bindings, defaultOpts)
 
   console.log(`${AY}compile${AD} builtins`)
@@ -169,7 +171,6 @@ async function build_runtime ({ libs = lo.builtins(), bindings = lo.libraries() 
   }
   const dynamic_libs = await linkArgs(bindings.map(n => `lib/${n}/api.js`))
   const mbed_tls = []
-  console.log(dynamic_libs)
   exec2([...LINK.split(' '), ...LARGS, OPT, '-rdynamic', ...WARN, '-o', 
     `${TARGET}`, `${TARGET}.o`, 'main.o', 'builtins.o', 'v8/libv8_monolith.a', 
     ...static_libs, ...mbed_tls, ...dynamic_libs], verbose) 
@@ -178,14 +179,14 @@ async function build_runtime ({ libs = lo.builtins(), bindings = lo.libraries() 
 const encoder = new TextEncoder()
 const status = new Int32Array(2)
 
-const VERSION = '"0.0.4pre"'
-const RUNTIME = '"lo"'
+const VERSION = getenv('VERSION') || '"0.0.4pre"'
+const RUNTIME = getenv('RUNTIME') || '"lo"'
 const TARGET = getenv('TARGET') || 'lo'
 const C = getenv('C') || 'gcc'
 const CC = getenv('CC') || 'g++'
 const LINK = getenv('LINK') || 'g++'
 const OPT = getenv('OPT') || '-O3'
-const CFLAGS = (getenv('CFLAGS') || '-fPIC -std=c++17 -c').split(' ')
+const CFLAGS = (getenv('CFLAGS') || '-fPIC -std=c++17 -c -DV8_NO_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0').split(' ')
 const WARN = (getenv('WARN') || 
   '-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter').split(' ')
 const LARGS = (getenv('LARGS') || '-s').split(' ')
@@ -204,34 +205,71 @@ const defaultOpts = {
 
 config.os = os
 
-const builder_mini = {
-  bindings: ['core'],
-  libs: []
-}
-
-const builder_curl = {
-  bindings: ['core', 'inflate', 'curl'],
-  libs: [
-    'lib/bench.js', 'lib/gen.js', 'lib/fs.js', 'lib/untar.js', 'lib/proc.js', 
-    'lib/path.js', 'lib/inflate.js', 'lib/curl.js'
-  ]
-}
-
-const builder_mbedtls = {
-  bindings: ['core', 'inflate', 'mbedtls'],
-  libs: [
-    'lib/bench.js', 'lib/gen.js', 'lib/fs.js', 'lib/untar.js', 'lib/proc.js', 
-    'lib/path.js', 'lib/inflate.js'
-  ]
+const runtimes = {
+  custom: {
+    bindings: [],
+    libs: []
+  },
+  core: {
+    bindings: ['core'],
+    libs: []
+  },
+  curl: {
+    bindings: ['core', 'inflate', 'curl'],
+    libs: [
+      'lib/bench.js', 'lib/gen.js', 'lib/fs.js', 'lib/untar.js', 'lib/proc.js', 
+      'lib/path.js', 'lib/inflate.js', 'lib/curl.js'
+    ]
+  },
+  mbedtls: {
+    bindings: ['core', 'inflate', 'mbedtls'],
+    libs: [
+      'lib/bench.js', 'lib/gen.js', 'lib/fs.js', 'lib/untar.js', 'lib/proc.js', 
+      'lib/path.js', 'lib/inflate.js'
+    ]
+  }
 }
 
 let verbose = false
-let args = lo.args
+let args = lo.args.slice(2)
 if (args.includes('-v')) {
   args = args.filter(a => a !== '-v')
   verbose = true
 }
 
+// ./lo eval "console.log(parseInt(lo.utf8Decode(lo.ptr(lo.core.readFile('/proc/self/stat', 0, 1024)).ptr, -1).match(/(\d+)\s/g)[21], 10) * 4096)"
+// it's 11 ms versus 7ms for ```hyperfine "lo eval 1"``` for curl build versus mbedtls 
 // use ```lo LINK="mold -run g++" CC="ccache g++" build.js```  for fast builds
 await create_lo_home(LO_HOME)
-await build_runtime(builder_curl)
+const [ action = 'runtime', name = 'curl' ] = args
+if (action === 'runtime') {
+  if (runtimes[name]) {
+    await build_runtime(runtimes[name], verbose)
+  } else {
+    const runtime_config = await import(name)
+    //console.log(JSON.stringify(runtime_config.default, null, '  '))
+    await build_runtime(runtime_config.default, verbose)
+  }
+} else if (action === 'binding') {
+  // todo: check if name is an existing binding and install that if it doesn't exist
+  // or maybe this should be a different "add" command?
+  if (args.length > 2 && args[2] === 'init') {
+    mkDirAll(`lib/${name}`)
+    writeFile(`lib/${name}/api.js`, encoder.encode(`
+const api = {
+  noop: {
+    parameters: [],
+    result: 'void
+  }
+}
+
+const name = '${name}'
+
+const constants = {}
+
+export { name, api, constants }
+`))
+  } else {
+    await compile_bindings(name, verbose)
+  }
+}

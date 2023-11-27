@@ -31,6 +31,10 @@ interface RuntimeVersion {
   v8: string
 }
 
+interface Core {
+  open(path: string, flags: number);
+}
+
 interface Runtime {
   moduleCache: Map<String, object>;
   libCache: Map<String, object>;
@@ -38,7 +42,7 @@ interface Runtime {
   start: number;
   errno: number;
   colors: any;
-  core: any;
+  core: Core;
   libraries(): Array<string>;
   builtins(): Array<string>;
   assert(expression: any, message?: string | Function): any;
