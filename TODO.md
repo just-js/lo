@@ -51,9 +51,13 @@
 - [ ] **question**: how do we handle compiling dependencies of bindings cross platform if we don't depend on make?
                     we could just write the build script as js?
 - [ ] **question**: how do we align structs in memory?
+- [ ] **todo**:  ability to chain cli args together
+- [ ] **todo**:  repl - doesn't really need async for now - ```lo repl```
+
 
 ## features
 
+- [ ] **commands**: ability to host command scripts so i can run ```lo cmd blah``` and it will run blah.js from cmd direction in current dir or $HOME/.lo/cmd
 - [ ] **fetch**: a robust and fast fetch implementation
 - [ ] **serve**: a robust and fast http serve implementation with Request and Response
 - [ ] **ffi**: a robust and fast ffi implementation

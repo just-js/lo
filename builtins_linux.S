@@ -43,3 +43,8 @@ _binary_lib_curl_js_start:
         .incbin "lib/curl.js"
         .global _binary_lib_curl_js_end
 _binary_lib_curl_js_end:
+.global _binary_lib_build_js_start
+_binary_lib_build_js_start:
+        .incbin "lib/build.js"
+        .global _binary_lib_build_js_end
+_binary_lib_build_js_end:

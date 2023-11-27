@@ -23,6 +23,8 @@ extern char _binary_lib_inflate_js_start[];
 extern char _binary_lib_inflate_js_end[];
 extern char _binary_lib_curl_js_start[];
 extern char _binary_lib_curl_js_end[];
+extern char _binary_lib_build_js_start[];
+extern char _binary_lib_build_js_end[];
 
 extern "C" {
   extern void* _register_core();
@@ -40,6 +42,7 @@ void register_builtins() {
   lo::builtins_add("lib/path.js", _binary_lib_path_js_start, _binary_lib_path_js_end - _binary_lib_path_js_start);
   lo::builtins_add("lib/inflate.js", _binary_lib_inflate_js_start, _binary_lib_inflate_js_end - _binary_lib_inflate_js_start);
   lo::builtins_add("lib/curl.js", _binary_lib_curl_js_start, _binary_lib_curl_js_end - _binary_lib_curl_js_start);
+  lo::builtins_add("lib/build.js", _binary_lib_build_js_start, _binary_lib_build_js_end - _binary_lib_build_js_start);
   lo::modules_add("core", &_register_core);
   lo::modules_add("inflate", &_register_inflate);
   lo::modules_add("curl", &_register_curl);

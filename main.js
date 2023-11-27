@@ -364,13 +364,17 @@ core.loader = core.sync_loader = noop
 lo.setModuleCallbacks(on_module_load, on_module_instantiate)
 
 async function global_main () {
+  // todo: upgrade, install etc. maybe install these as command scripts, but that would not be very secure
   const command = args[1]
   if (command === 'gen') {
     (await import('lib/gen.js')).gen(args.slice(2))
+  } else if (command === 'build') {
+    (await import('lib/build.js')).build(args.slice(2))
+  } else if (command === 'eval') {
+    (new Function(`return (${args[2]})`))()
   } else if (workerSource) {
     import('@workerSource').catch(die)
   } else {
-    if (command === 'eval') return (new Function(`return (${args[2]})`))()
     let filePath = command
     const { main, serve, test, bench } = await import(filePath)
     const pargs = args.slice(2)

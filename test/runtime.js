@@ -52,6 +52,18 @@ ${AG}v8${AD}         ${lo.version.v8}`)
   const builtins = lo.builtins().sort()
   for (const builtin of builtins) {
     console.log(`  ${AM}${builtin.padEnd(32, ' ')}${AD}: ${lo.builtin(builtin).length} bytes`)
+    if (builtin !== 'main.js') {
+      const lib = await import(builtin)
+      const entries = Object.entries(lib)
+      entries.sort((a, b) => a < b ? -1 : (a === b ? 0 : 1))
+      for (const [key, value] of entries) {
+        if (['AsyncFunction', 'Function', 'Object'].includes(value.constructor.name)) {
+          console.log(`    ${AC}${key}${AD}: ${value.constructor.name}`)
+        } else {
+          console.log(`    ${AY}${key}${AD}: ${value.constructor.name} = ${value}`)
+        }
+      }
+    }
   }
   console.log(`${AG}bindings${AD}`)
   for (const lib_name of lo.libraries().sort()) {
@@ -63,7 +75,7 @@ ${AG}v8${AD}         ${lo.version.v8}`)
     const entries = Object.entries(binding)
     entries.sort((a, b) => a < b ? -1 : (a === b ? 0 : 1))
     for (const [key, value] of entries) {
-      if (['Function', 'Object'].includes(value.constructor.name)) {
+      if (['AsyncFunction', 'Function', 'Object'].includes(value.constructor.name)) {
         console.log(`    ${AC}${key}${AD}: ${value.constructor.name}`)
       } else {
         console.log(`    ${AY}${key}${AD}: ${value.constructor.name} = ${value}`)
