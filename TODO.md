@@ -53,6 +53,7 @@
 - [ ] **question**: how do we align structs in memory?
 - [ ] **todo**:  ability to chain cli args together
 - [ ] **todo**:  repl - doesn't really need async for now - ```lo repl```
+- [ ] **todo**:  rename lo.library and lo.libraries to lo.binding and lo.bindings
 
 
 ## features

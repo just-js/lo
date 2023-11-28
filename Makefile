@@ -75,9 +75,6 @@ ${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js ## link the runtime for wi
 	cl /EHsc /std:c++17 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I./v8 /I./v8/include /c ${RUNTIME}.cc
 	cl v8/v8_monolith.lib ${RUNTIME}.obj main.obj winmm.lib dbghelp.lib advapi32.lib /link /out:${TARGET}.exe
 
-check: ## run the runtime sanity tests
-	./${RUNTIME} test/runtime.js
-
 core.o: lib/core/core.cc ## build the core binding
 	$(CC) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) -o core.o lib/core/core.cc
 
@@ -88,6 +85,10 @@ inflate.a: lib/inflate/inflate.cc ## build the curl binding
 	$(C) -c -fomit-frame-pointer -fPIC $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate -o em_inflate.o lib/inflate/em_inflate.c
 	$(CC) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate $(WARN) -o inflate.o lib/inflate/inflate.cc
 	ar crsT inflate.a inflate.o em_inflate.o
+
+check: ## run the runtime sanity tests
+	./${RUNTIME} test/dump.js
+	./${RUNTIME} test/runtime.js
 
 docs:
 	rm -fr docs
