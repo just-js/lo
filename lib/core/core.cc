@@ -1552,7 +1552,6 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "STDOUT", Integer::New(isolate, 1));
   SET_VALUE(isolate, module, "STDERR", Integer::New(isolate, 2));
   SET_VALUE(isolate, module, "O_CLOEXEC", Integer::New(isolate, O_CLOEXEC));
-  SET_VALUE(isolate, module, "O_NOATIME", Integer::New(isolate, O_NOATIME));
   SET_VALUE(isolate, module, "RUSAGE_SELF", Integer::New(isolate, RUSAGE_SELF));
   SET_VALUE(isolate, module, "SEEK_SET", Integer::New(isolate, SEEK_SET));
   SET_VALUE(isolate, module, "SEEK_CUR", Integer::New(isolate, SEEK_CUR));
