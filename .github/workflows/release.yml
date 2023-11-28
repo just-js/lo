@@ -50,6 +50,9 @@ jobs:
         platform: [x64]
     steps:
       - uses: actions/checkout@v3
+      - name: install libcurl
+        run: |
+          sudo apt-get install -qy libcurl4-openssl-dev
       - name: compile
         run: |
           make lo
@@ -70,7 +73,7 @@ jobs:
           asset_content_type: application/gzip
 
   build-linux-arm:
-#    if: ${{ false }}  # disable
+    if: ${{ false }}  # disable
     name: linux-arm64
     runs-on: ubuntu-22.04
     strategy:

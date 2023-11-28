@@ -399,6 +399,16 @@ v8::CTypeInfo rcfcntl = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infofcntl = v8::CFunctionInfo(rcfcntl, 4, cargsfcntl);
 v8::CFunction pFfcntl = v8::CFunction((const void*)&fcntlFast, &infofcntl);
 
+int32_t renameFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1);
+v8::CTypeInfo cargsrename[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+};
+v8::CTypeInfo rcrename = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo inforename = v8::CFunctionInfo(rcrename, 3, cargsrename);
+v8::CFunction pFrename = v8::CFunction((const void*)&renameFast, &inforename);
+
 int32_t accessFast(void* p, struct FastOneByteString* const p0, int32_t p1);
 v8::CTypeInfo cargsaccess[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -773,6 +783,16 @@ v8::CTypeInfo rcisolate_context_size = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32
 v8::CFunctionInfo infoisolate_context_size = v8::CFunctionInfo(rcisolate_context_size, 1, cargsisolate_context_size);
 v8::CFunction pFisolate_context_size = v8::CFunction((const void*)&isolate_context_sizeFast, &infoisolate_context_size);
 
+uint32_t strnlenFast(void* p, void* p0, uint32_t p1);
+v8::CTypeInfo cargsstrnlen[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcstrnlen = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+v8::CFunctionInfo infostrnlen = v8::CFunctionInfo(rcstrnlen, 3, cargsstrnlen);
+v8::CFunction pFstrnlen = v8::CFunction((const void*)&strnlenFast, &infostrnlen);
+
 
 
 void dlopenSlow(const FunctionCallbackInfo<Value> &args) {
@@ -941,6 +961,19 @@ int32_t fcntlFast(void* p, int32_t p0, int32_t p1, int32_t p2) {
   int32_t v1 = p1;
   int32_t v2 = p2;
   return fcntl(v0, v1, v2);
+}
+void renameSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  String::Utf8Value v1(isolate, args[1]);
+  int32_t rc = rename(*v0, *v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t renameFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1) {
+  struct FastOneByteString* const v0 = p0;
+  struct FastOneByteString* const v1 = p1;
+  return rename(v0->data, v1->data);
 }
 void accessSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -1477,6 +1510,19 @@ void isolate_startSlow(const FunctionCallbackInfo<Value> &args) {
   lo_start_isolate(v0);
 }
 
+void strnlenSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  const char* v0 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  uint32_t rc = strnlen(v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+uint32_t strnlenFast(void* p, void* p0, uint32_t p1) {
+  const char* v0 = reinterpret_cast<const char*>(p0);
+  uint32_t v1 = p1;
+  return strnlen(v0, v1);
+}
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
@@ -1491,6 +1537,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "lseek", &pFlseek, lseekSlow);
   SET_FAST_METHOD(isolate, module, "fstat", &pFfstat, fstatSlow);
   SET_FAST_METHOD(isolate, module, "fcntl", &pFfcntl, fcntlSlow);
+  SET_FAST_METHOD(isolate, module, "rename", &pFrename, renameSlow);
   SET_FAST_METHOD(isolate, module, "access", &pFaccess, accessSlow);
   SET_FAST_METHOD(isolate, module, "open", &pFopen, openSlow);
   SET_FAST_METHOD(isolate, module, "unlink", &pFunlink, unlinkSlow);
@@ -1531,6 +1578,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "isolate_context_destroy", &pFisolate_context_destroy, isolate_context_destroySlow);
   SET_FAST_METHOD(isolate, module, "isolate_context_size", &pFisolate_context_size, isolate_context_sizeSlow);
   SET_METHOD(isolate, module, "isolate_start", isolate_startSlow);
+  SET_FAST_METHOD(isolate, module, "strnlen", &pFstrnlen, strnlenSlow);
 
   SET_VALUE(isolate, module, "S_IFBLK", Integer::New(isolate, S_IFBLK));
   SET_VALUE(isolate, module, "S_IFCHR", Integer::New(isolate, S_IFCHR));
@@ -1561,6 +1609,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "S_IFMT", Integer::New(isolate, S_IFMT));
   SET_VALUE(isolate, module, "S_IFDIR", Integer::New(isolate, S_IFDIR));
   SET_VALUE(isolate, module, "S_IFREG", Integer::New(isolate, S_IFREG));
+  SET_VALUE(isolate, module, "NAME_MAX", Integer::New(isolate, NAME_MAX));
+  SET_VALUE(isolate, module, "O_RDWR", Integer::New(isolate, O_RDWR));
 
 
   SET_MODULE(isolate, target, "core", module);

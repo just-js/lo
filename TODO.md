@@ -54,6 +54,7 @@
 - [ ] **todo**:  ability to chain cli args together
 - [ ] **todo**:  repl - doesn't really need async for now - ```lo repl```
 - [ ] **todo**:  rename lo.library and lo.libraries to lo.binding and lo.bindings
+- [ ] **todo**:  proc.js - mem() doesn't work on macos (no proc fs)
 
 
 ## features

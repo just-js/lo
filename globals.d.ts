@@ -32,7 +32,7 @@ interface RuntimeVersion {
 }
 
 interface Core {
-  open(path: string, flags: number);
+  open(path: string, flags: number, mode: number);
 }
 
 interface Runtime {
