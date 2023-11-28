@@ -343,6 +343,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "CURLINFO_SIZE_DOWNLOAD_T", Integer::New(isolate, CURLINFO_SIZE_DOWNLOAD_T));
   SET_VALUE(isolate, module, "CURLOPT_WRITEFUNCTION", Integer::New(isolate, CURLOPT_WRITEFUNCTION));
   SET_VALUE(isolate, module, "CURLOPT_WRITEDATA", Integer::New(isolate, CURLOPT_WRITEDATA));
+  SET_VALUE(isolate, module, "CURLINFO_RESPONSE_CODE", Integer::New(isolate, CURLINFO_RESPONSE_CODE));
+  SET_VALUE(isolate, module, "CURLOPT_FAILONERROR", Integer::New(isolate, CURLOPT_FAILONERROR));
 
 
   SET_MODULE(isolate, target, "curl", module);

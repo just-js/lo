@@ -9,11 +9,11 @@ VERSION=0.0.4-pre
 V8_VERSION=1.0.0
 RUNTIME=lo
 LO_HOME=$(shell pwd)
-BINDINGS=lib/core/core.a lib/curl/curl.a lib/inflate/inflate.a
+BINDINGS=core.o curl.o inflate.a
 ARCH=x64
 os=linux
 TARGET=${RUNTIME}
-LIBS=
+LIBS=-lcurl
 
 ifeq ($(OS),Windows_NT)
 	os=win
@@ -33,11 +33,6 @@ else
 endif
 
 .PHONY: help clean
-
-mbedtls:
-	mkdir -p deps/mbedtls
-	curl -L -o deps/mbedtls/v3.5.1.tar.gz https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v3.5.1.tar.gz
-	tar -zxvf deps/mbedtls/v3.5.1.tar.gz -C deps/mbedtls
 
 help:
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9\/_\.-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -71,7 +66,7 @@ endif
 ${RUNTIME}.o: ## compile runtime into an object file 
 	$(CC) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
 
-${RUNTIME}: v8/include v8/libv8_monolith.a main.js ${BINDINGS} main.o ${RUNTIME}.o ## link the runtime for linux/macos
+${RUNTIME}: v8/include v8/libv8_monolith.a main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
 	@echo building ${RUNTIME} for ${os} on ${ARCH}
 	$(CC) $(LARGS) ${OPT} main.o ${RUNTIME}.o builtins.o ${BINDINGS} v8/libv8_monolith.a ${LIBS} -o ${TARGET}
 
@@ -83,17 +78,16 @@ ${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js ## link the runtime for wi
 check: ## run the runtime sanity tests
 	./${RUNTIME} test/runtime.js
 
-lib/core/core.a: lib/core/api.js ## build the core binding
-	$(MAKE) BINDING=core staticlib
+core.o: lib/core/core.cc ## build the core binding
+	$(CC) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) -o core.o lib/core/core.cc
 
-lib/${BINDING}/${BINDING}.a: lib/${BINDING}/api.js
-	$(MAKE) BINDING=${BINDING} staticlib
+curl.o: lib/curl/curl.cc ## build the curl binding
+	$(CC) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) -o curl.o lib/curl/curl.cc
 
-staticlib: v8/include v8/libv8_monolith.a lib/${BINDING}/api.js
-	ARCH="${ARCH}" os="${os}" LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C lib/${BINDING} ${BINDING}.a
-
-sharedlib: v8/include v8/libv8_monolith.a lib/${BINDING}/${BINDING}.a
-	ARCH="${ARCH}" os="${os}" LARGS="${LARGS}" WARN="${WARN}" LO_HOME="${LO_HOME}" CCARGS="${CCARGS}" OPT="${OPT}" $(MAKE) -C lib/${BINDING} ${BINDING}.so
+inflate.a: lib/inflate/inflate.cc ## build the curl binding
+	$(C) -c -fomit-frame-pointer -fPIC $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate -o em_inflate.o lib/inflate/em_inflate.c
+	$(CC) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate $(WARN) -o inflate.o lib/inflate/inflate.cc
+	ar crsT inflate.a inflate.o em_inflate.o
 
 docs:
 	rm -fr docs
@@ -114,6 +108,9 @@ ifeq ($(os),win)
 	@del /q ${RUNTIME}.lib > NUL 2>&1
 else
 	rm -f *.o
+	rm -f *.a
+	rm -f lib/**/*.a
+	rm -f lib/**/*.so
 	rm -f ${RUNTIME}
 endif
 
