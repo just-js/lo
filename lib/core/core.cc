@@ -576,16 +576,6 @@ v8::CTypeInfo rcfree = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infofree = v8::CFunctionInfo(rcfree, 2, cargsfree);
 v8::CFunction pFfree = v8::CFunction((const void*)&freeFast, &infofree);
 
-int32_t memfd_createFast(void* p, struct FastOneByteString* const p0, uint32_t p1);
-v8::CTypeInfo cargsmemfd_create[3] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-};
-v8::CTypeInfo rcmemfd_create = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infomemfd_create = v8::CFunctionInfo(rcmemfd_create, 3, cargsmemfd_create);
-v8::CFunction pFmemfd_create = v8::CFunction((const void*)&memfd_createFast, &infomemfd_create);
-
 void fastcallFast(void* p, void* p0);
 v8::CTypeInfo cargsfastcall[2] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -1188,19 +1178,6 @@ void freeFast(void* p, void* p0) {
   void* v0 = reinterpret_cast<void*>(p0);
   free(v0);
 }
-void memfd_createSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  String::Utf8Value v0(isolate, args[0]);
-  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  int32_t rc = memfd_create(*v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
-}
-
-int32_t memfd_createFast(void* p, struct FastOneByteString* const p0, uint32_t p1) {
-  struct FastOneByteString* const v0 = p0;
-  uint32_t v1 = p1;
-  return memfd_create(v0->data, v1);
-}
 void fastcallSlow(const FunctionCallbackInfo<Value> &args) {
   struct fastcall* v0 = reinterpret_cast<struct fastcall*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   lo_fastcall(v0);
@@ -1531,7 +1508,6 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "mmap", &pFmmap, mmapSlow);
   SET_FAST_METHOD(isolate, module, "calloc", &pFcalloc, callocSlow);
   SET_FAST_METHOD(isolate, module, "free", &pFfree, freeSlow);
-  SET_FAST_METHOD(isolate, module, "memfd_create", &pFmemfd_create, memfd_createSlow);
   SET_METHOD(isolate, module, "bind_fastcall", bind_fastcallSlow);
   SET_METHOD(isolate, module, "bind_slowcall", bind_slowcallSlow);
   SET_FAST_METHOD(isolate, module, "fastcall", &pFfastcall, fastcallSlow);
