@@ -730,7 +730,8 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
   Local<Module> module;
   bool ok = ScriptCompiler::CompileModule(isolate, &base).ToLocal(&module);
   if (!ok) {
-    printf("Error compiling module!\n");
+    String::Utf8Value path(args.GetIsolate(), args[1]);
+    fprintf(stderr, "Error compiling %s\n", *path);
     if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
       try_catch.ReThrow();
     }
@@ -883,9 +884,12 @@ void lo::GetMeta(const FunctionCallbackInfo<Value> &args) {
     isExternal = buf->IsExternal();
     isDetachable = buf->IsDetachable();
   }
-  meta->Set(context, String::NewFromUtf8Literal(isolate, "isExternal", NewStringType::kInternalized), v8::Boolean::New(isolate, isExternal)).Check();
-  meta->Set(context, String::NewFromUtf8Literal(isolate, "isDetachable", NewStringType::kInternalized), v8::Boolean::New(isolate, isDetachable)).Check();
-  meta->Set(context, String::NewFromUtf8Literal(isolate, "isShared", NewStringType::kInternalized), v8::Boolean::New(isolate, isShared)).Check();
+  meta->Set(context, String::NewFromUtf8Literal(isolate, "isExternal", 
+    NewStringType::kInternalized), v8::Boolean::New(isolate, isExternal)).Check();
+  meta->Set(context, String::NewFromUtf8Literal(isolate, "isDetachable", 
+    NewStringType::kInternalized), v8::Boolean::New(isolate, isDetachable)).Check();
+  meta->Set(context, String::NewFromUtf8Literal(isolate, "isShared", 
+    NewStringType::kInternalized), v8::Boolean::New(isolate, isShared)).Check();
 }
 
 void lo::ReadMemory(const FunctionCallbackInfo<Value> &args) {
@@ -975,6 +979,7 @@ void lo::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
 }
 
+// todo - we should have latin1 methods 
 void lo::Utf8Decode(const FunctionCallbackInfo<Value> &args) {
   int size = -1;
   if (args.Length() > 1) {
@@ -1086,7 +1091,7 @@ void lo::RunScript(const FunctionCallbackInfo<Value> &args) {
 }
 
 void lo::Os(const FunctionCallbackInfo<Value> &args) {
-#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+#ifdef __MACH__
   args.GetReturnValue().Set(String::NewFromOneByte(args.GetIsolate(), 
     (uint8_t*)"mac", NewStringType::kInternalized).ToLocalChecked());
 #elif defined(_WIN64)
@@ -1099,7 +1104,7 @@ void lo::Os(const FunctionCallbackInfo<Value> &args) {
 }
 
 void lo::Arch(const FunctionCallbackInfo<Value> &args) {
-#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+#ifdef __MACH__
   #ifdef __x86_64__
   args.GetReturnValue().Set(String::NewFromOneByte(args.GetIsolate(), 
     (uint8_t*)"x64", NewStringType::kInternalized).ToLocalChecked());
@@ -1133,42 +1138,43 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, version, "v8", String::NewFromUtf8(isolate, 
     V8::GetVersion()).ToLocalChecked());
   SET_MODULE(isolate, target, "version", version);
-  SET_METHOD(isolate, target, "nextTick", NextTick);
   SET_METHOD(isolate, target, "print", Print);
-  SET_METHOD(isolate, target, "registerCallback", RegisterCallback);
+  SET_FAST_METHOD(isolate, target, "hrtime", &pFhrtime, HRTime);
+  SET_METHOD(isolate, target, "nextTick", NextTick);
   SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);
-  SET_METHOD(isolate, target, "builtin", Builtin);
-  SET_METHOD(isolate, target, "library", Library);
-  SET_METHOD(isolate, target, "builtins", Builtins);
-  SET_METHOD(isolate, target, "libraries", Libraries);
-  SET_METHOD(isolate, target, "setModuleCallbacks", SetModuleCallbacks);
-  SET_METHOD(isolate, target, "loadModule", LoadModule);
-  SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
-  SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
-  SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
-  SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
-  SET_METHOD(isolate, target, "unwrapMemory", UnWrapMemory);
-  SET_METHOD(isolate, target, "setFlags", SetFlags);
-  SET_METHOD(isolate, target, "getMeta", GetMeta);
-  SET_METHOD(isolate, target, "runScript", RunScript);
-
   SET_METHOD(isolate, target, "arch", Arch);
   SET_METHOD(isolate, target, "os", Os);
   SET_METHOD(isolate, target, "exit", Exit);
-
-// arch, os
-
   SET_FAST_PROP(isolate, target, "errno", &pFerrnoget, GetErrno, &pFerrnoset, 
     SetErrno);
-  SET_FAST_METHOD(isolate, target, "hrtime", &pFhrtime, HRTime);
-  SET_FAST_METHOD(isolate, target, "getAddress", &pFgetaddress, GetAddress);
+
+  SET_METHOD(isolate, target, "builtins", Builtins);
+  SET_METHOD(isolate, target, "builtin", Builtin);
+  SET_METHOD(isolate, target, "libraries", Libraries);
+  SET_METHOD(isolate, target, "library", Library);
+  SET_METHOD(isolate, target, "setModuleCallbacks", SetModuleCallbacks);
+  SET_METHOD(isolate, target, "loadModule", LoadModule);
+  SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
+
+  SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
+  SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
   SET_FAST_METHOD(isolate, target, "utf8Length", &pFutf8length, Utf8Length);
   SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto, 
     Utf8EncodeInto);
-  SET_FAST_METHOD(isolate, target, "utf8EncodeIntoAtOffset", &pFutf8encodeintoatoffset, 
-    Utf8EncodeIntoAtOffset);
+  SET_FAST_METHOD(isolate, target, "utf8EncodeIntoAtOffset", 
+    &pFutf8encodeintoatoffset, Utf8EncodeIntoAtOffset);
+
+  SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
+  SET_METHOD(isolate, target, "unwrapMemory", UnWrapMemory);
+  SET_FAST_METHOD(isolate, target, "getAddress", &pFgetaddress, GetAddress);
   SET_FAST_METHOD(isolate, target, "readMemory", &pFreadmemory, ReadMemory);
-  SET_FAST_METHOD(isolate, target, "readMemoryAtOffset", &pFreadmemoryatoffset, ReadMemoryAtOffset);
+  SET_FAST_METHOD(isolate, target, "readMemoryAtOffset", &pFreadmemoryatoffset, 
+    ReadMemoryAtOffset);
+
+  SET_METHOD(isolate, target, "setFlags", SetFlags);
+  SET_METHOD(isolate, target, "getMeta", GetMeta);
+  SET_METHOD(isolate, target, "runScript", RunScript);
+  SET_METHOD(isolate, target, "registerCallback", RegisterCallback);
 }
 
 // C/FFI api for managing isolates

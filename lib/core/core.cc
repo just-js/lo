@@ -8,6 +8,10 @@
 #include <dlfcn.h>
 #include <sys/mman.h>
 #include <stdio.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <sys/resource.h>
+#include <sys/times.h>
 #include <lo.h>
 
 namespace lo {
@@ -181,13 +185,15 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
       case FastTypes::buffer:
         {
           Local<Uint8Array> u8 = args[i].As<Uint8Array>();
-          state->args[r++] = (uint64_t)((uint8_t*)u8->Buffer()->Data() + u8->ByteOffset());
+          state->args[r++] = (uint64_t)((uint8_t*)u8->Buffer()->Data() + 
+            u8->ByteOffset());
         }
         break;
       case FastTypes::u32array:
         {
           Local<Uint32Array> u32 = args[i].As<Uint32Array>();
-          state->args[r++] = (uint64_t)((uint8_t*)u32->Buffer()->Data() + u32->ByteOffset());
+          state->args[r++] = (uint64_t)((uint8_t*)u32->Buffer()->Data() + 
+            u32->ByteOffset());
         }
         break;
       case FastTypes::function:
@@ -214,7 +220,8 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
     case FastTypes::u64:
     case FastTypes::i64:
     case FastTypes::pointer:
-      uint64_t* res = (uint64_t*)args[args.Length() - 1].As<Uint32Array>()->Buffer()->Data();
+      uint64_t* res = (uint64_t*)args[args.Length() - 1]
+        .As<Uint32Array>()->Buffer()->Data();
       *res = state->args[0];
       break;
   }
@@ -306,26 +313,6 @@ v8::CTypeInfo rcdlclose = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infodlclose = v8::CFunctionInfo(rcdlclose, 2, cargsdlclose);
 v8::CFunction pFdlclose = v8::CFunction((const void*)&dlcloseFast, &infodlclose);
 
-int32_t closeFast(void* p, int32_t p0);
-v8::CTypeInfo cargsclose[2] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-};
-v8::CTypeInfo rcclose = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoclose = v8::CFunctionInfo(rcclose, 2, cargsclose);
-v8::CFunction pFclose = v8::CFunction((const void*)&closeFast, &infoclose);
-
-int32_t openFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2);
-v8::CTypeInfo cargsopen[4] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-};
-v8::CTypeInfo rcopen = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoopen = v8::CFunctionInfo(rcopen, 4, cargsopen);
-v8::CFunction pFopen = v8::CFunction((const void*)&openFast, &infoopen);
-
 int32_t readFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2);
 v8::CTypeInfo cargsread[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -336,6 +323,37 @@ v8::CTypeInfo cargsread[4] = {
 v8::CTypeInfo rcread = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo inforead = v8::CFunctionInfo(rcread, 4, cargsread);
 v8::CFunction pFread = v8::CFunction((const void*)&readFast, &inforead);
+
+int32_t writeFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2);
+v8::CTypeInfo cargswrite[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcwrite = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infowrite = v8::CFunctionInfo(rcwrite, 4, cargswrite);
+v8::CFunction pFwrite = v8::CFunction((const void*)&writeFast, &infowrite);
+
+int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1);
+v8::CTypeInfo cargswrite_string[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcwrite_string = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infowrite_string = v8::CFunctionInfo(rcwrite_string, 4, cargswrite_string);
+v8::CFunction pFwrite_string = v8::CFunction((const void*)&write_stringFast, &infowrite_string);
+
+int32_t closeFast(void* p, int32_t p0);
+v8::CTypeInfo cargsclose[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcclose = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoclose = v8::CFunctionInfo(rcclose, 2, cargsclose);
+v8::CFunction pFclose = v8::CFunction((const void*)&closeFast, &infoclose);
 
 int32_t preadFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2, uint32_t p3);
 v8::CTypeInfo cargspread[5] = {
@@ -360,39 +378,6 @@ v8::CTypeInfo rclseek = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
 v8::CFunctionInfo infolseek = v8::CFunctionInfo(rclseek, 4, cargslseek);
 v8::CFunction pFlseek = v8::CFunction((const void*)&lseekFast, &infolseek);
 
-int32_t writeFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2);
-v8::CTypeInfo cargswrite[4] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-};
-v8::CTypeInfo rcwrite = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infowrite = v8::CFunctionInfo(rcwrite, 4, cargswrite);
-v8::CFunction pFwrite = v8::CFunction((const void*)&writeFast, &infowrite);
-
-void getcwdFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* const p_ret);
-v8::CTypeInfo cargsgetcwd[4] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
-};
-v8::CTypeInfo rcgetcwd = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-v8::CFunctionInfo infogetcwd = v8::CFunctionInfo(rcgetcwd, 4, cargsgetcwd);
-v8::CFunction pFgetcwd = v8::CFunction((const void*)&getcwdFast, &infogetcwd);
-
-int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1);
-v8::CTypeInfo cargswrite_string[4] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-};
-v8::CTypeInfo rcwrite_string = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infowrite_string = v8::CFunctionInfo(rcwrite_string, 4, cargswrite_string);
-v8::CFunction pFwrite_string = v8::CFunction((const void*)&write_stringFast, &infowrite_string);
-
 int32_t fstatFast(void* p, int32_t p0, struct FastApiTypedArray* const p1);
 v8::CTypeInfo cargsfstat[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -402,6 +387,38 @@ v8::CTypeInfo cargsfstat[3] = {
 v8::CTypeInfo rcfstat = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infofstat = v8::CFunctionInfo(rcfstat, 3, cargsfstat);
 v8::CFunction pFfstat = v8::CFunction((const void*)&fstatFast, &infofstat);
+
+int32_t fcntlFast(void* p, int32_t p0, int32_t p1, int32_t p2);
+v8::CTypeInfo cargsfcntl[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcfcntl = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infofcntl = v8::CFunctionInfo(rcfcntl, 4, cargsfcntl);
+v8::CFunction pFfcntl = v8::CFunction((const void*)&fcntlFast, &infofcntl);
+
+int32_t accessFast(void* p, struct FastOneByteString* const p0, int32_t p1);
+v8::CTypeInfo cargsaccess[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcaccess = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoaccess = v8::CFunctionInfo(rcaccess, 3, cargsaccess);
+v8::CFunction pFaccess = v8::CFunction((const void*)&accessFast, &infoaccess);
+
+int32_t openFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2);
+v8::CTypeInfo cargsopen[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcopen = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoopen = v8::CFunctionInfo(rcopen, 4, cargsopen);
+v8::CFunction pFopen = v8::CFunction((const void*)&openFast, &infoopen);
 
 int32_t unlinkFast(void* p, struct FastOneByteString* const p0);
 v8::CTypeInfo cargsunlink[2] = {
@@ -421,6 +438,17 @@ v8::CTypeInfo cargsreaddir[3] = {
 v8::CTypeInfo rcreaddir = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo inforeaddir = v8::CFunctionInfo(rcreaddir, 3, cargsreaddir);
 v8::CFunction pFreaddir = v8::CFunction((const void*)&readdirFast, &inforeaddir);
+
+uint32_t readlinkFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1, uint32_t p2);
+v8::CTypeInfo cargsreadlink[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcreadlink = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+v8::CFunctionInfo inforeadlink = v8::CFunctionInfo(rcreadlink, 4, cargsreadlink);
+v8::CFunction pFreadlink = v8::CFunction((const void*)&readlinkFast, &inforeadlink);
 
 void opendirFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargsopendir[3] = {
@@ -442,6 +470,15 @@ v8::CTypeInfo rcmkdir = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infomkdir = v8::CFunctionInfo(rcmkdir, 3, cargsmkdir);
 v8::CFunction pFmkdir = v8::CFunction((const void*)&mkdirFast, &infomkdir);
 
+int32_t rmdirFast(void* p, struct FastOneByteString* const p0);
+v8::CTypeInfo cargsrmdir[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+};
+v8::CTypeInfo rcrmdir = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo informdir = v8::CFunctionInfo(rcrmdir, 2, cargsrmdir);
+v8::CFunction pFrmdir = v8::CFunction((const void*)&rmdirFast, &informdir);
+
 int32_t closedirFast(void* p, void* p0);
 v8::CTypeInfo cargsclosedir[2] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -451,16 +488,23 @@ v8::CTypeInfo rcclosedir = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoclosedir = v8::CFunctionInfo(rcclosedir, 2, cargsclosedir);
 v8::CFunction pFclosedir = v8::CFunction((const void*)&closedirFast, &infoclosedir);
 
-int32_t fcntlFast(void* p, int32_t p0, int32_t p1, int32_t p2);
-v8::CTypeInfo cargsfcntl[4] = {
+int32_t chdirFast(void* p, struct FastOneByteString* const p0);
+v8::CTypeInfo cargschdir[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+};
+v8::CTypeInfo rcchdir = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infochdir = v8::CFunctionInfo(rcchdir, 2, cargschdir);
+v8::CFunction pFchdir = v8::CFunction((const void*)&chdirFast, &infochdir);
+
+int32_t fchdirFast(void* p, int32_t p0);
+v8::CTypeInfo cargsfchdir[2] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
 };
-v8::CTypeInfo rcfcntl = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infofcntl = v8::CFunctionInfo(rcfcntl, 4, cargsfcntl);
-v8::CFunction pFfcntl = v8::CFunction((const void*)&fcntlFast, &infofcntl);
+v8::CTypeInfo rcfchdir = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infofchdir = v8::CFunctionInfo(rcfchdir, 2, cargsfchdir);
+v8::CFunction pFfchdir = v8::CFunction((const void*)&fchdirFast, &infofchdir);
 
 int32_t mprotectFast(void* p, void* p0, uint32_t p1, int32_t p2);
 v8::CTypeInfo cargsmprotect[4] = {
@@ -512,6 +556,26 @@ v8::CTypeInfo rcmmap = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infommap = v8::CFunctionInfo(rcmmap, 8, cargsmmap);
 v8::CFunction pFmmap = v8::CFunction((const void*)&mmapFast, &infommap);
 
+void callocFast(void* p, uint32_t p0, uint32_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargscalloc[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rccalloc = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infocalloc = v8::CFunctionInfo(rccalloc, 4, cargscalloc);
+v8::CFunction pFcalloc = v8::CFunction((const void*)&callocFast, &infocalloc);
+
+void freeFast(void* p, void* p0);
+v8::CTypeInfo cargsfree[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcfree = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infofree = v8::CFunctionInfo(rcfree, 2, cargsfree);
+v8::CFunction pFfree = v8::CFunction((const void*)&freeFast, &infofree);
+
 void fastcallFast(void* p, void* p0);
 v8::CTypeInfo cargsfastcall[2] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -531,6 +595,53 @@ v8::CTypeInfo rcgetenv = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infogetenv = v8::CFunctionInfo(rcgetenv, 3, cargsgetenv);
 v8::CFunction pFgetenv = v8::CFunction((const void*)&getenvFast, &infogetenv);
 
+int32_t setenvFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1, int32_t p2);
+v8::CTypeInfo cargssetenv[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcsetenv = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infosetenv = v8::CFunctionInfo(rcsetenv, 4, cargssetenv);
+v8::CFunction pFsetenv = v8::CFunction((const void*)&setenvFast, &infosetenv);
+
+int32_t unsetenvFast(void* p, struct FastOneByteString* const p0);
+v8::CTypeInfo cargsunsetenv[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+};
+v8::CTypeInfo rcunsetenv = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infounsetenv = v8::CFunctionInfo(rcunsetenv, 2, cargsunsetenv);
+v8::CFunction pFunsetenv = v8::CFunction((const void*)&unsetenvFast, &infounsetenv);
+
+void sleepFast(void* p, int32_t p0);
+v8::CTypeInfo cargssleep[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcsleep = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infosleep = v8::CFunctionInfo(rcsleep, 2, cargssleep);
+v8::CFunction pFsleep = v8::CFunction((const void*)&sleepFast, &infosleep);
+
+int32_t usleepFast(void* p, uint32_t p0);
+v8::CTypeInfo cargsusleep[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcusleep = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infousleep = v8::CFunctionInfo(rcusleep, 2, cargsusleep);
+v8::CFunction pFusleep = v8::CFunction((const void*)&usleepFast, &infousleep);
+
+int32_t dupFast(void* p, int32_t p0);
+v8::CTypeInfo cargsdup[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcdup = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infodup = v8::CFunctionInfo(rcdup, 2, cargsdup);
+v8::CFunction pFdup = v8::CFunction((const void*)&dupFast, &infodup);
+
 int32_t dup2Fast(void* p, int32_t p0, int32_t p1);
 v8::CTypeInfo cargsdup2[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -540,6 +651,127 @@ v8::CTypeInfo cargsdup2[3] = {
 v8::CTypeInfo rcdup2 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infodup2 = v8::CFunctionInfo(rcdup2, 3, cargsdup2);
 v8::CFunction pFdup2 = v8::CFunction((const void*)&dup2Fast, &infodup2);
+
+void getcwdFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsgetcwd[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcgetcwd = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infogetcwd = v8::CFunctionInfo(rcgetcwd, 4, cargsgetcwd);
+v8::CFunction pFgetcwd = v8::CFunction((const void*)&getcwdFast, &infogetcwd);
+
+int32_t getpidFast(void* p);
+v8::CTypeInfo cargsgetpid[1] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+};
+v8::CTypeInfo rcgetpid = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infogetpid = v8::CFunctionInfo(rcgetpid, 1, cargsgetpid);
+v8::CFunction pFgetpid = v8::CFunction((const void*)&getpidFast, &infogetpid);
+
+int32_t forkFast(void* p);
+v8::CTypeInfo cargsfork[1] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+};
+v8::CTypeInfo rcfork = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infofork = v8::CFunctionInfo(rcfork, 1, cargsfork);
+v8::CFunction pFfork = v8::CFunction((const void*)&forkFast, &infofork);
+
+int32_t killFast(void* p, int32_t p0, int32_t p1);
+v8::CTypeInfo cargskill[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rckill = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infokill = v8::CFunctionInfo(rckill, 3, cargskill);
+v8::CFunction pFkill = v8::CFunction((const void*)&killFast, &infokill);
+
+int32_t waitpidFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2);
+v8::CTypeInfo cargswaitpid[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcwaitpid = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infowaitpid = v8::CFunctionInfo(rcwaitpid, 4, cargswaitpid);
+v8::CFunction pFwaitpid = v8::CFunction((const void*)&waitpidFast, &infowaitpid);
+
+int32_t execvpFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1);
+v8::CTypeInfo cargsexecvp[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcexecvp = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoexecvp = v8::CFunctionInfo(rcexecvp, 3, cargsexecvp);
+v8::CFunction pFexecvp = v8::CFunction((const void*)&execvpFast, &infoexecvp);
+
+int32_t getrusageFast(void* p, int32_t p0, struct FastApiTypedArray* const p1);
+v8::CTypeInfo cargsgetrusage[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcgetrusage = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infogetrusage = v8::CFunctionInfo(rcgetrusage, 3, cargsgetrusage);
+v8::CFunction pFgetrusage = v8::CFunction((const void*)&getrusageFast, &infogetrusage);
+
+int32_t timesFast(void* p, struct FastApiTypedArray* const p0);
+v8::CTypeInfo cargstimes[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rctimes = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infotimes = v8::CFunctionInfo(rctimes, 2, cargstimes);
+v8::CFunction pFtimes = v8::CFunction((const void*)&timesFast, &infotimes);
+
+void isolate_context_createFast(void* p, int32_t p0, void* p1, struct FastOneByteString* const p2, uint32_t p3, struct FastOneByteString* const p4, uint32_t p5, void* p6, int32_t p7, int32_t p8, uint64_t p9, struct FastOneByteString* const p10, struct FastOneByteString* const p11, int32_t p12, int32_t p13, void* p14, struct FastApiTypedArray* const p15);
+v8::CTypeInfo cargsisolate_context_create[17] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcisolate_context_create = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoisolate_context_create = v8::CFunctionInfo(rcisolate_context_create, 17, cargsisolate_context_create);
+v8::CFunction pFisolate_context_create = v8::CFunction((const void*)&isolate_context_createFast, &infoisolate_context_create);
+
+void isolate_context_destroyFast(void* p, struct FastApiTypedArray* const p0);
+v8::CTypeInfo cargsisolate_context_destroy[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcisolate_context_destroy = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoisolate_context_destroy = v8::CFunctionInfo(rcisolate_context_destroy, 2, cargsisolate_context_destroy);
+v8::CFunction pFisolate_context_destroy = v8::CFunction((const void*)&isolate_context_destroyFast, &infoisolate_context_destroy);
+
+int32_t isolate_context_sizeFast(void* p);
+v8::CTypeInfo cargsisolate_context_size[1] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+};
+v8::CTypeInfo rcisolate_context_size = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoisolate_context_size = v8::CFunctionInfo(rcisolate_context_size, 1, cargsisolate_context_size);
+v8::CFunction pFisolate_context_size = v8::CFunction((const void*)&isolate_context_sizeFast, &infoisolate_context_size);
 
 
 
@@ -586,32 +818,6 @@ int32_t dlcloseFast(void* p, void* p0) {
   void* v0 = reinterpret_cast<void*>(p0);
   return dlclose(v0);
 }
-void closeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  int32_t rc = close(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
-}
-
-int32_t closeFast(void* p, int32_t p0) {
-  int32_t v0 = p0;
-  return close(v0);
-}
-void openSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  String::Utf8Value v0(isolate, args[0]);
-  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
-  int32_t rc = open(*v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
-}
-
-int32_t openFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2) {
-  struct FastOneByteString* const v0 = p0;
-  int32_t v1 = p1;
-  int32_t v2 = p2;
-  return open(v0->data, v1, v2);
-}
 void readSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -628,6 +834,49 @@ int32_t readFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_
   void* v1 = reinterpret_cast<void*>(p1->data);
   int32_t v2 = p2;
   return read(v0, v1, v2);
+}
+void writeSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  void* v1 = reinterpret_cast<void*>(ptr1);
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = write(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t writeFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2) {
+  int32_t v0 = p0;
+  void* v1 = reinterpret_cast<void*>(p1->data);
+  int32_t v2 = p2;
+  return write(v0, v1, v2);
+}
+void write_stringSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  String::Utf8Value v1(isolate, args[1]);
+  int32_t v2 = v1.length();
+  int32_t rc = write(v0, *v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1) {
+  int32_t v0 = p0;
+  struct FastOneByteString* const v1 = p1;
+  int32_t v2 = p1->length;
+  return write(v0, v1->data, v2);
+}
+void closeSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t rc = close(v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t closeFast(void* p, int32_t p0) {
+  int32_t v0 = p0;
+  return close(v0);
 }
 void preadSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -663,53 +912,6 @@ uint32_t lseekFast(void* p, int32_t p0, uint32_t p1, int32_t p2) {
   int32_t v2 = p2;
   return lseek(v0, v1, v2);
 }
-void writeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
-  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
-  void* v1 = reinterpret_cast<void*>(ptr1);
-  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
-  int32_t rc = write(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
-}
-
-int32_t writeFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2) {
-  int32_t v0 = p0;
-  void* v1 = reinterpret_cast<void*>(p1->data);
-  int32_t v2 = p2;
-  return write(v0, v1, v2);
-}
-void getcwdSlow(const FunctionCallbackInfo<Value> &args) {
-  char* v0 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
-  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  void* rc = getcwd(v0, v1);
-  Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
-  ((void**)ab->Data())[0] = rc;
-}
-
-void getcwdFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* const p_ret) {
-  char* v0 = reinterpret_cast<char*>(p0);
-  int32_t v1 = p1;
-  void* r = getcwd(v0, v1);
-  ((void**)p_ret->data)[0] = r;
-
-}
-void write_stringSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  String::Utf8Value v1(isolate, args[1]);
-  int32_t v2 = v1.length();
-  int32_t rc = write(v0, *v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
-}
-
-int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1) {
-  int32_t v0 = p0;
-  struct FastOneByteString* const v1 = p1;
-  int32_t v2 = p1->length;
-  return write(v0, v1->data, v2);
-}
 void fstatSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -724,6 +926,49 @@ int32_t fstatFast(void* p, int32_t p0, struct FastApiTypedArray* const p1) {
   int32_t v0 = p0;
   struct stat * v1 = reinterpret_cast<struct stat *>(p1->data);
   return fstat(v0, v1);
+}
+void fcntlSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = fcntl(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t fcntlFast(void* p, int32_t p0, int32_t p1, int32_t p2) {
+  int32_t v0 = p0;
+  int32_t v1 = p1;
+  int32_t v2 = p2;
+  return fcntl(v0, v1, v2);
+}
+void accessSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t rc = access(*v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t accessFast(void* p, struct FastOneByteString* const p0, int32_t p1) {
+  struct FastOneByteString* const v0 = p0;
+  int32_t v1 = p1;
+  return access(v0->data, v1);
+}
+void openSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = open(*v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t openFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2) {
+  struct FastOneByteString* const v0 = p0;
+  int32_t v1 = p1;
+  int32_t v2 = p2;
+  return open(v0->data, v1, v2);
 }
 void unlinkSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -748,6 +993,23 @@ void readdirFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
   dirent* r = readdir(v0);
   ((dirent**)p_ret->data)[0] = r;
 
+}
+void readlinkSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  char* v1 = reinterpret_cast<char*>(ptr1);
+  uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  uint32_t rc = readlink(*v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+uint32_t readlinkFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1, uint32_t p2) {
+  struct FastOneByteString* const v0 = p0;
+  char* v1 = reinterpret_cast<char*>(p1->data);
+  uint32_t v2 = p2;
+  return readlink(v0->data, v1, v2);
 }
 void opendirSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -776,6 +1038,17 @@ int32_t mkdirFast(void* p, struct FastOneByteString* const p0, uint32_t p1) {
   uint32_t v1 = p1;
   return mkdir(v0->data, v1);
 }
+void rmdirSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  int32_t rc = rmdir(*v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t rmdirFast(void* p, struct FastOneByteString* const p0) {
+  struct FastOneByteString* const v0 = p0;
+  return rmdir(v0->data);
+}
 void closedirSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   DIR* v0 = reinterpret_cast<DIR*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -787,20 +1060,27 @@ int32_t closedirFast(void* p, void* p0) {
   DIR* v0 = reinterpret_cast<DIR*>(p0);
   return closedir(v0);
 }
-void fcntlSlow(const FunctionCallbackInfo<Value> &args) {
+void chdirSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
-  int32_t rc = fcntl(v0, v1, v2);
+  String::Utf8Value v0(isolate, args[0]);
+  int32_t rc = chdir(*v0);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t fcntlFast(void* p, int32_t p0, int32_t p1, int32_t p2) {
+int32_t chdirFast(void* p, struct FastOneByteString* const p0) {
+  struct FastOneByteString* const v0 = p0;
+  return chdir(v0->data);
+}
+void fchdirSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t rc = fchdir(v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t fchdirFast(void* p, int32_t p0) {
   int32_t v0 = p0;
-  int32_t v1 = p1;
-  int32_t v2 = p2;
-  return fcntl(v0, v1, v2);
+  return fchdir(v0);
 }
 void mprotectSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -874,6 +1154,30 @@ void mmapFast(void* p, void* p0, uint32_t p1, int32_t p2, int32_t p3, int32_t p4
   ((void**)p_ret->data)[0] = r;
 
 }
+void callocSlow(const FunctionCallbackInfo<Value> &args) {
+  uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  void* rc = calloc(v0, v1);
+  Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
+  ((void**)ab->Data())[0] = rc;
+}
+
+void callocFast(void* p, uint32_t p0, uint32_t p1, struct FastApiTypedArray* const p_ret) {
+  uint32_t v0 = p0;
+  uint32_t v1 = p1;
+  void* r = calloc(v0, v1);
+  ((void**)p_ret->data)[0] = r;
+
+}
+void freeSlow(const FunctionCallbackInfo<Value> &args) {
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  free(v0);
+}
+
+void freeFast(void* p, void* p0) {
+  void* v0 = reinterpret_cast<void*>(p0);
+  free(v0);
+}
 void fastcallSlow(const FunctionCallbackInfo<Value> &args) {
   struct fastcall* v0 = reinterpret_cast<struct fastcall*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   lo_fastcall(v0);
@@ -897,6 +1201,63 @@ void getenvFast(void* p, struct FastOneByteString* const p0, struct FastApiTyped
   ((char**)p_ret->data)[0] = r;
 
 }
+void setenvSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  String::Utf8Value v1(isolate, args[1]);
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = setenv(*v0, *v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t setenvFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1, int32_t p2) {
+  struct FastOneByteString* const v0 = p0;
+  struct FastOneByteString* const v1 = p1;
+  int32_t v2 = p2;
+  return setenv(v0->data, v1->data, v2);
+}
+void unsetenvSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  int32_t rc = unsetenv(*v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t unsetenvFast(void* p, struct FastOneByteString* const p0) {
+  struct FastOneByteString* const v0 = p0;
+  return unsetenv(v0->data);
+}
+void sleepSlow(const FunctionCallbackInfo<Value> &args) {
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  sleep(v0);
+}
+
+void sleepFast(void* p, int32_t p0) {
+  int32_t v0 = p0;
+  sleep(v0);
+}
+void usleepSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t rc = usleep(v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t usleepFast(void* p, uint32_t p0) {
+  uint32_t v0 = p0;
+  return usleep(v0);
+}
+void dupSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t rc = dup(v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t dupFast(void* p, int32_t p0) {
+  int32_t v0 = p0;
+  return dup(v0);
+}
 void dup2Slow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -910,36 +1271,266 @@ int32_t dup2Fast(void* p, int32_t p0, int32_t p1) {
   int32_t v1 = p1;
   return dup2(v0, v1);
 }
+void getcwdSlow(const FunctionCallbackInfo<Value> &args) {
+  char* v0 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  void* rc = getcwd(v0, v1);
+  Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
+  ((void**)ab->Data())[0] = rc;
+}
+
+void getcwdFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* const p_ret) {
+  char* v0 = reinterpret_cast<char*>(p0);
+  int32_t v1 = p1;
+  void* r = getcwd(v0, v1);
+  ((void**)p_ret->data)[0] = r;
+
+}
+void getpidSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+
+  int32_t rc = getpid();
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t getpidFast(void* p) {
+
+  return getpid();
+}
+void forkSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+
+  int32_t rc = fork();
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t forkFast(void* p) {
+
+  return fork();
+}
+void killSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t rc = kill(v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t killFast(void* p, int32_t p0, int32_t p1) {
+  int32_t v0 = p0;
+  int32_t v1 = p1;
+  return kill(v0, v1);
+}
+void waitpidSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  int* v1 = reinterpret_cast<int*>(ptr1);
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = waitpid(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t waitpidFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2) {
+  int32_t v0 = p0;
+  int* v1 = reinterpret_cast<int*>(p1->data);
+  int32_t v2 = p2;
+  return waitpid(v0, v1, v2);
+}
+void execvpSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  char* const* v1 = reinterpret_cast<char* const*>(ptr1);
+  int32_t rc = execvp(*v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t execvpFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1) {
+  struct FastOneByteString* const v0 = p0;
+  char* const* v1 = reinterpret_cast<char* const*>(p1->data);
+  return execvp(v0->data, v1);
+}
+void getrusageSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  struct rusage* v1 = reinterpret_cast<struct rusage*>(ptr1);
+  int32_t rc = getrusage(v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t getrusageFast(void* p, int32_t p0, struct FastApiTypedArray* const p1) {
+  int32_t v0 = p0;
+  struct rusage* v1 = reinterpret_cast<struct rusage*>(p1->data);
+  return getrusage(v0, v1);
+}
+void timesSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
+  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
+  struct tms* v0 = reinterpret_cast<struct tms*>(ptr0);
+  int32_t rc = times(v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t timesFast(void* p, struct FastApiTypedArray* const p0) {
+  struct tms* v0 = reinterpret_cast<struct tms*>(p0->data);
+  return times(v0);
+}
+void isolate_createSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  Local<Uint32Array> u321 = args[1].As<Uint32Array>();
+  uint8_t* ptr1 = (uint8_t*)u321->Buffer()->Data() + u321->ByteOffset();
+  char** v1 = reinterpret_cast<char**>(ptr1);
+  String::Utf8Value v2(isolate, args[2]);
+  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  String::Utf8Value v4(isolate, args[4]);
+  uint32_t v5 = Local<Integer>::Cast(args[5])->Value();
+  Local<Uint8Array> u86 = args[6].As<Uint8Array>();
+  uint8_t* ptr6 = (uint8_t*)u86->Buffer()->Data() + u86->ByteOffset();
+  char* v6 = reinterpret_cast<char*>(ptr6);
+  int32_t v7 = Local<Integer>::Cast(args[7])->Value();
+  int32_t v8 = Local<Integer>::Cast(args[8])->Value();
+  uint64_t v9 = Local<Integer>::Cast(args[9])->Value();
+  String::Utf8Value v10(isolate, args[10]);
+  String::Utf8Value v11(isolate, args[11]);
+  int32_t v12 = Local<Integer>::Cast(args[12])->Value();
+  int32_t v13 = Local<Integer>::Cast(args[13])->Value();
+  void* v14 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[14])->Value());
+  int32_t rc = lo_create_isolate(v0, v1, *v2, v3, *v4, v5, v6, v7, v8, v9, *v10, *v11, v12, v13, v14);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+void isolate_context_createSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  char** v1 = reinterpret_cast<char**>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  String::Utf8Value v2(isolate, args[2]);
+  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  String::Utf8Value v4(isolate, args[4]);
+  uint32_t v5 = Local<Integer>::Cast(args[5])->Value();
+  char* v6 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[6])->Value());
+  int32_t v7 = Local<Integer>::Cast(args[7])->Value();
+  int32_t v8 = Local<Integer>::Cast(args[8])->Value();
+  uint64_t v9 = Local<Integer>::Cast(args[9])->Value();
+  String::Utf8Value v10(isolate, args[10]);
+  String::Utf8Value v11(isolate, args[11]);
+  int32_t v12 = Local<Integer>::Cast(args[12])->Value();
+  int32_t v13 = Local<Integer>::Cast(args[13])->Value();
+  void* v14 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[14])->Value());
+  Local<Uint8Array> u815 = args[15].As<Uint8Array>();
+  uint8_t* ptr15 = (uint8_t*)u815->Buffer()->Data() + u815->ByteOffset();
+  struct isolate_context* v15 = reinterpret_cast<struct isolate_context*>(ptr15);
+  lo_create_isolate_context(v0, v1, *v2, v3, *v4, v5, v6, v7, v8, v9, *v10, *v11, v12, v13, v14, v15);
+}
+
+void isolate_context_createFast(void* p, int32_t p0, void* p1, struct FastOneByteString* const p2, uint32_t p3, struct FastOneByteString* const p4, uint32_t p5, void* p6, int32_t p7, int32_t p8, uint64_t p9, struct FastOneByteString* const p10, struct FastOneByteString* const p11, int32_t p12, int32_t p13, void* p14, struct FastApiTypedArray* const p15) {
+  int32_t v0 = p0;
+  char** v1 = reinterpret_cast<char**>(p1);
+  struct FastOneByteString* const v2 = p2;
+  uint32_t v3 = p3;
+  struct FastOneByteString* const v4 = p4;
+  uint32_t v5 = p5;
+  char* v6 = reinterpret_cast<char*>(p6);
+  int32_t v7 = p7;
+  int32_t v8 = p8;
+  uint64_t v9 = p9;
+  struct FastOneByteString* const v10 = p10;
+  struct FastOneByteString* const v11 = p11;
+  int32_t v12 = p12;
+  int32_t v13 = p13;
+  void* v14 = reinterpret_cast<void*>(p14);
+  struct isolate_context* v15 = reinterpret_cast<struct isolate_context*>(p15->data);
+  lo_create_isolate_context(v0, v1, v2->data, v3, v4->data, v5, v6, v7, v8, v9, v10->data, v11->data, v12, v13, v14, v15);
+}
+void isolate_context_destroySlow(const FunctionCallbackInfo<Value> &args) {
+  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
+  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
+  struct isolate_context* v0 = reinterpret_cast<struct isolate_context*>(ptr0);
+  lo_destroy_isolate_context(v0);
+}
+
+void isolate_context_destroyFast(void* p, struct FastApiTypedArray* const p0) {
+  struct isolate_context* v0 = reinterpret_cast<struct isolate_context*>(p0->data);
+  lo_destroy_isolate_context(v0);
+}
+void isolate_context_sizeSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+
+  int32_t rc = lo_context_size();
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t isolate_context_sizeFast(void* p) {
+
+  return lo_context_size();
+}
+void isolate_startSlow(const FunctionCallbackInfo<Value> &args) {
+  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
+  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
+  void* v0 = reinterpret_cast<void*>(ptr0);
+  lo_start_isolate(v0);
+}
+
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
   SET_FAST_METHOD(isolate, module, "dlopen", &pFdlopen, dlopenSlow);
   SET_FAST_METHOD(isolate, module, "dlsym", &pFdlsym, dlsymSlow);
   SET_FAST_METHOD(isolate, module, "dlclose", &pFdlclose, dlcloseSlow);
-  SET_FAST_METHOD(isolate, module, "close", &pFclose, closeSlow);
-  SET_FAST_METHOD(isolate, module, "open", &pFopen, openSlow);
   SET_FAST_METHOD(isolate, module, "read", &pFread, readSlow);
+  SET_FAST_METHOD(isolate, module, "write", &pFwrite, writeSlow);
+  SET_FAST_METHOD(isolate, module, "write_string", &pFwrite_string, write_stringSlow);
+  SET_FAST_METHOD(isolate, module, "close", &pFclose, closeSlow);
   SET_FAST_METHOD(isolate, module, "pread", &pFpread, preadSlow);
   SET_FAST_METHOD(isolate, module, "lseek", &pFlseek, lseekSlow);
-  SET_FAST_METHOD(isolate, module, "write", &pFwrite, writeSlow);
-  SET_FAST_METHOD(isolate, module, "getcwd", &pFgetcwd, getcwdSlow);
-  SET_FAST_METHOD(isolate, module, "write_string", &pFwrite_string, write_stringSlow);
   SET_FAST_METHOD(isolate, module, "fstat", &pFfstat, fstatSlow);
+  SET_FAST_METHOD(isolate, module, "fcntl", &pFfcntl, fcntlSlow);
+  SET_FAST_METHOD(isolate, module, "access", &pFaccess, accessSlow);
+  SET_FAST_METHOD(isolate, module, "open", &pFopen, openSlow);
   SET_FAST_METHOD(isolate, module, "unlink", &pFunlink, unlinkSlow);
   SET_FAST_METHOD(isolate, module, "readdir", &pFreaddir, readdirSlow);
+  SET_FAST_METHOD(isolate, module, "readlink", &pFreadlink, readlinkSlow);
   SET_FAST_METHOD(isolate, module, "opendir", &pFopendir, opendirSlow);
   SET_FAST_METHOD(isolate, module, "mkdir", &pFmkdir, mkdirSlow);
+  SET_FAST_METHOD(isolate, module, "rmdir", &pFrmdir, rmdirSlow);
   SET_FAST_METHOD(isolate, module, "closedir", &pFclosedir, closedirSlow);
-  SET_FAST_METHOD(isolate, module, "fcntl", &pFfcntl, fcntlSlow);
+  SET_FAST_METHOD(isolate, module, "chdir", &pFchdir, chdirSlow);
+  SET_FAST_METHOD(isolate, module, "fchdir", &pFfchdir, fchdirSlow);
   SET_FAST_METHOD(isolate, module, "mprotect", &pFmprotect, mprotectSlow);
   SET_FAST_METHOD(isolate, module, "memcpy", &pFmemcpy, memcpySlow);
   SET_FAST_METHOD(isolate, module, "memmove", &pFmemmove, memmoveSlow);
   SET_FAST_METHOD(isolate, module, "mmap", &pFmmap, mmapSlow);
+  SET_FAST_METHOD(isolate, module, "calloc", &pFcalloc, callocSlow);
+  SET_FAST_METHOD(isolate, module, "free", &pFfree, freeSlow);
   SET_METHOD(isolate, module, "bind_fastcall", bind_fastcallSlow);
   SET_METHOD(isolate, module, "bind_slowcall", bind_slowcallSlow);
   SET_FAST_METHOD(isolate, module, "fastcall", &pFfastcall, fastcallSlow);
   SET_FAST_METHOD(isolate, module, "getenv", &pFgetenv, getenvSlow);
+  SET_FAST_METHOD(isolate, module, "setenv", &pFsetenv, setenvSlow);
+  SET_FAST_METHOD(isolate, module, "unsetenv", &pFunsetenv, unsetenvSlow);
+  SET_FAST_METHOD(isolate, module, "sleep", &pFsleep, sleepSlow);
+  SET_FAST_METHOD(isolate, module, "usleep", &pFusleep, usleepSlow);
+  SET_FAST_METHOD(isolate, module, "dup", &pFdup, dupSlow);
   SET_FAST_METHOD(isolate, module, "dup2", &pFdup2, dup2Slow);
+  SET_FAST_METHOD(isolate, module, "getcwd", &pFgetcwd, getcwdSlow);
+  SET_FAST_METHOD(isolate, module, "getpid", &pFgetpid, getpidSlow);
+  SET_FAST_METHOD(isolate, module, "fork", &pFfork, forkSlow);
+  SET_FAST_METHOD(isolate, module, "kill", &pFkill, killSlow);
+  SET_FAST_METHOD(isolate, module, "waitpid", &pFwaitpid, waitpidSlow);
+  SET_FAST_METHOD(isolate, module, "execvp", &pFexecvp, execvpSlow);
+  SET_FAST_METHOD(isolate, module, "getrusage", &pFgetrusage, getrusageSlow);
+  SET_FAST_METHOD(isolate, module, "times", &pFtimes, timesSlow);
+  SET_METHOD(isolate, module, "isolate_create", isolate_createSlow);
+  SET_FAST_METHOD(isolate, module, "isolate_context_create", &pFisolate_context_create, isolate_context_createSlow);
+  SET_FAST_METHOD(isolate, module, "isolate_context_destroy", &pFisolate_context_destroy, isolate_context_destroySlow);
+  SET_FAST_METHOD(isolate, module, "isolate_context_size", &pFisolate_context_size, isolate_context_sizeSlow);
+  SET_METHOD(isolate, module, "isolate_start", isolate_startSlow);
 
   SET_VALUE(isolate, module, "S_IFBLK", Integer::New(isolate, S_IFBLK));
   SET_VALUE(isolate, module, "S_IFCHR", Integer::New(isolate, S_IFCHR));
@@ -960,6 +1551,17 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "STDIN", Integer::New(isolate, 0));
   SET_VALUE(isolate, module, "STDOUT", Integer::New(isolate, 1));
   SET_VALUE(isolate, module, "STDERR", Integer::New(isolate, 2));
+  SET_VALUE(isolate, module, "O_CLOEXEC", Integer::New(isolate, O_CLOEXEC));
+  SET_VALUE(isolate, module, "RUSAGE_SELF", Integer::New(isolate, RUSAGE_SELF));
+  SET_VALUE(isolate, module, "SEEK_SET", Integer::New(isolate, SEEK_SET));
+  SET_VALUE(isolate, module, "SEEK_CUR", Integer::New(isolate, SEEK_CUR));
+  SET_VALUE(isolate, module, "SEEK_END", Integer::New(isolate, SEEK_END));
+  SET_VALUE(isolate, module, "S_IRWXO", Integer::New(isolate, S_IRWXO));
+  SET_VALUE(isolate, module, "F_OK", Integer::New(isolate, F_OK));
+  SET_VALUE(isolate, module, "S_IFMT", Integer::New(isolate, S_IFMT));
+  SET_VALUE(isolate, module, "S_IFDIR", Integer::New(isolate, S_IFDIR));
+  SET_VALUE(isolate, module, "S_IFREG", Integer::New(isolate, S_IFREG));
+
 
   SET_MODULE(isolate, target, "core", module);
 }

@@ -37,21 +37,41 @@
 - [ ] **todo**:  can we unload bindings and modules? have a look into this
 - [ ] **bug**:   if i embed the binding definition and change it then the lib won't rebuild as it uses embedded one
 - [ ] **todo**:  change binding defs so we can have multiple entries with same name but with different options for arch and platform
+- [ ] **todo**:  pass a flag to gen to tell it what os/arch we want to generate for
+- [ ] **bug**:   when rebuilding after changing bindings defs, they don't get re-generated as the ones on disk are not re-loaded.
+- [ ] **todo**:  clean up lib/gen.js. it's a real mess
+- [ ] **todo**:  have an embed cache separate from lib and require caches so we always load them from disk. hmmm... we need a nice way to handle this
+- [ ] **todo**:  module resolution is really broken
+- [ ] **todo**:  setTimeout, clearTimeout, setInterval, clearInterval
+- [ ] **todo**:  performance.now()
+- [ ] **todo**:  in assert, strip the assert line from the stack trace on the error
+- [ ] **question**: should we have something like __dirname on each module?
+- [ ] **todo**:  make lib/proc exec() async and used pidfd_open to monitor process on event loop
+- [ ] **todo**:  freeze core apis/intrinsics
+- [ ] **question**: how do we handle compiling dependencies of bindings cross platform if we don't depend on make?
+                    we could just write the build script as js?
+- [ ] **question**: how do we align structs in memory?
+- [ ] **todo**:  ability to chain cli args together
+- [ ] **todo**:  repl - doesn't really need async for now - ```lo repl```
+- [ ] **todo**:  rename lo.library and lo.libraries to lo.binding and lo.bindings
+
 
 ## features
 
+- [ ] **commands**: ability to host command scripts so i can run ```lo cmd blah``` and it will run blah.js from cmd direction in current dir or $HOME/.lo/cmd
 - [ ] **fetch**: a robust and fast fetch implementation
-- [ ] **WebSocket**: a robust and fast websocket implementation - client and server
 - [ ] **serve**: a robust and fast http serve implementation with Request and Response
 - [ ] **ffi**: a robust and fast ffi implementation
 - [ ] **spawn**: a robust and fast process spawning and control implementation
-- [ ] **Worker**: a robust and fast Web Worker implementation
 - [ ] **resources**: a solution for tracking handles, pointers and file descriptors
 - [ ] **hot loading**: look at ability to easily swap code out on the fly
 - [ ] **v8 api**: create a simple c api around v8 (like rusty_v8) so we can use it in bindings and compile/link bindings with tcc (maybe - i think so - the bindings libraries can be plain c)
+- [ ] **tracing**: a system for hooking into traces events for logging, metrics etc.
 
 ## modules
 
+- [ ] **Worker**: a robust and fast Web Worker implementation
+- [ ] **WebSocket**: a robust and fast websocket implementation - client and server
 - [ ] **sqlite**: a robust and fast sqlite implementation
 - [ ] **thread**: thread library
 

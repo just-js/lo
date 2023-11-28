@@ -1,10 +1,4 @@
 
-const { 
-  utf8EncodeInto, utf8Encode, utf8Decode, getAddress, args, exit, builtin,
-  library, workerSource, loadModule, evaluateModule, hrtime, wrapMemory
-} = lo
-const { core } = library('core')
-
 // global classes
 
 class TextEncoder {
@@ -37,24 +31,25 @@ class TextDecoder {
 function assert (condition, message, ErrorType = Error) {
   if (!condition) {
     if (message && message.constructor.name === 'Function') {
-      throw new ErrorType(message())
+      throw new ErrorType(message(condition))
     }
     throw new ErrorType(message || "Assertion failed")
   }
   return condition
 }
 
-function wrap (h, fn, plen = 0) {
+function wrap (handle, fn, plen = 0) {
   const call = fn
   const params = (new Array(plen)).fill(0).map((_, i) => `p${i}`).join(', ')
+  // TODO: Number.IsSafeInteger check - return BigInt if not safe
   const f = new Function(
-    'h',
+    'handle',
     'call',
     `return function ${fn.name} (${params}) {
-    call(${params}${plen > 0 ? ', ' : ''}h);
-    return h[0] + ((2 ** 32) * h[1]);
+    call(${params}${plen > 0 ? ', ' : ''}handle);
+    return handle[0] + ((2 ** 32) * handle[1]);
   }`,)
-  const fun = f(h, call)
+  const fun = f(handle, call)
   if (fn.state) fun.state = fn.state
   return fun
 }
@@ -75,30 +70,38 @@ function addr (u32) {
   return u32[0] + ((2 ** 32) * u32[1])  
 }
 
-function read_file (path, flags = O_RDONLY) {
+function read_file_bytes (path, size = 0) {
+  let off = 0
+  let len = 0
+  const fd = open(path, O_RDONLY)
+  assert(fd > 0, `failed to open ${path} with flags ${flags}`)
+  if (size === 0) {
+    fstat(fd, stat)
+    size = stat32[12] || 64 * 1024
+  }
+  const u8 = new Uint8Array(size)
+  while ((len = read(fd, u8, size - off)) > 0) off += len
+  assert(close(fd) === 0)
+  return u8
+}
+
+
+function read_file (path, flags = O_RDONLY, size = 0) {
   const fd = open(path, flags)
   assert(fd > 0, `failed to open ${path} with flags ${flags}`)
-  let r = fstat(fd, stat)
-  assert(r === 0)
-  let size = 0
-  if (core.os === 'mac') {
-    size = Number(st[12])
-  } else {
-    size = Number(st[6])
+  if (size === 0) {
+    assert(fstat(fd, stat) === 0)
+    if (core.os === 'mac') {
+      size = Number(st[12])
+    } else {
+      size = Number(st[6])
+    }
   }
-  const buf = new Uint8Array(size)
   let off = 0
-  let len = read(fd, buf, size)
-  while (len > 0) {
-    off += len
-    if (off === size) break
-    len = read(fd, buf, size)
-  }
-  off += len
-  r = close(fd)
-  assert(r === 0)
-  assert(off >= size)
-  return buf
+  let len = 0
+  const u8 = new Uint8Array(size)
+  while ((len = read(fd, u8, size - off)) > 0) off += len
+  return u8
 }
 
 function write_file (path, u8, flags = defaultWriteFlags, 
@@ -123,7 +126,13 @@ function write_file (path, u8, flags = defaultWriteFlags,
 
 function load (name) {
   if (libCache.has(name)) return libCache.get(name)
-  let lib = library(name)
+  let lib
+  if (core.binding_loader) {
+    lib = core.binding_loader(name)
+    if (!lib) lib = library(name)
+  } else {
+    lib = library(name)
+  }
   if (lib) {
     lib.internal = true
     libCache.set(name, lib)
@@ -143,11 +152,38 @@ function load (name) {
 
 // internal functions
 
-function load_source (specifier) {
-  // todo: we don't need to go into c to check if it exists
-  let src = lo.builtin(specifier)
-  if (!src) {
-    src = decoder.decode(read_file(specifier))
+function load_source_sync (specifier) {
+  let src = ''
+  if (core.sync_loader) {
+    src = core.sync_loader(specifier)
+    if (src) return src
+  }
+  src = lo.builtin(specifier)
+  if (!src || (LO_CACHE === 1)) {
+    // todo: path.join
+    try {
+      src = decoder.decode(read_file(specifier))
+    } catch (err) {
+      src = decoder.decode(read_file(`${LO_HOME}${specifier}`))
+    }
+  }
+  return src
+}
+
+async function load_source (specifier) {
+  let src = ''
+  if (core.loader) {
+    src = await core.loader(specifier)
+    if (src) return src
+  }
+  src = lo.builtin(specifier)
+  if (!src || (LO_CACHE === 1)) {
+    // todo: path.join
+    try {
+      src = decoder.decode(read_file(specifier))
+    } catch (err) {
+      src = decoder.decode(read_file(`${LO_HOME}${specifier}`))
+    }
   }
   return src
 }
@@ -163,13 +199,14 @@ async function on_module_load (specifier, resource) {
     return mod.namespace
   }
   // todo: allow overriding loadSource - return a promise
-  const src = load_source(specifier)
+  // todo: this should be async
+  const src = await load_source(specifier)
   const mod = loadModule(src, specifier)
   mod.resource = resource
   moduleCache.set(specifier, mod)
   const { requests } = mod
   for (const request of requests) {
-    const src = load_source(request)
+    const src = await load_source(request)
     const mod = loadModule(src, request)
     moduleCache.set(request, mod)
   }
@@ -181,40 +218,53 @@ async function on_module_load (specifier, resource) {
 }
 
 function on_module_instantiate (specifier) {
+  //lo.print(`on_module_instantiate: ${specifier}\n`)
   if (moduleCache.has(specifier)) {
     return moduleCache.get(specifier).identity
   }
-  const src = load_source(specifier)
+  const src = load_source_sync(specifier)
   const mod = loadModule(src, specifier)
   moduleCache.set(specifier, mod)
   return mod.identity
 }
 
-function require (fileName) {
-  if (requireCache.has(fileName)) {
-    return requireCache.get(fileName).exports
+/**
+* an approximation of node.js synchronous require. not sure if this should
+* be here at all but it's useful for compatibility testing
+* ```
+* @param file_path {string} path to the file to be required
+*/
+function require (file_path) {
+  if (requireCache.has(file_path)) {
+    return requireCache.get(file_path).exports
   }
-  const src = load_source(fileName)
+  // todo: this is now async
+  const src = load_source_sync(file_path)
   const f = new Function('exports', 'module', 'require', src)
   const mod = { exports: {} }
   f.call(globalThis, mod.exports, mod, require)
-  moduleCache.set(fileName, mod)
+  moduleCache.set(file_path, mod)
   return mod.exports
 }
 
+/**
+* handle any exceptions in async code that did not have a handler
+* the best thing to do is die gracefully and log as much as possible
+* we should make what happens here configurable
+* @param err { Error } a javascript Error object
+*/
 function on_unhandled_rejection (err) {
   console.error(`${AR}Unhandled Rejection${AD}`)
-  console.error(err.stack)
-  exit(1)
+  die(err, true)
 }
 
 function on_load_builtin (identifier) {
-  if (identifier === '@thread') return workerSource
+  if (identifier === '@workerSource') return workerSource
   return builtin(identifier)
 }
 
 function wrap_getenv () {
-  const getenv = wrap(new Uint32Array(2), core.getenv, 1)
+  const getenv = wrap(handle, core.getenv, 1)
   return str => {
     const ptr = getenv(str)
     if (!ptr) return ''
@@ -222,34 +272,29 @@ function wrap_getenv () {
   }
 }
 
-async function global_main () {
-  if (args[1] === 'gen') {
-    (await import('lib/gen.js')).gen(lo.args.slice(2))
-  } else {
-    if (workerSource) {
-      import('@thread')
-        .catch(err => console.error(err.stack))
-    } else {
-      if (args[1] === 'eval') return (new Function(`return (${args[2]})`))()
-      let filePath = args[1]
-      if (workerSource) filePath = 'thread.js'
-      const { main, serve, test, bench } = await import(filePath)
-      if (test) {
-        await test(...args.slice(2))
-      }
-      if (bench) {
-        await bench(...args.slice(2))
-      }
-      if (main) {
-        await main(...args.slice(2))
-      }
-      if (serve) {
-        await serve(...args.slice(2))
-      }
-    }
+function wrap_getcwd () {
+  const getcwd = wrap(handle, core.getcwd, 2)
+  const cwdbuf = new Uint8Array(1024)
+
+  return () => {
+    const ptr = getcwd(cwdbuf, cwdbuf.length)
+    if (!ptr) return ''
+    return utf8Decode(ptr, -1)
   }
 }
 
+function die (err, hide_fatal = false) {
+  if (!hide_fatal) console.error(`${AR}Fatal Exception${AD}`)
+  console.error(err.stack)
+  console.error(`${AY}process will exit${AD}`)
+  exit(1)
+}
+
+const { 
+  utf8EncodeInto, utf8Encode, utf8Decode, getAddress, args, exit, builtin,
+  library, workerSource, loadModule, evaluateModule, hrtime, wrapMemory
+} = lo
+const { core } = library('core')
 const {
   O_WRONLY, O_CREAT, O_TRUNC, O_RDONLY, S_IWUSR, S_IRUSR, S_IRGRP, S_IROTH,
   STDIN, STDOUT, STDERR
@@ -257,6 +302,7 @@ const {
 const {
   write_string, open, fstat, read, write, close
 } = core
+const noop = () => {}
 const AD = '\u001b[0m' // ANSI Default
 const A0 = '\u001b[30m' // ANSI Black
 const AR = '\u001b[31m' // ANSI Red
@@ -303,17 +349,42 @@ lo.ptr = ptr
 lo.addr = addr
 lo.core = core
 lo.getenv = wrap_getenv()
-//const module_caching = parseInt(lo.getenv('LO_CACHE') || '0', 10)
+lo.getcwd = wrap_getcwd()
+const LO_HOME = lo.getenv('LO_HOME')
+const LO_CACHE = parseInt(lo.getenv('LO_CACHE') || '0', 10)
 core.dlopen = wrap(handle, core.dlopen, 2)
 core.dlsym = wrap(handle, core.dlsym, 2)
 core.mmap = wrap(handle, core.mmap, 6)
 core.readFile = read_file
 core.writeFile = write_file
-// todo: move os() and arch() to a binding
 // todo: optimize this - return numbers and make a single call to get both
 core.os = lo.os()
 core.arch = lo.arch()
+core.loader = core.sync_loader = noop
 lo.setModuleCallbacks(on_module_load, on_module_instantiate)
-global_main().catch(err => console.error(err.stack))
+
+async function global_main () {
+  // todo: upgrade, install etc. maybe install these as command scripts, but that would not be very secure
+  const command = args[1]
+  if (command === 'gen') {
+    (await import('lib/gen.js')).gen(args.slice(2))
+  } else if (command === 'build') {
+    (await import('lib/build.js')).build(args.slice(2))
+  } else if (command === 'eval') {
+    (new Function(`return (${args[2]})`))()
+  } else if (workerSource) {
+    import('@workerSource').catch(die)
+  } else {
+    let filePath = command
+    const { main, serve, test, bench } = await import(filePath)
+    const pargs = args.slice(2)
+    if (test) await test(...pargs)
+    if (bench) await bench(...pargs)
+    if (main) await main(...pargs)
+    if (serve) await serve(...pargs)
+  }
+}
+
+global_main().catch(die)
 
 export {}
