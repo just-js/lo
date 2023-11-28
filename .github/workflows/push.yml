@@ -39,6 +39,9 @@ jobs:
         platform: [x64]
     steps:
       - uses: actions/checkout@v3
+      - name: install libcurl
+        run: |
+          sudo apt-get install -qy libcurl4-openssl-dev
       - name: compile
         run: |
           make lo
@@ -61,6 +64,9 @@ jobs:
         platform: [x64]
     steps:
       - uses: actions/checkout@v3
+      - name: install libcurl
+        run: |
+          sudo apt-get install -qy libcurl4-openssl-dev
       - name: install arm64 tools
         run: |
           sudo apt-get install -qy binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
