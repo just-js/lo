@@ -991,6 +991,18 @@ void lo::Utf8Decode(const FunctionCallbackInfo<Value> &args) {
     str, NewStringType::kNormal, size).ToLocalChecked());
 }
 
+// todo - we should have latin1 methods 
+void lo::Latin1Decode(const FunctionCallbackInfo<Value> &args) {
+  int size = -1;
+  if (args.Length() > 1) {
+    size = Local<Integer>::Cast(args[1])->Value();
+  }
+  uint8_t* str = reinterpret_cast<uint8_t*>(
+    (uint64_t)Local<Integer>::Cast(args[0])->Value());
+  args.GetReturnValue().Set(String::NewFromOneByte(args.GetIsolate(), 
+    str, NewStringType::kNormal, size).ToLocalChecked());
+}
+
 void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
@@ -1156,6 +1168,7 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "loadModule", LoadModule);
   SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
 
+  SET_METHOD(isolate, target, "latin1Decode", Latin1Decode);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
   SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
   SET_FAST_METHOD(isolate, target, "utf8Length", &pFutf8length, Utf8Length);
