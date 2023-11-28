@@ -1,4 +1,5 @@
 import { mem } from 'lib/proc.js'
+import { extName } from 'lib/path.js'
 
 const os = lo.os()
 const arch = lo.arch()
@@ -49,15 +50,17 @@ ${AG}version${AD}    ${lo.version.lo}
 ${AG}rss${AD}        ${mem()}  
 ${AG}v8${AD}         ${lo.version.v8}`)
   console.log(`${AG}builtins${AD}`)
-  const builtins = lo.builtins().sort()
+  const builtins = lo.builtins()
   for (const builtin of builtins) {
     console.log(`  ${AM}${builtin.padEnd(32, ' ')}${AD}: ${lo.builtin(builtin).length} bytes`)
-    if (builtin !== 'main.js') {
+    if (extName(builtin) === 'js' && builtin !== 'main.js') {
       const lib = await import(builtin)
       const entries = Object.entries(lib)
       entries.sort((a, b) => a < b ? -1 : (a === b ? 0 : 1))
       for (const [key, value] of entries) {
         if (['AsyncFunction', 'Function', 'Object'].includes(value.constructor.name)) {
+          console.log(`    ${AC}${key}${AD}: ${value.constructor.name}`)
+        } else if (['String'].includes(value.constructor.name)) {
           console.log(`    ${AC}${key}${AD}: ${value.constructor.name}`)
         } else {
           console.log(`    ${AY}${key}${AD}: ${value.constructor.name} = ${value}`)
