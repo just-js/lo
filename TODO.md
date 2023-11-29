@@ -70,6 +70,8 @@
 - [ ] **tracing**: a system for hooking into traces events for logging, metrics etc.
 - [ ] **todo**: use new format for bindings to allow same method for multiple platforms
                 get platform filtering working with bindings generation
+- [ ] **bug** : mbedtls fails to compile on raspberry pi
+- [ ] **todo**: redirection of stdin/out/err for child processes
 
 ## modules
 

@@ -722,6 +722,17 @@ v8::CTypeInfo rcexecvp = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoexecvp = v8::CFunctionInfo(rcexecvp, 3, cargsexecvp);
 v8::CFunction pFexecvp = v8::CFunction((const void*)&execvpFast, &infoexecvp);
 
+int32_t execveFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1, struct FastApiTypedArray* const p2);
+v8::CTypeInfo cargsexecve[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcexecve = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoexecve = v8::CFunctionInfo(rcexecve, 4, cargsexecve);
+v8::CFunction pFexecve = v8::CFunction((const void*)&execveFast, &infoexecve);
+
 int32_t getrusageFast(void* p, int32_t p0, struct FastApiTypedArray* const p1);
 v8::CTypeInfo cargsgetrusage[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -1386,6 +1397,25 @@ int32_t execvpFast(void* p, struct FastOneByteString* const p0, struct FastApiTy
   char* const* v1 = reinterpret_cast<char* const*>(p1->data);
   return execvp(v0->data, v1);
 }
+void execveSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  char* const* v1 = reinterpret_cast<char* const*>(ptr1);
+  Local<Uint8Array> u82 = args[2].As<Uint8Array>();
+  uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
+  char* const* v2 = reinterpret_cast<char* const*>(ptr2);
+  int32_t rc = execve(*v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t execveFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1, struct FastApiTypedArray* const p2) {
+  struct FastOneByteString* const v0 = p0;
+  char* const* v1 = reinterpret_cast<char* const*>(p1->data);
+  char* const* v2 = reinterpret_cast<char* const*>(p2->data);
+  return execve(v0->data, v1, v2);
+}
 void getrusageSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -1571,6 +1601,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "kill", &pFkill, killSlow);
   SET_FAST_METHOD(isolate, module, "waitpid", &pFwaitpid, waitpidSlow);
   SET_FAST_METHOD(isolate, module, "execvp", &pFexecvp, execvpSlow);
+  SET_FAST_METHOD(isolate, module, "execve", &pFexecve, execveSlow);
   SET_FAST_METHOD(isolate, module, "getrusage", &pFgetrusage, getrusageSlow);
   SET_FAST_METHOD(isolate, module, "times", &pFtimes, timesSlow);
   SET_METHOD(isolate, module, "isolate_create", isolate_createSlow);
