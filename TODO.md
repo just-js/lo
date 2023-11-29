@@ -72,6 +72,7 @@
                 get platform filtering working with bindings generation
 - [ ] **bug** : mbedtls fails to compile on raspberry pi
 - [ ] **todo**: redirection of stdin/out/err for child processes
+- [ ] **todo**: cacheing for binding dependencies builder
 
 ## modules
 

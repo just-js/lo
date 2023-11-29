@@ -88,8 +88,8 @@ inflate.a: lib/inflate/inflate.cc ## build the curl binding
 	ar crsT inflate.a inflate.o em_inflate.o
 
 check: ## run the runtime sanity tests
-	./${RUNTIME} test/dump.js
 	./${RUNTIME} test/runtime.js
+	./${RUNTIME} test/dump.js
 
 docs:
 	rm -fr docs
