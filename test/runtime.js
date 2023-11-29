@@ -7,10 +7,10 @@ async function test () {
   const names = [
     'nextTick', 'print', 'registerCallback', 'runMicroTasks', 'builtin', 
     'library', 'builtins', 'libraries', 'setModuleCallbacks', 'loadModule', 
-    'evaluateModule', 'utf8Decode', 'utf8Encode', 'wrapMemory', 'unwrapMemory', 
-    'setFlags', 'getMeta', 'runScript', 'arch', 'os', 'hrtime', 'getAddress', 
-    'utf8Length', 'utf8EncodeInto', 'utf8EncodeIntoAtOffset', 'readMemory', 
-    'readMemoryAtOffset'
+    'evaluateModule', 'latin1Decode', 'utf8Decode', 'utf8Encode', 'wrapMemory', 
+    'unwrapMemory', 'setFlags', 'getMeta', 'runScript', 'arch', 'os', 'hrtime', 
+    'getAddress', 'utf8Length', 'utf8EncodeInto', 'utf8EncodeIntoAtOffset', 
+    'readMemory', 'readMemoryAtOffset'
   ].sort()
   assert(lo.colors)
   assert(lo.start)
