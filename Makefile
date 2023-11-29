@@ -1,6 +1,6 @@
 C=clang
 CC=clang++
-LARGS=-rdynamic
+LARGS=-rdynamic -pthread
 CCARGS=-std=c++17 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
 CARGS=-c -fno-omit-frame-pointer
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
@@ -13,7 +13,7 @@ BINDINGS=core.o curl.o inflate.a
 ARCH=x64
 os=linux
 TARGET=${RUNTIME}
-LIBS=-lcurl
+LIBS=-lcurl -ldl
 V8_FLAGS=-DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0
 
 ifeq ($(OS),Windows_NT)

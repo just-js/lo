@@ -55,7 +55,7 @@
 - [ ] **todo**:  repl - doesn't really need async for now - ```lo repl```
 - [ ] **todo**:  rename lo.library and lo.libraries to lo.binding and lo.bindings
 - [ ] **todo**:  proc.js - mem() doesn't work on macos (no proc fs)
-
+- [ ] **bug**:   if i run ```lo main.js``` it goes into a loop as it tries to recursively load the builtin main.js
 
 ## features
 
@@ -68,6 +68,8 @@
 - [ ] **hot loading**: look at ability to easily swap code out on the fly
 - [ ] **v8 api**: create a simple c api around v8 (like rusty_v8) so we can use it in bindings and compile/link bindings with tcc (maybe - i think so - the bindings libraries can be plain c)
 - [ ] **tracing**: a system for hooking into traces events for logging, metrics etc.
+- [ ] **todo**: use new format for bindings to allow same method for multiple platforms
+                get platform filtering working with bindings generation
 
 ## modules
 
