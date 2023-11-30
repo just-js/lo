@@ -73,6 +73,7 @@
 - [ ] **bug** : mbedtls fails to compile on raspberry pi
 - [ ] **todo**: redirection of stdin/out/err for child processes
 - [ ] **todo**: cacheing for binding dependencies builder
+- [ ] **todo**: fix the CC env var issue. this should be C compiler, not C++
 
 ## modules
 
