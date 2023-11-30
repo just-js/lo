@@ -399,6 +399,26 @@ v8::CTypeInfo rcfcntl = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infofcntl = v8::CFunctionInfo(rcfcntl, 4, cargsfcntl);
 v8::CFunction pFfcntl = v8::CFunction((const void*)&fcntlFast, &infofcntl);
 
+int32_t statFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1);
+v8::CTypeInfo cargsstat[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcstat = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infostat = v8::CFunctionInfo(rcstat, 3, cargsstat);
+v8::CFunction pFstat = v8::CFunction((const void*)&statFast, &infostat);
+
+int32_t lstatFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1);
+v8::CTypeInfo cargslstat[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rclstat = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infolstat = v8::CFunctionInfo(rclstat, 3, cargslstat);
+v8::CFunction pFlstat = v8::CFunction((const void*)&lstatFast, &infolstat);
+
 int32_t renameFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1);
 v8::CTypeInfo cargsrename[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -972,6 +992,36 @@ int32_t fcntlFast(void* p, int32_t p0, int32_t p1, int32_t p2) {
   int32_t v1 = p1;
   int32_t v2 = p2;
   return fcntl(v0, v1, v2);
+}
+void statSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  struct stat * v1 = reinterpret_cast<struct stat *>(ptr1);
+  int32_t rc = stat(*v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t statFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1) {
+  struct FastOneByteString* const v0 = p0;
+  struct stat * v1 = reinterpret_cast<struct stat *>(p1->data);
+  return stat(v0->data, v1);
+}
+void lstatSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  struct stat * v1 = reinterpret_cast<struct stat *>(ptr1);
+  int32_t rc = lstat(*v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t lstatFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1) {
+  struct FastOneByteString* const v0 = p0;
+  struct stat * v1 = reinterpret_cast<struct stat *>(p1->data);
+  return lstat(v0->data, v1);
 }
 void renameSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -1567,6 +1617,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "lseek", &pFlseek, lseekSlow);
   SET_FAST_METHOD(isolate, module, "fstat", &pFfstat, fstatSlow);
   SET_FAST_METHOD(isolate, module, "fcntl", &pFfcntl, fcntlSlow);
+  SET_FAST_METHOD(isolate, module, "stat", &pFstat, statSlow);
+  SET_FAST_METHOD(isolate, module, "lstat", &pFlstat, lstatSlow);
   SET_FAST_METHOD(isolate, module, "rename", &pFrename, renameSlow);
   SET_FAST_METHOD(isolate, module, "access", &pFaccess, accessSlow);
   SET_FAST_METHOD(isolate, module, "open", &pFopen, openSlow);
