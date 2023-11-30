@@ -348,6 +348,7 @@ lo.cstr = cstr
 lo.ptr = ptr
 lo.addr = addr
 lo.core = core
+// todo: should we just overwrite the existing ones and not put these on "lo"?
 lo.getenv = wrap_getenv()
 lo.getcwd = wrap_getcwd()
 const LO_HOME = lo.getenv('LO_HOME')
