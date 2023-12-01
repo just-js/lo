@@ -29,6 +29,7 @@ void register_builtins() {
   lo::builtins_add("lo.h", _binary_lo_h_start, _binary_lo_h_len);
   lo::builtins_add("lib/core/api.js", _binary_lib_core_api_js_start, _binary_lib_core_api_js_len);
   lo::builtins_add("lib/curl/api.js", _binary_lib_curl_api_js_start, _binary_lib_curl_api_js_len);
+  lo::builtins_add("lib/duckdb/api.js", _binary_lib_duckdb_api_js_start, _binary_lib_duckdb_api_js_len);
   lo::builtins_add("lib/encode/api.js", _binary_lib_encode_api_js_start, _binary_lib_encode_api_js_len);
   lo::builtins_add("lib/epoll/api.js", _binary_lib_epoll_api_js_start, _binary_lib_epoll_api_js_len);
   lo::builtins_add("lib/inflate/api.js", _binary_lib_inflate_api_js_start, _binary_lib_inflate_api_js_len);
