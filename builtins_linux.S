@@ -73,6 +73,11 @@ _binary_lib_curl_api_js_start:
         .incbin "lib/curl/api.js"
         .global _binary_lib_curl_api_js_end
 _binary_lib_curl_api_js_end:
+.global _binary_lib_duckdb_api_js_start
+_binary_lib_duckdb_api_js_start:
+        .incbin "lib/duckdb/api.js"
+        .global _binary_lib_duckdb_api_js_end
+_binary_lib_duckdb_api_js_end:
 .global _binary_lib_encode_api_js_start
 _binary_lib_encode_api_js_start:
         .incbin "lib/encode/api.js"

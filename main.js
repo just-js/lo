@@ -351,7 +351,7 @@ lo.core = core
 // todo: should we just overwrite the existing ones and not put these on "lo"?
 lo.getenv = wrap_getenv()
 lo.getcwd = wrap_getcwd()
-const LO_HOME = lo.getenv('LO_HOME')
+const LO_HOME = lo.getenv('LO_HOME') || './'
 const LO_CACHE = parseInt(lo.getenv('LO_CACHE') || '0', 10)
 core.dlopen = wrap(handle, core.dlopen, 2)
 core.dlsym = wrap(handle, core.dlsym, 2)

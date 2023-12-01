@@ -209,6 +209,57 @@ v8::CTypeInfo rcexecute_prepared = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoexecute_prepared = v8::CFunctionInfo(rcexecute_prepared, 3, cargsexecute_prepared);
 v8::CFunction pFexecute_prepared = v8::CFunction((const void*)&execute_preparedFast, &infoexecute_prepared);
 
+void duckdb_column_nameFast(void* p, void* p0, uint32_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsduckdb_column_name[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcduckdb_column_name = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoduckdb_column_name = v8::CFunctionInfo(rcduckdb_column_name, 4, cargsduckdb_column_name);
+v8::CFunction pFduckdb_column_name = v8::CFunction((const void*)&duckdb_column_nameFast, &infoduckdb_column_name);
+
+void result_errorFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsresult_error[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcresult_error = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo inforesult_error = v8::CFunctionInfo(rcresult_error, 3, cargsresult_error);
+v8::CFunction pFresult_error = v8::CFunction((const void*)&result_errorFast, &inforesult_error);
+
+uint32_t value_is_nullFast(void* p, void* p0, uint32_t p1, uint32_t p2);
+v8::CTypeInfo cargsvalue_is_null[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcvalue_is_null = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+v8::CFunctionInfo infovalue_is_null = v8::CFunctionInfo(rcvalue_is_null, 4, cargsvalue_is_null);
+v8::CFunction pFvalue_is_null = v8::CFunction((const void*)&value_is_nullFast, &infovalue_is_null);
+
+void disconnectFast(void* p, void* p0);
+v8::CTypeInfo cargsdisconnect[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcdisconnect = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infodisconnect = v8::CFunctionInfo(rcdisconnect, 2, cargsdisconnect);
+v8::CFunction pFdisconnect = v8::CFunction((const void*)&disconnectFast, &infodisconnect);
+
+void library_versionFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargslibrary_version[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rclibrary_version = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infolibrary_version = v8::CFunctionInfo(rclibrary_version, 2, cargslibrary_version);
+v8::CFunction pFlibrary_version = v8::CFunction((const void*)&library_versionFast, &infolibrary_version);
+
 
 
 void create_configSlow(const FunctionCallbackInfo<Value> &args) {
@@ -397,6 +448,71 @@ int32_t execute_preparedFast(void* p, void* p0, void* p1) {
   duckdb_result* v1 = reinterpret_cast<duckdb_result*>(p1);
   return duckdb_execute_prepared(v0, v1);
 }
+void duckdb_column_nameSlow(const FunctionCallbackInfo<Value> &args) {
+  duckdb_result* v0 = reinterpret_cast<duckdb_result*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  const char* rc = duckdb_column_name(v0, v1);
+  Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
+  ((const char**)ab->Data())[0] = rc;
+}
+
+void duckdb_column_nameFast(void* p, void* p0, uint32_t p1, struct FastApiTypedArray* const p_ret) {
+  duckdb_result* v0 = reinterpret_cast<duckdb_result*>(p0);
+  uint32_t v1 = p1;
+  const char* r = duckdb_column_name(v0, v1);
+  ((const char**)p_ret->data)[0] = r;
+
+}
+void result_errorSlow(const FunctionCallbackInfo<Value> &args) {
+  duckdb_result* v0 = reinterpret_cast<duckdb_result*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const char* rc = duckdb_result_error(v0);
+  Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
+  ((const char**)ab->Data())[0] = rc;
+}
+
+void result_errorFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+  duckdb_result* v0 = reinterpret_cast<duckdb_result*>(p0);
+  const char* r = duckdb_result_error(v0);
+  ((const char**)p_ret->data)[0] = r;
+
+}
+void value_is_nullSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  duckdb_result* v0 = reinterpret_cast<duckdb_result*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  uint32_t rc = duckdb_value_is_null(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+uint32_t value_is_nullFast(void* p, void* p0, uint32_t p1, uint32_t p2) {
+  duckdb_result* v0 = reinterpret_cast<duckdb_result*>(p0);
+  uint32_t v1 = p1;
+  uint32_t v2 = p2;
+  return duckdb_value_is_null(v0, v1, v2);
+}
+void disconnectSlow(const FunctionCallbackInfo<Value> &args) {
+  duckdb_connection* v0 = reinterpret_cast<duckdb_connection*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  duckdb_disconnect(v0);
+}
+
+void disconnectFast(void* p, void* p0) {
+  duckdb_connection* v0 = reinterpret_cast<duckdb_connection*>(p0);
+  duckdb_disconnect(v0);
+}
+void library_versionSlow(const FunctionCallbackInfo<Value> &args) {
+
+  const char* rc = duckdb_library_version();
+  Local<ArrayBuffer> ab = args[0].As<Uint32Array>()->Buffer();
+  ((const char**)ab->Data())[0] = rc;
+}
+
+void library_versionFast(void* p, struct FastApiTypedArray* const p_ret) {
+
+  const char* r = duckdb_library_version();
+  ((const char**)p_ret->data)[0] = r;
+
+}
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
@@ -414,7 +530,14 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "destroy_result", &pFdestroy_result, destroy_resultSlow);
   SET_FAST_METHOD(isolate, module, "destroy_prepare", &pFdestroy_prepare, destroy_prepareSlow);
   SET_FAST_METHOD(isolate, module, "execute_prepared", &pFexecute_prepared, execute_preparedSlow);
+  SET_FAST_METHOD(isolate, module, "duckdb_column_name", &pFduckdb_column_name, duckdb_column_nameSlow);
+  SET_FAST_METHOD(isolate, module, "result_error", &pFresult_error, result_errorSlow);
+  SET_FAST_METHOD(isolate, module, "value_is_null", &pFvalue_is_null, value_is_nullSlow);
+  SET_FAST_METHOD(isolate, module, "disconnect", &pFdisconnect, disconnectSlow);
+  SET_FAST_METHOD(isolate, module, "library_version", &pFlibrary_version, library_versionSlow);
 
+  SET_VALUE(isolate, module, "DuckDBSuccess", Integer::New(isolate, DuckDBSuccess));
+  SET_VALUE(isolate, module, "DuckDBError", Integer::New(isolate, DuckDBError));
 
   SET_VALUE(isolate, module, "struct_duckdb_config_size", Integer::New(isolate, sizeof(duckdb_config)));
   SET_VALUE(isolate, module, "struct_duckdb_result_size", Integer::New(isolate, sizeof(duckdb_result)));
