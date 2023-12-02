@@ -56,6 +56,8 @@
 - [ ] **todo**:  rename lo.library and lo.libraries to lo.binding and lo.bindings
 - [ ] **todo**:  proc.js - mem() doesn't work on macos (no proc fs)
 - [ ] **bug**:   if i run ```lo main.js``` it goes into a loop as it tries to recursively load the builtin main.js
+- [ ] **bug**: for static libraries, we need to compile without -fPIC: https://stackoverflow.com/questions/28187163/how-do-you-link-a-static-library-to-a-shared-library
+- [ ] **todo**: change inflate builder to download the depencies rather than having them embedded in the runtime
 
 ## features
 
