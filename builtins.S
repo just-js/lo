@@ -73,11 +73,6 @@ __binary_lib_curl_api_js_start:
         .incbin "lib/curl/api.js"
         .global __binary_lib_curl_api_js_end
 __binary_lib_curl_api_js_end:
-.global __binary_lib_duckdb_api_js_start
-__binary_lib_duckdb_api_js_start:
-        .incbin "lib/duckdb/api.js"
-        .global __binary_lib_duckdb_api_js_end
-__binary_lib_duckdb_api_js_end:
 .global __binary_lib_encode_api_js_start
 __binary_lib_encode_api_js_start:
         .incbin "lib/encode/api.js"
@@ -93,16 +88,6 @@ __binary_lib_inflate_api_js_start:
         .incbin "lib/inflate/api.js"
         .global __binary_lib_inflate_api_js_end
 __binary_lib_inflate_api_js_end:
-.global __binary_lib_inflate_em_inflate_c_start
-__binary_lib_inflate_em_inflate_c_start:
-        .incbin "lib/inflate/em_inflate.c"
-        .global __binary_lib_inflate_em_inflate_c_end
-__binary_lib_inflate_em_inflate_c_end:
-.global __binary_lib_inflate_em_inflate_h_start
-__binary_lib_inflate_em_inflate_h_start:
-        .incbin "lib/inflate/em_inflate.h"
-        .global __binary_lib_inflate_em_inflate_h_end
-__binary_lib_inflate_em_inflate_h_end:
 .global __binary_lib_libffi_api_js_start
 __binary_lib_libffi_api_js_start:
         .incbin "lib/libffi/api.js"
@@ -118,6 +103,16 @@ __binary_lib_lz4_api_js_start:
         .incbin "lib/lz4/api.js"
         .global __binary_lib_lz4_api_js_end
 __binary_lib_lz4_api_js_end:
+.global __binary_lib_inflate_em_inflate_c_start
+__binary_lib_inflate_em_inflate_c_start:
+        .incbin "lib/inflate/em_inflate.c"
+        .global __binary_lib_inflate_em_inflate_c_end
+__binary_lib_inflate_em_inflate_c_end:
+.global __binary_lib_inflate_em_inflate_h_start
+__binary_lib_inflate_em_inflate_h_start:
+        .incbin "lib/inflate/em_inflate.h"
+        .global __binary_lib_inflate_em_inflate_h_end
+__binary_lib_inflate_em_inflate_h_end:
 .global __binary_lib_mbedtls_api_js_start
 __binary_lib_mbedtls_api_js_start:
         .incbin "lib/mbedtls/api.js"
@@ -168,3 +163,8 @@ __binary_lib_zlib_api_js_start:
         .incbin "lib/zlib/api.js"
         .global __binary_lib_zlib_api_js_end
 __binary_lib_zlib_api_js_end:
+.global __binary_lib_duckdb_api_js_start
+__binary_lib_duckdb_api_js_start:
+        .incbin "lib/duckdb/api.js"
+        .global __binary_lib_duckdb_api_js_end
+__binary_lib_duckdb_api_js_end:
