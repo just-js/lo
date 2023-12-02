@@ -58,6 +58,7 @@
 - [ ] **bug**:   if i run ```lo main.js``` it goes into a loop as it tries to recursively load the builtin main.js
 - [ ] **bug**: for static libraries, we need to compile without -fPIC: https://stackoverflow.com/questions/28187163/how-do-you-link-a-static-library-to-a-shared-library
 - [ ] **todo**: change inflate builder to download the depencies rather than having them embedded in the runtime
+- [ ] **todo**: we need an SSE4 alternative (NEON?) for arm64 for picohttpparser
 
 ## features
 
