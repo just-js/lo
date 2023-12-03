@@ -5,7 +5,7 @@ CCARGS=-std=c++17 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
 CARGS=-c -fno-omit-frame-pointer
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3
-VERSION=0.0.8-pre
+VERSION=0.0.9-pre
 V8_VERSION=1.0.0
 RUNTIME=lo
 LO_HOME=$(shell pwd)
@@ -83,6 +83,8 @@ curl.o: lib/curl/curl.cc ## build the curl binding
 	$(CC) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o curl.o lib/curl/curl.cc
 
 inflate.a: lib/inflate/inflate.cc ## build the curl binding
+	curl -L -o lib/inflate/em_inflate.h https://raw.githubusercontent.com/emmanuel-marty/em_inflate/master/lib/em_inflate.h
+	curl -L -o lib/inflate/em_inflate.c https://raw.githubusercontent.com/emmanuel-marty/em_inflate/master/lib/em_inflate.c
 	$(C) -fPIC $(CARGS) $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate -o em_inflate.o lib/inflate/em_inflate.c
 	$(CC) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate $(WARN) ${V8_FLAGS} -o inflate.o lib/inflate/inflate.cc
 	ar crsT inflate.a inflate.o em_inflate.o
