@@ -68,11 +68,6 @@ __binary_lib_tcc_js_start:
         .incbin "lib/tcc.js"
         .global __binary_lib_tcc_js_end
 __binary_lib_tcc_js_end:
-.global __binary_lib_zlib_js_start
-__binary_lib_zlib_js_start:
-        .incbin "lib/zlib.js"
-        .global __binary_lib_zlib_js_end
-__binary_lib_zlib_js_end:
 .global __binary_main_cc_start
 __binary_main_cc_start:
         .incbin "main.cc"

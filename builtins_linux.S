@@ -48,6 +48,26 @@ _binary_lib_build_js_start:
         .incbin "lib/build.js"
         .global _binary_lib_build_js_end
 _binary_lib_build_js_end:
+.global _binary_lib_asm_js_start
+_binary_lib_asm_js_start:
+        .incbin "lib/asm.js"
+        .global _binary_lib_asm_js_end
+_binary_lib_asm_js_end:
+.global _binary_lib_ffi_js_start
+_binary_lib_ffi_js_start:
+        .incbin "lib/ffi.js"
+        .global _binary_lib_ffi_js_end
+_binary_lib_ffi_js_end:
+.global _binary_lib_binary_js_start
+_binary_lib_binary_js_start:
+        .incbin "lib/binary.js"
+        .global _binary_lib_binary_js_end
+_binary_lib_binary_js_end:
+.global _binary_lib_tcc_js_start
+_binary_lib_tcc_js_start:
+        .incbin "lib/tcc.js"
+        .global _binary_lib_tcc_js_end
+_binary_lib_tcc_js_end:
 .global _binary_main_cc_start
 _binary_main_cc_start:
         .incbin "main.cc"

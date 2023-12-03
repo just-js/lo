@@ -1,4 +1,3 @@
-
 // global classes
 
 class TextEncoder {
@@ -70,22 +69,6 @@ function addr (u32) {
   return u32[0] + ((2 ** 32) * u32[1])  
 }
 
-function read_file_bytes (path, size = 0) {
-  let off = 0
-  let len = 0
-  const fd = open(path, O_RDONLY)
-  assert(fd > 0, `failed to open ${path} with flags ${flags}`)
-  if (size === 0) {
-    fstat(fd, stat)
-    size = stat32[12] || 64 * 1024
-  }
-  const u8 = new Uint8Array(size)
-  while ((len = read(fd, u8, size - off)) > 0) off += len
-  assert(close(fd) === 0)
-  return u8
-}
-
-
 function read_file (path, flags = O_RDONLY, size = 0) {
   const fd = open(path, flags)
   assert(fd > 0, `failed to open ${path} with flags ${flags}`)
@@ -124,6 +107,8 @@ function write_file (path, u8, flags = defaultWriteFlags,
   return total
 }
 
+// this is called to load a binding linked into runtime or from an external
+// shared library
 function load (name) {
   if (libCache.has(name)) return libCache.get(name)
   let lib
@@ -151,7 +136,7 @@ function load (name) {
 }
 
 // internal functions
-
+// this is called by the synchronous CJS require() loader
 function load_source_sync (specifier) {
   let src = ''
   if (core.sync_loader) {
@@ -170,6 +155,7 @@ function load_source_sync (specifier) {
   return src
 }
 
+// this is called when async ESM modules are loaded
 async function load_source (specifier) {
   let src = ''
   if (core.loader) {
@@ -222,6 +208,7 @@ function on_module_instantiate (specifier) {
   if (moduleCache.has(specifier)) {
     return moduleCache.get(specifier).identity
   }
+  // todo: why is this function synchronous only??
   const src = load_source_sync(specifier)
   const mod = loadModule(src, specifier)
   moduleCache.set(specifier, mod)

@@ -149,6 +149,18 @@ v8::CTypeInfo rccolumn_count = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infocolumn_count = v8::CFunctionInfo(rccolumn_count, 2, cargscolumn_count);
 v8::CFunction pFcolumn_count = v8::CFunction((const void*)&column_countFast, &infocolumn_count);
 
+void value_timestampFast(void* p, void* p0, uint32_t p1, uint32_t p2, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsvalue_timestamp[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcvalue_timestamp = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infovalue_timestamp = v8::CFunctionInfo(rcvalue_timestamp, 5, cargsvalue_timestamp);
+v8::CFunction pFvalue_timestamp = v8::CFunction((const void*)&value_timestampFast, &infovalue_timestamp);
+
 uint32_t value_uint32Fast(void* p, void* p0, uint32_t p1, uint32_t p2);
 v8::CTypeInfo cargsvalue_uint32[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -159,6 +171,17 @@ v8::CTypeInfo cargsvalue_uint32[4] = {
 v8::CTypeInfo rcvalue_uint32 = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
 v8::CFunctionInfo infovalue_uint32 = v8::CFunctionInfo(rcvalue_uint32, 4, cargsvalue_uint32);
 v8::CFunction pFvalue_uint32 = v8::CFunction((const void*)&value_uint32Fast, &infovalue_uint32);
+
+int32_t value_int32Fast(void* p, void* p0, uint32_t p1, uint32_t p2);
+v8::CTypeInfo cargsvalue_int32[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcvalue_int32 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infovalue_int32 = v8::CFunctionInfo(rcvalue_int32, 4, cargsvalue_int32);
+v8::CFunction pFvalue_int32 = v8::CFunction((const void*)&value_int32Fast, &infovalue_int32);
 
 void value_varcharFast(void* p, void* p0, uint32_t p1, uint32_t p2, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargsvalue_varchar[5] = {
@@ -209,16 +232,26 @@ v8::CTypeInfo rcexecute_prepared = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoexecute_prepared = v8::CFunctionInfo(rcexecute_prepared, 3, cargsexecute_prepared);
 v8::CFunction pFexecute_prepared = v8::CFunction((const void*)&execute_preparedFast, &infoexecute_prepared);
 
-void duckdb_column_nameFast(void* p, void* p0, uint32_t p1, struct FastApiTypedArray* const p_ret);
-v8::CTypeInfo cargsduckdb_column_name[4] = {
+void column_nameFast(void* p, void* p0, uint32_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargscolumn_name[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
 };
-v8::CTypeInfo rcduckdb_column_name = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-v8::CFunctionInfo infoduckdb_column_name = v8::CFunctionInfo(rcduckdb_column_name, 4, cargsduckdb_column_name);
-v8::CFunction pFduckdb_column_name = v8::CFunction((const void*)&duckdb_column_nameFast, &infoduckdb_column_name);
+v8::CTypeInfo rccolumn_name = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infocolumn_name = v8::CFunctionInfo(rccolumn_name, 4, cargscolumn_name);
+v8::CFunction pFcolumn_name = v8::CFunction((const void*)&column_nameFast, &infocolumn_name);
+
+int32_t column_typeFast(void* p, void* p0, uint32_t p1);
+v8::CTypeInfo cargscolumn_type[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rccolumn_type = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infocolumn_type = v8::CFunctionInfo(rccolumn_type, 3, cargscolumn_type);
+v8::CFunction pFcolumn_type = v8::CFunction((const void*)&column_typeFast, &infocolumn_type);
 
 void result_errorFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargsresult_error[3] = {
@@ -376,6 +409,23 @@ int32_t column_countFast(void* p, void* p0) {
   duckdb_result* v0 = reinterpret_cast<duckdb_result*>(p0);
   return duckdb_column_count(v0);
 }
+void value_timestampSlow(const FunctionCallbackInfo<Value> &args) {
+  duckdb_result* v0 = reinterpret_cast<duckdb_result*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  duckdb_timestamp rc = duckdb_value_timestamp(v0, v1, v2);
+  Local<ArrayBuffer> ab = args[3].As<Uint32Array>()->Buffer();
+  ((duckdb_timestamp*)ab->Data())[0] = rc;
+}
+
+void value_timestampFast(void* p, void* p0, uint32_t p1, uint32_t p2, struct FastApiTypedArray* const p_ret) {
+  duckdb_result* v0 = reinterpret_cast<duckdb_result*>(p0);
+  uint32_t v1 = p1;
+  uint32_t v2 = p2;
+  duckdb_timestamp r = duckdb_value_timestamp(v0, v1, v2);
+  ((duckdb_timestamp*)p_ret->data)[0] = r;
+
+}
 void value_uint32Slow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   duckdb_result* v0 = reinterpret_cast<duckdb_result*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -390,6 +440,21 @@ uint32_t value_uint32Fast(void* p, void* p0, uint32_t p1, uint32_t p2) {
   uint32_t v1 = p1;
   uint32_t v2 = p2;
   return duckdb_value_uint32(v0, v1, v2);
+}
+void value_int32Slow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  duckdb_result* v0 = reinterpret_cast<duckdb_result*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = duckdb_value_int32(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t value_int32Fast(void* p, void* p0, uint32_t p1, uint32_t p2) {
+  duckdb_result* v0 = reinterpret_cast<duckdb_result*>(p0);
+  uint32_t v1 = p1;
+  uint32_t v2 = p2;
+  return duckdb_value_int32(v0, v1, v2);
 }
 void value_varcharSlow(const FunctionCallbackInfo<Value> &args) {
   duckdb_result* v0 = reinterpret_cast<duckdb_result*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -448,7 +513,7 @@ int32_t execute_preparedFast(void* p, void* p0, void* p1) {
   duckdb_result* v1 = reinterpret_cast<duckdb_result*>(p1);
   return duckdb_execute_prepared(v0, v1);
 }
-void duckdb_column_nameSlow(const FunctionCallbackInfo<Value> &args) {
+void column_nameSlow(const FunctionCallbackInfo<Value> &args) {
   duckdb_result* v0 = reinterpret_cast<duckdb_result*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   const char* rc = duckdb_column_name(v0, v1);
@@ -456,12 +521,25 @@ void duckdb_column_nameSlow(const FunctionCallbackInfo<Value> &args) {
   ((const char**)ab->Data())[0] = rc;
 }
 
-void duckdb_column_nameFast(void* p, void* p0, uint32_t p1, struct FastApiTypedArray* const p_ret) {
+void column_nameFast(void* p, void* p0, uint32_t p1, struct FastApiTypedArray* const p_ret) {
   duckdb_result* v0 = reinterpret_cast<duckdb_result*>(p0);
   uint32_t v1 = p1;
   const char* r = duckdb_column_name(v0, v1);
   ((const char**)p_ret->data)[0] = r;
 
+}
+void column_typeSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  duckdb_result* v0 = reinterpret_cast<duckdb_result*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t rc = duckdb_column_type(v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t column_typeFast(void* p, void* p0, uint32_t p1) {
+  duckdb_result* v0 = reinterpret_cast<duckdb_result*>(p0);
+  uint32_t v1 = p1;
+  return duckdb_column_type(v0, v1);
 }
 void result_errorSlow(const FunctionCallbackInfo<Value> &args) {
   duckdb_result* v0 = reinterpret_cast<duckdb_result*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -524,13 +602,16 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "prepare", &pFprepare, prepareSlow);
   SET_FAST_METHOD(isolate, module, "row_count", &pFrow_count, row_countSlow);
   SET_FAST_METHOD(isolate, module, "column_count", &pFcolumn_count, column_countSlow);
+  SET_FAST_METHOD(isolate, module, "value_timestamp", &pFvalue_timestamp, value_timestampSlow);
   SET_FAST_METHOD(isolate, module, "value_uint32", &pFvalue_uint32, value_uint32Slow);
+  SET_FAST_METHOD(isolate, module, "value_int32", &pFvalue_int32, value_int32Slow);
   SET_FAST_METHOD(isolate, module, "value_varchar", &pFvalue_varchar, value_varcharSlow);
   SET_FAST_METHOD(isolate, module, "close", &pFclose, closeSlow);
   SET_FAST_METHOD(isolate, module, "destroy_result", &pFdestroy_result, destroy_resultSlow);
   SET_FAST_METHOD(isolate, module, "destroy_prepare", &pFdestroy_prepare, destroy_prepareSlow);
   SET_FAST_METHOD(isolate, module, "execute_prepared", &pFexecute_prepared, execute_preparedSlow);
-  SET_FAST_METHOD(isolate, module, "duckdb_column_name", &pFduckdb_column_name, duckdb_column_nameSlow);
+  SET_FAST_METHOD(isolate, module, "column_name", &pFcolumn_name, column_nameSlow);
+  SET_FAST_METHOD(isolate, module, "column_type", &pFcolumn_type, column_typeSlow);
   SET_FAST_METHOD(isolate, module, "result_error", &pFresult_error, result_errorSlow);
   SET_FAST_METHOD(isolate, module, "value_is_null", &pFvalue_is_null, value_is_nullSlow);
   SET_FAST_METHOD(isolate, module, "disconnect", &pFdisconnect, disconnectSlow);

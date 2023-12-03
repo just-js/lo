@@ -28,7 +28,6 @@ void register_builtins() {
   lo::builtins_add("lib/ffi.js", _binary_lib_ffi_js_start, _binary_lib_ffi_js_len);
   lo::builtins_add("lib/binary.js", _binary_lib_binary_js_start, _binary_lib_binary_js_len);
   lo::builtins_add("lib/tcc.js", _binary_lib_tcc_js_start, _binary_lib_tcc_js_len);
-  lo::builtins_add("lib/zlib.js", _binary_lib_zlib_js_start, _binary_lib_zlib_js_len);
   lo::builtins_add("main.cc", _binary_main_cc_start, _binary_main_cc_len);
   lo::builtins_add("lo.cc", _binary_lo_cc_start, _binary_lo_cc_len);
   lo::builtins_add("lo.h", _binary_lo_h_start, _binary_lo_h_len);
