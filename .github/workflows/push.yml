@@ -19,7 +19,7 @@ jobs:
       - name: compile runtime
         run: |
           make ARCH=${{ matrix.platform }} lo
-          ./lo build binding core
+#          ./lo build binding core
       - name: check
         if: ${{ matrix.platform == 'x64' }}
         run: |
@@ -46,7 +46,7 @@ jobs:
       - name: compile
         run: |
           make lo
-          ./lo build binding core
+#          ./lo build binding core
       - name: check
         run: |
           make check
@@ -57,7 +57,7 @@ jobs:
           name: lo-linux-x64
 
   build-linux-arm:
-    if: ${{ false }}  # disable
+#    if: ${{ false }}  # disable
     name: linux-arm64
     runs-on: ubuntu-22.04
     strategy:
