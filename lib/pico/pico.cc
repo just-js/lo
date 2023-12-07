@@ -189,6 +189,52 @@ v8::CTypeInfo rcparseResponse2 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoparseResponse2 = v8::CFunctionInfo(rcparseResponse2, 4, cargsparseResponse2);
 v8::CFunction pFparseResponse2 = v8::CFunction((const void*)&parseResponse2Fast, &infoparseResponse2);
 
+int32_t parse_requestFast(void* p, void* p0, uint32_t p1, void* p2, void* p3, void* p4, void* p5, void* p6, void* p7, void* p8, uint64_t p9);
+v8::CTypeInfo cargsparse_request[11] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcparse_request = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoparse_request = v8::CFunctionInfo(rcparse_request, 11, cargsparse_request);
+v8::CFunction pFparse_request = v8::CFunction((const void*)&parse_requestFast, &infoparse_request);
+
+int32_t parse_responseFast(void* p, void* p0, uint32_t p1, void* p2, void* p3, void* p4, void* p5, void* p6, void* p7, uint32_t p8);
+v8::CTypeInfo cargsparse_response[10] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcparse_response = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoparse_response = v8::CFunctionInfo(rcparse_response, 10, cargsparse_response);
+v8::CFunction pFparse_response = v8::CFunction((const void*)&parse_responseFast, &infoparse_response);
+
+int32_t decode_chunkedFast(void* p, void* p0, void* p1, void* p2);
+v8::CTypeInfo cargsdecode_chunked[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcdecode_chunked = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infodecode_chunked = v8::CFunctionInfo(rcdecode_chunked, 4, cargsdecode_chunked);
+v8::CFunction pFdecode_chunked = v8::CFunction((const void*)&decode_chunkedFast, &infodecode_chunked);
+
 
 
 void parseRequestSlow(const FunctionCallbackInfo<Value> &args) {
@@ -259,6 +305,77 @@ int32_t parseResponse2Fast(void* p, void* p0, uint32_t p1, void* p2) {
   httpResponse* v2 = reinterpret_cast<httpResponse*>(p2);
   return parse_response(v0, v1, v2);
 }
+void parse_requestSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  const char* v0 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  const char ** v2 = reinterpret_cast<const char **>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  size_t * v3 = reinterpret_cast<size_t *>((uint64_t)Local<Integer>::Cast(args[3])->Value());
+  const char ** v4 = reinterpret_cast<const char **>((uint64_t)Local<Integer>::Cast(args[4])->Value());
+  size_t * v5 = reinterpret_cast<size_t *>((uint64_t)Local<Integer>::Cast(args[5])->Value());
+  int* v6 = reinterpret_cast<int*>((uint64_t)Local<Integer>::Cast(args[6])->Value());
+  struct phr_header * v7 = reinterpret_cast<struct phr_header *>((uint64_t)Local<Integer>::Cast(args[7])->Value());
+  size_t * v8 = reinterpret_cast<size_t *>((uint64_t)Local<Integer>::Cast(args[8])->Value());
+  uint64_t v9 = Local<Integer>::Cast(args[9])->Value();
+  int32_t rc = phr_parse_request(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t parse_requestFast(void* p, void* p0, uint32_t p1, void* p2, void* p3, void* p4, void* p5, void* p6, void* p7, void* p8, uint64_t p9) {
+  const char* v0 = reinterpret_cast<const char*>(p0);
+  uint32_t v1 = p1;
+  const char ** v2 = reinterpret_cast<const char **>(p2);
+  size_t * v3 = reinterpret_cast<size_t *>(p3);
+  const char ** v4 = reinterpret_cast<const char **>(p4);
+  size_t * v5 = reinterpret_cast<size_t *>(p5);
+  int* v6 = reinterpret_cast<int*>(p6);
+  struct phr_header * v7 = reinterpret_cast<struct phr_header *>(p7);
+  size_t * v8 = reinterpret_cast<size_t *>(p8);
+  uint64_t v9 = p9;
+  return phr_parse_request(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9);
+}
+void parse_responseSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  const char* v0 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int * v2 = reinterpret_cast<int *>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  int * v3 = reinterpret_cast<int *>((uint64_t)Local<Integer>::Cast(args[3])->Value());
+  const char ** v4 = reinterpret_cast<const char **>((uint64_t)Local<Integer>::Cast(args[4])->Value());
+  size_t * v5 = reinterpret_cast<size_t *>((uint64_t)Local<Integer>::Cast(args[5])->Value());
+  struct phr_header * v6 = reinterpret_cast<struct phr_header *>((uint64_t)Local<Integer>::Cast(args[6])->Value());
+  size_t * v7 = reinterpret_cast<size_t *>((uint64_t)Local<Integer>::Cast(args[7])->Value());
+  uint32_t v8 = Local<Integer>::Cast(args[8])->Value();
+  int32_t rc = phr_parse_response(v0, v1, v2, v3, v4, v5, v6, v7, v8);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t parse_responseFast(void* p, void* p0, uint32_t p1, void* p2, void* p3, void* p4, void* p5, void* p6, void* p7, uint32_t p8) {
+  const char* v0 = reinterpret_cast<const char*>(p0);
+  uint32_t v1 = p1;
+  int * v2 = reinterpret_cast<int *>(p2);
+  int * v3 = reinterpret_cast<int *>(p3);
+  const char ** v4 = reinterpret_cast<const char **>(p4);
+  size_t * v5 = reinterpret_cast<size_t *>(p5);
+  struct phr_header * v6 = reinterpret_cast<struct phr_header *>(p6);
+  size_t * v7 = reinterpret_cast<size_t *>(p7);
+  uint32_t v8 = p8;
+  return phr_parse_response(v0, v1, v2, v3, v4, v5, v6, v7, v8);
+}
+void decode_chunkedSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  struct phr_chunked_decoder * v0 = reinterpret_cast<struct phr_chunked_decoder *>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  char* v1 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  size_t* v2 = reinterpret_cast<size_t*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  int32_t rc = phr_decode_chunked(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t decode_chunkedFast(void* p, void* p0, void* p1, void* p2) {
+  struct phr_chunked_decoder * v0 = reinterpret_cast<struct phr_chunked_decoder *>(p0);
+  char* v1 = reinterpret_cast<char*>(p1);
+  size_t* v2 = reinterpret_cast<size_t*>(p2);
+  return phr_decode_chunked(v0, v1, v2);
+}
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
@@ -266,8 +383,12 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "parseRequest2", &pFparseRequest2, parseRequest2Slow);
   SET_FAST_METHOD(isolate, module, "parseResponse", &pFparseResponse, parseResponseSlow);
   SET_FAST_METHOD(isolate, module, "parseResponse2", &pFparseResponse2, parseResponse2Slow);
+  SET_FAST_METHOD(isolate, module, "parse_request", &pFparse_request, parse_requestSlow);
+  SET_FAST_METHOD(isolate, module, "parse_response", &pFparse_response, parse_responseSlow);
+  SET_FAST_METHOD(isolate, module, "decode_chunked", &pFdecode_chunked, decode_chunkedSlow);
 
 
+  SET_VALUE(isolate, module, "struct_phr_chunked_decoder_size", Integer::New(isolate, sizeof(phr_chunked_decoder)));
 
   SET_MODULE(isolate, target, "pico", module);
 }
