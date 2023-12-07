@@ -162,6 +162,18 @@ v8::CTypeInfo rcsend = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infosend = v8::CFunctionInfo(rcsend, 5, cargssend);
 v8::CFunction pFsend = v8::CFunction((const void*)&sendFast, &infosend);
 
+int32_t send_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1, uint32_t p3);
+v8::CTypeInfo cargssend_string[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcsend_string = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infosend_string = v8::CFunctionInfo(rcsend_string, 5, cargssend_string);
+v8::CFunction pFsend_string = v8::CFunction((const void*)&send_stringFast, &infosend_string);
+
 int32_t send2Fast(void* p, int32_t p0, void* p1, int32_t p2, uint32_t p3);
 v8::CTypeInfo cargssend2[5] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -284,7 +296,7 @@ v8::CTypeInfo rcread = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo inforead = v8::CFunctionInfo(rcread, 4, cargsread);
 v8::CFunction pFread = v8::CFunction((const void*)&readFast, &inforead);
 
-int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1, int32_t p2);
+int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1);
 v8::CTypeInfo cargswrite_string[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
@@ -479,6 +491,23 @@ int32_t sendFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, uint32
   uint32_t v2 = p2;
   int32_t v3 = p3;
   return send(v0, v1, v2, v3);
+}
+void send_stringSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  String::Utf8Value v1(isolate, args[1]);
+  int32_t v2 = v1.length();
+  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  int32_t rc = send(v0, *v1, v2, v3);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t send_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1, uint32_t p3) {
+  int32_t v0 = p0;
+  struct FastOneByteString* const v1 = p1;
+  int32_t v2 = p1->length;
+  uint32_t v3 = 0;
+  return send(v0, v1->data, v2, v3);
 }
 void send2Slow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -682,15 +711,15 @@ void write_stringSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   String::Utf8Value v1(isolate, args[1]);
-  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t v2 = v1.length();
   int32_t rc = write(v0, *v1, v2);
   args.GetReturnValue().Set(Number::New(isolate, rc));
 }
 
-int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1, int32_t p2) {
+int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1) {
   int32_t v0 = p0;
   struct FastOneByteString* const v1 = p1;
-  int32_t v2 = p2;
+  int32_t v2 = p1->length;
   return write(v0, v1->data, v2);
 }
 void writeSlow(const FunctionCallbackInfo<Value> &args) {
@@ -781,6 +810,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "close", &pFclose, closeSlow);
   SET_FAST_METHOD(isolate, module, "accept4", &pFaccept4, accept4Slow);
   SET_FAST_METHOD(isolate, module, "send", &pFsend, sendSlow);
+  SET_FAST_METHOD(isolate, module, "send_string", &pFsend_string, send_stringSlow);
   SET_FAST_METHOD(isolate, module, "send2", &pFsend2, send2Slow);
   SET_FAST_METHOD(isolate, module, "sendto", &pFsendto, sendtoSlow);
   SET_FAST_METHOD(isolate, module, "recv", &pFrecv, recvSlow);
@@ -798,6 +828,28 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "ioctl", &pFioctl, ioctlSlow);
   SET_FAST_METHOD(isolate, module, "ioctl2", &pFioctl2, ioctl2Slow);
 
+  SET_VALUE(isolate, module, "EINPROGRESS", Integer::New(isolate, EINPROGRESS));
+  SET_VALUE(isolate, module, "EAGAIN", Integer::New(isolate, EAGAIN));
+  SET_VALUE(isolate, module, "AF_INET", Integer::New(isolate, AF_INET));
+  SET_VALUE(isolate, module, "SOCK_STREAM", Integer::New(isolate, SOCK_STREAM));
+  SET_VALUE(isolate, module, "SOCK_NONBLOCK", Integer::New(isolate, SOCK_NONBLOCK));
+  SET_VALUE(isolate, module, "SOL_SOCKET", Integer::New(isolate, SOL_SOCKET));
+  SET_VALUE(isolate, module, "SO_REUSEPORT", Integer::New(isolate, SO_REUSEPORT));
+  SET_VALUE(isolate, module, "SOMAXCONN", Integer::New(isolate, SOMAXCONN));
+  SET_VALUE(isolate, module, "SOCK_CLOEXEC", Integer::New(isolate, SOCK_CLOEXEC));
+  SET_VALUE(isolate, module, "MSG_NOSIGNAL", Integer::New(isolate, MSG_NOSIGNAL));
+  SET_VALUE(isolate, module, "PF_PACKET", Integer::New(isolate, PF_PACKET));
+  SET_VALUE(isolate, module, "SOCK_DGRAM", Integer::New(isolate, SOCK_DGRAM));
+  SET_VALUE(isolate, module, "SOCK_RAW", Integer::New(isolate, SOCK_RAW));
+  SET_VALUE(isolate, module, "ETH_P_ALL", Integer::New(isolate, ETH_P_ALL));
+  SET_VALUE(isolate, module, "ETH_P_ARP", Integer::New(isolate, ETH_P_ARP));
+  SET_VALUE(isolate, module, "SIOCGIFADDR", Integer::New(isolate, SIOCGIFADDR));
+  SET_VALUE(isolate, module, "SIOCGIFHWADDR", Integer::New(isolate, SIOCGIFHWADDR));
+  SET_VALUE(isolate, module, "SIOCGIFINDEX", Integer::New(isolate, SIOCGIFINDEX));
+  SET_VALUE(isolate, module, "IPPROTO_RAW", Integer::New(isolate, IPPROTO_RAW));
+  SET_VALUE(isolate, module, "SIOCSIFFLAGS", Integer::New(isolate, SIOCSIFFLAGS));
+  SET_VALUE(isolate, module, "SIOCSIFADDR", Integer::New(isolate, SIOCSIFADDR));
+  SET_VALUE(isolate, module, "SIOCSIFNETMASK", Integer::New(isolate, SIOCSIFNETMASK));
 
 
   SET_MODULE(isolate, target, "net", module);
