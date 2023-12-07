@@ -45,6 +45,13 @@ ifneq ($(os),win)
 	rm -f v8-include.tar.gz
 endif
 
+v8/src: ## download the v8 source code for debugging
+	curl -L -o v8-src.tar.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/src.tar.gz
+	tar -xf v8-src.tar.gz
+ifneq ($(os),win)
+	rm -f v8-src.tar.gz
+endif
+
 v8/libv8_monolith.a: ## download the v8 static libary for linux/macos
 	curl -L -o v8/libv8_monolith.a.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.a.gz
 	gzip -d v8/libv8_monolith.a.gz
