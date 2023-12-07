@@ -57,7 +57,7 @@ jobs:
           name: lo-linux-x64
 
   build-linux-arm:
-#    if: ${{ false }}  # disable
+    if: ${{ false }}  # disable
     name: linux-arm64
     runs-on: ubuntu-22.04
     strategy:
