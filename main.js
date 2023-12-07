@@ -69,6 +69,18 @@ function addr (u32) {
   return u32[0] + ((2 ** 32) * u32[1])  
 }
 
+function check_mode (val, mode) {
+  return (val & S_IFMT) === mode
+}
+
+function is_file (path) {
+  const fd = open(path, O_RDONLY)
+  if (fd <= 2) return false
+  if (fstat(fd, stat) !== 0) return false
+  close(fd)
+  return check_mode(stat32[MODE_WORD], S_IFREG)
+}
+
 function read_file (path, flags = O_RDONLY, size = 0) {
   const fd = open(path, flags)
   assert(fd > 0, `failed to open ${path} with flags ${flags}`)
@@ -129,6 +141,7 @@ function load (name) {
   const sym = core.dlsym(handle, `_register_${name}`)
   if (!sym) return
   lib = library(sym)
+  lib.handle = handle
   if (!lib) return
   lib.fileName = `lib/${name}/${name}.so`
   libCache.set(name, lib)
@@ -284,12 +297,13 @@ const {
 const { core } = library('core')
 const {
   O_WRONLY, O_CREAT, O_TRUNC, O_RDONLY, S_IWUSR, S_IRUSR, S_IRGRP, S_IROTH,
-  STDIN, STDOUT, STDERR
+  S_IFREG, STDOUT, STDERR, S_IFMT
 } = core
 const {
   write_string, open, fstat, read, write, close
 } = core
 const noop = () => {}
+const MODE_WORD = core.arch === 'arm64' ? 4 : 6
 const AD = '\u001b[0m' // ANSI Default
 const A0 = '\u001b[30m' // ANSI Black
 const AR = '\u001b[31m' // ANSI Red
@@ -305,6 +319,7 @@ const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 const handle = new Uint32Array(2)
 const stat = new Uint8Array(160)
+const stat32 = new Uint32Array(stat.buffer)
 const st = new BigUint64Array(stat.buffer)
 const moduleCache = new Map()
 const requireCache = new Map()
@@ -343,13 +358,35 @@ const LO_CACHE = parseInt(lo.getenv('LO_CACHE') || '0', 10)
 core.dlopen = wrap(handle, core.dlopen, 2)
 core.dlsym = wrap(handle, core.dlsym, 2)
 core.mmap = wrap(handle, core.mmap, 6)
+core.isFile = is_file
 core.readFile = read_file
 core.writeFile = write_file
 // todo: optimize this - return numbers and make a single call to get both
 core.os = lo.os()
 core.arch = lo.arch()
-core.loader = core.sync_loader = noop
+//core.loader = core.sync_loader = noop
 lo.setModuleCallbacks(on_module_load, on_module_instantiate)
+
+// todo: fix this and write up/decide exactly what module resolution does
+// currently we check/open each file twice
+core.loader = specifier => {
+  if (is_file(specifier)) return
+  const home_path = `${LO_HOME}/${specifier}`
+  if (is_file(home_path)) return decoder.decode(read_file(home_path))
+}
+
+core.binding_loader = name => {
+  const handle = core.dlopen(`${LO_HOME}/lib/${name}/${name}.so`, 1)
+  if (!handle) return
+  const sym = core.dlsym(handle, `_register_${name}`)
+  if (!sym) return
+  const lib = library(sym)
+  if (!lib) return
+  lib.fileName = `lib/${name}/${name}.so`
+  lib.handle = handle
+  libCache.set(name, lib)
+  return lib
+}
 
 async function global_main () {
   // todo: upgrade, install etc. maybe install these as command scripts, but that would not be very secure

@@ -33,6 +33,15 @@ interface RuntimeVersion {
 
 interface Core {
   open(path: string, flags: number, mode: number);
+  dlsym(handle: number, name: string): number;
+  dlopen(path: string, flags: number): number;
+  strnlen(str: string, size: number);
+  readFile(path: string): Uint8Array;
+}
+
+declare class CString extends Uint8Array {
+  ptr: number;
+  size: number;
 }
 
 interface Runtime {
@@ -46,7 +55,7 @@ interface Runtime {
   libraries(): Array<string>;
   builtins(): Array<string>;
   assert(expression: any, message?: string | Function): any;
-  cstr(str: string): Uint8Array;
+  cstr(str: string): CString;
   load(name: string): any;
   library(name: string): any;
   /**
@@ -63,11 +72,10 @@ interface Runtime {
   utf8EncodeInto(str: string, buf: TypedArray): number;
   utf8EncodeIntoAtOffset(str: string, buf: TypedArray, off: number): number;
   utf8Decode(address: number, len?: number): string;
+  latin1Decode(address: number, len?: number): string;
   utf8Encode(str: sring): TypedArray;
   wrap(handle: TypedArray, fn: Function, plen: number): function;
   addr(handle: TypedArray): number;
-  dlsym(handle: number, name: string): number;
-  dlopen(path: string, flags: number): number;
   version: RuntimeVersion;
   args: Array<string>;
   workerSource: string;

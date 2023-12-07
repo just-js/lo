@@ -33,16 +33,16 @@ _binary_lib_path_js_start:
         .incbin "lib/path.js"
         .global _binary_lib_path_js_end
 _binary_lib_path_js_end:
-.global _binary_lib_inflate_js_start
-_binary_lib_inflate_js_start:
-        .incbin "lib/inflate.js"
-        .global _binary_lib_inflate_js_end
-_binary_lib_inflate_js_end:
 .global _binary_lib_curl_js_start
 _binary_lib_curl_js_start:
         .incbin "lib/curl.js"
         .global _binary_lib_curl_js_end
 _binary_lib_curl_js_end:
+.global _binary_lib_inflate_js_start
+_binary_lib_inflate_js_start:
+        .incbin "lib/inflate.js"
+        .global _binary_lib_inflate_js_end
+_binary_lib_inflate_js_end:
 .global _binary_lib_build_js_start
 _binary_lib_build_js_start:
         .incbin "lib/build.js"
@@ -118,16 +118,6 @@ _binary_lib_lz4_api_js_start:
         .incbin "lib/lz4/api.js"
         .global _binary_lib_lz4_api_js_end
 _binary_lib_lz4_api_js_end:
-.global _binary_lib_inflate_em_inflate_c_start
-_binary_lib_inflate_em_inflate_c_start:
-        .incbin "lib/inflate/em_inflate.c"
-        .global _binary_lib_inflate_em_inflate_c_end
-_binary_lib_inflate_em_inflate_c_end:
-.global _binary_lib_inflate_em_inflate_h_start
-_binary_lib_inflate_em_inflate_h_start:
-        .incbin "lib/inflate/em_inflate.h"
-        .global _binary_lib_inflate_em_inflate_h_end
-_binary_lib_inflate_em_inflate_h_end:
 .global _binary_lib_mbedtls_api_js_start
 _binary_lib_mbedtls_api_js_start:
         .incbin "lib/mbedtls/api.js"

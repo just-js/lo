@@ -21,8 +21,8 @@ void register_builtins() {
   lo::builtins_add("lib/untar.js", _binary_lib_untar_js_start, _binary_lib_untar_js_len);
   lo::builtins_add("lib/proc.js", _binary_lib_proc_js_start, _binary_lib_proc_js_len);
   lo::builtins_add("lib/path.js", _binary_lib_path_js_start, _binary_lib_path_js_len);
-  lo::builtins_add("lib/inflate.js", _binary_lib_inflate_js_start, _binary_lib_inflate_js_len);
   lo::builtins_add("lib/curl.js", _binary_lib_curl_js_start, _binary_lib_curl_js_len);
+  lo::builtins_add("lib/inflate.js", _binary_lib_inflate_js_start, _binary_lib_inflate_js_len);
   lo::builtins_add("lib/build.js", _binary_lib_build_js_start, _binary_lib_build_js_len);
   lo::builtins_add("lib/asm.js", _binary_lib_asm_js_start, _binary_lib_asm_js_len);
   lo::builtins_add("lib/ffi.js", _binary_lib_ffi_js_start, _binary_lib_ffi_js_len);
@@ -38,8 +38,6 @@ void register_builtins() {
   lo::builtins_add("lib/libffi/api.js", _binary_lib_libffi_api_js_start, _binary_lib_libffi_api_js_len);
   lo::builtins_add("lib/libssl/api.js", _binary_lib_libssl_api_js_start, _binary_lib_libssl_api_js_len);
   lo::builtins_add("lib/lz4/api.js", _binary_lib_lz4_api_js_start, _binary_lib_lz4_api_js_len);
-  lo::builtins_add("lib/inflate/em_inflate.c", _binary_lib_inflate_em_inflate_c_start, _binary_lib_inflate_em_inflate_c_len);
-  lo::builtins_add("lib/inflate/em_inflate.h", _binary_lib_inflate_em_inflate_h_start, _binary_lib_inflate_em_inflate_h_len);
   lo::builtins_add("lib/mbedtls/api.js", _binary_lib_mbedtls_api_js_start, _binary_lib_mbedtls_api_js_len);
   lo::builtins_add("lib/net/api.js", _binary_lib_net_api_js_start, _binary_lib_net_api_js_len);
   lo::builtins_add("lib/pico/api.js", _binary_lib_pico_api_js_start, _binary_lib_pico_api_js_len);

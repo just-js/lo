@@ -59,6 +59,9 @@
 - [ ] **bug**: for static libraries, we need to compile without -fPIC: https://stackoverflow.com/questions/28187163/how-do-you-link-a-static-library-to-a-shared-library
 - [ ] **todo**: change inflate builder to download the depencies rather than having them embedded in the runtime
 - [ ] **todo**: we need an SSE4 alternative (NEON?) for arm64 for picohttpparser
+- [ ] **todo**: handle bindings methods that are optional based on defines
+- [ ] **todo**: think about how we handle fork. can we handle it?
+- [ ] **bug**: we open file twice with the LO_HOME core loader - refactor this so it works better
 
 ## features
 

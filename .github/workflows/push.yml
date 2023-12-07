@@ -19,6 +19,7 @@ jobs:
       - name: compile runtime
         run: |
           make ARCH=${{ matrix.platform }} lo
+#          ./lo build binding core
       - name: check
         if: ${{ matrix.platform == 'x64' }}
         run: |
@@ -45,6 +46,7 @@ jobs:
       - name: compile
         run: |
           make lo
+#          ./lo build binding core
       - name: check
         run: |
           make check

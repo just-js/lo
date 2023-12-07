@@ -5,7 +5,7 @@ CCARGS=-std=c++17 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
 CARGS=-c -fno-omit-frame-pointer
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3
-VERSION=0.0.9-pre
+VERSION=0.0.10-pre
 V8_VERSION=1.0.0
 RUNTIME=lo
 LO_HOME=$(shell pwd)
@@ -43,6 +43,13 @@ v8/include: ## download the v8 headers
 	tar -xvf v8-include.tar.gz
 ifneq ($(os),win)
 	rm -f v8-include.tar.gz
+endif
+
+v8/src: ## download the v8 source code for debugging
+	curl -L -o v8-src.tar.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/src.tar.gz
+	tar -xf v8-src.tar.gz
+ifneq ($(os),win)
+	rm -f v8-src.tar.gz
 endif
 
 v8/libv8_monolith.a: ## download the v8 static libary for linux/macos
