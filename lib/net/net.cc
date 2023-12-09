@@ -139,6 +139,17 @@ v8::CTypeInfo rcclose = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoclose = v8::CFunctionInfo(rcclose, 2, cargsclose);
 v8::CFunction pFclose = v8::CFunction((const void*)&closeFast, &infoclose);
 
+int32_t acceptFast(void* p, int32_t p0, void* p1, void* p2);
+v8::CTypeInfo cargsaccept[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcaccept = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoaccept = v8::CFunctionInfo(rcaccept, 4, cargsaccept);
+v8::CFunction pFaccept = v8::CFunction((const void*)&acceptFast, &infoaccept);
+
 int32_t accept4Fast(void* p, int32_t p0, void* p1, void* p2, int32_t p3);
 v8::CTypeInfo cargsaccept4[5] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -456,6 +467,21 @@ void closeSlow(const FunctionCallbackInfo<Value> &args) {
 int32_t closeFast(void* p, int32_t p0) {
   int32_t v0 = p0;
   return close(v0);
+}
+void acceptSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  sockaddr* v1 = reinterpret_cast<sockaddr*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  socklen_t* v2 = reinterpret_cast<socklen_t*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  int32_t rc = accept(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t acceptFast(void* p, int32_t p0, void* p1, void* p2) {
+  int32_t v0 = p0;
+  sockaddr* v1 = reinterpret_cast<sockaddr*>(p1);
+  socklen_t* v2 = reinterpret_cast<socklen_t*>(p2);
+  return accept(v0, v1, v2);
 }
 void accept4Slow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -809,6 +835,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "connect", &pFconnect, connectSlow);
   SET_FAST_METHOD(isolate, module, "listen", &pFlisten, listenSlow);
   SET_FAST_METHOD(isolate, module, "close", &pFclose, closeSlow);
+  SET_FAST_METHOD(isolate, module, "accept", &pFaccept, acceptSlow);
   SET_FAST_METHOD(isolate, module, "accept4", &pFaccept4, accept4Slow);
   SET_FAST_METHOD(isolate, module, "send", &pFsend, sendSlow);
   SET_FAST_METHOD(isolate, module, "send_string", &pFsend_string, send_stringSlow);
