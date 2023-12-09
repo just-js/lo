@@ -45,13 +45,14 @@ function wrap (handle, fn, plen = 0) {
   const f = new Function(
     'handle',
     'call',
+    'bi',
     `return function ${fn.name} (${params}) {
     call(${params}${plen > 0 ? ', ' : ''}handle);
     const v = handle[0] + ((2 ** 32) * handle[1])
     if (!Number.isSafeInteger(v)) return bi[0]
     return handle[0] + ((2 ** 32) * handle[1]);
   }`,)
-  const fun = f(handle, call)
+  const fun = f(handle, call, bi)
   if (fn.state) fun.state = fn.state
   return fun
 }
