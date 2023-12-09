@@ -62,6 +62,8 @@
 - [ ] **todo**: handle bindings methods that are optional based on defines
 - [ ] **todo**: think about how we handle fork. can we handle it?
 - [ ] **bug**: we open file twice with the LO_HOME core loader - refactor this so it works better
+- [ ] **todo**: implement a way of building with a subset of bindings that work cross-platform for builder config - e.g. linux/mac
+                maybe just put ifdef macros in the bindings cpp source for different platforms? it's auto-generate so that's ok
 
 ## features
 
