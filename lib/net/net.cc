@@ -6,12 +6,13 @@
 #include <sys/un.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
-#include <linux/if_packet.h>
 #include <netinet/tcp.h>
 #include <netinet/if_ether.h>
 #include <sys/types.h>
-#include <sys/sendfile.h>
 #include <unistd.h>
+#include <linux/if_packet.h>
+#include <sys/sendfile.h>
+#include <linux/if_tun.h>
 #include <lo.h>
 
 namespace lo {
@@ -832,24 +833,31 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "EAGAIN", Integer::New(isolate, EAGAIN));
   SET_VALUE(isolate, module, "AF_INET", Integer::New(isolate, AF_INET));
   SET_VALUE(isolate, module, "SOCK_STREAM", Integer::New(isolate, SOCK_STREAM));
-  SET_VALUE(isolate, module, "SOCK_NONBLOCK", Integer::New(isolate, SOCK_NONBLOCK));
   SET_VALUE(isolate, module, "SOL_SOCKET", Integer::New(isolate, SOL_SOCKET));
   SET_VALUE(isolate, module, "SO_REUSEPORT", Integer::New(isolate, SO_REUSEPORT));
   SET_VALUE(isolate, module, "SOMAXCONN", Integer::New(isolate, SOMAXCONN));
-  SET_VALUE(isolate, module, "SOCK_CLOEXEC", Integer::New(isolate, SOCK_CLOEXEC));
   SET_VALUE(isolate, module, "MSG_NOSIGNAL", Integer::New(isolate, MSG_NOSIGNAL));
-  SET_VALUE(isolate, module, "PF_PACKET", Integer::New(isolate, PF_PACKET));
   SET_VALUE(isolate, module, "SOCK_DGRAM", Integer::New(isolate, SOCK_DGRAM));
   SET_VALUE(isolate, module, "SOCK_RAW", Integer::New(isolate, SOCK_RAW));
-  SET_VALUE(isolate, module, "ETH_P_ALL", Integer::New(isolate, ETH_P_ALL));
-  SET_VALUE(isolate, module, "ETH_P_ARP", Integer::New(isolate, ETH_P_ARP));
   SET_VALUE(isolate, module, "SIOCGIFADDR", Integer::New(isolate, SIOCGIFADDR));
-  SET_VALUE(isolate, module, "SIOCGIFHWADDR", Integer::New(isolate, SIOCGIFHWADDR));
-  SET_VALUE(isolate, module, "SIOCGIFINDEX", Integer::New(isolate, SIOCGIFINDEX));
   SET_VALUE(isolate, module, "IPPROTO_RAW", Integer::New(isolate, IPPROTO_RAW));
   SET_VALUE(isolate, module, "SIOCSIFFLAGS", Integer::New(isolate, SIOCSIFFLAGS));
   SET_VALUE(isolate, module, "SIOCSIFADDR", Integer::New(isolate, SIOCSIFADDR));
   SET_VALUE(isolate, module, "SIOCSIFNETMASK", Integer::New(isolate, SIOCSIFNETMASK));
+  SET_VALUE(isolate, module, "SOCK_NONBLOCK", Integer::New(isolate, SOCK_NONBLOCK));
+  SET_VALUE(isolate, module, "SOCKADDR_LEN", Integer::New(isolate, 16));
+  SET_VALUE(isolate, module, "SOCK_CLOEXEC", Integer::New(isolate, SOCK_CLOEXEC));
+  SET_VALUE(isolate, module, "PF_PACKET", Integer::New(isolate, PF_PACKET));
+  SET_VALUE(isolate, module, "ETH_P_ALL", Integer::New(isolate, ETH_P_ALL));
+  SET_VALUE(isolate, module, "ETH_P_ARP", Integer::New(isolate, ETH_P_ARP));
+  SET_VALUE(isolate, module, "SIOCGIFHWADDR", Integer::New(isolate, SIOCGIFHWADDR));
+  SET_VALUE(isolate, module, "SIOCGIFINDEX", Integer::New(isolate, SIOCGIFINDEX));
+  SET_VALUE(isolate, module, "IFF_TUN", Integer::New(isolate, IFF_TUN));
+  SET_VALUE(isolate, module, "IFF_TAP", Integer::New(isolate, IFF_TAP));
+  SET_VALUE(isolate, module, "IFF_NO_PI", Integer::New(isolate, IFF_NO_PI));
+  SET_VALUE(isolate, module, "IFF_UP", Integer::New(isolate, IFF_UP));
+  SET_VALUE(isolate, module, "TUNSETIFF", Integer::New(isolate, TUNSETIFF));
+  SET_VALUE(isolate, module, "TUNSETPERSIST", Integer::New(isolate, TUNSETPERSIST));
 
 
   SET_MODULE(isolate, target, "net", module);
