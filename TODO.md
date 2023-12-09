@@ -67,6 +67,7 @@
 - [ ] **todo**: add ability to download and build dependencies and build our own version of a binding (e.g. libssl) or dynamically link to system library - switch on command line?
 - [ ] **todo**: fix build.js for libssl so it works for compiling openssl from scratch
 - [ ] **todo**: add a safe_wrap method to main.js so we can wrap pointers with a check for maxsafeinteger
+- [ ] **todo**: when i do ```lo build binding <new_binding>``` generate binding definition with all cases covered and lots of comments, or not...
 
 ## features
 
