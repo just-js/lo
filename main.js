@@ -40,19 +40,16 @@ function assert (condition, message, ErrorType = Error) {
 function wrap (handle, fn, plen = 0) {
   const call = fn
   const params = (new Array(plen)).fill(0).map((_, i) => `p${i}`).join(', ')
-  const bi = new BigUint64Array(handle.buffer)
   // TODO: Number.IsSafeInteger check - return BigInt if not safe
   const f = new Function(
     'handle',
     'call',
-    'bi',
     `return function ${fn.name} (${params}) {
     call(${params}${plen > 0 ? ', ' : ''}handle);
     const v = handle[0] + ((2 ** 32) * handle[1])
-    if (!Number.isSafeInteger(v)) return bi[0]
     return handle[0] + ((2 ** 32) * handle[1]);
   }`,)
-  const fun = f(handle, call, bi)
+  const fun = f(handle, call)
   if (fn.state) fun.state = fn.state
   return fun
 }
