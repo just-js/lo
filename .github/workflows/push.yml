@@ -24,6 +24,7 @@ jobs:
         if: ${{ matrix.platform == 'x64' }}
         run: |
           make check
+          ./lo test/build.js
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
         with:
@@ -51,6 +52,7 @@ jobs:
       - name: check
         run: |
           make check
+          ./lo test/build.js
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
