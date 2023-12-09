@@ -8,8 +8,11 @@ v8
 *.exp
 *.lib
 *.so
+*.dylib
 lo
 .vscode
 scratch
 deps
 notes.md
+lib/inflate/em_inflate.c
+lib/inflate/em_inflate.h
