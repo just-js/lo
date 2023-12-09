@@ -42,6 +42,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: install libcurl
         run: |
+          sudo apt-get update -y
           sudo apt-get install -qy libcurl4-openssl-dev
       - name: compile
         run: |
