@@ -17,7 +17,6 @@ if (os === 'linux') {
 const bindings = (os === 'linux' ? [
   'core', 
   'curl',
-  'duckdb',
   'encode', 
   'epoll', 
   'inflate',
