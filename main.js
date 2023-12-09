@@ -40,12 +40,15 @@ function assert (condition, message, ErrorType = Error) {
 function wrap (handle, fn, plen = 0) {
   const call = fn
   const params = (new Array(plen)).fill(0).map((_, i) => `p${i}`).join(', ')
+  const bi = new BigUint64Array(handle.buffer)
   // TODO: Number.IsSafeInteger check - return BigInt if not safe
   const f = new Function(
     'handle',
     'call',
     `return function ${fn.name} (${params}) {
     call(${params}${plen > 0 ? ', ' : ''}handle);
+    const v = handle[0] + ((2 ** 32) * handle[1])
+    if (!Number.isSafeInteger(v)) return bi[0]
     return handle[0] + ((2 ** 32) * handle[1]);
   }`,)
   const fun = f(handle, call)
@@ -94,6 +97,7 @@ function read_file (path, flags = O_RDONLY, size = 0) {
   }
   let off = 0
   let len = 0
+  // todo - check for max size
   const u8 = new Uint8Array(size)
   while ((len = read(fd, u8, size - off)) > 0) off += len
   return u8
@@ -259,7 +263,7 @@ function on_unhandled_rejection (err) {
 }
 
 function on_load_builtin (identifier) {
-  if (identifier === '@workerSource') return workerSource
+  if (identifier === '/worker_source.js') return workerSource
   return builtin(identifier)
 }
 
@@ -369,6 +373,7 @@ lo.setModuleCallbacks(on_module_load, on_module_instantiate)
 
 // todo: fix this and write up/decide exactly what module resolution does
 // currently we check/open each file twice
+
 core.loader = specifier => {
   if (is_file(specifier)) return
   const home_path = `${LO_HOME}/${specifier}`
@@ -398,7 +403,7 @@ async function global_main () {
   } else if (command === 'eval') {
     (new Function(`return (${args[2]})`))()
   } else if (workerSource) {
-    import('@workerSource').catch(die)
+    import('/worker_source.js')
   } else {
     let filePath = command
     const { main, serve, test, bench } = await import(filePath)
