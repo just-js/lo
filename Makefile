@@ -25,6 +25,7 @@ else
 			LARGS+=-s
     else ifeq ($(UNAME_S),Darwin)
 			os=mac
+			LARGS+=-s
 			ifeq ($(ARCH),arm64)
 				LARGS+=-arch arm64
 				CARGS+=-arch arm64
