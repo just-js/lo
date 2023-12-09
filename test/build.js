@@ -1,18 +1,17 @@
 import { exec, exec_env } from 'lib/proc.js'
 import { isFile } from 'lib/fs.js'
 
-const { assert, core, colors } = lo
+const { assert, core, colors, getenv } = lo
 const { AD, AY } = colors
 const { os, unlink } = core
 
-let LINK = 'clang++'
-let C = 'clang'
-let CC = 'clang++'
-
+let C = getenv('C') || 'clang'
+let CC = getenv('CC') || 'clang++'
+let LINK = getenv('LINK') || 'clang++'
 if (os === 'linux') {
-  LINK = 'mold -run g++'
-  C = 'ccache gcc'
-  CC = 'ccache g++'
+  C = getenv('C') || 'gcc'
+  CC = getenv('CC') || 'g++'
+  LINK = getenv('LINK') || 'g++'
 }
 
 const bindings = (os === 'linux' ? [
