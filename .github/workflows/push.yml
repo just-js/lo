@@ -53,7 +53,7 @@ jobs:
       - name: check
         run: |
           make check
-          sudo apt-get install -qy libffi-dev libssl-dev liblz4-dev python3 python3-jsonschema python3-jinja2 libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev
+          sudo apt-get install -qy libffi-dev libssl-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
           ./lo test/build.js
       - name: upload artifact
         uses: actions/upload-artifact@v3
