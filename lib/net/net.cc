@@ -6,12 +6,13 @@
 #include <sys/un.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
-#include <linux/if_packet.h>
 #include <netinet/tcp.h>
 #include <netinet/if_ether.h>
 #include <sys/types.h>
-#include <sys/sendfile.h>
 #include <unistd.h>
+#include <linux/if_packet.h>
+#include <sys/sendfile.h>
+#include <linux/if_tun.h>
 #include <lo.h>
 
 namespace lo {
@@ -137,6 +138,17 @@ v8::CTypeInfo cargsclose[2] = {
 v8::CTypeInfo rcclose = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoclose = v8::CFunctionInfo(rcclose, 2, cargsclose);
 v8::CFunction pFclose = v8::CFunction((const void*)&closeFast, &infoclose);
+
+int32_t acceptFast(void* p, int32_t p0, void* p1, void* p2);
+v8::CTypeInfo cargsaccept[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcaccept = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoaccept = v8::CFunctionInfo(rcaccept, 4, cargsaccept);
+v8::CFunction pFaccept = v8::CFunction((const void*)&acceptFast, &infoaccept);
 
 int32_t accept4Fast(void* p, int32_t p0, void* p1, void* p2, int32_t p3);
 v8::CTypeInfo cargsaccept4[5] = {
@@ -455,6 +467,21 @@ void closeSlow(const FunctionCallbackInfo<Value> &args) {
 int32_t closeFast(void* p, int32_t p0) {
   int32_t v0 = p0;
   return close(v0);
+}
+void acceptSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  sockaddr* v1 = reinterpret_cast<sockaddr*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  socklen_t* v2 = reinterpret_cast<socklen_t*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  int32_t rc = accept(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t acceptFast(void* p, int32_t p0, void* p1, void* p2) {
+  int32_t v0 = p0;
+  sockaddr* v1 = reinterpret_cast<sockaddr*>(p1);
+  socklen_t* v2 = reinterpret_cast<socklen_t*>(p2);
+  return accept(v0, v1, v2);
 }
 void accept4Slow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -808,6 +835,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "connect", &pFconnect, connectSlow);
   SET_FAST_METHOD(isolate, module, "listen", &pFlisten, listenSlow);
   SET_FAST_METHOD(isolate, module, "close", &pFclose, closeSlow);
+  SET_FAST_METHOD(isolate, module, "accept", &pFaccept, acceptSlow);
   SET_FAST_METHOD(isolate, module, "accept4", &pFaccept4, accept4Slow);
   SET_FAST_METHOD(isolate, module, "send", &pFsend, sendSlow);
   SET_FAST_METHOD(isolate, module, "send_string", &pFsend_string, send_stringSlow);
@@ -832,24 +860,31 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "EAGAIN", Integer::New(isolate, EAGAIN));
   SET_VALUE(isolate, module, "AF_INET", Integer::New(isolate, AF_INET));
   SET_VALUE(isolate, module, "SOCK_STREAM", Integer::New(isolate, SOCK_STREAM));
-  SET_VALUE(isolate, module, "SOCK_NONBLOCK", Integer::New(isolate, SOCK_NONBLOCK));
   SET_VALUE(isolate, module, "SOL_SOCKET", Integer::New(isolate, SOL_SOCKET));
   SET_VALUE(isolate, module, "SO_REUSEPORT", Integer::New(isolate, SO_REUSEPORT));
   SET_VALUE(isolate, module, "SOMAXCONN", Integer::New(isolate, SOMAXCONN));
-  SET_VALUE(isolate, module, "SOCK_CLOEXEC", Integer::New(isolate, SOCK_CLOEXEC));
   SET_VALUE(isolate, module, "MSG_NOSIGNAL", Integer::New(isolate, MSG_NOSIGNAL));
-  SET_VALUE(isolate, module, "PF_PACKET", Integer::New(isolate, PF_PACKET));
   SET_VALUE(isolate, module, "SOCK_DGRAM", Integer::New(isolate, SOCK_DGRAM));
   SET_VALUE(isolate, module, "SOCK_RAW", Integer::New(isolate, SOCK_RAW));
-  SET_VALUE(isolate, module, "ETH_P_ALL", Integer::New(isolate, ETH_P_ALL));
-  SET_VALUE(isolate, module, "ETH_P_ARP", Integer::New(isolate, ETH_P_ARP));
   SET_VALUE(isolate, module, "SIOCGIFADDR", Integer::New(isolate, SIOCGIFADDR));
-  SET_VALUE(isolate, module, "SIOCGIFHWADDR", Integer::New(isolate, SIOCGIFHWADDR));
-  SET_VALUE(isolate, module, "SIOCGIFINDEX", Integer::New(isolate, SIOCGIFINDEX));
   SET_VALUE(isolate, module, "IPPROTO_RAW", Integer::New(isolate, IPPROTO_RAW));
   SET_VALUE(isolate, module, "SIOCSIFFLAGS", Integer::New(isolate, SIOCSIFFLAGS));
   SET_VALUE(isolate, module, "SIOCSIFADDR", Integer::New(isolate, SIOCSIFADDR));
   SET_VALUE(isolate, module, "SIOCSIFNETMASK", Integer::New(isolate, SIOCSIFNETMASK));
+  SET_VALUE(isolate, module, "SOCK_NONBLOCK", Integer::New(isolate, SOCK_NONBLOCK));
+  SET_VALUE(isolate, module, "SOCKADDR_LEN", Integer::New(isolate, 16));
+  SET_VALUE(isolate, module, "SOCK_CLOEXEC", Integer::New(isolate, SOCK_CLOEXEC));
+  SET_VALUE(isolate, module, "PF_PACKET", Integer::New(isolate, PF_PACKET));
+  SET_VALUE(isolate, module, "ETH_P_ALL", Integer::New(isolate, ETH_P_ALL));
+  SET_VALUE(isolate, module, "ETH_P_ARP", Integer::New(isolate, ETH_P_ARP));
+  SET_VALUE(isolate, module, "SIOCGIFHWADDR", Integer::New(isolate, SIOCGIFHWADDR));
+  SET_VALUE(isolate, module, "SIOCGIFINDEX", Integer::New(isolate, SIOCGIFINDEX));
+  SET_VALUE(isolate, module, "IFF_TUN", Integer::New(isolate, IFF_TUN));
+  SET_VALUE(isolate, module, "IFF_TAP", Integer::New(isolate, IFF_TAP));
+  SET_VALUE(isolate, module, "IFF_NO_PI", Integer::New(isolate, IFF_NO_PI));
+  SET_VALUE(isolate, module, "IFF_UP", Integer::New(isolate, IFF_UP));
+  SET_VALUE(isolate, module, "TUNSETIFF", Integer::New(isolate, TUNSETIFF));
+  SET_VALUE(isolate, module, "TUNSETPERSIST", Integer::New(isolate, TUNSETPERSIST));
 
 
   SET_MODULE(isolate, target, "net", module);

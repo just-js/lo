@@ -459,6 +459,17 @@ v8::CTypeInfo rcunlink = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infounlink = v8::CFunctionInfo(rcunlink, 2, cargsunlink);
 v8::CFunction pFunlink = v8::CFunction((const void*)&unlinkFast, &infounlink);
 
+int32_t openatFast(void* p, int32_t p0, struct FastOneByteString* const p1, int32_t p2);
+v8::CTypeInfo cargsopenat[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcopenat = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoopenat = v8::CFunctionInfo(rcopenat, 4, cargsopenat);
+v8::CFunction pFopenat = v8::CFunction((const void*)&openatFast, &infoopenat);
+
 void readdirFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargsreaddir[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -1075,6 +1086,21 @@ int32_t unlinkFast(void* p, struct FastOneByteString* const p0) {
   struct FastOneByteString* const v0 = p0;
   return unlink(v0->data);
 }
+void openatSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  String::Utf8Value v1(isolate, args[1]);
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = openat(v0, *v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t openatFast(void* p, int32_t p0, struct FastOneByteString* const p1, int32_t p2) {
+  int32_t v0 = p0;
+  struct FastOneByteString* const v1 = p1;
+  int32_t v2 = p2;
+  return openat(v0, v1->data, v2);
+}
 void readdirSlow(const FunctionCallbackInfo<Value> &args) {
   DIR* v0 = reinterpret_cast<DIR*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   dirent* rc = readdir(v0);
@@ -1623,6 +1649,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "access", &pFaccess, accessSlow);
   SET_FAST_METHOD(isolate, module, "open", &pFopen, openSlow);
   SET_FAST_METHOD(isolate, module, "unlink", &pFunlink, unlinkSlow);
+  SET_FAST_METHOD(isolate, module, "openat", &pFopenat, openatSlow);
   SET_FAST_METHOD(isolate, module, "readdir", &pFreaddir, readdirSlow);
   SET_FAST_METHOD(isolate, module, "readlink", &pFreadlink, readlinkSlow);
   SET_FAST_METHOD(isolate, module, "opendir", &pFopendir, opendirSlow);
@@ -1694,6 +1721,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "S_IFREG", Integer::New(isolate, S_IFREG));
   SET_VALUE(isolate, module, "NAME_MAX", Integer::New(isolate, NAME_MAX));
   SET_VALUE(isolate, module, "O_RDWR", Integer::New(isolate, O_RDWR));
+  SET_VALUE(isolate, module, "O_DIRECTORY", Integer::New(isolate, O_DIRECTORY));
 
 
   SET_MODULE(isolate, target, "core", module);

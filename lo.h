@@ -10,18 +10,6 @@
 #include <mach/mach.h>
 #endif
 
-#ifdef __cplusplus
-extern "C"
-    {
-#endif
-    extern 
-    int __xpg_strerror_r(int errcode,char* buffer,size_t length);
-    #define strerror_r __xpg_strerror_r
-
-#ifdef __cplusplus
-    }
-#endif
-
 namespace lo {
 
 // structs for passing typed arrays & strings in and out of v8 fast api calls

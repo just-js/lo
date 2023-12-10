@@ -976,6 +976,121 @@ v8::CTypeInfo rcEVP_sha512_224 = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infoEVP_sha512_224 = v8::CFunctionInfo(rcEVP_sha512_224, 2, cargsEVP_sha512_224);
 v8::CFunction pFEVP_sha512_224 = v8::CFunction((const void*)&EVP_sha512_224Fast, &infoEVP_sha512_224);
 
+void X509_newFast(void* p, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsX509_new[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcX509_new = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoX509_new = v8::CFunctionInfo(rcX509_new, 2, cargsX509_new);
+v8::CFunction pFX509_new = v8::CFunction((const void*)&X509_newFast, &infoX509_new);
+
+int32_t ASN1_INTEGER_setFast(void* p, void* p0, int32_t p1);
+v8::CTypeInfo cargsASN1_INTEGER_set[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcASN1_INTEGER_set = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoASN1_INTEGER_set = v8::CFunctionInfo(rcASN1_INTEGER_set, 3, cargsASN1_INTEGER_set);
+v8::CFunction pFASN1_INTEGER_set = v8::CFunction((const void*)&ASN1_INTEGER_setFast, &infoASN1_INTEGER_set);
+
+void X509_get_serialNumberFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsX509_get_serialNumber[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcX509_get_serialNumber = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoX509_get_serialNumber = v8::CFunctionInfo(rcX509_get_serialNumber, 3, cargsX509_get_serialNumber);
+v8::CFunction pFX509_get_serialNumber = v8::CFunction((const void*)&X509_get_serialNumberFast, &infoX509_get_serialNumber);
+
+void X509_time_adj_exFast(void* p, void* p0, int32_t p1, uint32_t p2, void* p3, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsX509_time_adj_ex[6] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcX509_time_adj_ex = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoX509_time_adj_ex = v8::CFunctionInfo(rcX509_time_adj_ex, 6, cargsX509_time_adj_ex);
+v8::CFunction pFX509_time_adj_ex = v8::CFunction((const void*)&X509_time_adj_exFast, &infoX509_time_adj_ex);
+
+void X509_gmtime_adjFast(void* p, void* p0, uint32_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsX509_gmtime_adj[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcX509_gmtime_adj = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoX509_gmtime_adj = v8::CFunctionInfo(rcX509_gmtime_adj, 4, cargsX509_gmtime_adj);
+v8::CFunction pFX509_gmtime_adj = v8::CFunction((const void*)&X509_gmtime_adjFast, &infoX509_gmtime_adj);
+
+void X509_getm_notBeforeFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsX509_getm_notBefore[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcX509_getm_notBefore = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoX509_getm_notBefore = v8::CFunctionInfo(rcX509_getm_notBefore, 3, cargsX509_getm_notBefore);
+v8::CFunction pFX509_getm_notBefore = v8::CFunction((const void*)&X509_getm_notBeforeFast, &infoX509_getm_notBefore);
+
+void X509_getm_notAfterFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsX509_getm_notAfter[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcX509_getm_notAfter = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoX509_getm_notAfter = v8::CFunctionInfo(rcX509_getm_notAfter, 3, cargsX509_getm_notAfter);
+v8::CFunction pFX509_getm_notAfter = v8::CFunction((const void*)&X509_getm_notAfterFast, &infoX509_getm_notAfter);
+
+int32_t X509_set_pubkeyFast(void* p, void* p0, void* p1);
+v8::CTypeInfo cargsX509_set_pubkey[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcX509_set_pubkey = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoX509_set_pubkey = v8::CFunctionInfo(rcX509_set_pubkey, 3, cargsX509_set_pubkey);
+v8::CFunction pFX509_set_pubkey = v8::CFunction((const void*)&X509_set_pubkeyFast, &infoX509_set_pubkey);
+
+int32_t X509_signFast(void* p, void* p0, void* p1, void* p2);
+v8::CTypeInfo cargsX509_sign[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcX509_sign = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoX509_sign = v8::CFunctionInfo(rcX509_sign, 4, cargsX509_sign);
+v8::CFunction pFX509_sign = v8::CFunction((const void*)&X509_signFast, &infoX509_sign);
+
+int32_t PEM_write_bio_X509Fast(void* p, void* p0, void* p1);
+v8::CTypeInfo cargsPEM_write_bio_X509[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcPEM_write_bio_X509 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoPEM_write_bio_X509 = v8::CFunctionInfo(rcPEM_write_bio_X509, 3, cargsPEM_write_bio_X509);
+v8::CFunction pFPEM_write_bio_X509 = v8::CFunction((const void*)&PEM_write_bio_X509Fast, &infoPEM_write_bio_X509);
+
+int32_t X509_set_issuer_nameFast(void* p, void* p0, void* p1);
+v8::CTypeInfo cargsX509_set_issuer_name[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcX509_set_issuer_name = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoX509_set_issuer_name = v8::CFunctionInfo(rcX509_set_issuer_name, 3, cargsX509_set_issuer_name);
+v8::CFunction pFX509_set_issuer_name = v8::CFunction((const void*)&X509_set_issuer_nameFast, &infoX509_set_issuer_name);
+
 
 
 void OpenSSL_versionSlow(const FunctionCallbackInfo<Value> &args) {
@@ -2170,6 +2285,159 @@ void EVP_sha512_224Fast(void* p, struct FastApiTypedArray* const p_ret) {
   ((const EVP_MD**)p_ret->data)[0] = r;
 
 }
+void X509_newSlow(const FunctionCallbackInfo<Value> &args) {
+
+  X509* rc = X509_new();
+  Local<ArrayBuffer> ab = args[0].As<Uint32Array>()->Buffer();
+  ((X509**)ab->Data())[0] = rc;
+}
+
+void X509_newFast(void* p, struct FastApiTypedArray* const p_ret) {
+
+  X509* r = X509_new();
+  ((X509**)p_ret->data)[0] = r;
+
+}
+void ASN1_INTEGER_setSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  ASN1_INTEGER* v0 = reinterpret_cast<ASN1_INTEGER*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t rc = ASN1_INTEGER_set(v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t ASN1_INTEGER_setFast(void* p, void* p0, int32_t p1) {
+  ASN1_INTEGER* v0 = reinterpret_cast<ASN1_INTEGER*>(p0);
+  int32_t v1 = p1;
+  return ASN1_INTEGER_set(v0, v1);
+}
+void X509_get_serialNumberSlow(const FunctionCallbackInfo<Value> &args) {
+  X509* v0 = reinterpret_cast<X509*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  ASN1_INTEGER* rc = X509_get_serialNumber(v0);
+  Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
+  ((ASN1_INTEGER**)ab->Data())[0] = rc;
+}
+
+void X509_get_serialNumberFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+  X509* v0 = reinterpret_cast<X509*>(p0);
+  ASN1_INTEGER* r = X509_get_serialNumber(v0);
+  ((ASN1_INTEGER**)p_ret->data)[0] = r;
+
+}
+void X509_time_adj_exSlow(const FunctionCallbackInfo<Value> &args) {
+  ASN1_TIME* v0 = reinterpret_cast<ASN1_TIME*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  time_t* v3 = reinterpret_cast<time_t*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
+  ASN1_TIME* rc = X509_time_adj_ex(v0, v1, v2, v3);
+  Local<ArrayBuffer> ab = args[4].As<Uint32Array>()->Buffer();
+  ((ASN1_TIME**)ab->Data())[0] = rc;
+}
+
+void X509_time_adj_exFast(void* p, void* p0, int32_t p1, uint32_t p2, void* p3, struct FastApiTypedArray* const p_ret) {
+  ASN1_TIME* v0 = reinterpret_cast<ASN1_TIME*>(p0);
+  int32_t v1 = p1;
+  uint32_t v2 = p2;
+  time_t* v3 = reinterpret_cast<time_t*>(p3);
+  ASN1_TIME* r = X509_time_adj_ex(v0, v1, v2, v3);
+  ((ASN1_TIME**)p_ret->data)[0] = r;
+
+}
+void X509_gmtime_adjSlow(const FunctionCallbackInfo<Value> &args) {
+  ASN1_TIME* v0 = reinterpret_cast<ASN1_TIME*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  ASN1_TIME* rc = X509_gmtime_adj(v0, v1);
+  Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
+  ((ASN1_TIME**)ab->Data())[0] = rc;
+}
+
+void X509_gmtime_adjFast(void* p, void* p0, uint32_t p1, struct FastApiTypedArray* const p_ret) {
+  ASN1_TIME* v0 = reinterpret_cast<ASN1_TIME*>(p0);
+  uint32_t v1 = p1;
+  ASN1_TIME* r = X509_gmtime_adj(v0, v1);
+  ((ASN1_TIME**)p_ret->data)[0] = r;
+
+}
+void X509_getm_notBeforeSlow(const FunctionCallbackInfo<Value> &args) {
+  X509* v0 = reinterpret_cast<X509*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  ASN1_TIME* rc = X509_getm_notBefore(v0);
+  Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
+  ((ASN1_TIME**)ab->Data())[0] = rc;
+}
+
+void X509_getm_notBeforeFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+  X509* v0 = reinterpret_cast<X509*>(p0);
+  ASN1_TIME* r = X509_getm_notBefore(v0);
+  ((ASN1_TIME**)p_ret->data)[0] = r;
+
+}
+void X509_getm_notAfterSlow(const FunctionCallbackInfo<Value> &args) {
+  X509* v0 = reinterpret_cast<X509*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  ASN1_TIME* rc = X509_getm_notAfter(v0);
+  Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
+  ((ASN1_TIME**)ab->Data())[0] = rc;
+}
+
+void X509_getm_notAfterFast(void* p, void* p0, struct FastApiTypedArray* const p_ret) {
+  X509* v0 = reinterpret_cast<X509*>(p0);
+  ASN1_TIME* r = X509_getm_notAfter(v0);
+  ((ASN1_TIME**)p_ret->data)[0] = r;
+
+}
+void X509_set_pubkeySlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  X509* v0 = reinterpret_cast<X509*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  EVP_PKEY* v1 = reinterpret_cast<EVP_PKEY*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  int32_t rc = X509_set_pubkey(v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t X509_set_pubkeyFast(void* p, void* p0, void* p1) {
+  X509* v0 = reinterpret_cast<X509*>(p0);
+  EVP_PKEY* v1 = reinterpret_cast<EVP_PKEY*>(p1);
+  return X509_set_pubkey(v0, v1);
+}
+void X509_signSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  X509* v0 = reinterpret_cast<X509*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  EVP_PKEY* v1 = reinterpret_cast<EVP_PKEY*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  const EVP_MD * v2 = reinterpret_cast<const EVP_MD *>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  int32_t rc = X509_sign(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t X509_signFast(void* p, void* p0, void* p1, void* p2) {
+  X509* v0 = reinterpret_cast<X509*>(p0);
+  EVP_PKEY* v1 = reinterpret_cast<EVP_PKEY*>(p1);
+  const EVP_MD * v2 = reinterpret_cast<const EVP_MD *>(p2);
+  return X509_sign(v0, v1, v2);
+}
+void PEM_write_bio_X509Slow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  BIO* v0 = reinterpret_cast<BIO*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  X509* v1 = reinterpret_cast<X509*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  int32_t rc = PEM_write_bio_X509(v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t PEM_write_bio_X509Fast(void* p, void* p0, void* p1) {
+  BIO* v0 = reinterpret_cast<BIO*>(p0);
+  X509* v1 = reinterpret_cast<X509*>(p1);
+  return PEM_write_bio_X509(v0, v1);
+}
+void X509_set_issuer_nameSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  X509* v0 = reinterpret_cast<X509*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const X509_NAME* v1 = reinterpret_cast<const X509_NAME*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  int32_t rc = X509_set_issuer_name(v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t X509_set_issuer_nameFast(void* p, void* p0, void* p1) {
+  X509* v0 = reinterpret_cast<X509*>(p0);
+  const X509_NAME* v1 = reinterpret_cast<const X509_NAME*>(p1);
+  return X509_set_issuer_name(v0, v1);
+}
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
@@ -2260,6 +2528,17 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "SSL_ctrl", &pFSSL_ctrl, SSL_ctrlSlow);
   SET_FAST_METHOD(isolate, module, "RSA_pkey_ctx_ctrl", &pFRSA_pkey_ctx_ctrl, RSA_pkey_ctx_ctrlSlow);
   SET_FAST_METHOD(isolate, module, "EVP_sha512_224", &pFEVP_sha512_224, EVP_sha512_224Slow);
+  SET_FAST_METHOD(isolate, module, "X509_new", &pFX509_new, X509_newSlow);
+  SET_FAST_METHOD(isolate, module, "ASN1_INTEGER_set", &pFASN1_INTEGER_set, ASN1_INTEGER_setSlow);
+  SET_FAST_METHOD(isolate, module, "X509_get_serialNumber", &pFX509_get_serialNumber, X509_get_serialNumberSlow);
+  SET_FAST_METHOD(isolate, module, "X509_time_adj_ex", &pFX509_time_adj_ex, X509_time_adj_exSlow);
+  SET_FAST_METHOD(isolate, module, "X509_gmtime_adj", &pFX509_gmtime_adj, X509_gmtime_adjSlow);
+  SET_FAST_METHOD(isolate, module, "X509_getm_notBefore", &pFX509_getm_notBefore, X509_getm_notBeforeSlow);
+  SET_FAST_METHOD(isolate, module, "X509_getm_notAfter", &pFX509_getm_notAfter, X509_getm_notAfterSlow);
+  SET_FAST_METHOD(isolate, module, "X509_set_pubkey", &pFX509_set_pubkey, X509_set_pubkeySlow);
+  SET_FAST_METHOD(isolate, module, "X509_sign", &pFX509_sign, X509_signSlow);
+  SET_FAST_METHOD(isolate, module, "PEM_write_bio_X509", &pFPEM_write_bio_X509, PEM_write_bio_X509Slow);
+  SET_FAST_METHOD(isolate, module, "X509_set_issuer_name", &pFX509_set_issuer_name, X509_set_issuer_nameSlow);
 
   SET_VALUE(isolate, module, "SSL_OP_ALL", BigInt::New(isolate, SSL_OP_ALL));
   SET_VALUE(isolate, module, "SSL_OP_NO_RENEGOTIATION", BigInt::New(isolate, SSL_OP_NO_RENEGOTIATION));
@@ -2271,6 +2550,18 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "SSL_OP_NO_TLSv1_2", BigInt::New(isolate, SSL_OP_NO_TLSv1_2));
   SET_VALUE(isolate, module, "SSL_OP_NO_SSLv2", BigInt::New(isolate, SSL_OP_NO_SSLv2));
   SET_VALUE(isolate, module, "SSL_OP_NO_COMPRESSION", BigInt::New(isolate, SSL_OP_NO_COMPRESSION));
+  SET_VALUE(isolate, module, "OPENSSL_VERSION_MAJOR", Integer::New(isolate, OPENSSL_VERSION_MAJOR));
+  SET_VALUE(isolate, module, "SSL_ERROR_WANT_READ", Integer::New(isolate, SSL_ERROR_WANT_READ));
+  SET_VALUE(isolate, module, "SSL_ERROR_WANT_WRITE", Integer::New(isolate, SSL_ERROR_WANT_WRITE));
+  SET_VALUE(isolate, module, "SSL_ERROR_SSL", Integer::New(isolate, SSL_ERROR_SSL));
+  SET_VALUE(isolate, module, "SSL_ERROR_WANT_X509_LOOKUP", Integer::New(isolate, SSL_ERROR_WANT_X509_LOOKUP));
+  SET_VALUE(isolate, module, "SSL_ERROR_WANT_CONNECT", Integer::New(isolate, SSL_ERROR_WANT_CONNECT));
+  SET_VALUE(isolate, module, "SSL_ERROR_WANT_ACCEPT", Integer::New(isolate, SSL_ERROR_WANT_ACCEPT));
+  SET_VALUE(isolate, module, "EVP_PKEY_RSA", Integer::New(isolate, EVP_PKEY_RSA));
+  SET_VALUE(isolate, module, "EVP_PKEY_OP_KEYGEN", Integer::New(isolate, EVP_PKEY_OP_KEYGEN));
+  SET_VALUE(isolate, module, "EVP_PKEY_CTRL_RSA_KEYGEN_BITS", Integer::New(isolate, EVP_PKEY_CTRL_RSA_KEYGEN_BITS));
+  SET_VALUE(isolate, module, "BIO_CTRL_PENDING", Integer::New(isolate, BIO_CTRL_PENDING));
+  SET_VALUE(isolate, module, "SSL_FILETYPE_PEM", Integer::New(isolate, SSL_FILETYPE_PEM));
 
 
   SET_MODULE(isolate, target, "libssl", module);

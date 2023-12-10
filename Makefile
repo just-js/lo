@@ -5,7 +5,7 @@ CCARGS=-std=c++17 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
 CARGS=-c -fno-omit-frame-pointer
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3
-VERSION=0.0.10-pre
+VERSION=0.0.11-pre
 V8_VERSION=1.0.0
 RUNTIME=lo
 LO_HOME=$(shell pwd)
@@ -25,6 +25,7 @@ else
 			LARGS+=-s
     else ifeq ($(UNAME_S),Darwin)
 			os=mac
+			LARGS+=-s -w
 			ifeq ($(ARCH),arm64)
 				LARGS+=-arch arm64
 				CARGS+=-arch arm64

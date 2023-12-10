@@ -1,3 +1,5 @@
+# lo test
+
 this folder contains tests and benchmarks for the lo runtime
 
 ## runtime.js
@@ -8,3 +10,13 @@ on the console
 ```
 lo test/runtime.js
 ```
+
+## dump.js
+
+this iterates over all the builtins and bindings in the runtime and dumps
+them on the console
+
+```
+lo test/dump.js
+```
+

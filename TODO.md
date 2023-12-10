@@ -62,6 +62,12 @@
 - [ ] **todo**: handle bindings methods that are optional based on defines
 - [ ] **todo**: think about how we handle fork. can we handle it?
 - [ ] **bug**: we open file twice with the LO_HOME core loader - refactor this so it works better
+- [ ] **todo**: implement a way of building with a subset of bindings that work cross-platform for builder config - e.g. linux/mac
+                maybe just put ifdef macros in the bindings cpp source for different platforms? it's auto-generate so that's ok
+- [ ] **todo**: add ability to download and build dependencies and build our own version of a binding (e.g. libssl) or dynamically link to system library - switch on command line?
+- [ ] **todo**: fix build.js for libssl so it works for compiling openssl from scratch
+- [ ] **todo**: add a safe_wrap method to main.js so we can wrap pointers with a check for maxsafeinteger
+- [ ] **todo**: when i do ```lo build binding <new_binding>``` generate binding definition with all cases covered and lots of comments, or not...
 
 ## features
 
