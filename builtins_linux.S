@@ -88,6 +88,16 @@ _binary_lib_curl_api_js_start:
         .incbin "lib/curl/api.js"
         .global _binary_lib_curl_api_js_end
 _binary_lib_curl_api_js_end:
+.global _binary_lib_duckdb_api_js_start
+_binary_lib_duckdb_api_js_start:
+        .incbin "lib/duckdb/api.js"
+        .global _binary_lib_duckdb_api_js_end
+_binary_lib_duckdb_api_js_end:
+.global _binary_lib_duckdb_build_js_start
+_binary_lib_duckdb_build_js_start:
+        .incbin "lib/duckdb/build.js"
+        .global _binary_lib_duckdb_build_js_end
+_binary_lib_duckdb_build_js_end:
 .global _binary_lib_encode_api_js_start
 _binary_lib_encode_api_js_start:
         .incbin "lib/encode/api.js"
@@ -103,6 +113,11 @@ _binary_lib_inflate_api_js_start:
         .incbin "lib/inflate/api.js"
         .global _binary_lib_inflate_api_js_end
 _binary_lib_inflate_api_js_end:
+.global _binary_lib_inflate_build_js_start
+_binary_lib_inflate_build_js_start:
+        .incbin "lib/inflate/build.js"
+        .global _binary_lib_inflate_build_js_end
+_binary_lib_inflate_build_js_end:
 .global _binary_lib_libffi_api_js_start
 _binary_lib_libffi_api_js_start:
         .incbin "lib/libffi/api.js"
@@ -123,6 +138,11 @@ _binary_lib_mbedtls_api_js_start:
         .incbin "lib/mbedtls/api.js"
         .global _binary_lib_mbedtls_api_js_end
 _binary_lib_mbedtls_api_js_end:
+.global _binary_lib_mbedtls_build_js_start
+_binary_lib_mbedtls_build_js_start:
+        .incbin "lib/mbedtls/build.js"
+        .global _binary_lib_mbedtls_build_js_end
+_binary_lib_mbedtls_build_js_end:
 .global _binary_lib_net_api_js_start
 _binary_lib_net_api_js_start:
         .incbin "lib/net/api.js"
@@ -133,6 +153,11 @@ _binary_lib_pico_api_js_start:
         .incbin "lib/pico/api.js"
         .global _binary_lib_pico_api_js_end
 _binary_lib_pico_api_js_end:
+.global _binary_lib_pico_build_js_start
+_binary_lib_pico_build_js_start:
+        .incbin "lib/pico/build.js"
+        .global _binary_lib_pico_build_js_end
+_binary_lib_pico_build_js_end:
 .global _binary_lib_pthread_api_js_start
 _binary_lib_pthread_api_js_start:
         .incbin "lib/pthread/api.js"
@@ -158,18 +183,23 @@ _binary_lib_tcc_api_js_start:
         .incbin "lib/tcc/api.js"
         .global _binary_lib_tcc_api_js_end
 _binary_lib_tcc_api_js_end:
+.global _binary_lib_tcc_build_js_start
+_binary_lib_tcc_build_js_start:
+        .incbin "lib/tcc/build.js"
+        .global _binary_lib_tcc_build_js_end
+_binary_lib_tcc_build_js_end:
 .global _binary_lib_wireguard_api_js_start
 _binary_lib_wireguard_api_js_start:
         .incbin "lib/wireguard/api.js"
         .global _binary_lib_wireguard_api_js_end
 _binary_lib_wireguard_api_js_end:
+.global _binary_lib_wireguard_build_js_start
+_binary_lib_wireguard_build_js_start:
+        .incbin "lib/wireguard/build.js"
+        .global _binary_lib_wireguard_build_js_end
+_binary_lib_wireguard_build_js_end:
 .global _binary_lib_zlib_api_js_start
 _binary_lib_zlib_api_js_start:
         .incbin "lib/zlib/api.js"
         .global _binary_lib_zlib_api_js_end
 _binary_lib_zlib_api_js_end:
-.global _binary_lib_duckdb_api_js_start
-_binary_lib_duckdb_api_js_start:
-        .incbin "lib/duckdb/api.js"
-        .global _binary_lib_duckdb_api_js_end
-_binary_lib_duckdb_api_js_end:

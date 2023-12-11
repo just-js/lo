@@ -5,7 +5,7 @@ CCARGS=-std=c++17 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
 CARGS=-c -fno-omit-frame-pointer
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3
-VERSION=0.0.11-pre
+VERSION=0.0.12-pre
 V8_VERSION=1.0.0
 RUNTIME=lo
 LO_HOME=$(shell pwd)
@@ -25,6 +25,7 @@ else
 			LARGS+=-s
     else ifeq ($(UNAME_S),Darwin)
 			os=mac
+			BINDINGS+=mach.o
 			LARGS+=-s -w
 			ifeq ($(ARCH),arm64)
 				LARGS+=-arch arm64
@@ -83,6 +84,9 @@ ${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js ## link the runtime for wi
 	cl /EHsc /std:c++17 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I./v8 /I./v8/include /c main.cc
 	cl /EHsc /std:c++17 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I./v8 /I./v8/include /c ${RUNTIME}.cc
 	cl v8/v8_monolith.lib ${RUNTIME}.obj main.obj winmm.lib dbghelp.lib advapi32.lib /link /out:${TARGET}.exe
+
+mach.o: lib/mach/mach.cc ## build the core binding
+	$(CC) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o mach.o lib/mach/mach.cc
 
 core.o: lib/core/core.cc ## build the core binding
 	$(CC) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o core.o lib/core/core.cc

@@ -89,6 +89,7 @@ extern char _binary_lib_zlib_api_js_start[];
 extern char _binary_lib_zlib_api_js_end[];
 
 extern "C" {
+  extern void* _register_mach();
   extern void* _register_core();
   extern void* _register_inflate();
   extern void* _register_curl();
@@ -136,6 +137,7 @@ void register_builtins() {
   lo::builtins_add("lib/wireguard/api.js", _binary_lib_wireguard_api_js_start, _binary_lib_wireguard_api_js_end - _binary_lib_wireguard_api_js_start);
   lo::builtins_add("lib/wireguard/build.js", _binary_lib_wireguard_build_js_start, _binary_lib_wireguard_build_js_end - _binary_lib_wireguard_build_js_start);
   lo::builtins_add("lib/zlib/api.js", _binary_lib_zlib_api_js_start, _binary_lib_zlib_api_js_end - _binary_lib_zlib_api_js_start);
+  lo::modules_add("mach", &_register_mach);
   lo::modules_add("core", &_register_core);
   lo::modules_add("inflate", &_register_inflate);
   lo::modules_add("curl", &_register_curl);

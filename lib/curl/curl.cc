@@ -333,18 +333,18 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "global_cleanup", &pFglobal_cleanup, global_cleanupSlow);
   SET_FAST_METHOD(isolate, module, "easy_getinfo", &pFeasy_getinfo, easy_getinfoSlow);
 
-  SET_VALUE(isolate, module, "CURLINFO_OFF_T", Integer::New(isolate, CURLINFO_OFF_T));
-  SET_VALUE(isolate, module, "CURL_GLOBAL_DEFAULT", Integer::New(isolate, CURL_GLOBAL_DEFAULT));
-  SET_VALUE(isolate, module, "CURLOPT_URL", Integer::New(isolate, CURLOPT_URL));
-  SET_VALUE(isolate, module, "CURLOPT_BUFFERSIZE", Integer::New(isolate, CURLOPT_BUFFERSIZE));
-  SET_VALUE(isolate, module, "CURLOPT_HTTP_VERSION", Integer::New(isolate, CURLOPT_HTTP_VERSION));
-  SET_VALUE(isolate, module, "CURL_HTTP_VERSION_1_1", Integer::New(isolate, CURL_HTTP_VERSION_1_1));
-  SET_VALUE(isolate, module, "CURLOPT_FOLLOWLOCATION", Integer::New(isolate, CURLOPT_FOLLOWLOCATION));
-  SET_VALUE(isolate, module, "CURLINFO_SIZE_DOWNLOAD_T", Integer::New(isolate, CURLINFO_SIZE_DOWNLOAD_T));
-  SET_VALUE(isolate, module, "CURLOPT_WRITEFUNCTION", Integer::New(isolate, CURLOPT_WRITEFUNCTION));
-  SET_VALUE(isolate, module, "CURLOPT_WRITEDATA", Integer::New(isolate, CURLOPT_WRITEDATA));
-  SET_VALUE(isolate, module, "CURLINFO_RESPONSE_CODE", Integer::New(isolate, CURLINFO_RESPONSE_CODE));
-  SET_VALUE(isolate, module, "CURLOPT_FAILONERROR", Integer::New(isolate, CURLOPT_FAILONERROR));
+  SET_VALUE(isolate, module, "CURLINFO_OFF_T", Integer::New(isolate, (int32_t)CURLINFO_OFF_T));
+  SET_VALUE(isolate, module, "CURL_GLOBAL_DEFAULT", Integer::New(isolate, (int32_t)CURL_GLOBAL_DEFAULT));
+  SET_VALUE(isolate, module, "CURLOPT_URL", Integer::New(isolate, (int32_t)CURLOPT_URL));
+  SET_VALUE(isolate, module, "CURLOPT_BUFFERSIZE", Integer::New(isolate, (int32_t)CURLOPT_BUFFERSIZE));
+  SET_VALUE(isolate, module, "CURLOPT_HTTP_VERSION", Integer::New(isolate, (int32_t)CURLOPT_HTTP_VERSION));
+  SET_VALUE(isolate, module, "CURL_HTTP_VERSION_1_1", Integer::New(isolate, (int32_t)CURL_HTTP_VERSION_1_1));
+  SET_VALUE(isolate, module, "CURLOPT_FOLLOWLOCATION", Integer::New(isolate, (int32_t)CURLOPT_FOLLOWLOCATION));
+  SET_VALUE(isolate, module, "CURLINFO_SIZE_DOWNLOAD_T", Integer::New(isolate, (int32_t)CURLINFO_SIZE_DOWNLOAD_T));
+  SET_VALUE(isolate, module, "CURLOPT_WRITEFUNCTION", Integer::New(isolate, (int32_t)CURLOPT_WRITEFUNCTION));
+  SET_VALUE(isolate, module, "CURLOPT_WRITEDATA", Integer::New(isolate, (int32_t)CURLOPT_WRITEDATA));
+  SET_VALUE(isolate, module, "CURLINFO_RESPONSE_CODE", Integer::New(isolate, (int32_t)CURLINFO_RESPONSE_CODE));
+  SET_VALUE(isolate, module, "CURLOPT_FAILONERROR", Integer::New(isolate, (int32_t)CURLOPT_FAILONERROR));
 
 
   SET_MODULE(isolate, target, "curl", module);

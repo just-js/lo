@@ -24,8 +24,8 @@ jobs:
         if: ${{ matrix.platform == 'x64' }}
         run: |
           make check
-          brew install libffi lz4 zstd
-          ./lo test/build.js
+          brew install libffi lz4 zstd jsonschema
+          LO_PREFIX=/usr/local/opt ./lo test/build.js
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
         with:

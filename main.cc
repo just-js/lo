@@ -1,4 +1,6 @@
-#ifdef _WIN32
+#ifdef __MACH__
+#include "main_mac.h"
+#elif defined(_WIN64)
 #include "main_win.h"
 #else
 #include "main.h"
