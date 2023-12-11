@@ -68,6 +68,9 @@
 - [ ] **todo**: fix build.js for libssl so it works for compiling openssl from scratch
 - [ ] **todo**: add a safe_wrap method to main.js so we can wrap pointers with a check for maxsafeinteger
 - [ ] **todo**: when i do ```lo build binding <new_binding>``` generate binding definition with all cases covered and lots of comments, or not...
+- [ ] **todo**: figure out a nice way to write modules that work on different platforms. can we pre-process the js in some way to only include code for that platform in the binary?
+- [ ] **bug**:  when i do ```lo build``` after downloading runtime it fails because em_inflate source files are not in the binary and the build script is not available in lib/inflate. how do we resolve this?
+- [ ] **question**: how do we model constants like RTLD_DEFAULT which seem to be pointers to things?
 
 ## features
 
