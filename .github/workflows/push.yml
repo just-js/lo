@@ -25,7 +25,7 @@ jobs:
         run: |
           make check
           brew install libffi lz4 zstd jsonschema
-          ./lo test/build.js
+          LO_PREFIX=/usr/local/opt ./lo test/build.js
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
         with:

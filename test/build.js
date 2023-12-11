@@ -36,7 +36,7 @@ const bindings = (os === 'linux' ? [
   'encode', 
   'inflate', 
   'libffi', 
-//  'libssl', 
+//  'libssl',  // we cannot have libssl and curl (with openssl) linked into same binary, or can we? it should work if we dynamically link
   'kevents',
   'mach',
   'net', 
