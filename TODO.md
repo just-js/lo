@@ -71,6 +71,8 @@
 - [ ] **todo**: figure out a nice way to write modules that work on different platforms. can we pre-process the js in some way to only include code for that platform in the binary?
 - [ ] **bug**:  when i do ```lo build``` after downloading runtime it fails because em_inflate source files are not in the binary and the build script is not available in lib/inflate. how do we resolve this?
 - [ ] **question**: how do we model constants like RTLD_DEFAULT which seem to be pointers to things?
+- [ ] **bug**:  on macos, when i do a ```lo build``` it generates same main.h for main.h main_win.h and main_mac.h
+- [ ] **todo**: we need a way to ignore auto-generated files for git, but also to be able to re-generate them to check in when we need to.
 
 ## features
 

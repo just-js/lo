@@ -1726,6 +1726,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "O_NONBLOCK", Integer::New(isolate, (int32_t)O_NONBLOCK));
   SET_VALUE(isolate, module, "RTLD_NOW", Integer::New(isolate, (int32_t)RTLD_NOW));
   SET_VALUE(isolate, module, "RTLD_LAZY", Integer::New(isolate, (int32_t)RTLD_LAZY));
+  SET_VALUE(isolate, module, "EAGAIN", Integer::New(isolate, (int32_t)EAGAIN));
 
 
   SET_MODULE(isolate, target, "core", module);
