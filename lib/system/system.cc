@@ -949,7 +949,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "free", &pFfree, freeSlow);
   SET_FAST_METHOD(isolate, module, "memfd_create", &pFmemfd_create, memfd_createSlow);
 
-  SET_VALUE(isolate, module, "_SC_CLK_TCK", Integer::New(isolate, _SC_CLK_TCK));
+  SET_VALUE(isolate, module, "_SC_CLK_TCK", Integer::New(isolate, (uint32_t)_SC_CLK_TCK));
 
 
   SET_MODULE(isolate, target, "system", module);

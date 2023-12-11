@@ -176,6 +176,20 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "wait", &pFwait, waitSlow);
   SET_FAST_METHOD(isolate, module, "close", &pFclose, closeSlow);
 
+  SET_VALUE(isolate, module, "EPOLLIN", Integer::New(isolate, (int32_t)EPOLLIN));
+  SET_VALUE(isolate, module, "EPOLLOUT", Integer::New(isolate, (int32_t)EPOLLOUT));
+  SET_VALUE(isolate, module, "EPOLLERR", Integer::New(isolate, (int32_t)EPOLLERR));
+  SET_VALUE(isolate, module, "EPOLLHUP", Integer::New(isolate, (int32_t)EPOLLHUP));
+  SET_VALUE(isolate, module, "EPOLL_CLOEXEC", Integer::New(isolate, (int32_t)EPOLL_CLOEXEC));
+  SET_VALUE(isolate, module, "EPOLLEXCLUSIVE", Integer::New(isolate, (int32_t)EPOLLEXCLUSIVE));
+  SET_VALUE(isolate, module, "EPOLLWAKEUP", Integer::New(isolate, (int32_t)EPOLLWAKEUP));
+  SET_VALUE(isolate, module, "EPOLLONESHOT", Integer::New(isolate, (int32_t)EPOLLONESHOT));
+  SET_VALUE(isolate, module, "EPOLLET", Integer::New(isolate, (int32_t)EPOLLET));
+  SET_VALUE(isolate, module, "EPOLL_CTL_ADD", Integer::New(isolate, (int32_t)EPOLL_CTL_ADD));
+  SET_VALUE(isolate, module, "EPOLL_CTL_DEL", Integer::New(isolate, (int32_t)EPOLL_CTL_DEL));
+  SET_VALUE(isolate, module, "EPOLL_CTL_MOD", Integer::New(isolate, (int32_t)EPOLL_CTL_MOD));
+  SET_VALUE(isolate, module, "EVENT_SIZE", Number::New(isolate, (int64_t)12));
+  SET_VALUE(isolate, module, "EAGAIN", Integer::New(isolate, (int32_t)EAGAIN));
 
 
   SET_MODULE(isolate, target, "epoll", module);
