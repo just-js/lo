@@ -835,6 +835,16 @@ v8::CTypeInfo rcstrnlen = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
 v8::CFunctionInfo infostrnlen = v8::CFunctionInfo(rcstrnlen, 3, cargsstrnlen);
 v8::CFunction pFstrnlen = v8::CFunction((const void*)&strnlenFast, &infostrnlen);
 
+uint32_t strnlen_strFast(void* p, struct FastOneByteString* const p0);
+v8::CTypeInfo cargsstrnlen_str[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+};
+v8::CTypeInfo rcstrnlen_str = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
+v8::CFunctionInfo infostrnlen_str = v8::CFunctionInfo(rcstrnlen_str, 3, cargsstrnlen_str);
+v8::CFunction pFstrnlen_str = v8::CFunction((const void*)&strnlen_strFast, &infostrnlen_str);
+
 
 
 void dlopenSlow(const FunctionCallbackInfo<Value> &args) {
@@ -1629,6 +1639,19 @@ uint32_t strnlenFast(void* p, void* p0, uint32_t p1) {
   uint32_t v1 = p1;
   return strnlen(v0, v1);
 }
+void strnlen_strSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  uint32_t v1 = v0.length();
+  uint32_t rc = strnlen(*v0, v1);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+uint32_t strnlen_strFast(void* p, struct FastOneByteString* const p0) {
+  struct FastOneByteString* const v0 = p0;
+  uint32_t v1 = p0->length;
+  return strnlen(v0->data, v1);
+}
 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
@@ -1689,6 +1712,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "isolate_context_size", &pFisolate_context_size, isolate_context_sizeSlow);
   SET_METHOD(isolate, module, "isolate_start", isolate_startSlow);
   SET_FAST_METHOD(isolate, module, "strnlen", &pFstrnlen, strnlenSlow);
+  SET_FAST_METHOD(isolate, module, "strnlen_str", &pFstrnlen_str, strnlen_strSlow);
 
   SET_VALUE(isolate, module, "S_IFBLK", Integer::New(isolate, (int32_t)S_IFBLK));
   SET_VALUE(isolate, module, "S_IFCHR", Integer::New(isolate, (int32_t)S_IFCHR));
