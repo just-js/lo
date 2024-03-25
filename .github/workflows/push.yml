@@ -22,7 +22,7 @@ jobs:
       - name: check
         if: ${{ matrix.platform == 'x64' }}
         env:
-          LO_HOME: ${{ github.workspace }}/lo
+          LO_HOME: ${{ github.workspace }}
           PREFIX: /usr/local/opt/
         run: |
           make check
@@ -53,7 +53,7 @@ jobs:
           make lo
       - name: check
         env:
-          LO_HOME: ${{ github.workspace }}/lo
+          LO_HOME: ${{ github.workspace }}
         run: |
           make check
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
