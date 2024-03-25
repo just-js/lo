@@ -1,7 +1,7 @@
 C=clang
 CC=clang++
 LINK=clang++
-LARGS=-rdynamic -pthread -static-libgcc -static-libstdc++
+LARGS=-rdynamic -pthread -static-libstdc++
 CCARGS=-std=c++17 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
 CARGS=-c -fno-omit-frame-pointer
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
@@ -23,7 +23,7 @@ else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Linux)
 		os=linux
-		LARGS+=-s
+		LARGS+=-s -static-libgcc
 		C=gcc
 		CC=g++
 		LINK=g++

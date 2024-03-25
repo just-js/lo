@@ -22,3 +22,7 @@ lib/**/*.cc
 !lib/inflate/inflate.cc
 !lib/mach/mach.cc
 .lo_history
+lib/bestlines/bestline.c
+lib/bestlines/bestline.h
+lib/pico/picohttpparser.c
+lib/pico/picohttpparser.h

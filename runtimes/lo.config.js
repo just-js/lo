@@ -84,6 +84,7 @@ const v8_opts = {
   v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --cppgc-young-generation'
 }
 
-const link_type = '-rdynamic -static-libstdc++ -static-libgcc'
+let link_type = '-rdynamic -static-libstdc++'
+if (lo.core.os === 'linux') link_type += ' -static-libgcc'
 
 export default { bindings, libs, embeds, target, opt, v8_opts, link_type }
