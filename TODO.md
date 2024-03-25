@@ -81,6 +81,13 @@
 - [ ] **todo**: when building, do some pre-processing like stripping comments, minification and compression
 - [ ] **bug**: bug in linux event loop where event loop drops out after all tcp server connections go away. but we should still have the server fd and the timer on the loop
 - [ ] **todo**: allow setting arch: ```['arm64', 'x64']``` on bindings definitions so we can exclude for certain arches (e.g. boringssl)
+- [ ] **bug**: cannot compile boringssl with -fPIC
+- [ ] **bug**: SIGWNCH kills the app
+- [ ] **todo**: change console.log and console.error in threads so they don't write to stdout and stderr
+- [ ] **todo**: try/catch in loop callback and call on_error if we get an error
+- [ ] **todo**: make build.js build method async
+- [ ] **todo**: add a method for reading a bindary builtin into a buffer, or even just reading it as a memory stream. - wrapmemory? mmap? memfd_create?
+
 ## features
 
 - [ ] **commands**: ability to host command scripts so i can run ```lo cmd blah``` and it will run blah.js from cmd direction in current dir or $HOME/.lo/cmd

@@ -4,6 +4,7 @@
 #include <libplatform/libplatform.h>
 #include <map>
 #include <v8-fast-api-calls.h>
+#include <unistd.h>
 
 #ifdef __MACH__
 #include <mach/clock.h>
@@ -95,10 +96,10 @@ int CreateIsolate(int argc, char** argv,
   const char* main, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname,
-  int cleanup, int onexit, const v8::StartupData* startup_data);
+  int cleanup, int onexit, void* startup_data);
 int CreateIsolate(int argc, char** argv,
   const char* main, unsigned int main_len, uint64_t start,
-  const char* globalobj, int cleanup, int onexit, const v8::StartupData* startup_data);
+  const char* globalobj, int cleanup, int onexit, void* startup_data);
 void PrintStackTrace(v8::Isolate* isolate, const v8::TryCatch& try_catch);
 void PromiseRejectCallback(v8::PromiseRejectMessage message);
 void FreeMemory(void* buf, size_t length, void* data);
@@ -107,14 +108,15 @@ void FreeMemory(void* buf, size_t length, void* data);
 void Print(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Builtin(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Builtins(const v8::FunctionCallbackInfo<v8::Value> &args);
-void EvaluateModule(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Library(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Libraries(const v8::FunctionCallbackInfo<v8::Value> &args);
 void LoadModule(const v8::FunctionCallbackInfo<v8::Value> &args);
+void EvaluateModule(const v8::FunctionCallbackInfo<v8::Value> &args);
+void SetModuleCallbacks(const v8::FunctionCallbackInfo<v8::Value> &args);
 void NextTick(const v8::FunctionCallbackInfo<v8::Value> &args);
 void RegisterCallback(const v8::FunctionCallbackInfo<v8::Value> &args);
 void RunMicroTasks(const v8::FunctionCallbackInfo<v8::Value> &args);
-void SetModuleCallbacks(const v8::FunctionCallbackInfo<v8::Value> &args);
+void PumpMessageLoop(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Latin1Decode(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Utf8Decode(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Utf8Encode(const v8::FunctionCallbackInfo<v8::Value> &args);
@@ -123,6 +125,9 @@ void SetFlags(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Arch(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Os(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Exit(const v8::FunctionCallbackInfo<v8::Value> &args);
+void WrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
+void UnWrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
+void GetMeta(const v8::FunctionCallbackInfo<v8::Value> &args);
 
 // fast api methods
 void GetAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
@@ -134,16 +139,12 @@ void Utf8EncodeIntoAtOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
 int32_t fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf, uint32_t off);
 void Utf8Length(const v8::FunctionCallbackInfo<v8::Value> &args);
 int32_t fastUtf8Length (void* p, struct FastOneByteString* const p_ret);
-
 void HRTime(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastHRTime (void* p, struct FastApiTypedArray* const p_ret);
 void ReadMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastReadMemory (void* p, struct FastApiTypedArray* const p_buf, void* start, uint32_t size);
 void ReadMemoryAtOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
 void fastReadMemoryAtOffset (void* p, struct FastApiTypedArray* const p_buf, void* start, uint32_t size, uint32_t off);
-void WrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
-void UnWrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
-void GetMeta(const v8::FunctionCallbackInfo<v8::Value> &args);
 
 // fast api properties
 void GetErrno(const v8::FunctionCallbackInfo<v8::Value> &args);
@@ -197,8 +198,18 @@ void lo_destroy_isolate_context (struct isolate_context* ctx);
 struct exec_info {
   v8::Global<v8::Function> js_fn;
   v8::Isolate* isolate;
+  uint64_t rv;
+  int nargs;
 };
+
+struct callback_state {
+  volatile int current = 0;
+  int max_contexts = 0;
+  exec_info** contexts;
+};
+
 void lo_callback (exec_info* info);
+void lo_async_callback (exec_info* info, callback_state* state);
 
 #ifdef __cplusplus
     }

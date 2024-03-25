@@ -1,5 +1,7 @@
 // global classes
 
+function bootstrap_runtime () {
+
 class TextEncoder {
   encoding = 'utf-8'
 
@@ -98,6 +100,7 @@ function read_file (path, flags = O_RDONLY, size = 0) {
   // todo - check for max size
   const u8 = new Uint8Array(size)
   while ((len = read(fd, u8, size - off)) > 0) off += len
+  close(fd)
   return u8
 }
 
@@ -138,7 +141,8 @@ function load (name) {
     return lib
   }
   // todo: we leak this handle - need to be able to unload
-  const handle = core.dlopen(`lib/${name}/${name}.so`, 1)
+  const handle = core.dlopen(`lib/${name}/${name}.so`, RTLD_LAZY) ||
+    core.dlopen(`${LO_HOME}/lib/${name}/${name}.so`, RTLD_LAZY)
   if (!handle) return
   const sym = core.dlsym(handle, `_register_${name}`)
   if (!sym) return
@@ -164,7 +168,7 @@ function load_source_sync (specifier) {
     try {
       src = decoder.decode(read_file(specifier))
     } catch (err) {
-      src = decoder.decode(read_file(`${LO_HOME}${specifier}`))
+      src = decoder.decode(read_file(`${LO_HOME}/${specifier}`))
     }
   }
   return src
@@ -183,7 +187,7 @@ async function load_source (specifier) {
     try {
       src = decoder.decode(read_file(specifier))
     } catch (err) {
-      src = decoder.decode(read_file(`${LO_HOME}${specifier}`))
+      src = decoder.decode(read_file(`${LO_HOME}/${specifier}`))
     }
   }
   return src
@@ -257,11 +261,19 @@ function require (file_path) {
 */
 function on_unhandled_rejection (err) {
   console.error(`${AR}Unhandled Rejection${AD}`)
-  die(err, true)
+  console.error(err.stack)
+  //die(err, true)
 }
 
+const builtin_cache = new Map()
+
 function on_load_builtin (identifier) {
-  if (identifier === '/worker_source.js') return workerSource
+  if (builtin_cache.has(identifier)) return builtin_cache.get(identifier)
+  if (identifier === '/worker_source.js') {
+    builtin_cache.set(identifier, workerSource)
+    return workerSource
+  }
+  builtin_cache.set(identifier, builtin(identifier))
   return builtin(identifier)
 }
 
@@ -299,22 +311,28 @@ const {
 const { core } = library('core')
 const {
   O_WRONLY, O_CREAT, O_TRUNC, O_RDONLY, S_IWUSR, S_IRUSR, S_IRGRP, S_IROTH,
-  S_IFREG, STDOUT, STDERR, S_IFMT
+  S_IFREG, STDOUT, STDERR, S_IFMT, RTLD_LAZY, RTLD_NOW
 } = core
 const {
   write_string, open, fstat, read, write, close
 } = core
-const noop = () => {}
-const MODE_WORD = core.arch === 'arm64' ? 4 : 6
-const AD = '\u001b[0m' // ANSI Default
-const A0 = '\u001b[30m' // ANSI Black
-const AR = '\u001b[31m' // ANSI Red
-const AG = '\u001b[32m' // ANSI Green
-const AY = '\u001b[33m' // ANSI Yellow
-const AB = '\u001b[34m' // ANSI Blue
-const AM = '\u001b[35m' // ANSI Magenta
-const AC = '\u001b[36m' // ANSI Cyan
-const AW = '\u001b[37m' // ANSI White
+
+function little_endian () {
+  const buffer = new ArrayBuffer(2)
+  new DataView(buffer).setInt16(0, 256, true)
+  return new Int16Array(buffer)[0] === 256
+}
+
+const isatty = core.isatty(STDOUT)
+const AD = isatty ? '\u001b[0m' : '' // ANSI Default
+const A0 = isatty ? '\u001b[30m' : '' // ANSI Black
+const AR = isatty ? '\u001b[31m' : '' // ANSI Red
+const AG = isatty ? '\u001b[32m' : '' // ANSI Green
+const AY = isatty ? '\u001b[33m' : '' // ANSI Yellow
+const AB = isatty ? '\u001b[34m' : '' // ANSI Blue
+const AM = isatty ? '\u001b[35m' : '' // ANSI Magenta
+const AC = isatty ? '\u001b[36m' : '' // ANSI Cyan
+const AW = isatty ? '\u001b[37m' : '' // ANSI White
 const defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC
 const defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 const encoder = new TextEncoder()
@@ -355,23 +373,64 @@ lo.core = core
 // todo: should we just overwrite the existing ones and not put these on "lo"?
 lo.getenv = wrap_getenv()
 lo.getcwd = wrap_getcwd()
-const LO_HOME = lo.getenv('LO_HOME') || './'
+const LO_HOME = lo.getenv('LO_HOME') || lo.getcwd()
 const LO_CACHE = parseInt(lo.getenv('LO_CACHE') || '0', 10)
+core.homedir = LO_HOME
 core.dlopen = wrap(handle, core.dlopen, 2)
 core.dlsym = wrap(handle, core.dlsym, 2)
 core.mmap = wrap(handle, core.mmap, 6)
 core.isFile = is_file
-core.readFile = read_file
-core.writeFile = write_file
+core.read_file = read_file
+core.write_file = write_file
+core.little_endian = little_endian()
+
 // todo: optimize this - return numbers and make a single call to get both
 core.os = lo.os()
 core.arch = lo.arch()
+const MODE_WORD = core.arch === 'arm64' ? 4 : 6
+const _builtins = lo.builtins()
+lo.builtins = () => _builtins
+const _libraries = lo.libraries()
+lo.libraries = () => _libraries
+//delete lo.library
+//const noop = () => {}
 //core.loader = core.sync_loader = noop
 lo.setModuleCallbacks(on_module_load, on_module_instantiate)
 
+// TODO: remove camel case names when we do a cleanup
+
+core.readFile = read_file
+core.writeFile = write_file
+lo.evaluate_module = lo.evaluateModule
+lo.get_address = lo.getAddress
+lo.get_meta = lo.getMeta
+lo.latin1_decode = lo.latin1Decode
+lo.lib_cache = lo.libCache
+lo.load_module = lo.loadModule
+lo.module_cache = lo.moduleCache
+lo.next_tick = lo.nextTick
+lo.pump_message_loop = lo.pumpMessageLoop
+lo.read_memory = lo.readMemory
+lo.read_memory_at_offset = lo.readMemoryAtOffset
+lo.register_callback = lo.registerCallback
+lo.require_cache = lo.requireCache
+lo.run_microtasks = lo.runMicroTasks
+lo.run_script = lo.runScript
+lo.set_flags = lo.setFlags
+lo.set_module_callbacks = lo.setModuleCallbacks
+lo.unwrap_memory = lo.unwrapMemory
+lo.utf8_decode = lo.utf8Decode
+lo.utf8_encode = lo.utf8Encode
+lo.uft8_encode_into = lo.utf8EncodeInto
+lo.utf8_encode_into_at_offset = lo.utf8EncodeIntoAtOffset
+lo.utf8_length = lo.utf8Length
+lo.wrap_memory = lo.wrapMemory
+
+
+
 // todo: fix this and write up/decide exactly what module resolution does
 // currently we check/open each file twice
-
+/*
 core.loader = specifier => {
   if (is_file(specifier)) return
   const home_path = `${LO_HOME}/${specifier}`
@@ -390,6 +449,7 @@ core.binding_loader = name => {
   libCache.set(name, lib)
   return lib
 }
+*/
 
 async function global_main () {
   // todo: upgrade, install etc. maybe install these as command scripts, but that would not be very secure
@@ -398,10 +458,10 @@ async function global_main () {
     (await import('lib/gen.js')).gen(args.slice(2))
   } else if (command === 'build') {
     (await import('lib/build.js')).build(args.slice(2))
+  } else if (command === 'repl') {
+    (await import('lib/repl.js')).repl().catch(die)
   } else if (command === 'eval') {
-    (new Function(`return (${args[2]})`))()
-  } else if (workerSource) {
-    import('/worker_source.js')
+    await (new AsyncFunction(args[2]))()
   } else {
     let filePath = command
     const { main, serve, test, bench } = await import(filePath)
@@ -413,6 +473,15 @@ async function global_main () {
   }
 }
 
-global_main().catch(die)
+const AsyncFunction = async function () {}.constructor
+
+if (workerSource) {
+  import('/worker_source.js').catch(die)
+} else if (args.length > 1) {
+  global_main().catch(die)
+}
+} // end bootstrap_runtime
+
+bootstrap_runtime()
 
 export {}

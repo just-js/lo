@@ -1,33 +1,3 @@
-const EPOLL_CLOEXEC = 524288
-const EPOLLIN = 0x1
-
-interface eventCallback { ( fd: number, events: number ): void };
-
-declare class Loop {
-  constructor(nevents?: 4096, flags?: EPOLL_CLOEXEC);
-  readonly size: Number;
-  static readonly Writable: number;
-  static readonly EdgeTriggered: number;
-  static readonly Readable: number;
-  static readonly Blocked: number;
-
-  /**
-   * Add a system resource file descriptor to the event loop with a related callback
-   * @param fd file descriptor for socket/file/timer system resource
-   * @param callback callback function that is called when an event occurs on fd
-   * @param flags optional flags - Loop.Readable | Loop.Writable | Loop.EdgeTriggered, default = Loop.Readable + Level Triggered
-   * @param errHandler optional callback called when we get ERR or HUP on fd
-   */
-  add(fd: number, callback: eventCallback, flags?: EPOLLIN, errHandler?: function): number;
-  modify(fd: number, flags?: EPOLLIN, callback: eventCallback, errHandler?: function): number;
-  remove(fd: number): number;
-  poll(timeout?: number): number;
-};
-
-export interface bindings {
-  Loop: Loop;
-};
-
 declare class TextEncoder {
   /**
    * The encoding supported by the `TextEncoder` instance. Always set to `'utf-8'`.
@@ -66,7 +36,8 @@ interface Core {
   dlsym(handle: number, name: string): number;
   dlopen(path: string, flags: number): number;
   strnlen(str: string, size: number);
-  readFile(path: string): Uint8Array;
+  read_file(path: string): Uint8Array;
+  write_file(path: string, buffer: Uint8Array): void;
 }
 
 declare class CString extends Uint8Array {
@@ -101,7 +72,7 @@ interface Runtime {
   utf8Length(str: string): number;
   utf8EncodeInto(str: string, buf: TypedArray): number;
   utf8EncodeIntoAtOffset(str: string, buf: TypedArray, off: number): number;
-  utf8Decode(address: number, len?: number): string;
+  utf8_decode(address: number, len?: number): string;
   latin1Decode(address: number, len?: number): string;
   utf8Encode(str: sring): TypedArray;
   wrap(handle: TypedArray, fn: Function, plen: number): function;
@@ -112,13 +83,14 @@ interface Runtime {
   builtin(path: string): string;
   os(): string;
   arch(): string;
+  getenv(string): string;
   async evaluateModule(identifier: string): Promise<object>;
   loadModule(src: string, specifier: string): any;
   readMemory(dest: TypedArray, start: number, len: number): void;
   wrapMemory(start: number, size: number, free?: number);
   unwrapMemory(buffer: ArrayBuffer);
   ptr(u8: TypedArray): TypedArray;
-  registerCallback(ptr: number, fn: Function);
+  register_callback(ptr: number, fn: Function);
   setModuleCallbacks(on_module_load: Function, 
     on_module_instantiate: Function);
 }

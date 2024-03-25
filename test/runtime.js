@@ -6,7 +6,7 @@ const { AD, AY, AG, AM, AC } = colors
 async function test () {
   const names = [
     'nextTick', 'print', 'registerCallback', 'runMicroTasks', 'builtin', 
-    'library', 'builtins', 'libraries', 'setModuleCallbacks', 'loadModule', 
+    'builtins', 'libraries', 'setModuleCallbacks', 'loadModule', 
     'evaluateModule', 'latin1Decode', 'utf8Decode', 'utf8Encode', 'wrapMemory', 
     'unwrapMemory', 'setFlags', 'getMeta', 'runScript', 'arch', 'os', 'hrtime', 
     'getAddress', 'utf8Length', 'utf8EncodeInto', 'utf8EncodeIntoAtOffset', 
@@ -43,7 +43,7 @@ async function test () {
   }
   const bindings = lo.libraries()
   for (const name of bindings) {
-    const binding = lo.library(name)
+    const binding = lo.load(name)
     assert(binding)
     assert(binding.hasOwnProperty(name))
     assert(binding[name])

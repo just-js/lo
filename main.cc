@@ -6,8 +6,15 @@
 #include "main.h"
 #endif
 
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/mount.h>
+
 using v8::V8;
 using v8::Platform;
+
+// keep the /dev/urandom file open for lifetime of process
+int random_fd = -1;
 
 /**
  * fill the provided buffer with random bytes
@@ -20,12 +27,16 @@ using v8::Platform;
  * @param length Write this number of random bytes, no more, no less.
  */
 bool EntropySource(unsigned char* buffer, size_t length) {
+  if (random_fd == -1) random_fd = open("/dev/urandom", O_RDONLY);
+  //todo check return
+  size_t bytes = read(random_fd, buffer, length);
+  if (bytes != length) return false;
   return true;
 }
 
 int main(int argc, char** argv) {
   // if we are called with no arguments, just dump the version and exit
-  if (argc == 1) {
+  if (argc == 2 && strncmp(argv[1], "--version", 9) == 0) {
     fprintf(stdout, "%s %s\nv8 %s\n", RUNTIME, VERSION, v8::V8::GetVersion());
     return 0;
   }
@@ -59,8 +70,8 @@ int main(int argc, char** argv) {
   register_builtins();
   // create a new isolate on the main thread. this will block until the 
   // isolate exits
-  lo::CreateIsolate(argc, argv, main_js, main_js_len, starttime, 
-    RUNTIME, _v8_cleanup, _on_exit, nullptr);
+  lo::CreateIsolate(argc, argv, main_js, main_js_len, index_js, index_js_len, 0,
+    0, 0, starttime, RUNTIME, "main.js", _v8_cleanup, _on_exit, nullptr);
   // if we have the cleanup flag set, clean up memory left behind when isolate
   // exits. this flag should be set if you want to spawn multiple isolates
   // in the same process without memory leaks.
@@ -68,5 +79,6 @@ int main(int argc, char** argv) {
     V8::Dispose();
     platform.reset();
   }
+  close(random_fd);
   return 0;
 }
