@@ -18,5 +18,7 @@ lib/inflate/em_inflate.c
 lib/inflate/em_inflate.h
 lib/**/*.cc
 !lib/core/core.cc
+!lib/curl/curl.cc
 !lib/inflate/inflate.cc
 !lib/mach/mach.cc
+.lo_history
