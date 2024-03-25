@@ -21,10 +21,13 @@ jobs:
           make ARCH=${{ matrix.platform }} lo
       - name: check
         if: ${{ matrix.platform == 'x64' }}
+        env:
+          LO_HOME: ${{ github.workspace }}/lo
+          PREFIX: /usr/local/opt/
         run: |
           make check
           brew install libffi lz4 zstd
-          LO_PREFIX=/usr/local/opt/ ./lo test/build.js
+          ./lo test/build.js
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
         with:
@@ -49,6 +52,8 @@ jobs:
         run: |
           make lo
       - name: check
+        env:
+          LO_HOME: ${{ github.workspace }}/lo
         run: |
           make check
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
