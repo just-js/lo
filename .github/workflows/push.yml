@@ -21,11 +21,12 @@ jobs:
           make ARCH=${{ matrix.platform }} lo
 #          ./lo build binding core
       - name: check
-        if: ${{ matrix.platform == 'x64' }}
+#        if: ${{ matrix.platform == 'x64' }}
         run: |
           make check
-          brew install libffi lz4 zstd jsonschema
-          LO_PREFIX=/usr/local/opt ./lo test/build.js
+#          brew install libffi lz4 zstd jsonschema
+          brew install libffi lz4 zstd
+          LO_PREFIX=/usr/local/opt/ ./lo test/build.js
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
         with:
@@ -49,7 +50,6 @@ jobs:
       - name: compile
         run: |
           make lo
-#          ./lo build binding core
       - name: check
         run: |
           make check
@@ -62,7 +62,7 @@ jobs:
           name: lo-linux-x64
 
   build-linux-arm:
-    if: ${{ false }}  # disable
+#    if: ${{ false }}  # disable
     name: linux-arm64
     runs-on: ubuntu-22.04
     strategy:
@@ -79,7 +79,7 @@ jobs:
           sudo apt-get install -qy binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
       - name: compile
         run: |
-          make ARCH=arm64 C=aarch64-linux-gnu-gcc CC=aarch64-linux-gnu-g++ lo
+          make ARCH=arm64 CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ lo
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
