@@ -109,7 +109,7 @@ lib/inflate/em_inflate.c:
 lib/inflate/em_inflate.o: lib/inflate/em_inflate.h lib/inflate/em_inflate.c ## build the em_inflate object
 	$(CC) -fPIC $(CARGS) $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate -o lib/inflate/em_inflate.o lib/inflate/em_inflate.c
 
-inflate.o: lib/inflate/inflate.cc ## build the em_inflate object
+inflate.o: lib/inflate/inflate.cc lib/inflate/em_inflate.h ## build the em_inflate object
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate $(WARN) ${V8_FLAGS} -o inflate.o lib/inflate/inflate.cc
 
 inflate.a: inflate.o lib/inflate/em_inflate.o ## build the inflate binding
