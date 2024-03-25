@@ -19,12 +19,9 @@ jobs:
       - name: compile runtime
         run: |
           make ARCH=${{ matrix.platform }} lo
-#          ./lo build binding core
       - name: check
-#        if: ${{ matrix.platform == 'x64' }}
         run: |
           make check
-#          brew install libffi lz4 zstd jsonschema
           brew install libffi lz4 zstd
           LO_PREFIX=/usr/local/opt/ ./lo test/build.js
       - name: upload runtime artifact
