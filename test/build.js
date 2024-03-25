@@ -1,8 +1,8 @@
 import { exec, exec_env } from 'lib/proc.js'
 import { isFile } from 'lib/fs.js'
 
-const { assert, core, colors, getenv } = lo
-const { AD, AY } = colors
+const { assert, core, colors, getenv, load } = lo
+const { AD, AY, AC } = colors
 const { os, unlink } = core
 
 let CC = getenv('CC') || 'clang'
@@ -31,7 +31,6 @@ const bindings = [
   'pthread',
   'sqlite',
   'system',
-  'tcc',
   'zlib'
 ]
 if (os === 'linux') {
@@ -39,6 +38,7 @@ if (os === 'linux') {
   bindings.push('fsmount')
   bindings.push('seccomp')
   bindings.push('wireguard')
+  bindings.push('tcc')
 } else if (os === 'mac') {
   bindings.push('kevents')
   bindings.push('mach')
@@ -46,7 +46,7 @@ if (os === 'linux') {
 
 function build_runtime (target, config_path) {
   assert(exec_env('./lo', 
-    [ 'build', 'runtime', config_path ], 
+    [ 'build', 'runtime', config_path, '-v' ], 
     [ ['TARGET', target], ['CC', CC], ['CXX', CXX], ['LINK', LINK] ]
   )[0] === 0)
   assert(exec(`./${target}`, ['test/dump.js'])[0] === 0)
@@ -54,18 +54,35 @@ function build_runtime (target, config_path) {
 
 function build_binding (name) {
   assert(exec_env('./lo', 
-    [ 'build', 'binding', name ], 
+    [ 'build', 'binding', name, '-v' ], 
     [ ['CC', CC], ['CXX', CXX], ['LINK', LINK] ]
   )[0] === 0)
   assert(exec('./lo', ['test/dump-binding.js', name])[0] === 0)
 }
 
-console.log(`${AY}building runtimes${AD}`)
-build_runtime('build_test', 'runtimes/lo.config.js')
-console.log(`${AY}deleting runtimes${AD}`)
-assert(isFile('build_test')) && assert(unlink('build_test') === 0)
-
 console.log(`${AY}building bindings${AD}`)
-for (const name of bindings) build_binding(name)
+for (const name of bindings) {
+  build_binding(name)
+  const lib = assert(load(name))
+  const binding = lib[name]
+  const entries = Object.entries(binding)
+  entries.sort((a, b) => a < b ? -1 : (a === b ? 0 : 1))
+  for (const [key, value] of entries) {
+    if (['AsyncFunction', 'Function'].includes(value.constructor.name)) {
+      console.log(`    ${AC}${key}${AD}: ${value.constructor.name} (${value.length})`)
+    } else if (['Object'].includes(value.constructor.name)) {
+      console.log(`    ${AC}${key}${AD}: ${value.constructor.name}`)
+    } else {
+      console.log(`    ${AY}${key}${AD}: ${value.constructor.name} = ${value}`)
+    }
+  }
+}
+
+console.log(`${AY}building runtimes${AD}`)
+build_runtime('build_test_lo', 'runtimes/lo.config.js')
+build_runtime('build_test_base', 'runtimes/base.config.js')
+console.log(`${AY}deleting runtimes${AD}`)
+assert(isFile('build_test_lo')) && assert(unlink('build_test_lo') === 0)
+assert(isFile('build_test_base')) && assert(unlink('build_test_base') === 0)
 
 console.log(`💩💩💩 All Done! 💩💩💩`)

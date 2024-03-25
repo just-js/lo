@@ -13,19 +13,30 @@
 
 ## linux
 
+the default build of lo runtime links to system libssl and zlib but we build a 
+custom version of libcurl as the default libcurl links to a ton of support 
+libraries we don't need and this slows down startup time. we will likely remove 
+dependency on libcurl at some point (i.e. when we have a robust implementation 
+of fetch in the runtime) but, for now, you will need to install libcurl as 
+follows.
+
+```shell
+sudo apt install -y libcurl4-dev
+```
+
 ### gcc/x64
 ```
-make cleanall lo
+make lo
 ```
 
 ### arm64
 ```
-make ARCH=arm64 cleanall lo
+make ARCH=arm64 lo
 ```
 
 ### clang
 ```
-make C="clang" CC="clang++" clean lo
+make CC="clang" CXX="clang++" lo
 ```
 
 ### ccache and mold for fast rebuilds
@@ -34,6 +45,25 @@ mold -run make C="ccache gcc" CC="ccache g++" lo
 ```
 
 ## macos
+
+the default build of lo runtime depends on libcurl, which is available out
+of the box on macos. it also depends on openssl, which does not seem to be 
+available as a static library by default.
+
+as such, you will need to install openssl using homebrew or some other 
+mechanism for the default build to succeed.
+
+```shell
+brew install openssl@3
+```
+
+this will install libssl libs in /opt/homebrew/lib by default. if you need to 
+override this default in the Makefile you can pass the LIB_DIRS argument to make
+as follows
+
+```shell
+make LIB_DIRS=/opt/somewhere_else/lib ARCH=arm64 lo
+```
 
 ### x64
 ```

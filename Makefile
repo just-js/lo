@@ -1,5 +1,5 @@
-C=clang
-CC=clang++
+CC=clang
+CXX=clang++
 LINK=clang++
 LARGS=-rdynamic -pthread -static-libstdc++
 CCARGS=-std=c++17 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
@@ -16,6 +16,7 @@ os=linux
 TARGET=${RUNTIME}
 LIBS=-ldl -lcurl -lssl -lz
 V8_FLAGS=-DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -DV8_INTL_SUPPORT=1
+LIB_DIRS=
 
 ifeq ($(OS),Windows_NT)
 	os=win
@@ -24,13 +25,14 @@ else
 	ifeq ($(UNAME_S),Linux)
 		os=linux
 		LARGS+=-s -static-libgcc
-		C=gcc
-		CC=g++
+		CC=gcc
+		CXX=g++
 		LINK=g++
 	else ifeq ($(UNAME_S),Darwin)
 		os=mac
 		BINDINGS+=mach.o
 		LARGS+=-s -w
+		LIB_DIRS+=-L"/opt/homebrew/lib"
 		ifeq ($(ARCH),arm64)
 			LARGS+=-arch arm64
 			CARGS+=-arch arm64
@@ -68,35 +70,35 @@ v8/v8_monolith.lib: ## download the v8 static library for windows
 	gzip -d v8/v8_monolith.lib.gz
 
 main.o: ## compile the main.cc object file
-	$(CC) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I./v8 -I./v8/include ${WARN} ${V8_FLAGS} main.cc
+	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I./v8 -I./v8/include ${WARN} ${V8_FLAGS} main.cc
 
 builtins.o: ## link all source files and assets into an object file
 ifeq (${os},linux)
-	$(C) ${CARGS} builtins_linux.S -o builtins.o
+	$(CC) ${CARGS} builtins_linux.S -o builtins.o
 else
-	$(C) ${CARGS} builtins.S -o builtins.o
+	$(CC) ${CARGS} builtins.S -o builtins.o
 endif
 
 ${RUNTIME}.o: ## compile runtime into an object file 
-	$(CC) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' ${V8_FLAGS} -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
+	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' ${V8_FLAGS} -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
 
 ${RUNTIME}: v8/include v8/libv8_monolith.a main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
 	@echo building ${RUNTIME} for ${os} on ${ARCH}
-	$(LINK) $(LARGS) ${OPT} main.o ${RUNTIME}.o builtins.o ${BINDINGS} ${LIBS} -o ${TARGET} -L"./v8" -lv8_monolith
+	$(LINK) $(LARGS) ${OPT} main.o ${RUNTIME}.o builtins.o ${BINDINGS} ${LIBS} -o ${TARGET} -L"./v8" -lv8_monolith ${LIB_DIRS}
 
 ${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js ## link the runtime for windows
 	cl /EHsc /std:c++17 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I./v8 /I./v8/include /c main.cc
 	cl /EHsc /std:c++17 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I./v8 /I./v8/include /c ${RUNTIME}.cc
 	cl v8/v8_monolith.lib ${RUNTIME}.obj main.obj winmm.lib dbghelp.lib advapi32.lib /link /out:${TARGET}.exe
 
-mach.o: lib/mach/mach.cc ## build the core binding
-	$(CC) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o mach.o lib/mach/mach.cc
+mach.o: lib/mach/mach.cc ## build the mach binding
+	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o mach.o lib/mach/mach.cc
 
 core.o: lib/core/core.cc ## build the core binding
-	$(CC) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o core.o lib/core/core.cc
+	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o core.o lib/core/core.cc
 
 curl.o: lib/curl/curl.cc ## build the curl binding
-	$(CC) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o curl.o lib/curl/curl.cc
+	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o curl.o lib/curl/curl.cc
 
 lib/inflate/em_inflate.h:
 	curl -L -o lib/inflate/em_inflate.h https://raw.githubusercontent.com/emmanuel-marty/em_inflate/master/lib/em_inflate.h
@@ -104,12 +106,14 @@ lib/inflate/em_inflate.h:
 lib/inflate/em_inflate.c:
 	curl -L -o lib/inflate/em_inflate.c https://raw.githubusercontent.com/emmanuel-marty/em_inflate/master/lib/em_inflate.c
 
-inflate.o: lib/inflate/inflate.cc lib/inflate/em_inflate.h lib/inflate/em_inflate.c ## build the em_inflate object
-	$(C) -fPIC $(CARGS) $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate -o em_inflate.o lib/inflate/em_inflate.c
+lib/inflate/em_inflate.o: lib/inflate/em_inflate.h lib/inflate/em_inflate.c ## build the em_inflate object
+	$(CC) -fPIC $(CARGS) $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate -o lib/inflate/em_inflate.o lib/inflate/em_inflate.c
 
-inflate.a: inflate.o ## build the curl binding
-	$(CC) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate $(WARN) ${V8_FLAGS} -o inflate.o lib/inflate/inflate.cc
-	ar crsT inflate.a inflate.o em_inflate.o
+inflate.o: lib/inflate/inflate.cc ## build the em_inflate object
+	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate $(WARN) ${V8_FLAGS} -o inflate.o lib/inflate/inflate.cc
+
+inflate.a: inflate.o lib/inflate/em_inflate.o ## build the inflate binding
+	ar crsT inflate.a inflate.o lib/inflate/em_inflate.o
 
 check: ## run the runtime sanity tests
 	./${RUNTIME} test/runtime.js

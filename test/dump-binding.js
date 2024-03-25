@@ -1,11 +1,8 @@
-import { system } from 'lib/system.js'
-
 const { colors, assert, load } = lo
 const { AD, AY, AC } = colors
-const { strerror } = system
 
 const name = lo.args[2]
-const lib = assert(load(name), () => console.error(strerror()))
+const lib = assert(load(name))
 const binding = lib[name]
 
 const entries = Object.entries(binding)
