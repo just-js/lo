@@ -2,18 +2,18 @@ const { core } = lo
 const { os } = core
 
 const bindings = [
-  'core', 
-  'inflate',
-  'curl',
-  'libssl',
-  'cfzlib',
   'bestlines',
-  'system',
+  'cfzlib',
+  'core', 
+  'curl',
+  'encode',
+  'inflate',
+  'libssl',
+  'net',
+  'pico',
   'pthread',
   'sqlite',
-  'encode',
-  'net',
-  'pico'
+  'system',
 ]
 
 if (os === 'linux') {
