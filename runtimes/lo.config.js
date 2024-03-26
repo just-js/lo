@@ -3,7 +3,7 @@ const { os } = core
 
 const bindings = [
   'bestlines',
-  'cfzlib',
+//  'cfzlib',
   'core', 
   'curl',
   'encode',
