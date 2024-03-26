@@ -54,7 +54,7 @@ jobs:
           PREFIX: /usr/local/opt
         run: |
           make check
-          brew install libffi lz4 zstd openssl@3
+          brew install libffi lz4 zstd
           ./lo test/build.js
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
