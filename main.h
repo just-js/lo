@@ -50,6 +50,9 @@ extern "C" {
   extern void* _register_core();
   extern void* _register_inflate();
   extern void* _register_curl();
+#ifdef __MACH__
+  extern void* _register_mach();
+#endif
 }
 
 void register_builtins() {
@@ -76,6 +79,9 @@ void register_builtins() {
   lo::modules_add("core", &_register_core);
   lo::modules_add("inflate", &_register_inflate);
   lo::modules_add("curl", &_register_curl);
+#ifdef __MACH__
+  lo::modules_add("mach", &_register_mach);
+#endif
 }
 static const char* index_js = NULL;
 static unsigned int index_js_len = 0;
