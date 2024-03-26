@@ -14,6 +14,7 @@ const bindings = [
   'pthread',
   'sqlite',
   'system',
+  'lz4',  
 ]
 
 if (os === 'linux') {
