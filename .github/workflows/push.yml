@@ -7,7 +7,7 @@ defaults:
 
 jobs:
   build-mac:
-    if: ${{ false }}  # disable
+#    if: ${{ false }}  # disable
     name: mac
     runs-on: macos-12
     strategy:
@@ -65,7 +65,7 @@ jobs:
           name: lo-mac-${{ matrix.platform }}
 
   build-linux-x64:
-    if: ${{ false }}  # disable
+#    if: ${{ false }}  # disable
     name: linux-x64
     runs-on: ubuntu-22.04
     strategy:
