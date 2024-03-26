@@ -51,10 +51,12 @@ jobs:
       - name: check
         env:
           LO_HOME: ${{ github.workspace }}
-          PREFIX: /usr/local/opt
+          PREFIX: /opt/homebrew/opt
         run: |
           make check
           brew install lz4 zstd openssl@3
+          ls -lah /opt/homebrew/opt
+          ls -lah /usr/local/opt
           ./lo test/build.js
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
