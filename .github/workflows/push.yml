@@ -55,8 +55,7 @@ jobs:
         run: |
           make check
           brew install lz4 zstd openssl@3
-          ls -lah /opt/homebrew/opt
-          ls -lah /usr/local/opt
+          ls -lah /opt/homebrew/opt/openssl@3.0/include
           ./lo test/build.js
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
