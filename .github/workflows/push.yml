@@ -22,10 +22,9 @@ jobs:
       - name: check
         env:
           LO_HOME: ${{ github.workspace }}
-          PREFIX: /usr/local/opt/
         run: |
           make check
-          brew install libffi lz4 zstd
+          brew install libffi lz4 zstd openssl@3
           ./lo test/build.js
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
@@ -52,7 +51,6 @@ jobs:
       - name: check
         env:
           LO_HOME: ${{ github.workspace }}
-          PREFIX: /usr/local/opt/
         run: |
           make check
           brew install libffi lz4 zstd openssl@3
