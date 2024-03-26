@@ -23,7 +23,7 @@ const bindings = [
   'encode',
   'heap',
   'inflate',
-  'libffi',
+//  'libffi',
   'libssl',
   'mbedtls',
   'net',
