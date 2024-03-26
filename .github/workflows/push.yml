@@ -52,7 +52,7 @@ jobs:
       - name: check
         env:
           LO_HOME: ${{ github.workspace }}
-          PREFIX: /usr/local/opt/
+          PREFIX: /opt/homebrew/opt/
         run: |
           make check
           brew install libffi lz4 zstd
