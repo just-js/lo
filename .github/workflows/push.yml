@@ -13,14 +13,40 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [x64, arm64]
+        platform: [x64]
     steps:
       - uses: actions/checkout@v3
       - name: compile runtime
         run: |
           make ARCH=${{ matrix.platform }} lo
       - name: check
-        if: ${{ matrix.platform == 'x64' }}
+        env:
+          LO_HOME: ${{ github.workspace }}
+          PREFIX: /usr/local/opt/
+        run: |
+          make check
+          brew install libffi lz4 zstd
+          ./lo test/build.js
+      - name: upload runtime artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{ github.workspace }}/lo
+          name: lo-mac-${{ matrix.platform }}
+
+  build-mac-arm:
+#    if: ${{ false }}  # disable
+    name: mac
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [arm64]
+    steps:
+      - uses: actions/checkout@v3
+      - name: compile runtime
+        run: |
+          make ARCH=${{ matrix.platform }} lo
+      - name: check
         env:
           LO_HOME: ${{ github.workspace }}
           PREFIX: /usr/local/opt/
