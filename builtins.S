@@ -88,6 +88,16 @@ __binary_lib_curl_api_js_start:
         .incbin "lib/curl/api.js"
         .global __binary_lib_curl_api_js_end
 __binary_lib_curl_api_js_end:
+.global __binary_runtimes_base_config_js_start
+__binary_runtimes_base_config_js_start:
+        .incbin "runtimes/base.config.js"
+        .global __binary_runtimes_base_config_js_end
+__binary_runtimes_base_config_js_end:
+.global __binary_runtimes_lo_config_js_start
+__binary_runtimes_lo_config_js_start:
+        .incbin "runtimes/lo.config.js"
+        .global __binary_runtimes_lo_config_js_end
+__binary_runtimes_lo_config_js_end:
 .global __binary_globals_d_ts_start
 __binary_globals_d_ts_start:
         .incbin "globals.d.ts"

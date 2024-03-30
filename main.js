@@ -269,7 +269,7 @@ const builtin_cache = new Map()
 
 function on_load_builtin (identifier) {
   if (builtin_cache.has(identifier)) return builtin_cache.get(identifier)
-  if (identifier === '/worker_source.js') {
+  if (identifier === 'worker_source.js') {
     builtin_cache.set(identifier, workerSource)
     return workerSource
   }
@@ -282,17 +282,23 @@ function wrap_getenv () {
   return str => {
     const ptr = getenv(str)
     if (!ptr) return ''
-    return lo.utf8Decode(ptr, -1)
+//    console.error(ptr)
+    const len = strnlen(ptr, MAX_ENV)
+//    console.error(len === 0)
+    if (len === 0) return ''
+    return lo.utf8Decode(ptr, len)
   }
 }
 
 function wrap_getcwd () {
   const getcwd = wrap(handle, core.getcwd, 2)
-  const cwdbuf = new Uint8Array(1024)
+  const cwdbuf = new Uint8Array(MAX_DIR)
 
   return () => {
     const ptr = getcwd(cwdbuf, cwdbuf.length)
     if (!ptr) return ''
+    const len = strnlen(ptr, MAX_DIR)
+    if (len === 0) return ''
     return utf8Decode(ptr, -1)
   }
 }
@@ -314,7 +320,7 @@ const {
   S_IFREG, STDOUT, STDERR, S_IFMT, RTLD_LAZY, RTLD_NOW
 } = core
 const {
-  write_string, open, fstat, read, write, close
+  write_string, open, fstat, read, write, close, strnlen
 } = core
 
 function little_endian () {
@@ -323,6 +329,8 @@ function little_endian () {
   return new Int16Array(buffer)[0] === 256
 }
 
+const MAX_ENV = 65536 // maximum environment variable size - todo
+const MAX_DIR = 65536 // maximum path len - todo
 const isatty = core.isatty(STDOUT)
 const AD = isatty ? '\u001b[0m' : '' // ANSI Default
 const A0 = isatty ? '\u001b[30m' : '' // ANSI Black
@@ -476,10 +484,11 @@ async function global_main () {
 const AsyncFunction = async function () {}.constructor
 
 if (workerSource) {
-  import('/worker_source.js').catch(die)
+  import('worker_source.js').catch(die)
 } else if (args.length > 1) {
   global_main().catch(die)
 }
+
 } // end bootstrap_runtime
 
 bootstrap_runtime()

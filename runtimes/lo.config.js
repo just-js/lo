@@ -50,7 +50,19 @@ const libs = [
   'lib/hash.js',
   'lib/binary.js',
   'lib/loop.js',
-  'lib/pico.js'
+  'lib/pico.js',
+  'lib/worker.js',
+  'lib/udp.js',
+  'lib/pmon.js',
+  'lib/bench.mjs',
+  'lib/dns/dns.js',
+  'lib/dns/protocol.js',
+  'lib/socket.js',
+  'lib/packet.js',
+  'lib/sni.js',
+  'lib/html.js',
+  'lib/ansi.js',
+  'lib/elf.js',
 ]
 
 const embeds = [
@@ -73,6 +85,8 @@ const embeds = [
   'lib/sqlite/api.js',
   'lib/sqlite/build.js',
   'lib/encode/api.js',
+  'runtimes/base.config.js',
+  'runtimes/lo.config.js',
   'globals.d.ts',
 ]
 
@@ -81,7 +95,7 @@ const target = 'lo'
 const opt = '-O3 -march=native -mtune=native'
 
 const v8_opts = {
-  v8_cleanup: 0, v8_threads: 2, on_exit: 0,
+  v8_cleanup: 1, v8_threads: 2, on_exit: 0,
   v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --cppgc-young-generation'
 }
 

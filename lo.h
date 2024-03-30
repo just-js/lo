@@ -211,6 +211,8 @@ struct callback_state {
 void lo_callback (exec_info* info);
 void lo_async_callback (exec_info* info, callback_state* state);
 
+void lo_shutdown ();
+
 #ifdef __cplusplus
     }
 #endif

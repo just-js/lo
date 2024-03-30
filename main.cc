@@ -78,5 +78,6 @@ int main(int argc, char** argv) {
     platform.reset();
   }
   close(random_fd);
+  lo_shutdown();
   return 0;
 }

@@ -1378,3 +1378,8 @@ void lo_async_callback (exec_info* info, callback_state* state) {
   isolate->Exit();
 */
 }
+
+void lo_shutdown () {
+  builtins.clear();
+  modules.clear();
+}

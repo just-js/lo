@@ -375,6 +375,35 @@ void bind_slowcallSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(fun);
 }
 
+#ifdef __linux__
+
+pid_t vexecve (const char* pathname, char* const argv[], char* const envp[]) {
+  pid_t pid = vfork();
+  if (pid == 0) {
+    int rc = execve(pathname, argv, envp);
+    exit(rc);
+  }
+  if (pid == -1) return pid;
+  int status = 0;
+  int rc = waitpid(pid, &status, 0);
+  if (rc == -1) return rc;
+  return status;
+}
+
+pid_t vfexecve (int fd, char* const argv[], char* const envp[]) {
+  pid_t pid = vfork();
+  if (pid == 0) {
+    int rc = fexecve(fd, argv, envp);
+    exit(rc);
+  }
+  if (pid == -1) return pid;
+  int status = 0;
+  int rc = waitpid(pid, &status, 0);
+  if (rc == -1) return rc;
+  return status;
+}
+
+#endif
 
 #ifdef __linux__
 
@@ -1156,6 +1185,37 @@ v8::CTypeInfo cargssetaffinity[4] = {
 v8::CTypeInfo rcsetaffinity = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infosetaffinity = v8::CFunctionInfo(rcsetaffinity, 4, cargssetaffinity);
 v8::CFunction pFsetaffinity = v8::CFunction((const void*)&setaffinityFast, &infosetaffinity);
+
+int32_t vforkFast(void* p);
+v8::CTypeInfo cargsvfork[1] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+};
+v8::CTypeInfo rcvfork = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infovfork = v8::CFunctionInfo(rcvfork, 1, cargsvfork);
+v8::CFunction pFvfork = v8::CFunction((const void*)&vforkFast, &infovfork);
+
+int32_t vexecveFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1, struct FastApiTypedArray* const p2);
+v8::CTypeInfo cargsvexecve[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcvexecve = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infovexecve = v8::CFunctionInfo(rcvexecve, 4, cargsvexecve);
+v8::CFunction pFvexecve = v8::CFunction((const void*)&vexecveFast, &infovexecve);
+
+int32_t vfexecveFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, struct FastApiTypedArray* const p2);
+v8::CTypeInfo cargsvfexecve[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+};
+v8::CTypeInfo rcvfexecve = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infovfexecve = v8::CFunctionInfo(rcvfexecve, 4, cargsvfexecve);
+v8::CFunction pFvfexecve = v8::CFunction((const void*)&vfexecveFast, &infovfexecve);
 
 #endif
 #ifdef __MACH__
@@ -2269,6 +2329,55 @@ int32_t setaffinityFast(void* p, int32_t p0, uint32_t p1, void* p2) {
   cpu_set_t* v2 = reinterpret_cast<cpu_set_t*>(p2);
   return sched_setaffinity(v0, v1, v2);
 }
+void vforkSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+
+  int32_t rc = vfork();
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t vforkFast(void* p) {
+
+  return vfork();
+}
+void vexecveSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  char* const* v1 = reinterpret_cast<char* const*>(ptr1);
+  Local<Uint8Array> u82 = args[2].As<Uint8Array>();
+  uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
+  char* const* v2 = reinterpret_cast<char* const*>(ptr2);
+  int32_t rc = vexecve(*v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t vexecveFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1, struct FastApiTypedArray* const p2) {
+  struct FastOneByteString* const v0 = p0;
+  char* const* v1 = reinterpret_cast<char* const*>(p1->data);
+  char* const* v2 = reinterpret_cast<char* const*>(p2->data);
+  return vexecve(v0->data, v1, v2);
+}
+void vfexecveSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  Local<Uint8Array> u81 = args[1].As<Uint8Array>();
+  uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
+  char* const* v1 = reinterpret_cast<char* const*>(ptr1);
+  Local<Uint8Array> u82 = args[2].As<Uint8Array>();
+  uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
+  char* const* v2 = reinterpret_cast<char* const*>(ptr2);
+  int32_t rc = vfexecve(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t vfexecveFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, struct FastApiTypedArray* const p2) {
+  int32_t v0 = p0;
+  char* const* v1 = reinterpret_cast<char* const*>(p1->data);
+  char* const* v2 = reinterpret_cast<char* const*>(p2->data);
+  return vfexecve(v0, v1, v2);
+}
 #endif
 #ifdef __MACH__
 
@@ -2358,6 +2467,9 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "copy_file_range", &pFcopy_file_range, copy_file_rangeSlow);
   SET_FAST_METHOD(isolate, module, "memfd_create", &pFmemfd_create, memfd_createSlow);
   SET_FAST_METHOD(isolate, module, "setaffinity", &pFsetaffinity, setaffinitySlow);
+  SET_FAST_METHOD(isolate, module, "vfork", &pFvfork, vforkSlow);
+  SET_FAST_METHOD(isolate, module, "vexecve", &pFvexecve, vexecveSlow);
+  SET_FAST_METHOD(isolate, module, "vfexecve", &pFvfexecve, vfexecveSlow);
 
 #endif
 #ifdef __MACH__
@@ -2434,8 +2546,16 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "RTLD_FIRST", Integer::New(isolate, (int32_t)RTLD_FIRST));
 
 #endif
+
+#ifdef __MACH__
   SET_VALUE(isolate, module, "struct_clock_t_size", Integer::New(isolate, sizeof(clock_t)));
 
+#endif
+#ifdef __linux__
+  SET_VALUE(isolate, module, "struct_clock_t_size", Integer::New(isolate, sizeof(clock_t)));
+  SET_VALUE(isolate, module, "struct_cpu_set_t_size", Integer::New(isolate, sizeof(cpu_set_t)));
+
+#endif
   SET_MODULE(isolate, target, "core", module);
 }
 } // namespace core

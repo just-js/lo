@@ -26,6 +26,8 @@ const embeds = [
   'lib/inflate/build.js',
   'lib/core/api.js',
   'lib/curl/api.js',
+  'runtimes/base.config.js',
+  'runtimes/lo.config.js',
   'globals.d.ts',
 ]
 

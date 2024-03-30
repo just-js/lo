@@ -37,7 +37,7 @@ interface Core {
   dlopen(path: string, flags: number): number;
   strnlen(str: string, size: number);
   read_file(path: string): Uint8Array;
-  write_file(path: string, buffer: Uint8Array): void;
+  write_file(path: string, buffer: Uint8Array): number;
 }
 
 declare class CString extends Uint8Array {

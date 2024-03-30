@@ -173,6 +173,12 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 
 #endif
 
+#ifdef __MACH__
+
+#endif
+#ifdef __linux__
+
+#endif
   SET_MODULE(isolate, target, "inflate", module);
 }
 } // namespace inflate
