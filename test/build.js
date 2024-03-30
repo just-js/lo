@@ -47,7 +47,7 @@ if (os === 'linux') {
 function build_runtime (target, config_path) {
   assert(exec_env('./lo', 
     [ 'build', 'runtime', config_path, '-v' ], 
-    [ ['TARGET', target], ['CC', CC], ['CXX', CXX], ['LINK', LINK] ]
+    [ ['LO_TARGET', target], ['CC', CC], ['CXX', CXX], ['LINK', LINK] ]
   )[0] === 0)
   assert(exec(`./${target}`, ['test/dump.js'])[0] === 0)
 }
