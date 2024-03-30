@@ -29,7 +29,7 @@ jobs:
         run: |
           make check
           brew install lz4 zstd openssl@3
-          ./lo build runtime runtimes/lo.config.js
+          ./lo build runtime runtimes/lo
       - name: compress runtime
         run: |
           gzip -9 -c lo > lo-mac-${{ matrix.platform }}.gz
@@ -63,7 +63,7 @@ jobs:
         run: |
           make check
           brew install lz4 zstd openssl@3
-          ./lo build runtime runtimes/lo.config.js
+          ./lo build runtime runtimes/lo
       - name: compress runtime
         run: |
           gzip -9 -c lo > lo-mac-${{ matrix.platform }}.gz
@@ -100,7 +100,7 @@ jobs:
         run: |
           make check
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
-          ./lo build runtime runtimes/lo.config.js
+          ./lo build runtime runtimes/lo
       - name: compress runtime
         run: |
           gzip -9 -c lo > lo-linux-x64.gz
