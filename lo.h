@@ -5,6 +5,8 @@
 #include <map>
 #include <v8-fast-api-calls.h>
 #include <unistd.h>
+#include <sys/mount.h>
+#include <fcntl.h>
 
 #ifdef __MACH__
 #include <mach/clock.h>
@@ -92,6 +94,12 @@ uint64_t hrtime();
 void builtins_add (const char* name, const char* source, 
   unsigned int size);
 void modules_add (const char* name, register_plugin plugin_handler);
+void Setup(
+    int argc, 
+    char** argv,
+    const char* v8flags,
+    int v8_threads,
+    int v8flags_from_commandline);
 int CreateIsolate(int argc, char** argv, 
   const char* main, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
@@ -211,7 +219,7 @@ struct callback_state {
 void lo_callback (exec_info* info);
 void lo_async_callback (exec_info* info, callback_state* state);
 
-void lo_shutdown ();
+void lo_shutdown (int cleanup);
 
 #ifdef __cplusplus
     }
