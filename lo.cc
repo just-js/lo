@@ -31,6 +31,7 @@ using v8::StackFrame;
 using v8::Maybe;
 using v8::FunctionTemplate;
 using v8::FunctionCallback;
+using v8::Platform;
 using v8::PromiseRejectMessage;
 using v8::CFunction;
 using v8::Global;
@@ -57,7 +58,7 @@ using v8::Script;
 // TODO: thread safety
 std::map<std::string, lo::builtin*> builtins;
 std::map<std::string, lo::register_plugin> modules;
-std::map<int, Global<Module>> module_map;
+std::unique_ptr<v8::Platform> platform;
 
 #ifndef _WIN64
 clock_t clock_id = CLOCK_MONOTONIC;
@@ -390,7 +391,8 @@ MaybeLocal<Module> lo::OnModuleInstantiate(Local<Context> context,
   MaybeLocal<Value> result = callback->Call(context, 
     context->Global(), 1, argv);
   int identity = result.ToLocalChecked()->Uint32Value(context).ToChecked();
-  Local<Module> module = module_map[identity].Get(context->GetIsolate());
+  std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));
+  Local<Module> module = (*module_map)[identity].Get(context->GetIsolate());
   return module;
 }
 
@@ -436,7 +438,7 @@ int lo::CreateIsolate(int argc, char** argv,
   const char* main_src, unsigned int main_len, 
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname, int cleanup,
-  int onexit, const v8::StartupData* startup_data) {
+  int onexit, void* startup_data) {
   Isolate::CreateParams create_params;
   int statusCode = 0;
   create_params.array_buffer_allocator = 
@@ -444,21 +446,29 @@ int lo::CreateIsolate(int argc, char** argv,
   //create_params.array_buffer_allocator = new SpecialArrayBufferAllocator();
   create_params.embedder_wrapper_type_index = 0;
   create_params.embedder_wrapper_object_index = 1;
-  //create_params.snapshot_blob = startup_data;
+  if (startup_data != NULL) {
+    create_params.snapshot_blob = (const v8::StartupData*)startup_data;
+  }
+
+//  V8::InitializeExternalStartupDataFromFile("./scratch/snaps/foo.bin");
+
   //create_params.code_event_handler = JitCodeEventHandler;
   //create_params.counter_lookup_callback = CounterLookupCallback;
   //create_params.allow_atomics_wait = false;
   //create_params.only_terminate_in_safe_scope = false;
   create_params.fatal_error_callback = fatalErrorcallback;
   create_params.oom_error_callback = OOMErrorcallback;
-  Isolate *isolate = Isolate::Allocate();
-  {
-    //v8::Locker locker(isolate);
-    //isolate->Enter();
+  //Isolate *isolate = Isolate::Allocate();
+  Isolate *isolate = Isolate::New(create_params);
+//  {
+//    v8::Locker locker(isolate);
+//{
+  //  isolate->Enter();
     // we can call Isolate::SetData and Isolate::GetData before we initialize
-    Isolate::Initialize(isolate, create_params);
+  {
     Isolate::Scope isolate_scope(isolate);
     HandleScope handle_scope(isolate);
+//    Isolate::Initialize(isolate, create_params);
     // TODO: we shoudl expose these to embedder in some way
     //isolate->SetRAILMode(v8::RAILMode::PERFORMANCE_RESPONSE);
     isolate->SetCaptureStackTraceForUncaughtExceptions(true, 1000, 
@@ -473,6 +483,12 @@ int lo::CreateIsolate(int argc, char** argv,
     //isolate->SetOOMErrorHandler(OOMErrorcallback);
     //isolate->EnableMemorySavingsMode();
     //isolate->SetData(0, 0);
+    //isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kExplicit);
+    //std::map module_map = std::map<int, Global<Module>>();
+    std::map<int, Global<Module>> module_map;
+    isolate->SetData(0, &module_map);
+
+
     Local<ObjectTemplate> global = ObjectTemplate::New(isolate);
     Local<ObjectTemplate> runtime = ObjectTemplate::New(isolate);
     //runtime->SetImmutableProto();
@@ -516,7 +532,7 @@ int lo::CreateIsolate(int argc, char** argv,
         NewStringType::kInternalized), 
         Integer::New(isolate, fd)).Check();
     }
-    if (js_len > 0) {
+    if (js_len > 0 && main_len > 0) {
       runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, 
         "workerSource", NewStringType::kInternalized), 
         String::NewFromUtf8(isolate, js, NewStringType::kNormal, 
@@ -545,8 +561,13 @@ int lo::CreateIsolate(int argc, char** argv,
       opts
     );
     Local<String> base;
-    base = String::NewFromUtf8(isolate, main_src, NewStringType::kNormal, 
-      main_len).ToLocalChecked();
+    if (main_len > 0) {
+      base = String::NewFromUtf8(isolate, main_src, NewStringType::kNormal, 
+        main_len).ToLocalChecked();
+    } else {
+      base = String::NewFromUtf8(isolate, js, NewStringType::kNormal, 
+        js_len).ToLocalChecked();
+    }
     ScriptCompiler::Source basescript(base, baseorigin);
     Local<Module> module;
     if (!ScriptCompiler::CompileModule(isolate, &basescript).ToLocal(&module)) {
@@ -574,7 +595,7 @@ int lo::CreateIsolate(int argc, char** argv,
       if (func->IsFunction()) {
         Local<Function> onExit = Local<Function>::Cast(func);
         Local<Value> argv[1] = {Integer::New(isolate, 0)};
-        MaybeLocal<Value> result = onExit->Call(context, globalInstance, 0, 
+        MaybeLocal<Value> result = onExit->Call(context, globalInstance, 1, 
           argv);
         if (!result.IsEmpty()) {
           statusCode = result.ToLocalChecked()->Uint32Value(context).ToChecked();
@@ -586,19 +607,26 @@ int lo::CreateIsolate(int argc, char** argv,
         statusCode = result.ToLocalChecked()->Uint32Value(context).ToChecked();
       }
     }
+    // todo: deref the globals in module_map - does it matter? won't they be cleaned up
+    // when the isolate is destroyed?
+//    isolate->Exit();
+//}
   }
-  //isolate->Exit();
-  if (cleanup == 1) {
-    cleanupIsolate(isolate);
-    delete create_params.array_buffer_allocator;
-    isolate = nullptr;
-  }
+    if (cleanup == 1) {
+//      uint64_t* ptr = (uint64_t*)startup_data;
+//      *ptr = (uint64_t)isolate;
+      cleanupIsolate(isolate);
+      delete create_params.array_buffer_allocator;
+//      isolate = nullptr;
+    }
+
+//  }
   return statusCode;
 }
 
 int lo::CreateIsolate(int argc, char** argv, const char* main_src, 
   unsigned int main_len, uint64_t start, const char* globalobj, int cleanup,
-  int onexit, const v8::StartupData* startup_data) {
+  int onexit, void* startup_data) {
   return CreateIsolate(argc, argv, main_src, main_len, NULL, 0, NULL, 0, 0, 
     start, globalobj, "main.js", cleanup, onexit, startup_data);
 }
@@ -656,8 +684,16 @@ void lo::Builtin(const FunctionCallbackInfo<Value> &args) {
 }
 
 void lo::RunMicroTasks(const FunctionCallbackInfo<Value> &args) {
-  args.GetIsolate()->PerformMicrotaskCheckpoint();
-  //TODO: args.GetIsolate()->SetMicrotasksPolicy()
+  Isolate* isolate = args.GetIsolate();
+  isolate->PerformMicrotaskCheckpoint();
+  //args.GetIsolate()->RunMicroTasks();
+  args.GetReturnValue().Set(Integer::New(isolate, v8::MicrotasksScope::GetCurrentDepth(isolate)));
+}
+
+void lo::PumpMessageLoop(const FunctionCallbackInfo<Value> &args) {
+//  Isolate* isolate = args.GetIsolate();
+//  v8::platform::PumpMessageLoop(default_platform, isolate, v8::platform::MessageLoopBehavior::kDoNotWait);
+
 }
 
 void lo::NextTick(const FunctionCallbackInfo<Value>& args) {
@@ -668,8 +704,10 @@ void lo::RegisterCallback(const FunctionCallbackInfo<Value>& args) {
   struct exec_info* info = reinterpret_cast<struct exec_info*>(
     (uint64_t)Local<Integer>::Cast(args[0])->Value());
   Local<Function> fn = args[1].As<Function>();
+  int nargs = Local<Integer>::Cast(args[2])->Value();
   Isolate* isolate = args.GetIsolate();
   info->isolate = isolate;
+  info->nargs = nargs;
 //  info->js_ctx.Reset(isolate, Global<Context>(isolate, isolate->GetCurrentContext()));
   info->js_fn.Reset(isolate, Global<Function>(isolate, fn));
 }
@@ -680,7 +718,9 @@ void lo::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
   int identity = Local<Integer>::Cast(args[0])->Value();
-  Local<Module> module = module_map[identity].Get(isolate);
+
+  std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));
+  Local<Module> module = (*module_map)[identity].Get(isolate);
   if (module->GetStatus() >= 4) {
     args.GetReturnValue().Set(module->GetModuleNamespace().As<Promise>());
     return;
@@ -691,6 +731,12 @@ void lo::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
     printf("\nCan't instantiate module.\n");
     return;
   }
+/*
+  if (module->GetStatus() >= 4) {
+    args.GetReturnValue().Set(module->GetModuleNamespace().As<Promise>());
+    return;
+  }
+*/
   TryCatch try_catch(isolate);
   Local<Value> retValue;
   if (!module->Evaluate(context).ToLocal(&retValue)) {
@@ -747,7 +793,9 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
         module_requests->Get(context, i).As<ModuleRequest>();
     requests->Set(context, i, module_request->GetSpecifier()).Check();
   }
-  module_map.insert(std::make_pair(module->GetIdentityHash(), 
+  std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));
+
+  (*module_map).insert(std::make_pair(module->GetIdentityHash(), 
     Global<Module>(isolate, module)));
   data->Set(context, String::NewFromUtf8(isolate, "requests")
     .ToLocalChecked(), requests).Check();
@@ -923,8 +971,10 @@ void lo::fastReadMemoryAtOffset (void* p, struct FastApiTypedArray* const p_buf,
   memcpy(ptr, start, size);
 }
 
+// todo: need this for sharedarraybuffer
 void lo::WrapMemory(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
+//  HandleScope scope(isolate);
   uint64_t start64 = (uint64_t)Local<Number>::Cast(args[0])->Value();
   uint32_t size = (uint32_t)Local<Integer>::Cast(args[1])->Value();
   void* start = reinterpret_cast<void*>(start64);
@@ -1002,7 +1052,7 @@ void lo::Latin1Decode(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(String::NewFromOneByte(args.GetIsolate(), 
     str, NewStringType::kNormal, size).ToLocalChecked());
 }
-
+/*
 void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
@@ -1023,6 +1073,19 @@ void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
     String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
   args.GetReturnValue().Set(Integer::New(isolate, written));
 }
+*/
+
+void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<String> str = args[0].As<String>();
+  int chars_written = 0;
+  //int size = str->Utf8Length(isolate);
+  Local<Uint8Array> u8 = args[1].As<Uint8Array>();
+  char* dest = (char*)u8->Buffer()->Data() + u8->ByteOffset();
+  int written = str->WriteUtf8(isolate, dest, -1, &chars_written, 
+    String::NO_NULL_TERMINATION | String::HINT_MANY_WRITES_EXPECTED);
+  args.GetReturnValue().Set(Integer::New(isolate, written));
+}
 
 int32_t lo::fastUtf8EncodeInto (void* p, struct FastOneByteString* 
   const p_str, struct FastApiTypedArray* const p_buf) {
@@ -1030,6 +1093,21 @@ int32_t lo::fastUtf8EncodeInto (void* p, struct FastOneByteString*
   return p_str->length;
 }
 
+void lo::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<String> str = args[0].As<String>();
+  uint32_t off = Local<Integer>::Cast(args[2])->Value();
+  int chars_written = 0;
+  //int size = str->Utf8Length(isolate);
+  Local<Uint8Array> u8 = args[1].As<Uint8Array>();
+  char* dest = (char*)u8->Buffer()->Data() + off;
+  int written = str->WriteUtf8(isolate, dest, -1, &chars_written, 
+    String::NO_NULL_TERMINATION | String::HINT_MANY_WRITES_EXPECTED);
+//    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
+  args.GetReturnValue().Set(Integer::New(isolate, written));
+}
+
+/*
 void lo::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
@@ -1048,9 +1126,11 @@ void lo::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
   Local<Uint8Array> u8 = args[1].As<Uint8Array>();
   char* dest = (char*)u8->Buffer()->Data() + off;
   str->WriteUtf8(isolate, dest, size, &written, 
-    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
+    String::NO_NULL_TERMINATION | String::HINT_MANY_WRITES_EXPECTED);
+//    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
   args.GetReturnValue().Set(Integer::New(isolate, written));
 }
+*/
 
 int32_t lo::fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString* 
   const p_str, struct FastApiTypedArray* const p_buf, uint32_t off) {
@@ -1143,6 +1223,54 @@ void lo::Exit(const FunctionCallbackInfo<Value> &args) {
   exit(status);
 }
 
+// keep the /dev/urandom file open for lifetime of process
+int random_fd = -1;
+
+/**
+ * fill the provided buffer with random bytes
+ * 
+ * we can just use /dev/urandom here, like v8 already does, or come up
+ * with something better. it would be nice if we could do this from the
+ * JS side, but that doesn't seem possible right now
+ * 
+ * @param buffer Write random bytes in here.
+ * @param length Write this number of random bytes, no more, no less.
+ */
+bool EntropySource(unsigned char* buffer, size_t length) {
+  if (random_fd == -1) random_fd = open("/dev/urandom", O_RDONLY);
+  //todo check return
+  size_t bytes = read(random_fd, buffer, length);
+  if (bytes != length) return false;
+  return true;
+}
+
+void lo::Setup(
+    int argc, 
+    char** argv,
+    const char* v8flags,
+    int v8_threads,
+    int v8flags_from_commandline) {
+  // create the v8 platform
+  platform = 
+    v8::platform::NewDefaultPlatform(v8_threads, 
+      v8::platform::IdleTaskSupport::kDisabled, 
+      v8::platform::InProcessStackDumping::kDisabled, nullptr);
+  V8::InitializePlatform(platform.get());
+  // set the v8 flags from the internally defined ones
+  V8::SetFlagsFromString(v8flags);
+  // then any flags specified on command line will override these, if we 
+  // allow this
+  if (v8flags_from_commandline == 1) {
+    V8::SetFlagsFromCommandLine(&argc, argv, true);
+  }
+  // V8 requires an entropy source - by default it opens /dev/urandom multiple
+  // times on startup, which we want to avoid. so we need to see if we can
+  // find a more efficient way of providing entropy at startup
+  V8::SetEntropySource(EntropySource);
+  V8::Initialize();
+  V8::InitializeICU();
+}
+
 void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
   SET_VALUE(isolate, version, RUNTIME, String::NewFromUtf8Literal(isolate, 
@@ -1154,6 +1282,7 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, target, "hrtime", &pFhrtime, HRTime);
   SET_METHOD(isolate, target, "nextTick", NextTick);
   SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);
+  SET_METHOD(isolate, target, "pumpMessageLoop", PumpMessageLoop);
   SET_METHOD(isolate, target, "arch", Arch);
   SET_METHOD(isolate, target, "os", Os);
   SET_METHOD(isolate, target, "exit", Exit);
@@ -1191,14 +1320,19 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
 }
 
 // C/FFI api for managing isolates
+void lo_setup(int argc, char** argv,
+  const char* v8flags, int v8_threads, int v8flags_from_commandline) {
+  lo::Setup(argc, argv, v8flags, v8_threads, v8flags_from_commandline);
+}
+
 int lo_create_isolate (int argc, char** argv, 
   const char* main, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname,
   int cleanup, int onexit, void* startup_data) {
-  const v8::StartupData* data = (const v8::StartupData*) startup_data;
+//  const v8::StartupData* data = (const v8::StartupData*) startup_data;
   return lo::CreateIsolate(argc, argv, main, main_len, js, js_len, 
-  buf, buflen, fd, start, globalobj, scriptname, cleanup, onexit, data);
+  buf, buflen, fd, start, globalobj, scriptname, cleanup, onexit, startup_data);
 }
 
 int lo_context_size () {
@@ -1247,6 +1381,10 @@ void lo_start_isolate (void* ptr) {
 }
 
 void lo_destroy_isolate_context (struct isolate_context* ctx) {
+  if (ctx->startup_data != NULL) {
+//    Isolate* isolate = (Isolate*)ctx->startup_data;
+//    cleanupIsolate(isolate);
+  }
   free(ctx);
 }
 
@@ -1256,4 +1394,55 @@ void lo_callback (exec_info* info) {
   HandleScope scope(isolate);
   info->js_fn.Get(isolate)->Call(isolate->GetCurrentContext(), 
     v8::Null(isolate), 0, 0).ToLocalChecked();
+}
+
+// trampoline callback which may be called async from another thread
+void lo_async_callback (exec_info* info, callback_state* state) {
+  uint64_t* slot = (uint64_t*)info;
+/*
+  fprintf(stderr, "state.cur    %i\n", state->current);
+  fprintf(stderr, "state.max    %i\n", state->max_contexts);
+  fprintf(stderr, "tid          %lu\n", pthread_self());
+  fprintf(stderr, "isol         %lu\n", (uint64_t)info->isolate);
+  fprintf(stderr, "nargs        %lu\n", slot[3]);
+  fprintf(stderr, "arg1         %lu\n", slot[4]);
+  fprintf(stderr, "arg2         %lu\n", slot[5]);
+  fprintf(stderr, "arg3         %lu\n", slot[6]);
+  fprintf(stderr, "arg4         %lu\n", slot[7]);
+  fprintf(stderr, "arg5         %lu\n", slot[8]);
+  fprintf(stderr, "rv           %lu\n", slot[2]);
+*/
+  int size = sizeof(struct exec_info) + (8 * slot[3]);
+  state->contexts[state->current] = (struct exec_info*)calloc(1, size);
+//  state->contexts[state->current] = info;
+  memcpy((void*)state->contexts[state->current], (void*)info, size);
+  state->current = (state->current + 1) % state->max_contexts;
+/*
+
+
+// https://github.com/eldipa/loki/blob/master/loki/queue.c
+//  v8::Unlocker unlocker(isolate);  
+  v8::Locker lock(isolate);
+  v8::Isolate::Scope isolate_scope(isolate);
+  isolate->Enter();
+//  isolate->EnqueueMicrotask(info->js_fn.Get(isolate));
+  Local<Value> argv[1] = { Integer::New(isolate, 1) };
+  info->js_fn.Get(isolate)->Call(isolate->GetEnteredOrMicrotaskContext(), 
+    v8::Null(isolate), 1, argv).ToLocalChecked();
+
+  isolate->Exit();
+*/
+}
+
+void lo_shutdown (int cleanup) {
+  // if we have the cleanup flag set, clean up memory left behind when isolate
+  // exits. this flag should be set if you want to spawn multiple isolates
+  // in the same process without memory leaks.
+  if (cleanup) {
+    V8::Dispose();
+    platform.reset();
+  }
+  close(random_fd);
+  builtins.clear();
+  modules.clear();
 }

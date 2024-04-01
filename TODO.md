@@ -73,6 +73,20 @@
 - [ ] **question**: how do we model constants like RTLD_DEFAULT which seem to be pointers to things?
 - [ ] **bug**:  on macos, when i do a ```lo build``` it generates same main.h for main.h main_win.h and main_mac.h
 - [ ] **todo**: we need a way to ignore auto-generated files for git, but also to be able to re-generate them to check in when we need to.
+- [ ] **todo**: figure out a way to create builtins for v8 and have them automatically baked in, e.g.
+    https://github.com/denoland/v8/commit/8feae8c6166c2867554fb3f99fdd2b59a4a83c37
+    https://github.com/denoland/v8/commit/2ca3e486b84398f163775450e7d0cc3f4868c981
+    https://github.com/denoland/v8/commit/ae31efc15ffc948d1616d5e393a8f62fff1bfce8
+- [ ] **todo**: use CC and CXX instead of C and CC
+- [ ] **todo**: when building, do some pre-processing like stripping comments, minification and compression
+- [ ] **bug**: bug in linux event loop where event loop drops out after all tcp server connections go away. but we should still have the server fd and the timer on the loop
+- [ ] **todo**: allow setting arch: ```['arm64', 'x64']``` on bindings definitions so we can exclude for certain arches (e.g. boringssl)
+- [ ] **bug**: cannot compile boringssl with -fPIC
+- [ ] **bug**: SIGWNCH kills the app
+- [ ] **todo**: change console.log and console.error in threads so they don't write to stdout and stderr
+- [ ] **todo**: try/catch in loop callback and call on_error if we get an error
+- [ ] **todo**: make build.js build method async
+- [ ] **todo**: add a method for reading a bindary builtin into a buffer, or even just reading it as a memory stream. - wrapmemory? mmap? memfd_create?
 
 ## features
 

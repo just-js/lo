@@ -13,19 +13,51 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [x64, arm64]
+        platform: [x64]
     steps:
       - uses: actions/checkout@v3
       - name: compile runtime
         run: |
           make ARCH=${{ matrix.platform }} lo
-#          ./lo build binding core
       - name: check
-        if: ${{ matrix.platform == 'x64' }}
+        env:
+          LO_HOME: ${{ github.workspace }}
         run: |
           make check
-          brew install libffi lz4 zstd jsonschema
-          LO_PREFIX=/usr/local/opt ./lo test/build.js
+          brew install lz4 zstd openssl@3
+          ./lo test/build.js
+          ./lo build runtime runtimes/lo
+      - name: upload runtime artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{ github.workspace }}/lo
+          name: lo-mac-${{ matrix.platform }}
+
+  build-mac-arm:
+#    if: ${{ false }}  # disable
+    name: mac
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [arm64]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '^1.22.1'
+      - name: compile runtime
+        run: |
+          make ARCH=${{ matrix.platform }} lo
+      - name: check
+        env:
+          LO_HOME: ${{ github.workspace }}
+          PREFIX: /opt/homebrew/opt
+        run: |
+          make check
+          brew install lz4 zstd openssl@3
+          ./lo test/build.js
+          ./lo build runtime runtimes/lo
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
         with:
@@ -49,12 +81,14 @@ jobs:
       - name: compile
         run: |
           make lo
-#          ./lo build binding core
       - name: check
+        env:
+          LO_HOME: ${{ github.workspace }}
         run: |
           make check
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
           ./lo test/build.js
+          ./lo build runtime runtimes/lo
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -79,7 +113,7 @@ jobs:
           sudo apt-get install -qy binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
       - name: compile
         run: |
-          make ARCH=arm64 C=aarch64-linux-gnu-gcc CC=aarch64-linux-gnu-g++ lo
+          make ARCH=arm64 CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ lo
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:

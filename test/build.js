@@ -1,79 +1,88 @@
 import { exec, exec_env } from 'lib/proc.js'
 import { isFile } from 'lib/fs.js'
 
-const { assert, core, colors, getenv } = lo
-const { AD, AY } = colors
+const { assert, core, colors, getenv, load } = lo
+const { AD, AY, AC } = colors
 const { os, unlink } = core
 
-let C = getenv('C') || 'clang'
-let CC = getenv('CC') || 'clang++'
+let CC = getenv('CC') || 'clang'
+let CXX = getenv('CXX') || 'clang++'
 let LINK = getenv('LINK') || 'clang++'
 if (os === 'linux') {
-  C = getenv('C') || 'gcc'
-  CC = getenv('CC') || 'g++'
+  CC = getenv('CC') || 'gcc'
+  CXX = getenv('CXX') || 'g++'
   LINK = getenv('LINK') || 'g++'
 }
 
-const bindings = (os === 'linux' ? [
-  'core', 
+const bindings = [
+  'bestlines',
+  'boringssl',
+  'cfzlib',
+  'core',
   'curl',
-//  'duckdb',
-  'encode', 
-  'epoll', 
+  'encode',
+  'heap',
   'inflate',
-  'libffi',
-//  'libssl',
-  'lz4', 
-  'net', 
-  'pico', 
-  'pthread', 
-  'sqlite', 
-  'system', 
+//  'libffi',
+  'libssl',
+  'mbedtls',
+  'net',
+  'pico',
+  'pthread',
+  'sqlite',
+  'system',
   'zlib'
-] : [
-  'core', 
-  'curl',
-  'encode', 
-  'inflate', 
-  'libffi', 
-//  'libssl',  // we cannot have libssl and curl (with openssl) linked into same binary, or can we? it should work if we dynamically link
-  'kevents',
-  'mach',
-  'net', 
-  'pico', 
-  'pthread', 
-  'sqlite', 
-  'system', 
-  'zlib'      
-])
+]
+if (os === 'linux') {
+  bindings.push('epoll')
+  bindings.push('fsmount')
+  bindings.push('seccomp')
+  bindings.push('wireguard')
+  bindings.push('tcc')
+} else if (os === 'mac') {
+  bindings.push('kevents')
+  bindings.push('mach')
+}
 
-function build_runtime (name, target = name) {
+function build_runtime (target, config_path) {
   assert(exec_env('./lo', 
-    [ 'build', 'runtime', name ], 
-    [ ['TARGET', target], ['C', C], ['CC', CC], ['LINK', LINK] ]
+    [ 'build', 'runtime', config_path, '-v' ], 
+    [ ['LO_TARGET', target], ['CC', CC], ['CXX', CXX], ['LINK', LINK] ]
   )[0] === 0)
   assert(exec(`./${target}`, ['test/dump.js'])[0] === 0)
 }
 
 function build_binding (name) {
   assert(exec_env('./lo', 
-    [ 'build', 'binding', name ], 
-    [ ['C', C], ['CC', CC], ['LINK', LINK] ]
+    [ 'build', 'binding', name, '-v' ], 
+    [ ['CC', CC], ['CXX', CXX], ['LINK', LINK] ]
   )[0] === 0)
   assert(exec('./lo', ['test/dump-binding.js', name])[0] === 0)
 }
-console.log(`${AY}building runtimes${AD}`)
-build_runtime('builder', 'lo')
-build_runtime('mbedtls', 'mbed')
-build_runtime('core', 'core')
-//build_runtime('full', 'full')
-
-console.log(`${AY}deleting runtimes${AD}`)
-assert(isFile('mbed')) && unlink('mbed')
-assert(isFile('core')) && unlink('core')
-//assert(isFile('full')) && unlink('full')
 
 console.log(`${AY}building bindings${AD}`)
-for (const name of bindings) build_binding(name)
+for (const name of bindings) {
+  build_binding(name)
+  const lib = assert(load(name))
+  const binding = lib[name]
+  const entries = Object.entries(binding)
+  entries.sort((a, b) => a < b ? -1 : (a === b ? 0 : 1))
+  for (const [key, value] of entries) {
+    if (['AsyncFunction', 'Function'].includes(value.constructor.name)) {
+      console.log(`    ${AC}${key}${AD}: ${value.constructor.name} (${value.length})`)
+    } else if (['Object'].includes(value.constructor.name)) {
+      console.log(`    ${AC}${key}${AD}: ${value.constructor.name}`)
+    } else {
+      console.log(`    ${AY}${key}${AD}: ${value.constructor.name} = ${value}`)
+    }
+  }
+}
+
+console.log(`${AY}building runtimes${AD}`)
+build_runtime('build_test_lo', 'runtimes/lo')
+build_runtime('build_test_base', 'runtimes/base')
+console.log(`${AY}deleting runtimes${AD}`)
+assert(isFile('build_test_lo')) && assert(unlink('build_test_lo') === 0)
+assert(isFile('build_test_base')) && assert(unlink('build_test_base') === 0)
 
 console.log(`💩💩💩 All Done! 💩💩💩`)

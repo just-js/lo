@@ -1,7 +1,8 @@
-const { AD, AY, AC } = lo.colors
+const { colors, assert, load } = lo
+const { AD, AY, AC } = colors
 
 const name = lo.args[2]
-const lib = lo.load(name)
+const lib = assert(load(name))
 const binding = lib[name]
 
 const entries = Object.entries(binding)
