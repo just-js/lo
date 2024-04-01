@@ -31,6 +31,7 @@ using v8::StackFrame;
 using v8::Maybe;
 using v8::FunctionTemplate;
 using v8::FunctionCallback;
+using v8::Platform;
 using v8::PromiseRejectMessage;
 using v8::CFunction;
 using v8::Global;
@@ -57,6 +58,7 @@ using v8::Script;
 // TODO: thread safety
 std::map<std::string, lo::builtin*> builtins;
 std::map<std::string, lo::register_plugin> modules;
+std::unique_ptr<v8::Platform> platform;
 
 #ifndef _WIN64
 clock_t clock_id = CLOCK_MONOTONIC;
@@ -1221,6 +1223,54 @@ void lo::Exit(const FunctionCallbackInfo<Value> &args) {
   exit(status);
 }
 
+// keep the /dev/urandom file open for lifetime of process
+int random_fd = -1;
+
+/**
+ * fill the provided buffer with random bytes
+ * 
+ * we can just use /dev/urandom here, like v8 already does, or come up
+ * with something better. it would be nice if we could do this from the
+ * JS side, but that doesn't seem possible right now
+ * 
+ * @param buffer Write random bytes in here.
+ * @param length Write this number of random bytes, no more, no less.
+ */
+bool EntropySource(unsigned char* buffer, size_t length) {
+  if (random_fd == -1) random_fd = open("/dev/urandom", O_RDONLY);
+  //todo check return
+  size_t bytes = read(random_fd, buffer, length);
+  if (bytes != length) return false;
+  return true;
+}
+
+void lo::Setup(
+    int argc, 
+    char** argv,
+    const char* v8flags,
+    int v8_threads,
+    int v8flags_from_commandline) {
+  // create the v8 platform
+  platform = 
+    v8::platform::NewDefaultPlatform(v8_threads, 
+      v8::platform::IdleTaskSupport::kDisabled, 
+      v8::platform::InProcessStackDumping::kDisabled, nullptr);
+  V8::InitializePlatform(platform.get());
+  // set the v8 flags from the internally defined ones
+  V8::SetFlagsFromString(v8flags);
+  // then any flags specified on command line will override these, if we 
+  // allow this
+  if (v8flags_from_commandline == 1) {
+    V8::SetFlagsFromCommandLine(&argc, argv, true);
+  }
+  // V8 requires an entropy source - by default it opens /dev/urandom multiple
+  // times on startup, which we want to avoid. so we need to see if we can
+  // find a more efficient way of providing entropy at startup
+  V8::SetEntropySource(EntropySource);
+  V8::Initialize();
+  V8::InitializeICU();
+}
+
 void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
   SET_VALUE(isolate, version, RUNTIME, String::NewFromUtf8Literal(isolate, 
@@ -1270,6 +1320,11 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
 }
 
 // C/FFI api for managing isolates
+void lo_setup(int argc, char** argv,
+  const char* v8flags, int v8_threads, int v8flags_from_commandline) {
+  lo::Setup(argc, argv, v8flags, v8_threads, v8flags_from_commandline);
+}
+
 int lo_create_isolate (int argc, char** argv, 
   const char* main, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
@@ -1379,7 +1434,15 @@ void lo_async_callback (exec_info* info, callback_state* state) {
 */
 }
 
-void lo_shutdown () {
+void lo_shutdown (int cleanup) {
+  // if we have the cleanup flag set, clean up memory left behind when isolate
+  // exits. this flag should be set if you want to spawn multiple isolates
+  // in the same process without memory leaks.
+  if (cleanup) {
+    V8::Dispose();
+    platform.reset();
+  }
+  close(random_fd);
   builtins.clear();
   modules.clear();
 }
