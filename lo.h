@@ -6,6 +6,7 @@
 #include <v8-fast-api-calls.h>
 #include <unistd.h>
 #include <sys/mount.h>
+#include <fcntl.h>
 
 #ifdef __MACH__
 #include <mach/clock.h>
