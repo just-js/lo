@@ -11,7 +11,7 @@
 int main(int argc, char** argv) {
   // if we are called with no arguments, just dump the version and exit
   if (argc == 2 && strncmp(argv[1], "--version", 9) == 0) {
-    fprintf(stdout, "%s %s\nv8 %s\n", RUNTIME, VERSION, v8::V8::GetVersion());
+    fprintf(stdout, "%s\n", VERSION);
     return 0;
   }
   // record the start time - this will be made available to JS so we can 

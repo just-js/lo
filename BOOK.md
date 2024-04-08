@@ -116,8 +116,7 @@ let's check the version number of lo and the embedded JS engine it is using
 ```shell
 ./lo --version
 
-lo 0.0.14-pre
-v8 12.3.219.12
+0.0.14-pre
 ```
 
 ### evaluating JavaScript
