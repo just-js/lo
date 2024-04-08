@@ -16,25 +16,25 @@ gzip compressed binary from github.
 on linux/x64
 
 ```shell
-curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.14-pre/lo-linux-x64.gz
+curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.15-pre/lo-linux-x64.gz
 ```
 
 on linux/arm64
 
 ```shell
-curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.14-pre/lo-linux-arm64.gz
+curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.15-pre/lo-linux-arm64.gz
 ```
 
 on macos/x64
 
 ```shell
-curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.14-pre/lo-mac-x64.gz
+curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.15-pre/lo-mac-x64.gz
 ```
 
 on macos/arm64 (apple silicon)
 
 ```shell
-curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.14-pre/lo-mac-arm64.gz
+curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.15-pre/lo-mac-arm64.gz
 ```
 
 Then, we need to decompress the downloaded file and make it executable
@@ -116,7 +116,7 @@ let's check the version number of lo and the embedded JS engine it is using
 ```shell
 ./lo --version
 
-0.0.14-pre
+0.0.15-pre
 ```
 
 ### evaluating JavaScript
@@ -140,10 +140,28 @@ lo has a very basic repl which you can invoke as follows
 ```shell
 ./lo repl
 
+⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛
+⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬛
+⬛⬜⬜⬜⬜⬛⬛⬜⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜⬛⬛⬜⬛
+⬛⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬛⬜⬜⬛⬜⬛⬜⬛
+⬛⬜⬜⬛⬜⬜⬜⬛⬛⬜⬜⬜⬜⬜⬛⬛⬜⬛⬛⬜⬜⬛
+⬛⬜⬛⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬛
+⬛⬜⬛⬜⬜⬛⬜⬜⬜⬛⬛⬜⬜⬛⬛⬜⬜⬜⬜⬜⬜⬛
+⬛⬜⬜⬜⬛⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜⬜⬛
+⬛⬜⬜⬜⬛⬜⬜⬛⬜⬜⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜⬛
+⬛⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜⬛
+⬛⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬛⬛⬜⬜⬛⬜⬜⬜⬛
+⬛⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜⬜⬛⬜⬜⬛⬜⬛⬜⬜⬜⬛
+⬛⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜⬜⬛⬜⬜⬛⬜⬛⬜⬜⬜⬛
+⬛⬜⬜⬜⬜⬛⬜⬛⬜⬜⬜⬜⬜⬛⬛⬜⬛⬜⬛⬜⬜⬛
+⬛⬜⬜⬜⬛⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜⬛⬜⬛
+⬛⬜⬜⬜⬛⬜⬜⬜⬜⬛⬛⬜⬜⬛⬛⬜⬜⬜⬜⬛⬜⬛
+⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬛
+⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛
 
- lo    0.0.14-pre        v8    12.3.219.12
+ lo    0.0.15-pre        v8    12.3.219.12
  arch  x64               os    linux
- boot  5.94 ms           rss   23068672
+ boot  5.67 ms           rss   34078720
 
 > 
 ```
@@ -157,7 +175,7 @@ we downloaded.
 
 {
   version: {
-    lo: "0.0.14-pre",
+    lo: "0.0.15-pre",
     v8: "12.3.219.12"
   },
 ...
