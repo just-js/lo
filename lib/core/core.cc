@@ -746,6 +746,26 @@ v8::CTypeInfo rcmemmove = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infomemmove = v8::CFunctionInfo(rcmemmove, 5, cargsmemmove);
 v8::CFunction pFmemmove = v8::CFunction((const void*)&memmoveFast, &infomemmove);
 
+int32_t shm_openFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2);
+v8::CTypeInfo cargsshm_open[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcshm_open = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoshm_open = v8::CFunctionInfo(rcshm_open, 4, cargsshm_open);
+v8::CFunction pFshm_open = v8::CFunction((const void*)&shm_openFast, &infoshm_open);
+
+int32_t shm_unlinkFast(void* p, struct FastOneByteString* const p0);
+v8::CTypeInfo cargsshm_unlink[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+};
+v8::CTypeInfo rcshm_unlink = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoshm_unlink = v8::CFunctionInfo(rcshm_unlink, 2, cargsshm_unlink);
+v8::CFunction pFshm_unlink = v8::CFunction((const void*)&shm_unlinkFast, &infoshm_unlink);
+
 void mmapFast(void* p, void* p0, uint32_t p1, int32_t p2, int32_t p3, int32_t p4, uint32_t p5, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargsmmap[8] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -1685,6 +1705,32 @@ void memmoveFast(void* p, void* p0, void* p1, uint32_t p2, struct FastApiTypedAr
   ((void**)p_ret->data)[0] = r;
 
 }
+void shm_openSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = shm_open(*v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t shm_openFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2) {
+  struct FastOneByteString* const v0 = p0;
+  int32_t v1 = p1;
+  int32_t v2 = p2;
+  return shm_open(v0->data, v1, v2);
+}
+void shm_unlinkSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  int32_t rc = shm_unlink(*v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t shm_unlinkFast(void* p, struct FastOneByteString* const p0) {
+  struct FastOneByteString* const v0 = p0;
+  return shm_unlink(v0->data);
+}
 void mmapSlow(const FunctionCallbackInfo<Value> &args) {
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2416,6 +2462,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "memcpy", &pFmemcpy, memcpySlow);
   SET_FAST_METHOD(isolate, module, "memset", &pFmemset, memsetSlow);
   SET_FAST_METHOD(isolate, module, "memmove", &pFmemmove, memmoveSlow);
+  SET_FAST_METHOD(isolate, module, "shm_open", &pFshm_open, shm_openSlow);
+  SET_FAST_METHOD(isolate, module, "shm_unlink", &pFshm_unlink, shm_unlinkSlow);
   SET_FAST_METHOD(isolate, module, "mmap", &pFmmap, mmapSlow);
   SET_FAST_METHOD(isolate, module, "munmap", &pFmunmap, munmapSlow);
   SET_FAST_METHOD(isolate, module, "msync", &pFmsync, msyncSlow);

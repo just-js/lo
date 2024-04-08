@@ -156,10 +156,10 @@ function load (name) {
 
 // internal functions
 // this is called by the synchronous CJS require() loader
-function load_source_sync (specifier) {
+function load_source_sync (specifier, resource) {
   let src = ''
   if (core.sync_loader) {
-    src = core.sync_loader(specifier)
+    src = core.sync_loader(specifier, resource)
     if (src) return src
   }
   src = lo.builtin(specifier)
@@ -175,10 +175,10 @@ function load_source_sync (specifier) {
 }
 
 // this is called when async ESM modules are loaded
-async function load_source (specifier) {
+async function load_source (specifier, resource) {
   let src = ''
   if (core.loader) {
-    src = await core.loader(specifier)
+    src = await core.loader(specifier, resource)
     if (src) return src
   }
   src = lo.builtin(specifier)
@@ -205,13 +205,13 @@ async function on_module_load (specifier, resource) {
   }
   // todo: allow overriding loadSource - return a promise
   // todo: this should be async
-  const src = await load_source(specifier)
+  const src = await load_source(specifier, resource)
   const mod = loadModule(src, specifier)
   mod.resource = resource
   moduleCache.set(specifier, mod)
   const { requests } = mod
   for (const request of requests) {
-    const src = await load_source(request)
+    const src = await load_source(request, resource)
     const mod = loadModule(src, request)
     moduleCache.set(request, mod)
   }
@@ -228,6 +228,7 @@ function on_module_instantiate (specifier) {
     return moduleCache.get(specifier).identity
   }
   // todo: why is this function synchronous only??
+  // todo: we need to specify the calling module path here
   const src = load_source_sync(specifier)
   const mod = loadModule(src, specifier)
   moduleCache.set(specifier, mod)
@@ -237,6 +238,7 @@ function on_module_instantiate (specifier) {
 /**
 * an approximation of node.js synchronous require. not sure if this should
 * be here at all but it's useful for compatibility testing
+* todo: add parent path support like it was in just
 * ```
 * @param file_path {string} path to the file to be required
 */
@@ -261,8 +263,8 @@ function require (file_path) {
 */
 function on_unhandled_rejection (err) {
   console.error(`${AR}Unhandled Rejection${AD}`)
-  console.error(err.stack)
-  //die(err, true)
+  //console.error(err.stack)
+  die(err, true)
 }
 
 const builtin_cache = new Map()
@@ -343,6 +345,8 @@ const AC = isatty ? '\u001b[36m' : '' // ANSI Cyan
 const AW = isatty ? '\u001b[37m' : '' // ANSI White
 const defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC
 const defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
+core.defaultWriteFlags = defaultWriteFlags
+core.defaultWriteMode = defaultWriteMode
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 const handle = new Uint32Array(2)
@@ -380,6 +384,7 @@ lo.addr = addr
 lo.core = core
 // todo: should we just overwrite the existing ones and not put these on "lo"?
 lo.getenv = wrap_getenv()
+lo.setenv = lo.core.setenv
 lo.getcwd = wrap_getcwd()
 const LO_HOME = lo.getenv('LO_HOME') || lo.getcwd()
 const LO_CACHE = parseInt(lo.getenv('LO_CACHE') || '0', 10)
@@ -400,6 +405,8 @@ const _builtins = lo.builtins()
 lo.builtins = () => _builtins
 const _libraries = lo.libraries()
 lo.libraries = () => _libraries
+// todo: depracte lo.libraries() in favour of lo.bindings()
+lo.bindings = lo.libraries
 //delete lo.library
 //const noop = () => {}
 //core.loader = core.sync_loader = noop
@@ -459,13 +466,29 @@ core.binding_loader = name => {
 }
 */
 
+function show_usage () {
+  console.log('show_usage not implemented')
+}
+
 async function global_main () {
   // todo: upgrade, install etc. maybe install these as command scripts, but that would not be very secure
+  if (args.length === 1) {
+    show_usage()
+    return Promise.resolve()
+  }
   const command = args[1]
   if (command === 'gen') {
     (await import('lib/gen.js')).gen(args.slice(2))
   } else if (command === 'build') {
     (await import('lib/build.js')).build(args.slice(2))
+  } else if (command === 'install') {
+    (await import('lib/build.js')).install(args.slice(2))
+  } else if (command === 'init') {
+    (await import('lib/build.js')).init(args.slice(2))
+  } else if (command === 'uninstall') {
+    (await import('lib/build.js')).uninstall(args.slice(2))
+  } else if (command === 'upgrade') {
+    (await import('lib/build.js')).upgrade(args.slice(2))
   } else if (command === 'repl') {
     (await import('lib/repl.js')).repl().catch(die)
   } else if (command === 'eval') {
@@ -485,7 +508,9 @@ const AsyncFunction = async function () {}.constructor
 
 if (workerSource) {
   import('worker_source.js').catch(die)
-} else if (args.length > 1) {
+} else if (args.length === 1) {
+  show_usage()
+} else {
   global_main().catch(die)
 }
 

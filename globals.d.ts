@@ -32,6 +32,7 @@ interface RuntimeVersion {
 }
 
 interface Core {
+  O_RDONLY: number;
   open(path: string, flags: number, mode: number);
   dlsym(handle: number, name: string): number;
   dlopen(path: string, flags: number): number;

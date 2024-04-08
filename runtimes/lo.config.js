@@ -85,6 +85,7 @@ const embeds = [
   'lib/sqlite/api.js',
   'lib/sqlite/build.js',
   'lib/encode/api.js',
+  'runtimes/core.config.js',
   'runtimes/base.config.js',
   'runtimes/lo.config.js',
   'globals.d.ts',
@@ -95,7 +96,7 @@ const target = 'lo'
 const opt = '-O3 -march=native -mtune=native'
 
 const v8_opts = {
-  v8_cleanup: 1, v8_threads: 2, on_exit: 0,
+  v8_cleanup: 0, v8_threads: 2, on_exit: 0,
   v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --cppgc-young-generation'
 }
 
