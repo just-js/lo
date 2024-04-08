@@ -95,7 +95,7 @@ void builtins_add (const char* name, const char* source,
   unsigned int size);
 void modules_add (const char* name, register_plugin plugin_handler);
 void Setup(
-    int argc, 
+    int* argc, 
     char** argv,
     const char* v8flags,
     int v8_threads,

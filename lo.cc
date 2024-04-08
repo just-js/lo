@@ -488,7 +488,7 @@ int lo::CreateIsolate(int argc, char** argv,
     std::map<int, Global<Module>> module_map;
     isolate->SetData(0, &module_map);
 
-
+    
     Local<ObjectTemplate> global = ObjectTemplate::New(isolate);
     Local<ObjectTemplate> runtime = ObjectTemplate::New(isolate);
     //runtime->SetImmutableProto();
@@ -1245,7 +1245,7 @@ bool EntropySource(unsigned char* buffer, size_t length) {
 }
 
 void lo::Setup(
-    int argc, 
+    int* argc, 
     char** argv,
     const char* v8flags,
     int v8_threads,
@@ -1261,7 +1261,7 @@ void lo::Setup(
   // then any flags specified on command line will override these, if we 
   // allow this
   if (v8flags_from_commandline == 1) {
-    V8::SetFlagsFromCommandLine(&argc, argv, true);
+    V8::SetFlagsFromCommandLine(argc, argv, true);
   }
   // V8 requires an entropy source - by default it opens /dev/urandom multiple
   // times on startup, which we want to avoid. so we need to see if we can
@@ -1320,7 +1320,7 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
 }
 
 // C/FFI api for managing isolates
-void lo_setup(int argc, char** argv,
+void lo_setup(int* argc, char** argv,
   const char* v8flags, int v8_threads, int v8flags_from_commandline) {
   lo::Setup(argc, argv, v8flags, v8_threads, v8flags_from_commandline);
 }

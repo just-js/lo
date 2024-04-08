@@ -467,7 +467,7 @@ core.binding_loader = name => {
 */
 
 function show_usage () {
-  console.log('show_usage not implemented')
+//  console.log('show_usage not implemented')
 }
 
 async function global_main () {

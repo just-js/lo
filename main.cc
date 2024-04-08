@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
   setvbuf(stdout, nullptr, _IONBF, 0);
   setvbuf(stderr, nullptr, _IONBF, 0);
 
-  lo::Setup(argc, argv, v8flags, _v8_threads, _v8flags_from_commandline);
+  lo::Setup(&argc, argv, v8flags, _v8_threads, _v8flags_from_commandline);
 
   // register any builtins and modules that have been generated in main.h 
   register_builtins();
