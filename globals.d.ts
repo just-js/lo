@@ -37,8 +37,19 @@ interface Core {
   dlsym(handle: number, name: string): number;
   dlopen(path: string, flags: number): number;
   strnlen(str: string, size: number);
+  /**
+   * Reads a file from the given path into a Uint8Array and returns it.
+   * @param [path] The path to the file.
+   */
   read_file(path: string): Uint8Array;
-  write_file(path: string, buffer: Uint8Array): number;
+  /**
+   * Creates/Overwrites a file at the specified path with the given Uint8Array
+   * as the contents of the file.
+   * @param {string}[path] The path of the file to create.
+   * @param {TypedArray}[buffer] The data write to the file.
+   * @returns {number} Number of bytes written
+   */
+  write_file(path: string, buffer: Uint8Array, flags?: number, mode?: number): number;
 }
 
 declare class CString extends Uint8Array {

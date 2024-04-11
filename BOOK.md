@@ -5,7 +5,7 @@ differently.
 
 # Introduction
 
-## Chapter 1 - Getting Started
+## Chapter 1 - Running Lo
 
 ## download the lo runtime
 
@@ -109,6 +109,12 @@ help
 
 
 
+```
+
+```shell
+./lo build
+
+./lo 
 ```
 
 let's check the version number of lo and the embedded JS engine it is using
@@ -223,18 +229,20 @@ and let's see what bindings are available
 
 you can learn more about the available modules [here]() and bindings [here](), how to embed assets [here]() and how to build your own runtimes with different defailt builtins and bindings [here]().
 
-Okay, we have successfully downloaded the lo runtime and verified it seems to be working correctly - let's move on to doing some more interesting things.
+### installing lo binary
 
+Okay, we have successfully downloaded the lo runtime and verified it seems to be working correctly - let's move on to doing some more interesting things.
 
 First, let's "install" lo so it is avalable system wide.
 
 you can give the install command an explicit path to install to
 
 ```shell
-./lo install $HOME
+./lo install /home/user/.lo/bin
 ```
 
-and lo will copy itself into that directory
+and lo will create the directory tree if it doesn't exist and copy itself into 
+that directory
 
 or, if you don't pass any path
 
@@ -244,22 +252,17 @@ or, if you don't pass any path
 
 lo will read the $HOME environment variable and install itself at $HOME/.lo/bin/lo
 
+### initialise a project
 
 let's create a new project. we can do this in the current directory with
 
 ```shell
+mkdir foo
+cd foo
 lo init
 ```
 
 and it will create a project with the same name as the current directory
-
-or, specify a path and lo will create that directory and create a project in it
-with the name of the last directory in the path. if you omit a leading slash
-in the path name then lo will create the directory relative to the current one.
-
-```shell
-lo init foo
-```
 
 after you create the project you should see these files in the project 
 directory, assuming the name of the project is 'foo'
@@ -267,19 +270,10 @@ directory, assuming the name of the project is 'foo'
 - foo.js: the main script
 - foo.config.js: a config file for building the project into an executable
 - .gitignore: a gitignore that will ignore any build artifacts that should not be checked in
+- jsconfig.json: settings for vscode JS support
+- globals.d.ts: typescript definitions for lo api's
 
-
-
-
-if you pass a ```--types``` flag to the lo init command, it will add typescript
-definitions to the project folder
-
-- globals.d.ts
-
-if you pass a ```--js-config``` flag to the lo init command, it will add a 
-jsconfig.json file to the project folder
-
-
+### creating and running a program
 
 let's edit ```foo.js``` and make it do something useful
 
@@ -297,8 +291,49 @@ at run time.
 
 lo module resolution currently will only load from a fully specified path or, if
 a relative path is specified, it will always try to load relative to the current
-working directory. if the path matches the path of a module that is embedded in the
-runtime, then that module will be loaded from memory.
+working directory that lo is run from. if the path matches the path of a module 
+that is embedded in the runtime, then that module will be loaded from memory and
+any on disk module will be ignored.
 
-if you want to force loading a local module in the filesystem over one that is embedded in the runtime, you can set the LO_CACHE=1 environment variable to force always
+if you want to force loading a local module in the filesystem over one that is 
+embedded in the runtime, you can set the LO_CACHE=1 environment variable to 
+force loading a version from the filesystem.
+
+we can run our program as follows
+
+```shell
+lo foo.js
+```
+
+### loading standard modules and bindings
+
+in the example above we loaded the 'lib/proc.js' standard module that comes
+embedded into the 
+
+### create and import a custom module
+
+
+### create, build and load a custom binding
+
+
+### build a runtime
+
+
+## Chapter 2 - Building Lo from Source
+
+### get lo source
+
+download and extract a tarball
+
+or checkout the source with git
+
+
+### build the base lo runtime
+
+the configuration in [runtimes/base.config.js](runtimes/base.config.js) is used to build the default
+version of lo from source. this gives us a lo runtime with the minimal set
+of dependencies it needs to build other lo runtimes.
+
+
+### lo runtimes
 
