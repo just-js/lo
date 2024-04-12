@@ -4,59 +4,67 @@
 
 #include "lo.h"
 
+#ifdef _WIN64
+#include "builtins.h"
+static unsigned int main_js_len = _binary_main_js_len;
+#else
 extern char _binary_main_js_start[];
 extern char _binary_main_js_end[];
 static unsigned int main_js_len = _binary_main_js_end - _binary_main_js_start;
 extern char _binary_lib_curl_js_start[];
-extern char _binary_lib_curl_js_end[];
 extern char _binary_lib_gen_js_start[];
-extern char _binary_lib_gen_js_end[];
 extern char _binary_lib_fs_js_start[];
-extern char _binary_lib_fs_js_end[];
 extern char _binary_lib_untar_js_start[];
-extern char _binary_lib_untar_js_end[];
 extern char _binary_lib_proc_js_start[];
-extern char _binary_lib_proc_js_end[];
 extern char _binary_lib_path_js_start[];
-extern char _binary_lib_path_js_end[];
 extern char _binary_lib_curl_js_start[];
-extern char _binary_lib_curl_js_end[];
 extern char _binary_lib_inflate_js_start[];
-extern char _binary_lib_inflate_js_end[];
 extern char _binary_lib_build_js_start[];
-extern char _binary_lib_build_js_end[];
 extern char _binary_lib_stringify_js_start[];
-extern char _binary_lib_stringify_js_end[];
 extern char _binary_main_cc_start[];
-extern char _binary_main_cc_end[];
 extern char _binary_main_h_start[];
-extern char _binary_main_h_end[];
 extern char _binary_lo_h_start[];
-extern char _binary_lo_h_end[];
 extern char _binary_lo_cc_start[];
-extern char _binary_lo_cc_end[];
 extern char _binary_lib_inflate_api_js_start[];
-extern char _binary_lib_inflate_api_js_end[];
 extern char _binary_lib_inflate_build_js_start[];
-extern char _binary_lib_inflate_build_js_end[];
 extern char _binary_lib_core_api_js_start[];
-extern char _binary_lib_core_api_js_end[];
 extern char _binary_lib_curl_api_js_start[];
-extern char _binary_lib_curl_api_js_end[];
 extern char _binary_runtimes_base_config_js_start[];
-extern char _binary_runtimes_base_config_js_end[];
 extern char _binary_runtimes_lo_config_js_start[];
-extern char _binary_runtimes_lo_config_js_end[];
 extern char _binary_globals_d_ts_start[];
+extern char _binary_lib_curl_js_end[];
+extern char _binary_lib_gen_js_end[];
+extern char _binary_lib_fs_js_end[];
+extern char _binary_lib_untar_js_end[];
+extern char _binary_lib_proc_js_end[];
+extern char _binary_lib_path_js_end[];
+extern char _binary_lib_curl_js_end[];
+extern char _binary_lib_inflate_js_end[];
+extern char _binary_lib_build_js_end[];
+extern char _binary_lib_stringify_js_end[];
+extern char _binary_main_cc_end[];
+extern char _binary_main_h_end[];
+extern char _binary_lo_h_end[];
+extern char _binary_lo_cc_end[];
+extern char _binary_lib_inflate_api_js_end[];
+extern char _binary_lib_inflate_build_js_end[];
+extern char _binary_lib_core_api_js_end[];
+extern char _binary_lib_curl_api_js_end[];
+extern char _binary_runtimes_base_config_js_end[];
+extern char _binary_runtimes_lo_config_js_end[];
 extern char _binary_globals_d_ts_end[];
+
+#endif
 
 extern "C" {
   extern void* _register_core();
   extern void* _register_inflate();
   extern void* _register_curl();
+  
 #ifdef __MACH__
   extern void* _register_mach();
 #endif
+
 }
 
 void register_builtins() {
@@ -85,15 +93,25 @@ void register_builtins() {
   lo::modules_add("core", &_register_core);
   lo::modules_add("inflate", &_register_inflate);
   lo::modules_add("curl", &_register_curl);
+  
 #ifdef __MACH__
   lo::modules_add("mach", &_register_mach);
 #endif
+
 }
+
 static const char* index_js = NULL;
 static unsigned int index_js_len = 0;
+
 static const char* main_js = _binary_main_js_start;
 static const char* v8flags = "--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --cppgc-young-generation";
 static unsigned int _v8flags_from_commandline = 1;
 static unsigned int _v8_threads = 2;
 static unsigned int _v8_cleanup = 0;
 static unsigned int _on_exit = 0;
+#ifdef __linux__
+
+#endif
+#ifdef __MACH__
+
+#endif

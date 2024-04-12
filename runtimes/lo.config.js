@@ -1,6 +1,3 @@
-const { core } = lo
-const { os } = core
-
 const bindings = [
   'bestlines',
   'core', 
@@ -13,14 +10,10 @@ const bindings = [
   'pthread',
   'sqlite',
   'system',
+  { 'epoll': ['linux'] },
+  { 'kevents': ['mac'] },
+  { 'mach': ['mac'] },
 ]
-
-if (os === 'linux') {
-  bindings.push('epoll')
-} else if (os === 'mac') {
-  bindings.push('kevents')
-  bindings.push('mach')
-}
 
 const libs = [
   'lib/bench.js', 
