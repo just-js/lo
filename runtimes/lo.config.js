@@ -3,7 +3,6 @@ const { os } = core
 
 const bindings = [
   'bestlines',
-//  'cfzlib',
   'core', 
   'curl',
   'encode',
@@ -14,7 +13,6 @@ const bindings = [
   'pthread',
   'sqlite',
   'system',
-//  'lz4',  
 ]
 
 if (os === 'linux') {
