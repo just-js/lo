@@ -111,6 +111,17 @@ CFunctionInfo infoutf8encodeinto = CFunctionInfo(rcutf8encodeinto, 3,
 CFunction pFutf8encodeinto = CFunction((const void*)&lo::fastUtf8EncodeInto, 
   &infoutf8encodeinto);
 
+
+CTypeInfo cargsutf8encodeintoPtr[3] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
+  CTypeInfo(CTypeInfo::Type::kUint64)
+};
+CFunctionInfo infoutf8encodeintoPtr = CFunctionInfo(rcutf8encodeinto, 3, 
+  cargsutf8encodeintoPtr);
+CFunction pFutf8encodeintoPtr = CFunction((const void*)&lo::fastUtf8EncodeIntoPtr, 
+  &infoutf8encodeintoPtr);
+
 CTypeInfo cargsutf8encodeintoatoffset[4] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
@@ -1093,6 +1104,37 @@ int32_t lo::fastUtf8EncodeInto (void* p, struct FastOneByteString*
   return p_str->length;
 }
 
+
+void lo::Utf8EncodeIntoPtr(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<String> str = args[0].As<String>();
+/*
+// this check is expensive and it seems to provide little benefit unless
+// we are dealing with flat non unicode strings. need to benchmark further
+
+  if (str->IsOneByte()) {
+    uint64_t start64 = (uint64_t)Local<Number>::Cast(args[1])->Value();
+    uint8_t* dest = reinterpret_cast<uint8_t*>(start64);
+    int written = str->WriteOneByte(isolate, dest, 0, -1, 
+      String::NO_NULL_TERMINATION);
+    args.GetReturnValue().Set(Integer::New(isolate, written));
+  }
+*/
+  //int chars_written = 0;
+//  uint64_t start64 = (uint64_t)Local<Number>::Cast(args[1])->Value();
+//  char* dest = reinterpret_cast<char*>(start64);
+  char* dest = reinterpret_cast<char*>(Local<Integer>::Cast(args[1])->Value());
+  int written = str->WriteUtf8(isolate, dest, -1, nullptr, 
+    String::NO_NULL_TERMINATION);
+  args.GetReturnValue().Set(Integer::New(isolate, written));
+}
+
+int32_t lo::fastUtf8EncodeIntoPtr (void* p, struct FastOneByteString* 
+  const p_str, void* p_buf) {
+  memcpy(p_buf, p_str->data, p_str->length);
+  return p_str->length;
+}
+
 void lo::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
@@ -1303,6 +1345,10 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, target, "utf8Length", &pFutf8length, Utf8Length);
   SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto, 
     Utf8EncodeInto);
+
+  SET_FAST_METHOD(isolate, target, "utf8EncodeIntoPtr", &pFutf8encodeintoPtr, 
+    Utf8EncodeIntoPtr);
+
   SET_FAST_METHOD(isolate, target, "utf8EncodeIntoAtOffset", 
     &pFutf8encodeintoatoffset, Utf8EncodeIntoAtOffset);
 

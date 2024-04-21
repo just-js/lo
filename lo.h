@@ -143,6 +143,10 @@ void fastGetAddress(void* p, struct FastApiTypedArray* const p_buf,
   struct FastApiTypedArray* const p_ret);
 void Utf8EncodeInto(const v8::FunctionCallbackInfo<v8::Value> &args);
 int32_t fastUtf8EncodeInto (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf);
+
+void Utf8EncodeIntoPtr(const v8::FunctionCallbackInfo<v8::Value> &args);
+int32_t fastUtf8EncodeIntoPtr (void* p, struct FastOneByteString* const p_str, void* p_buf);
+
 void Utf8EncodeIntoAtOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
 int32_t fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf, uint32_t off);
 void Utf8Length(const v8::FunctionCallbackInfo<v8::Value> &args);
