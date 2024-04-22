@@ -103,3 +103,4 @@ _binary_globals_d_ts_start:
         .incbin "globals.d.ts"
         .global _binary_globals_d_ts_end
 _binary_globals_d_ts_end:
+.section .note.GNU-stack,"",@progbits

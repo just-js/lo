@@ -111,6 +111,17 @@ CFunctionInfo infoutf8encodeinto = CFunctionInfo(rcutf8encodeinto, 3,
 CFunction pFutf8encodeinto = CFunction((const void*)&lo::fastUtf8EncodeInto, 
   &infoutf8encodeinto);
 
+
+CTypeInfo cargsutf8encodeintoPtr[3] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
+  CTypeInfo(CTypeInfo::Type::kUint64)
+};
+CFunctionInfo infoutf8encodeintoPtr = CFunctionInfo(rcutf8encodeinto, 3, 
+  cargsutf8encodeintoPtr);
+CFunction pFutf8encodeintoPtr = CFunction((const void*)&lo::fastUtf8EncodeIntoPtr, 
+  &infoutf8encodeintoPtr);
+
 CTypeInfo cargsutf8encodeintoatoffset[4] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
@@ -488,7 +499,7 @@ int lo::CreateIsolate(int argc, char** argv,
     std::map<int, Global<Module>> module_map;
     isolate->SetData(0, &module_map);
 
-
+    
     Local<ObjectTemplate> global = ObjectTemplate::New(isolate);
     Local<ObjectTemplate> runtime = ObjectTemplate::New(isolate);
     //runtime->SetImmutableProto();
@@ -1093,6 +1104,37 @@ int32_t lo::fastUtf8EncodeInto (void* p, struct FastOneByteString*
   return p_str->length;
 }
 
+
+void lo::Utf8EncodeIntoPtr(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<String> str = args[0].As<String>();
+/*
+// this check is expensive and it seems to provide little benefit unless
+// we are dealing with flat non unicode strings. need to benchmark further
+
+  if (str->IsOneByte()) {
+    uint64_t start64 = (uint64_t)Local<Number>::Cast(args[1])->Value();
+    uint8_t* dest = reinterpret_cast<uint8_t*>(start64);
+    int written = str->WriteOneByte(isolate, dest, 0, -1, 
+      String::NO_NULL_TERMINATION);
+    args.GetReturnValue().Set(Integer::New(isolate, written));
+  }
+*/
+  //int chars_written = 0;
+//  uint64_t start64 = (uint64_t)Local<Number>::Cast(args[1])->Value();
+//  char* dest = reinterpret_cast<char*>(start64);
+  char* dest = reinterpret_cast<char*>(Local<Integer>::Cast(args[1])->Value());
+  int written = str->WriteUtf8(isolate, dest, -1, nullptr, 
+    String::NO_NULL_TERMINATION);
+  args.GetReturnValue().Set(Integer::New(isolate, written));
+}
+
+int32_t lo::fastUtf8EncodeIntoPtr (void* p, struct FastOneByteString* 
+  const p_str, void* p_buf) {
+  memcpy(p_buf, p_str->data, p_str->length);
+  return p_str->length;
+}
+
 void lo::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
@@ -1245,7 +1287,7 @@ bool EntropySource(unsigned char* buffer, size_t length) {
 }
 
 void lo::Setup(
-    int argc, 
+    int* argc, 
     char** argv,
     const char* v8flags,
     int v8_threads,
@@ -1261,7 +1303,7 @@ void lo::Setup(
   // then any flags specified on command line will override these, if we 
   // allow this
   if (v8flags_from_commandline == 1) {
-    V8::SetFlagsFromCommandLine(&argc, argv, true);
+    V8::SetFlagsFromCommandLine(argc, argv, true);
   }
   // V8 requires an entropy source - by default it opens /dev/urandom multiple
   // times on startup, which we want to avoid. so we need to see if we can
@@ -1303,6 +1345,10 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, target, "utf8Length", &pFutf8length, Utf8Length);
   SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto, 
     Utf8EncodeInto);
+
+  SET_FAST_METHOD(isolate, target, "utf8EncodeIntoPtr", &pFutf8encodeintoPtr, 
+    Utf8EncodeIntoPtr);
+
   SET_FAST_METHOD(isolate, target, "utf8EncodeIntoAtOffset", 
     &pFutf8encodeintoatoffset, Utf8EncodeIntoAtOffset);
 
@@ -1320,7 +1366,7 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
 }
 
 // C/FFI api for managing isolates
-void lo_setup(int argc, char** argv,
+void lo_setup(int* argc, char** argv,
   const char* v8flags, int v8_threads, int v8flags_from_commandline) {
   lo::Setup(argc, argv, v8flags, v8_threads, v8flags_from_commandline);
 }

@@ -2,6 +2,7 @@ const bindings = [
   'core', 
   'inflate',
   'curl',
+  { mach: ['mac'] }
 ]
 
 const libs = [
@@ -43,9 +44,6 @@ const v8_opts = {
 let link_type = '-rdynamic -static-libstdc++'
 if (lo.core.os === 'linux') {
   link_type += ' -static-libgcc'
-} else if (lo.core.os === 'mac') {
-  bindings.push('mach')
 }
-
 
 export default { bindings, libs, embeds, target, opt, v8_opts, link_type }

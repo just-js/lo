@@ -6,7 +6,7 @@ CCARGS=-std=c++17 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
 CARGS=-c -fno-omit-frame-pointer
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3
-VERSION=0.0.14-pre
+VERSION=0.0.15-pre
 V8_VERSION=12.3
 RUNTIME=lo
 LO_HOME=$(shell pwd)
@@ -65,9 +65,11 @@ v8/libv8_monolith.a: ## download the v8 static libary for linux/macos
 	gzip -d v8/libv8_monolith.a.gz
 	rm -f v8/libv8_monolith.a.gz
 
-v8/v8_monolith.lib: ## download the v8 static library for windows
-	curl -L -o v8/v8_monolith.lib.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.lib.gz
-	gzip -d v8/v8_monolith.lib.gz
+v8/v8_monolith.lib.zip: ## download the v8 static library for windows
+	curl -L -o v8/v8_monolith.lib.zip https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.zip
+
+v8/v8_monolith.lib: v8/v8_monolith.lib.zip ## download the v8 static library for windows
+	tar -C v8 -xf v8/v8_monolith.lib.zip
 
 main.o: ## compile the main.cc object file
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I./v8 -I./v8/include ${WARN} ${V8_FLAGS} main.cc
