@@ -29,4 +29,4 @@ type LibApiItem = { nofast: boolean; declare_only: boolean; } | {
 type LibApi = Record<string, LibApiItem>;
 
 // TODO: add lib_exports_typed to get types for lib exports
-export const lib_api_typed: (api: LibApi) => LibApi;
+export const lib_api_typed: <const T extends LibApi>(api: T) => T;
