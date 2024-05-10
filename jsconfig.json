@@ -1,8 +1,0 @@
-{
-  "compilerOptions": {
-    "checkJs": true,
-    "module": "ES2022",
-    "target": "ES2022"
-  },
-  "exclude": ["scratch", "v8", ".vscode", ".git", ".github"]
-}

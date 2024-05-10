@@ -1,0 +1,21 @@
+{
+  "files": ["main.js"],
+  "compilerOptions": {
+    "paths": {
+      "lib": ["./lib"]
+    },
+    "types": [],
+    "target": "es2022",
+    "lib": ["es2023"],
+    "outDir": "dist",
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "isolatedModules": true,
+    "noEmit": false,
+    "module": "es2022"
+  },
+  "exclude": ["scratch", "v8", ".vscode", ".git", ".github"],
+  "include": ["globals.d.ts", "lib"]
+}
