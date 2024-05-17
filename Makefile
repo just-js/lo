@@ -41,7 +41,7 @@ else
 	endif
 endif
 
-.PHONY: help clean
+.PHONY: help clean cleanall check install 
 
 help:
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9\/_\.-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -65,10 +65,8 @@ v8/libv8_monolith.a: ## download the v8 static libary for linux/macos
 	gzip -d v8/libv8_monolith.a.gz
 	rm -f v8/libv8_monolith.a.gz
 
-v8/v8_monolith.lib.zip: ## download the v8 static library for windows
+v8/v8_monolith.lib: ## download the v8 static library for windows
 	curl -L -o v8/v8_monolith.lib.zip https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.zip
-
-v8/v8_monolith.lib: v8/v8_monolith.lib.zip ## download the v8 static library for windows
 	tar -C v8 -xf v8/v8_monolith.lib.zip
 
 main.o: ## compile the main.cc object file
@@ -111,10 +109,8 @@ lib/inflate/em_inflate.c:
 lib/inflate/em_inflate.o: lib/inflate/em_inflate.h lib/inflate/em_inflate.c ## build the em_inflate object
 	$(CC) -fPIC $(CARGS) $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate -o lib/inflate/em_inflate.o lib/inflate/em_inflate.c
 
-inflate.o: lib/inflate/inflate.cc lib/inflate/em_inflate.h ## build the em_inflate object
+inflate.a: lib/inflate/em_inflate.o ## build the inflate binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate $(WARN) ${V8_FLAGS} -o inflate.o lib/inflate/inflate.cc
-
-inflate.a: inflate.o lib/inflate/em_inflate.o ## build the inflate binding
 	ar crsT inflate.a inflate.o lib/inflate/em_inflate.o
 
 check: ## run the runtime sanity tests

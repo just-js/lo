@@ -104,6 +104,8 @@ static const char* index_js = NULL;
 static unsigned int index_js_len = 0;
 
 static const char* main_js = _binary_main_js_start;
+
+//static unsigned main_js = _binary_main_js_start;
 static const char* v8flags = "--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --cppgc-young-generation";
 static unsigned int _v8flags_from_commandline = 1;
 static unsigned int _v8_threads = 2;
