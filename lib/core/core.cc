@@ -149,47 +149,47 @@ inline uint8_t needsunwrap (lo::FastTypes t) {
 }
 
 v8::CTypeInfo* CTypeFromV8 (uint8_t v8Type) {
-  if (v8Type == lo::FastTypes::boolean) 
+  if (v8Type == lo::FastTypes::boolean)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kBool);
-  if (v8Type == lo::FastTypes::i8) 
+  if (v8Type == lo::FastTypes::i8)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  if (v8Type == lo::FastTypes::i16) 
+  if (v8Type == lo::FastTypes::i16)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  if (v8Type == lo::FastTypes::i32) 
+  if (v8Type == lo::FastTypes::i32)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-  if (v8Type == lo::FastTypes::u8) 
+  if (v8Type == lo::FastTypes::u8)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  if (v8Type == lo::FastTypes::u16) 
+  if (v8Type == lo::FastTypes::u16)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  if (v8Type == lo::FastTypes::u32) 
+  if (v8Type == lo::FastTypes::u32)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-  if (v8Type == lo::FastTypes::f32) 
+  if (v8Type == lo::FastTypes::f32)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kFloat32);
-  if (v8Type == lo::FastTypes::f64) 
+  if (v8Type == lo::FastTypes::f64)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kFloat64);
-  if (v8Type == lo::FastTypes::i64) 
+  if (v8Type == lo::FastTypes::i64)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kInt64);
-  if (v8Type == lo::FastTypes::u64) 
+  if (v8Type == lo::FastTypes::u64)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  if (v8Type == lo::FastTypes::iSize) 
+  if (v8Type == lo::FastTypes::iSize)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kInt64);
-  if (v8Type == lo::FastTypes::uSize) 
+  if (v8Type == lo::FastTypes::uSize)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  if (v8Type == lo::FastTypes::pointer) 
+  if (v8Type == lo::FastTypes::pointer)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  if (v8Type == lo::FastTypes::function) 
+  if (v8Type == lo::FastTypes::function)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint64);
-  if (v8Type == lo::FastTypes::string) 
+  if (v8Type == lo::FastTypes::string)
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
   if (v8Type == lo::FastTypes::buffer) {
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, 
+    return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint8,
       v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   }
   if (v8Type == lo::FastTypes::u32array) {
-    return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, 
+    return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32,
       v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
   }
-  return new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);  
+  return new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 }
 
 void lo_fastcall (struct fastcall* state) {
@@ -244,14 +244,14 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
       case FastTypes::buffer:
         {
           Local<Uint8Array> u8 = args[i].As<Uint8Array>();
-          state->args[r++] = (uint64_t)((uint8_t*)u8->Buffer()->Data() + 
+          state->args[r++] = (uint64_t)((uint8_t*)u8->Buffer()->Data() +
             u8->ByteOffset());
         }
         break;
       case FastTypes::u32array:
         {
           Local<Uint32Array> u32 = args[i].As<Uint32Array>();
-          state->args[r++] = (uint64_t)((uint8_t*)u32->Buffer()->Data() + 
+          state->args[r++] = (uint64_t)((uint8_t*)u32->Buffer()->Data() +
             u32->ByteOffset());
         }
         break;
@@ -267,7 +267,7 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
       case FastTypes::f64:
         {
           //Local<Uint32Array> u32 = args[i].As<Uint32Array>();
-          //state->args[r++] = (uint64_t)((uint8_t*)u32->Buffer()->Data() + 
+          //state->args[r++] = (uint64_t)((uint8_t*)u32->Buffer()->Data() +
           //  u32->ByteOffset());
           double src = (double)args[i].As<v8::Number>()->Value();
           double* dst = (double*)&state->args[r++];
@@ -348,11 +348,11 @@ void bind_fastcallSlow(const FunctionCallbackInfo<Value> &args) {
   }
   CFunctionInfo* info = new CFunctionInfo(*rc, fastlen, cargs);
   CFunction* fastCFunc = new CFunction(state->wrapper, info);
-  Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(isolate, 
+  Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(isolate,
     SlowCallback, data, Local<Signature>(), 0, ConstructorBehavior::kThrow,
     SideEffectType::kHasNoSideEffect, fastCFunc
   );
-  Local<Function> fun = 
+  Local<Function> fun =
     funcTemplate->GetFunction(context).ToLocalChecked();
   args.GetReturnValue().Set(fun);
 }
@@ -366,11 +366,11 @@ void bind_slowcallSlow(const FunctionCallbackInfo<Value> &args) {
   tpl->SetInternalFieldCount(2);
   Local<Object> data = tpl->NewInstance(context).ToLocalChecked();
   data->SetAlignedPointerInInternalField(1, state);
-  Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(isolate, 
+  Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(isolate,
     SlowCallback, data, Local<Signature>(), 0, ConstructorBehavior::kThrow,
     SideEffectType::kHasNoSideEffect, 0
   );
-  Local<Function> fun = 
+  Local<Function> fun =
     funcTemplate->GetFunction(context).ToLocalChecked();
   args.GetReturnValue().Set(fun);
 }
@@ -2588,6 +2588,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "RB_POWER_OFF", Integer::New(isolate, (int32_t)RB_POWER_OFF));
   SET_VALUE(isolate, module, "EINTR", Integer::New(isolate, (int32_t)EINTR));
   SET_VALUE(isolate, module, "MFD_CLOEXEC", Integer::New(isolate, (int32_t)MFD_CLOEXEC));
+  SET_VALUE(isolate, module, "MAP_HUGETLB", Integer::New(isolate, (int32_t)MAP_HUGETLB));
+  SET_VALUE(isolate, module, "MAP_HUGE_SHIFT", Integer::New(isolate, (int32_t)MAP_HUGE_SHIFT));
 
 #endif
 #ifdef __MACH__
