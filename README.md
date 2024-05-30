@@ -47,7 +47,7 @@ of fetch in the runtime) but, for now, you will need to install libcurl as
 follows.
 
 ```shell
-sudo apt install -y libcurl4-dev
+sudo apt install -y libcurl4-openssl-dev libssl-dev zlib1g-dev
 ```
 
 ### gcc/x64
