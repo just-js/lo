@@ -30,3 +30,8 @@ type LibApi = Record<string, LibApiItem>;
 
 // TODO: add lib_exports_typed to get types for lib exports
 export const lib_api_typed: <const T extends LibApi>(api: T) => T;
+
+
+type ConstantType = Omit<CType, 'void' | 'char'> | number;
+type LibConstants = Record<string, ConstantType>;
+export const lib_constants_typed: <const T extends LibConstants>(constnats: T) => T;
