@@ -22,16 +22,30 @@ type LibApiItem = { nofast: boolean; declare_only: boolean; } | {
   override?: (LibApiOverride | void)[];
   casts?: (string | void)[];
   jsdoc?: string;
-  man?: string[];
+  man?: string[] | string;
   nofast?: boolean;
   nonblocking?: boolean;
 };
 type LibApi = Record<string, LibApiItem>;
-
-// TODO: add lib_exports_typed to get types for lib exports
 export const lib_api_typed: <const T extends LibApi>(api: T) => T;
 
 
 type ConstantType = Omit<CType, 'void' | 'char'> | number;
 type LibConstants = Record<string, ConstantType>;
 export const lib_constants_typed: <const T extends LibConstants>(constnats: T) => T;
+
+type Platform = 'mac' | 'linux';
+interface LibPlatform {
+  name: string;
+  api: LibApi;
+  constants?: LibConstants;
+  structs?: string[];
+  includes?: string[];
+  libs?: string[];
+  externs?: string[];
+  include_paths?: string[];
+  lib_paths?: string[];
+  obj?: (`${string}.${'a' | 'o'}`)[];
+  preamble?: string;
+}
+export const lib_platform_typed: <const T extends Partial<LibPlatform>>(platform: T) => T;
