@@ -107,9 +107,10 @@ using v8::BigInt;
 #include <unistd.h>
 #include <string.h>
 
-#define MAGIC_VALUE_SIGNAL_GUEST_BOOT_COMPLETE 123
+//#define MAGIC_VALUE_SIGNAL_GUEST_BOOT_COMPLETE 123
 
 // used for firecracker startup time testing
+/*
 void mmio_signal (void) {
   unsigned long FIRST_ADDR_PAST_32BITS = (1UL << 32);
   unsigned long MEM_32BIT_GAP_SIZE = (768UL << 20);
@@ -127,6 +128,7 @@ void mmio_signal (void) {
   munmap(map_base, mapped_size);
   close(fd);
 }
+*/
 
 struct fastcall {
   void* wrapper;
@@ -454,6 +456,17 @@ v8::CTypeInfo rcread = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo inforead = v8::CFunctionInfo(rcread, 4, cargsread);
 v8::CFunction pFread = v8::CFunction((const void*)&readFast, &inforead);
 
+int32_t read2Fast(void* p, int32_t p0, void* p1, int32_t p2);
+v8::CTypeInfo cargsread2[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcread2 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo inforead2 = v8::CFunctionInfo(rcread2, 4, cargsread2);
+v8::CFunction pFread2 = v8::CFunction((const void*)&read2Fast, &inforead2);
+
 int32_t writeFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2);
 v8::CTypeInfo cargswrite[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -475,6 +488,15 @@ v8::CTypeInfo cargswrite_string[4] = {
 v8::CTypeInfo rcwrite_string = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infowrite_string = v8::CFunctionInfo(rcwrite_string, 4, cargswrite_string);
 v8::CFunction pFwrite_string = v8::CFunction((const void*)&write_stringFast, &infowrite_string);
+
+int32_t putcharFast(void* p, int32_t p0);
+v8::CTypeInfo cargsputchar[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcputchar = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoputchar = v8::CFunctionInfo(rcputchar, 2, cargsputchar);
+v8::CFunction pFputchar = v8::CFunction((const void*)&putcharFast, &infoputchar);
 
 int32_t closeFast(void* p, int32_t p0);
 v8::CTypeInfo cargsclose[2] = {
@@ -538,6 +560,17 @@ v8::CTypeInfo cargsftruncate[3] = {
 v8::CTypeInfo rcftruncate = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoftruncate = v8::CFunctionInfo(rcftruncate, 3, cargsftruncate);
 v8::CFunction pFftruncate = v8::CFunction((const void*)&ftruncateFast, &infoftruncate);
+
+int32_t mknodFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2);
+v8::CTypeInfo cargsmknod[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcmknod = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infomknod = v8::CFunctionInfo(rcmknod, 4, cargsmknod);
+v8::CFunction pFmknod = v8::CFunction((const void*)&mknodFast, &infomknod);
 
 int32_t statFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1);
 v8::CTypeInfo cargsstat[3] = {
@@ -813,6 +846,17 @@ v8::CTypeInfo rccalloc = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infocalloc = v8::CFunctionInfo(rccalloc, 4, cargscalloc);
 v8::CFunction pFcalloc = v8::CFunction((const void*)&callocFast, &infocalloc);
 
+void aligned_allocFast(void* p, uint32_t p0, uint32_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsaligned_alloc[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcaligned_alloc = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoaligned_alloc = v8::CFunctionInfo(rcaligned_alloc, 4, cargsaligned_alloc);
+v8::CFunction pFaligned_alloc = v8::CFunction((const void*)&aligned_allocFast, &infoaligned_alloc);
+
 void freeFast(void* p, void* p0);
 v8::CTypeInfo cargsfree[2] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -1087,15 +1131,6 @@ v8::CTypeInfo rcstrnlen_str = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
 v8::CFunctionInfo infostrnlen_str = v8::CFunctionInfo(rcstrnlen_str, 3, cargsstrnlen_str);
 v8::CFunction pFstrnlen_str = v8::CFunction((const void*)&strnlen_strFast, &infostrnlen_str);
 
-void mmio_signalFast(void* p);
-v8::CTypeInfo cargsmmio_signal[1] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-
-};
-v8::CTypeInfo rcmmio_signal = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-v8::CFunctionInfo infommio_signal = v8::CFunctionInfo(rcmmio_signal, 1, cargsmmio_signal);
-v8::CFunction pFmmio_signal = v8::CFunction((const void*)&mmio_signalFast, &infommio_signal);
-
 void syncFast(void* p);
 v8::CTypeInfo cargssync[1] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -1104,6 +1139,18 @@ v8::CTypeInfo cargssync[1] = {
 v8::CTypeInfo rcsync = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infosync = v8::CFunctionInfo(rcsync, 1, cargssync);
 v8::CFunction pFsync = v8::CFunction((const void*)&syncFast, &infosync);
+
+int32_t posix_fadviseFast(void* p, int32_t p0, uint32_t p1, uint32_t p2, int32_t p3);
+v8::CTypeInfo cargsposix_fadvise[5] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcposix_fadvise = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoposix_fadvise = v8::CFunctionInfo(rcposix_fadvise, 5, cargsposix_fadvise);
+v8::CFunction pFposix_fadvise = v8::CFunction((const void*)&posix_fadviseFast, &infoposix_fadvise);
 
 #ifdef __linux__
 
@@ -1237,6 +1284,26 @@ v8::CTypeInfo rcvfexecve = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infovfexecve = v8::CFunctionInfo(rcvfexecve, 4, cargsvfexecve);
 v8::CFunction pFvfexecve = v8::CFunction((const void*)&vfexecveFast, &infovfexecve);
 
+int32_t getpagesizeFast(void* p);
+v8::CTypeInfo cargsgetpagesize[1] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+
+};
+v8::CTypeInfo rcgetpagesize = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infogetpagesize = v8::CFunctionInfo(rcgetpagesize, 1, cargsgetpagesize);
+v8::CFunction pFgetpagesize = v8::CFunction((const void*)&getpagesizeFast, &infogetpagesize);
+
+int32_t madviseFast(void* p, void* p0, uint32_t p1, int32_t p2);
+v8::CTypeInfo cargsmadvise[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
+};
+v8::CTypeInfo rcmadvise = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infomadvise = v8::CFunctionInfo(rcmadvise, 4, cargsmadvise);
+v8::CFunction pFmadvise = v8::CFunction((const void*)&madviseFast, &infomadvise);
+
 #endif
 #ifdef __MACH__
 
@@ -1302,6 +1369,21 @@ int32_t readFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_
   int32_t v2 = p2;
   return read(v0, v1, v2);
 }
+void read2Slow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = read(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t read2Fast(void* p, int32_t p0, void* p1, int32_t p2) {
+  int32_t v0 = p0;
+  void* v1 = reinterpret_cast<void*>(p1);
+  int32_t v2 = p2;
+  return read(v0, v1, v2);
+}
 void writeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -1333,6 +1415,17 @@ int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1
   struct FastOneByteString* const v1 = p1;
   int32_t v2 = p1->length;
   return write(v0, v1->data, v2);
+}
+void putcharSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t rc = putchar(v0);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t putcharFast(void* p, int32_t p0) {
+  int32_t v0 = p0;
+  return putchar(v0);
 }
 void closeSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -1421,6 +1514,21 @@ int32_t ftruncateFast(void* p, int32_t p0, uint32_t p1) {
   int32_t v0 = p0;
   uint32_t v1 = p1;
   return ftruncate(v0, v1);
+}
+void mknodSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = mknod(*v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t mknodFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2) {
+  struct FastOneByteString* const v0 = p0;
+  int32_t v1 = p1;
+  int32_t v2 = p2;
+  return mknod(v0->data, v1, v2);
 }
 void statSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -1794,6 +1902,21 @@ void callocFast(void* p, uint32_t p0, uint32_t p1, struct FastApiTypedArray* con
   uint32_t v0 = p0;
   uint32_t v1 = p1;
   void* r = calloc(v0, v1);
+  ((void**)p_ret->data)[0] = r;
+
+}
+void aligned_allocSlow(const FunctionCallbackInfo<Value> &args) {
+  uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  void* rc = aligned_alloc(v0, v1);
+  Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
+  ((void**)ab->Data())[0] = rc;
+}
+
+void aligned_allocFast(void* p, uint32_t p0, uint32_t p1, struct FastApiTypedArray* const p_ret) {
+  uint32_t v0 = p0;
+  uint32_t v1 = p1;
+  void* r = aligned_alloc(v0, v1);
   ((void**)p_ret->data)[0] = r;
 
 }
@@ -2218,15 +2341,6 @@ uint32_t strnlen_strFast(void* p, struct FastOneByteString* const p0) {
   uint32_t v1 = p0->length;
   return strnlen(v0->data, v1);
 }
-void mmio_signalSlow(const FunctionCallbackInfo<Value> &args) {
-
-  mmio_signal();
-}
-
-void mmio_signalFast(void* p) {
-
-  mmio_signal();
-}
 void syncSlow(const FunctionCallbackInfo<Value> &args) {
 
   sync();
@@ -2235,6 +2349,23 @@ void syncSlow(const FunctionCallbackInfo<Value> &args) {
 void syncFast(void* p) {
 
   sync();
+}
+void posix_fadviseSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  int32_t rc = posix_fadvise(v0, v1, v2, v3);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t posix_fadviseFast(void* p, int32_t p0, uint32_t p1, uint32_t p2, int32_t p3) {
+  int32_t v0 = p0;
+  uint32_t v1 = p1;
+  uint32_t v2 = p2;
+  int32_t v3 = p3;
+  return posix_fadvise(v0, v1, v2, v3);
 }
 #ifdef __linux__
 
@@ -2424,6 +2555,32 @@ int32_t vfexecveFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, st
   char* const* v2 = reinterpret_cast<char* const*>(p2->data);
   return vfexecve(v0, v1, v2);
 }
+void getpagesizeSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+
+  int32_t rc = getpagesize();
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t getpagesizeFast(void* p) {
+
+  return getpagesize();
+}
+void madviseSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = madvise(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, rc));
+}
+
+int32_t madviseFast(void* p, void* p0, uint32_t p1, int32_t p2) {
+  void* v0 = reinterpret_cast<void*>(p0);
+  uint32_t v1 = p1;
+  int32_t v2 = p2;
+  return madvise(v0, v1, v2);
+}
 #endif
 #ifdef __MACH__
 
@@ -2434,14 +2591,17 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "dlsym", &pFdlsym, dlsymSlow);
   SET_FAST_METHOD(isolate, module, "dlclose", &pFdlclose, dlcloseSlow);
   SET_FAST_METHOD(isolate, module, "read", &pFread, readSlow);
+  SET_FAST_METHOD(isolate, module, "read2", &pFread2, read2Slow);
   SET_FAST_METHOD(isolate, module, "write", &pFwrite, writeSlow);
   SET_FAST_METHOD(isolate, module, "write_string", &pFwrite_string, write_stringSlow);
+  SET_FAST_METHOD(isolate, module, "putchar", &pFputchar, putcharSlow);
   SET_FAST_METHOD(isolate, module, "close", &pFclose, closeSlow);
   SET_FAST_METHOD(isolate, module, "pread", &pFpread, preadSlow);
   SET_FAST_METHOD(isolate, module, "lseek", &pFlseek, lseekSlow);
   SET_FAST_METHOD(isolate, module, "fstat", &pFfstat, fstatSlow);
   SET_FAST_METHOD(isolate, module, "fcntl", &pFfcntl, fcntlSlow);
   SET_FAST_METHOD(isolate, module, "ftruncate", &pFftruncate, ftruncateSlow);
+  SET_FAST_METHOD(isolate, module, "mknod", &pFmknod, mknodSlow);
   SET_FAST_METHOD(isolate, module, "stat", &pFstat, statSlow);
   SET_FAST_METHOD(isolate, module, "lstat", &pFlstat, lstatSlow);
   SET_FAST_METHOD(isolate, module, "rename", &pFrename, renameSlow);
@@ -2468,6 +2628,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "munmap", &pFmunmap, munmapSlow);
   SET_FAST_METHOD(isolate, module, "msync", &pFmsync, msyncSlow);
   SET_FAST_METHOD(isolate, module, "calloc", &pFcalloc, callocSlow);
+  SET_FAST_METHOD(isolate, module, "aligned_alloc", &pFaligned_alloc, aligned_allocSlow);
   SET_FAST_METHOD(isolate, module, "free", &pFfree, freeSlow);
   SET_METHOD(isolate, module, "bind_fastcall", bind_fastcallSlow);
   SET_METHOD(isolate, module, "bind_slowcall", bind_slowcallSlow);
@@ -2502,8 +2663,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "memmem", &pFmemmem, memmemSlow);
   SET_FAST_METHOD(isolate, module, "strnlen", &pFstrnlen, strnlenSlow);
   SET_FAST_METHOD(isolate, module, "strnlen_str", &pFstrnlen_str, strnlen_strSlow);
-  SET_FAST_METHOD(isolate, module, "mmio_signal", &pFmmio_signal, mmio_signalSlow);
   SET_FAST_METHOD(isolate, module, "sync", &pFsync, syncSlow);
+  SET_FAST_METHOD(isolate, module, "posix_fadvise", &pFposix_fadvise, posix_fadviseSlow);
 
 #ifdef __linux__
   SET_FAST_METHOD(isolate, module, "ioctl", &pFioctl, ioctlSlow);
@@ -2518,6 +2679,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "vfork", &pFvfork, vforkSlow);
   SET_FAST_METHOD(isolate, module, "vexecve", &pFvexecve, vexecveSlow);
   SET_FAST_METHOD(isolate, module, "vfexecve", &pFvfexecve, vfexecveSlow);
+  SET_FAST_METHOD(isolate, module, "getpagesize", &pFgetpagesize, getpagesizeSlow);
+  SET_FAST_METHOD(isolate, module, "madvise", &pFmadvise, madviseSlow);
 
 #endif
 #ifdef __MACH__
@@ -2580,6 +2743,10 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "PROT_READ", Integer::New(isolate, (int32_t)PROT_READ));
   SET_VALUE(isolate, module, "PROT_WRITE", Integer::New(isolate, (int32_t)PROT_WRITE));
   SET_VALUE(isolate, module, "PROT_EXEC", Integer::New(isolate, (int32_t)PROT_EXEC));
+  SET_VALUE(isolate, module, "POSIX_FADV_SEQUENTIAL", Integer::New(isolate, (int32_t)POSIX_FADV_SEQUENTIAL));
+  SET_VALUE(isolate, module, "POSIX_FADV_WILLNEED", Integer::New(isolate, (int32_t)POSIX_FADV_WILLNEED));
+  SET_VALUE(isolate, module, "POSIX_FADV_RANDOM", Integer::New(isolate, (int32_t)POSIX_FADV_RANDOM));
+  SET_VALUE(isolate, module, "POSIX_FADV_DONTNEED", Integer::New(isolate, (int32_t)POSIX_FADV_DONTNEED));
 
 #ifdef __linux__
   SET_VALUE(isolate, module, "LINUX_REBOOT_CMD_HALT", Integer::New(isolate, (uint32_t)LINUX_REBOOT_CMD_HALT));
@@ -2590,6 +2757,9 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "MFD_CLOEXEC", Integer::New(isolate, (int32_t)MFD_CLOEXEC));
   SET_VALUE(isolate, module, "MAP_HUGETLB", Integer::New(isolate, (int32_t)MAP_HUGETLB));
   SET_VALUE(isolate, module, "MAP_HUGE_SHIFT", Integer::New(isolate, (int32_t)MAP_HUGE_SHIFT));
+  SET_VALUE(isolate, module, "MAP_32BIT", Integer::New(isolate, (int32_t)MAP_32BIT));
+  SET_VALUE(isolate, module, "MADV_HUGEPAGE", Integer::New(isolate, (int32_t)MADV_HUGEPAGE));
+  SET_VALUE(isolate, module, "MAP_FIXED", Integer::New(isolate, (int32_t)MAP_FIXED));
 
 #endif
 #ifdef __MACH__

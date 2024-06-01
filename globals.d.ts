@@ -267,9 +267,12 @@ interface Core {
     prot: number,
     flags: number,
     fd: number,
-    offset: number,
-    buf: Uint32Array
-  ): void;
+    offset: number
+  ): number;
+  calloc(num: number, size: number): number;
+  memcpy(dest: number, src: number, size: number): number;
+  aligned_alloc(alignment: number, size: number): number;
+  memmove(dest: number, src: number, size: number): number;
   fork(): number;
   sysconf(num: number): number;
   times(buf: TypedArray): number;

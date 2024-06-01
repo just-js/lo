@@ -7,7 +7,7 @@ CARGS=-c -fno-omit-frame-pointer
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3
 VERSION=0.0.15-pre
-V8_VERSION=12.3
+V8_VERSION=12.4
 RUNTIME=lo
 LO_HOME=$(shell pwd)
 BINDINGS=core.o inflate.a curl.o
@@ -15,7 +15,7 @@ ARCH=x64
 os=linux
 TARGET=${RUNTIME}
 LIBS=-ldl -lcurl -lssl -lz
-V8_FLAGS=-DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -DV8_INTL_SUPPORT=1
+V8_FLAGS=-DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=0 -DV8_INTL_SUPPORT=1 -DENABLE_HUGEPAGE
 LIB_DIRS=
 
 ifeq ($(OS),Windows_NT)
