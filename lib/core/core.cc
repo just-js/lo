@@ -1140,6 +1140,8 @@ v8::CTypeInfo rcsync = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infosync = v8::CFunctionInfo(rcsync, 1, cargssync);
 v8::CFunction pFsync = v8::CFunction((const void*)&syncFast, &infosync);
 
+#ifdef __linux__
+
 int32_t posix_fadviseFast(void* p, int32_t p0, uint32_t p1, uint32_t p2, int32_t p3);
 v8::CTypeInfo cargsposix_fadvise[5] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -1151,8 +1153,6 @@ v8::CTypeInfo cargsposix_fadvise[5] = {
 v8::CTypeInfo rcposix_fadvise = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoposix_fadvise = v8::CFunctionInfo(rcposix_fadvise, 5, cargsposix_fadvise);
 v8::CFunction pFposix_fadvise = v8::CFunction((const void*)&posix_fadviseFast, &infoposix_fadvise);
-
-#ifdef __linux__
 
 int32_t ioctlFast(void* p, int32_t p0, uint32_t p1, struct FastApiTypedArray* const p2);
 v8::CTypeInfo cargsioctl[4] = {
@@ -2350,6 +2350,8 @@ void syncFast(void* p) {
 
   sync();
 }
+#ifdef __linux__
+
 void posix_fadviseSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -2367,8 +2369,6 @@ int32_t posix_fadviseFast(void* p, int32_t p0, uint32_t p1, uint32_t p2, int32_t
   int32_t v3 = p3;
   return posix_fadvise(v0, v1, v2, v3);
 }
-#ifdef __linux__
-
 void ioctlSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -2664,9 +2664,9 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "strnlen", &pFstrnlen, strnlenSlow);
   SET_FAST_METHOD(isolate, module, "strnlen_str", &pFstrnlen_str, strnlen_strSlow);
   SET_FAST_METHOD(isolate, module, "sync", &pFsync, syncSlow);
-  SET_FAST_METHOD(isolate, module, "posix_fadvise", &pFposix_fadvise, posix_fadviseSlow);
 
 #ifdef __linux__
+  SET_FAST_METHOD(isolate, module, "posix_fadvise", &pFposix_fadvise, posix_fadviseSlow);
   SET_FAST_METHOD(isolate, module, "ioctl", &pFioctl, ioctlSlow);
   SET_FAST_METHOD(isolate, module, "ioctl2", &pFioctl2, ioctl2Slow);
   SET_FAST_METHOD(isolate, module, "ioctl3", &pFioctl3, ioctl3Slow);
@@ -2743,10 +2743,6 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "PROT_READ", Integer::New(isolate, (int32_t)PROT_READ));
   SET_VALUE(isolate, module, "PROT_WRITE", Integer::New(isolate, (int32_t)PROT_WRITE));
   SET_VALUE(isolate, module, "PROT_EXEC", Integer::New(isolate, (int32_t)PROT_EXEC));
-  SET_VALUE(isolate, module, "POSIX_FADV_SEQUENTIAL", Integer::New(isolate, (int32_t)POSIX_FADV_SEQUENTIAL));
-  SET_VALUE(isolate, module, "POSIX_FADV_WILLNEED", Integer::New(isolate, (int32_t)POSIX_FADV_WILLNEED));
-  SET_VALUE(isolate, module, "POSIX_FADV_RANDOM", Integer::New(isolate, (int32_t)POSIX_FADV_RANDOM));
-  SET_VALUE(isolate, module, "POSIX_FADV_DONTNEED", Integer::New(isolate, (int32_t)POSIX_FADV_DONTNEED));
 
 #ifdef __linux__
   SET_VALUE(isolate, module, "LINUX_REBOOT_CMD_HALT", Integer::New(isolate, (uint32_t)LINUX_REBOOT_CMD_HALT));
@@ -2760,10 +2756,16 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "MAP_32BIT", Integer::New(isolate, (int32_t)MAP_32BIT));
   SET_VALUE(isolate, module, "MADV_HUGEPAGE", Integer::New(isolate, (int32_t)MADV_HUGEPAGE));
   SET_VALUE(isolate, module, "MAP_FIXED", Integer::New(isolate, (int32_t)MAP_FIXED));
+  SET_VALUE(isolate, module, "POSIX_FADV_SEQUENTIAL", Integer::New(isolate, (int32_t)POSIX_FADV_SEQUENTIAL));
+  SET_VALUE(isolate, module, "POSIX_FADV_WILLNEED", Integer::New(isolate, (int32_t)POSIX_FADV_WILLNEED));
+  SET_VALUE(isolate, module, "POSIX_FADV_RANDOM", Integer::New(isolate, (int32_t)POSIX_FADV_RANDOM));
+  SET_VALUE(isolate, module, "POSIX_FADV_DONTNEED", Integer::New(isolate, (int32_t)POSIX_FADV_DONTNEED));
 
 #endif
 #ifdef __MACH__
   SET_VALUE(isolate, module, "RTLD_FIRST", Integer::New(isolate, (int32_t)RTLD_FIRST));
+  SET_VALUE(isolate, module, "RTLD_SELF", BigInt::New(isolate, (int64_t)RTLD_SELF));
+  SET_VALUE(isolate, module, "RTLD_MAIN_ONLY", BigInt::New(isolate, (int64_t)RTLD_MAIN_ONLY));
 
 #endif
 
