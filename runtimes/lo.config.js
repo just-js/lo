@@ -88,9 +88,11 @@ const opt = '-O3 -march=native -mtune=native'
 
 const v8_opts = {
   v8_cleanup: 0, v8_threads: 2, on_exit: 0,
-  v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --cppgc-young-generation'
+  v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --max-heap-size 1024'
 }
 
+//let link_type = '-rdynamic'
+//const link_args = ['-g']
 let link_type = '-rdynamic -static-libstdc++'
 if (lo.core.os === 'linux') link_type += ' -static-libgcc'
 

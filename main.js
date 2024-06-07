@@ -271,6 +271,7 @@ const builtin_cache = new Map()
 
 function on_load_builtin (identifier) {
   if (builtin_cache.has(identifier)) return builtin_cache.get(identifier)
+  // todo: use the actual index.js specified for the compiled runtime if we are in a compiled runtime
   if (identifier === 'worker_source.js') {
     builtin_cache.set(identifier, workerSource)
     return workerSource
@@ -392,6 +393,10 @@ core.homedir = LO_HOME
 core.dlopen = wrap(handle, core.dlopen, 2)
 core.dlsym = wrap(handle, core.dlsym, 2)
 core.mmap = wrap(handle, core.mmap, 6)
+core.calloc = wrap(handle, core.calloc, 2)
+core.memcpy = wrap(handle, core.memcpy, 3)
+core.memmove = wrap(handle, core.memmove, 3)
+core.aligned_alloc = wrap(handle, core.aligned_alloc, 2)
 core.isFile = is_file
 core.read_file = read_file
 core.write_file = write_file
@@ -441,6 +446,7 @@ lo.utf8_encode_into_ptr = lo.utf8EncodeIntoPtr
 lo.utf8_encode_into_at_offset = lo.utf8EncodeIntoAtOffset
 lo.utf8_length = lo.utf8Length
 lo.wrap_memory = lo.wrapMemory
+lo.latin1_decode = lo.latin1Decode
 
 
 
@@ -481,6 +487,7 @@ async function global_main () {
   if (command === 'gen') {
     (await import('lib/gen.js')).gen(args.slice(2))
   } else if (command === 'build') {
+    //todo: should be awaited
     (await import('lib/build.js')).build(args.slice(2))
   } else if (command === 'install') {
     (await import('lib/build.js')).install(args.slice(2))
