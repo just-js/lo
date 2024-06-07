@@ -6,7 +6,7 @@ CCARGS=-std=c++17 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
 CARGS=-c -fno-omit-frame-pointer
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3
-VERSION=0.0.15-pre
+VERSION=0.0.16-pre
 V8_VERSION=12.4
 RUNTIME=lo
 LO_HOME=$(shell pwd)
