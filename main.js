@@ -511,7 +511,7 @@ async function global_main () {
   } else if (command === 'eval') {
     await (new AsyncFunction(args[2]))()
   } else if (command === 'type') {
-    (await import('lib/types.js')).add_project_type_deps(args[2])
+    (await import('lib/types.js')).add_app_type_deps(args[2])
   } else {
     let filePath = command
     const { main, serve, test, bench } = await import(filePath)
