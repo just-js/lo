@@ -69,7 +69,7 @@ function cstr (str) {
 }
 
 function addr (u32) {
-  return u32[0] + ((2 ** 32) * u32[1])  
+  return u32[0] + ((2 ** 32) * u32[1])
 }
 
 function check_mode (val, mode) {
@@ -104,7 +104,7 @@ function read_file (path, flags = O_RDONLY, size = 0) {
   return u8
 }
 
-function write_file (path, u8, flags = defaultWriteFlags, 
+function write_file (path, u8, flags = defaultWriteFlags,
   mode = defaultWriteMode) {
   const len = u8.length
   if (!len) return -1
@@ -313,18 +313,28 @@ function die (err, hide_fatal = false) {
   exit(1)
 }
 
-const { 
+const {
   utf8EncodeInto, utf8Encode, utf8Decode, getAddress, args, exit, builtin,
   library, workerSource, loadModule, evaluateModule, hrtime, wrapMemory
 } = lo
-const { core } = library('core')
+const { core: core_library } = library('core')
 const {
   O_WRONLY, O_CREAT, O_TRUNC, O_RDONLY, S_IWUSR, S_IRUSR, S_IRGRP, S_IROTH,
   S_IFREG, STDOUT, STDERR, S_IFMT, RTLD_LAZY
-} = core
+} = core_library
 const {
   write_string, open, fstat, read, write, close, strnlen
-} = core
+} = core_library
+
+// this is sad (same problem with libs extending base object)
+// direct extensions don't work well with types
+// !!! overrides give us false types
+// so lo.core is one type and library/lo.load is another
+// but in JS they will be the same after override
+// to avoid that we can copy props from base object
+// and types for both cases will be valid
+const core_unknown = /**@type {unknown} */(core_library);
+const core = /**@type {Runtime['core']} */(core_unknown);
 
 function little_endian () {
   const buffer = new ArrayBuffer(2)
@@ -377,7 +387,7 @@ lo.moduleCache = moduleCache
 lo.libCache = libCache
 lo.requireCache = requireCache
 lo.wrap = wrap
-lo.wrapMemory = (ptr, len, free = 0) => 
+lo.wrapMemory = (ptr, len, free = 0) =>
   new Uint8Array(wrapMemory(ptr, len, free))
 lo.cstr = cstr
 lo.ptr = ptr
@@ -500,6 +510,8 @@ async function global_main () {
     (await import('lib/repl.js')).repl().catch(die)
   } else if (command === 'eval') {
     await (new AsyncFunction(args[2]))()
+  } else if (command === 'type') {
+    (await import('lib/types.js')).add_project_type_deps(args[2])
   } else {
     let filePath = command
     const { main, serve, test, bench } = await import(filePath)
