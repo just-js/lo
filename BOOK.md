@@ -16,25 +16,25 @@ gzip compressed binary from github.
 on linux/x64
 
 ```shell
-curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.16-pre/lo-linux-x64.gz
+curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.17-pre/lo-linux-x64.gz
 ```
 
 on linux/arm64
 
 ```shell
-curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.16-pre/lo-linux-arm64.gz
+curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.17-pre/lo-linux-arm64.gz
 ```
 
 on macos/x64
 
 ```shell
-curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.16-pre/lo-mac-x64.gz
+curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.17-pre/lo-mac-x64.gz
 ```
 
 on macos/arm64 (apple silicon)
 
 ```shell
-curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.16-pre/lo-mac-arm64.gz
+curl -L -o lo.gz https://github.com/just-js/lo/releases/download/0.0.17-pre/lo-mac-arm64.gz
 ```
 
 Then, we need to decompress the downloaded file and make it executable
@@ -122,7 +122,7 @@ let's check the version number of lo and the embedded JS engine it is using
 ```shell
 ./lo --version
 
-0.0.16-pre
+0.0.17-pre
 ```
 
 ### evaluating JavaScript
@@ -165,7 +165,7 @@ lo has a very basic repl which you can invoke as follows
 ⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬛
 ⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛
 
- lo    0.0.16-pre        v8    12.4.254.18
+ lo    0.0.17-pre        v8    12.4.254.18
  arch  x64               os    linux
  boot  6.02 ms           rss   34996224
 
@@ -181,7 +181,7 @@ we downloaded.
 
 {
   version: {
-    lo: "0.0.16-pre",
+    lo: "0.0.17-pre",
     v8: "12.4.254.18"
   },
 ...
