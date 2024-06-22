@@ -479,14 +479,13 @@ v8::CFunctionInfo infowrite = v8::CFunctionInfo(rcwrite, 4, cargswrite);
 v8::CFunction pFwrite = v8::CFunction((const void*)&writeFast, &infowrite);
 
 int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1);
-v8::CTypeInfo cargswrite_string[4] = {
+v8::CTypeInfo cargswrite_string[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
 };
 v8::CTypeInfo rcwrite_string = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infowrite_string = v8::CFunctionInfo(rcwrite_string, 4, cargswrite_string);
+v8::CFunctionInfo infowrite_string = v8::CFunctionInfo(rcwrite_string, 3, cargswrite_string);
 v8::CFunction pFwrite_string = v8::CFunction((const void*)&write_stringFast, &infowrite_string);
 
 int32_t putcharFast(void* p, int32_t p0);
@@ -1122,13 +1121,12 @@ v8::CFunctionInfo infostrnlen = v8::CFunctionInfo(rcstrnlen, 3, cargsstrnlen);
 v8::CFunction pFstrnlen = v8::CFunction((const void*)&strnlenFast, &infostrnlen);
 
 uint32_t strnlen_strFast(void* p, struct FastOneByteString* const p0);
-v8::CTypeInfo cargsstrnlen_str[3] = {
+v8::CTypeInfo cargsstrnlen_str[2] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
 };
 v8::CTypeInfo rcstrnlen_str = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-v8::CFunctionInfo infostrnlen_str = v8::CFunctionInfo(rcstrnlen_str, 3, cargsstrnlen_str);
+v8::CFunctionInfo infostrnlen_str = v8::CFunctionInfo(rcstrnlen_str, 2, cargsstrnlen_str);
 v8::CFunction pFstrnlen_str = v8::CFunction((const void*)&strnlen_strFast, &infostrnlen_str);
 
 void syncFast(void* p);
@@ -2753,7 +2751,6 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "MFD_CLOEXEC", Integer::New(isolate, (int32_t)MFD_CLOEXEC));
   SET_VALUE(isolate, module, "MAP_HUGETLB", Integer::New(isolate, (int32_t)MAP_HUGETLB));
   SET_VALUE(isolate, module, "MAP_HUGE_SHIFT", Integer::New(isolate, (int32_t)MAP_HUGE_SHIFT));
-  SET_VALUE(isolate, module, "MAP_32BIT", Integer::New(isolate, (int32_t)MAP_32BIT));
   SET_VALUE(isolate, module, "MADV_HUGEPAGE", Integer::New(isolate, (int32_t)MADV_HUGEPAGE));
   SET_VALUE(isolate, module, "MAP_FIXED", Integer::New(isolate, (int32_t)MAP_FIXED));
   SET_VALUE(isolate, module, "POSIX_FADV_SEQUENTIAL", Integer::New(isolate, (int32_t)POSIX_FADV_SEQUENTIAL));

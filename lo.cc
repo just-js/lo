@@ -54,6 +54,9 @@ using v8::kPromiseRejectAfterResolved;
 using v8::kPromiseResolveAfterResolved;
 using v8::kPromiseHandlerAddedAfterReject;
 using v8::Script;
+using v8::HeapSpaceStatistics;
+using v8::HeapStatistics;
+using v8::BigUint64Array;
 
 // TODO: thread safety
 std::map<std::string, lo::builtin*> builtins;
@@ -585,6 +588,11 @@ int lo::CreateIsolate(int argc, char** argv,
       PrintStackTrace(isolate, try_catch);
       return 1;
     }
+//    if (!ScriptCompiler::CompileModule(isolate, &basescript, v8::ScriptCompiler::CompileOptions::kConsumeCodeCache).ToLocal(&module)) {
+//      PrintStackTrace(isolate, try_catch);
+//      return 1;
+//    }
+
     Maybe<bool> ok2 = module->InstantiateModule(context, 
       lo::OnModuleInstantiate);
     if (ok2.IsNothing()) {
@@ -594,6 +602,17 @@ int lo::CreateIsolate(int argc, char** argv,
       // TODO: cleanup before return
       return 1;
     }
+/*
+    ScriptCompiler::CachedData* cache = ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
+    fprintf(stderr, "%i\n", cache->length);
+    int fd = open("script.data", O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    int bytes = write(fd, cache->data, cache->length);
+    if (bytes < cache->length) {
+      fprintf(stderr, "error\n");
+    }
+    close(fd);
+*/
+
     module->Evaluate(context).ToLocalChecked();
     if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
       try_catch.ReThrow();
@@ -923,10 +942,45 @@ int32_t lo::fastUtf8Length (void* p, struct FastOneByteString* const p_str) {
   return p_str->length;
 }
 
+void lo::HeapUsage(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  HeapStatistics v8_heap_stats;
+  isolate->GetHeapStatistics(&v8_heap_stats);
+  Local<BigUint64Array> array = args[0].As<BigUint64Array>();
+  uint64_t *fields = static_cast<uint64_t *>(array->Buffer()->Data());
+  fields[0] = v8_heap_stats.total_heap_size();
+  fields[1] = v8_heap_stats.used_heap_size();
+  fields[2] = v8_heap_stats.external_memory();
+  fields[3] = v8_heap_stats.does_zap_garbage();
+  fields[4] = v8_heap_stats.heap_size_limit();
+  fields[5] = v8_heap_stats.malloced_memory();
+  fields[6] = v8_heap_stats.number_of_detached_contexts();
+  fields[7] = v8_heap_stats.number_of_native_contexts();
+  fields[8] = v8_heap_stats.peak_malloced_memory();
+  fields[9] = v8_heap_stats.total_available_size();
+  fields[10] = v8_heap_stats.total_heap_size_executable();
+  fields[11] = v8_heap_stats.total_physical_size();
+  fields[12] = isolate->AdjustAmountOfExternalAllocatedMemory(0);
+}
+
 void lo::GetMeta(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
   Local<Object> meta = args[1].As<Object>();
+  if (args[0]->IsString()) {
+    Local<String> str = args[0].As<String>();
+    if (str->IsExternalOneByte()) {
+      meta->Set(context, String::NewFromUtf8Literal(isolate, "isExternalOneByte", 
+        NewStringType::kInternalized), v8::Boolean::New(isolate, true)).Check();
+    } else if (str->IsOneByte()) {
+      meta->Set(context, String::NewFromUtf8Literal(isolate, "isOneByte", 
+        NewStringType::kInternalized), v8::Boolean::New(isolate, true)).Check();
+    } else {
+      meta->Set(context, String::NewFromUtf8Literal(isolate, "isTwoByte", 
+        NewStringType::kInternalized), v8::Boolean::New(isolate, true)).Check();
+    }
+    return;
+  }
   bool isExternal = false;
   bool isDetachable = false;
   bool isShared = false;
@@ -1360,7 +1414,9 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
     ReadMemoryAtOffset);
 
   SET_METHOD(isolate, target, "setFlags", SetFlags);
-  SET_METHOD(isolate, target, "getMeta", GetMeta);
+  SET_METHOD(isolate, target, "get_meta", GetMeta);
+  SET_METHOD(isolate, target, "heap_usage", HeapUsage);
+  
   SET_METHOD(isolate, target, "runScript", RunScript);
   SET_METHOD(isolate, target, "registerCallback", RegisterCallback);
 }
