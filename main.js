@@ -320,7 +320,7 @@ const {
 const { core } = library('core')
 const {
   O_WRONLY, O_CREAT, O_TRUNC, O_RDONLY, S_IWUSR, S_IRUSR, S_IRGRP, S_IROTH,
-  S_IFREG, STDOUT, STDERR, S_IFMT, RTLD_LAZY, RTLD_NOW
+  S_IFREG, STDOUT, STDERR, S_IFMT, RTLD_LAZY
 } = core
 const {
   write_string, open, fstat, read, write, close, strnlen
@@ -423,7 +423,6 @@ core.readFile = read_file
 core.writeFile = write_file
 lo.evaluate_module = lo.evaluateModule
 lo.get_address = lo.getAddress
-lo.get_meta = lo.getMeta
 lo.latin1_decode = lo.latin1Decode
 lo.lib_cache = lo.libCache
 lo.load_module = lo.loadModule

@@ -1,14 +1,13 @@
 import { extName } from 'lib/path.js'
 
 const { assert, colors } = lo
-const { AD, AY, AG, AM, AC } = colors
 
 async function test () {
   const names = [
     'nextTick', 'print', 'registerCallback', 'runMicroTasks', 'builtin', 
     'builtins', 'libraries', 'setModuleCallbacks', 'loadModule', 
     'evaluateModule', 'latin1Decode', 'utf8Decode', 'utf8Encode', 'wrapMemory', 
-    'unwrapMemory', 'setFlags', 'getMeta', 'runScript', 'arch', 'os', 'hrtime', 
+    'unwrapMemory', 'setFlags', 'get_meta', 'runScript', 'arch', 'os', 'hrtime', 
     'getAddress', 'utf8Length', 'utf8EncodeInto', 'utf8EncodeIntoAtOffset', 
     'readMemory', 'readMemoryAtOffset'
   ].sort()
