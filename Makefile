@@ -4,7 +4,7 @@ LINK=clang++
 LARGS=-rdynamic -pthread -static-libstdc++
 CCARGS=-std=c++17 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
 CARGS=-c -fno-omit-frame-pointer
-WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter -Wno-template-id-cdtor
+WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3
 VERSION=0.0.17-pre
 V8_VERSION=12.4
