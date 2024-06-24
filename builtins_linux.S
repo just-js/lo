@@ -98,9 +98,4 @@ _binary_runtimes_lo_config_js_start:
         .incbin "runtimes/lo.config.js"
         .global _binary_runtimes_lo_config_js_end
 _binary_runtimes_lo_config_js_end:
-.global _binary_globals_d_ts_start
-_binary_globals_d_ts_start:
-        .incbin "globals.d.ts"
-        .global _binary_globals_d_ts_end
-_binary_globals_d_ts_end:
 .section .note.GNU-stack,"",@progbits

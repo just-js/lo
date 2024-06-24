@@ -98,8 +98,3 @@ __binary_runtimes_lo_config_js_start:
         .incbin "runtimes/lo.config.js"
         .global __binary_runtimes_lo_config_js_end
 __binary_runtimes_lo_config_js_end:
-.global __binary_globals_d_ts_start
-__binary_globals_d_ts_start:
-        .incbin "globals.d.ts"
-        .global __binary_globals_d_ts_end
-__binary_globals_d_ts_end:

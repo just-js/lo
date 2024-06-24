@@ -141,6 +141,7 @@ else
 	rm -f lib/**/*.o
 	rm -f lib/**/*.so
 	rm -f ${RUNTIME}
+	rm -f globals.d.ts
 endif
 
 cleanall:
