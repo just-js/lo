@@ -4,7 +4,7 @@ LINK=clang++
 LARGS=-rdynamic -pthread -static-libstdc++
 CCARGS=-std=c++17 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
 CARGS=-c -fno-omit-frame-pointer
-WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
+WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter -Wno-template-id-cdtor
 OPT=-O3
 VERSION=0.0.17-pre
 V8_VERSION=12.4
@@ -79,7 +79,7 @@ else
 	$(CC) ${CARGS} builtins.S -o builtins.o
 endif
 
-${RUNTIME}.o: ## compile runtime into an object file 
+${RUNTIME}.o: ## compile runtime into an object file
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' ${V8_FLAGS} -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
 
 ${RUNTIME}: v8/include v8/libv8_monolith.a main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
