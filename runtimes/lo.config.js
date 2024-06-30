@@ -1,6 +1,6 @@
 const bindings = [
   'bestlines',
-  'core', 
+  'core',
   'curl',
   'encode',
   'inflate',
@@ -16,16 +16,16 @@ const bindings = [
 ]
 
 const libs = [
-  'lib/bench.js', 
-  'lib/binary.js', 
+  'lib/bench.js',
+  'lib/binary.js',
   'lib/curl.js',
-  'lib/ffi.js', 
-  'lib/asm.js', 
-  'lib/gen.js', 
-  'lib/fs.js', 
-  'lib/untar.js', 
-  'lib/proc.js', 
-  'lib/libssl.js', 
+  'lib/ffi.js',
+  'lib/asm.js',
+  'lib/gen.js',
+  'lib/fs.js',
+  'lib/untar.js',
+  'lib/proc.js',
+  'lib/libssl.js',
   'lib/path.js',
   'lib/curl.js',
   'lib/inflate.js',
@@ -54,6 +54,7 @@ const libs = [
   'lib/html.js',
   'lib/ansi.js',
   'lib/elf.js',
+  'lib/types.js',
 ]
 
 const embeds = [

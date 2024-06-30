@@ -79,7 +79,7 @@ else
 	$(CC) ${CARGS} builtins.S -o builtins.o
 endif
 
-${RUNTIME}.o: ## compile runtime into an object file 
+${RUNTIME}.o: ## compile runtime into an object file
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' ${V8_FLAGS} -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
 
 ${RUNTIME}: v8/include v8/libv8_monolith.a main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
@@ -141,6 +141,7 @@ else
 	rm -f lib/**/*.o
 	rm -f lib/**/*.so
 	rm -f ${RUNTIME}
+	rm -f globals.d.ts
 endif
 
 cleanall:
