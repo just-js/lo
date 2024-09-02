@@ -131,12 +131,17 @@ void mmio_signal (void) {
 */
 
 struct fastcall {
-  void* wrapper;
-  uint8_t result;
-  uint8_t nparam;
-  uint8_t param[30];
-  uint64_t args[32];
-  void* fn;
+  void* wrapper;      // 0-7   :   v8 fastcall wrapper function pointer
+  uint8_t result;     // 8     :   the type of the result
+  uint8_t nparam;     // 9     :   the number of args (max 255) 
+  uint8_t param[30];  // 10-39 :   an array of types of the arguments
+  uint64_t args[32];  // 40-295:   an array of pointer slots for arguments
+                      // these will be filled in dynamically by 
+                      // lo::core::SlowCallback for the slow call
+                      // and then the slowcall wrapper will shift them from
+                      // this structure into regs + stack and make the call
+                      // the first slot is reserved for the result
+  void* fn;           // 296-303:  the slowcall wrapper function pointer
 };
 
 typedef void (*lo_fast_call)(void*);
@@ -203,13 +208,31 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
   HandleScope scope(isolate);
   struct fastcall* state = (struct fastcall*)args.Data()
     .As<Object>()->GetAlignedPointerFromInternalField(1);
+/*
+  int r = 1;
+  for (int i = 0; i < state->nparam; i++) {
+    if (state->param[i] == FastTypes::string) {
+      String::Utf8Value arg0(isolate, args[i]);
+      state->args[r++] = (uint64_t)*arg0;
+    } else if (state->param[i] == FastTypes::u32) {
+      state->args[r++] = (uint32_t)Local<Integer>::Cast(args[i])->Value();
+    } else if (state->param[i] == FastTypes::i32) {
+      state->args[r++] = (int32_t)Local<Integer>::Cast(args[i])->Value();
+    }
+  }
+*/
   int r = 1;
   for (int i = 0; i < state->nparam; i++) {
     switch (state->param[i]) {
+    // we need to know if the strings are const or not
+    // do we always have to copy? how do we clean up?
+    // why can't we take the copy on the stack and have it cleaned
+    // up automatically?
       case FastTypes::string:
         {
           String::Utf8Value arg0(isolate, args[i]);
           // todo: fix this - never gets freed
+//          state->args[r++] = (uint64_t)*arg0;
           state->args[r++] = (uint64_t)strdup(*arg0);
         }
         break;
@@ -327,6 +350,7 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
 void bind_fastcallSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
+  // TODO - does integer work?
   struct fastcall* state = reinterpret_cast<struct fastcall*>(
     Local<Integer>::Cast(args[0])->Value());
   Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
@@ -845,6 +869,17 @@ v8::CTypeInfo rccalloc = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infocalloc = v8::CFunctionInfo(rccalloc, 4, cargscalloc);
 v8::CFunction pFcalloc = v8::CFunction((const void*)&callocFast, &infocalloc);
 
+void reallocFast(void* p, void* p0, uint32_t p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsrealloc[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcrealloc = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo inforealloc = v8::CFunctionInfo(rcrealloc, 4, cargsrealloc);
+v8::CFunction pFrealloc = v8::CFunction((const void*)&reallocFast, &inforealloc);
+
 void aligned_allocFast(void* p, uint32_t p0, uint32_t p1, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargsaligned_alloc[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -1340,10 +1375,9 @@ void dlsymFast(void* p, void* p0, struct FastOneByteString* const p1, struct Fas
 
 }
 void dlcloseSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = dlclose(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t dlcloseFast(void* p, void* p0) {
@@ -1351,14 +1385,13 @@ int32_t dlcloseFast(void* p, void* p0) {
   return dlclose(v0);
 }
 void readSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   Local<Uint8Array> u81 = args[1].As<Uint8Array>();
   uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
   void* v1 = reinterpret_cast<void*>(ptr1);
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = read(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t readFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2) {
@@ -1368,12 +1401,11 @@ int32_t readFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_
   return read(v0, v1, v2);
 }
 void read2Slow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = read(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t read2Fast(void* p, int32_t p0, void* p1, int32_t p2) {
@@ -1383,14 +1415,13 @@ int32_t read2Fast(void* p, int32_t p0, void* p1, int32_t p2) {
   return read(v0, v1, v2);
 }
 void writeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   Local<Uint8Array> u81 = args[1].As<Uint8Array>();
   uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
   void* v1 = reinterpret_cast<void*>(ptr1);
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = write(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t writeFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2) {
@@ -1405,7 +1436,7 @@ void write_stringSlow(const FunctionCallbackInfo<Value> &args) {
   String::Utf8Value v1(isolate, args[1]);
   int32_t v2 = v1.length();
   int32_t rc = write(v0, *v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1) {
@@ -1415,10 +1446,9 @@ int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1
   return write(v0, v1->data, v2);
 }
 void putcharSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = putchar(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t putcharFast(void* p, int32_t p0) {
@@ -1426,10 +1456,9 @@ int32_t putcharFast(void* p, int32_t p0) {
   return putchar(v0);
 }
 void closeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = close(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t closeFast(void* p, int32_t p0) {
@@ -1437,7 +1466,6 @@ int32_t closeFast(void* p, int32_t p0) {
   return close(v0);
 }
 void preadSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   Local<Uint8Array> u81 = args[1].As<Uint8Array>();
   uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
@@ -1445,7 +1473,7 @@ void preadSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
   int32_t rc = pread(v0, v1, v2, v3);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t preadFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2, uint32_t p3) {
@@ -1456,12 +1484,11 @@ int32_t preadFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32
   return pread(v0, v1, v2, v3);
 }
 void lseekSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   uint32_t rc = lseek(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 uint32_t lseekFast(void* p, int32_t p0, uint32_t p1, int32_t p2) {
@@ -1471,13 +1498,12 @@ uint32_t lseekFast(void* p, int32_t p0, uint32_t p1, int32_t p2) {
   return lseek(v0, v1, v2);
 }
 void fstatSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   Local<Uint8Array> u81 = args[1].As<Uint8Array>();
   uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
   struct stat * v1 = reinterpret_cast<struct stat *>(ptr1);
   int32_t rc = fstat(v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t fstatFast(void* p, int32_t p0, struct FastApiTypedArray* const p1) {
@@ -1486,12 +1512,11 @@ int32_t fstatFast(void* p, int32_t p0, struct FastApiTypedArray* const p1) {
   return fstat(v0, v1);
 }
 void fcntlSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = fcntl(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t fcntlFast(void* p, int32_t p0, int32_t p1, int32_t p2) {
@@ -1501,11 +1526,10 @@ int32_t fcntlFast(void* p, int32_t p0, int32_t p1, int32_t p2) {
   return fcntl(v0, v1, v2);
 }
 void ftruncateSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = ftruncate(v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t ftruncateFast(void* p, int32_t p0, uint32_t p1) {
@@ -1519,7 +1543,7 @@ void mknodSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = mknod(*v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t mknodFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2) {
@@ -1535,7 +1559,7 @@ void statSlow(const FunctionCallbackInfo<Value> &args) {
   uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
   struct stat * v1 = reinterpret_cast<struct stat *>(ptr1);
   int32_t rc = stat(*v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t statFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1) {
@@ -1550,7 +1574,7 @@ void lstatSlow(const FunctionCallbackInfo<Value> &args) {
   uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
   struct stat * v1 = reinterpret_cast<struct stat *>(ptr1);
   int32_t rc = lstat(*v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t lstatFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1) {
@@ -1563,7 +1587,7 @@ void renameSlow(const FunctionCallbackInfo<Value> &args) {
   String::Utf8Value v0(isolate, args[0]);
   String::Utf8Value v1(isolate, args[1]);
   int32_t rc = rename(*v0, *v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t renameFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1) {
@@ -1576,7 +1600,7 @@ void accessSlow(const FunctionCallbackInfo<Value> &args) {
   String::Utf8Value v0(isolate, args[0]);
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = access(*v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t accessFast(void* p, struct FastOneByteString* const p0, int32_t p1) {
@@ -1590,7 +1614,7 @@ void openSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = open(*v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t openFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2) {
@@ -1603,7 +1627,7 @@ void unlinkSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
   int32_t rc = unlink(*v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t unlinkFast(void* p, struct FastOneByteString* const p0) {
@@ -1616,7 +1640,7 @@ void openatSlow(const FunctionCallbackInfo<Value> &args) {
   String::Utf8Value v1(isolate, args[1]);
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = openat(v0, *v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t openatFast(void* p, int32_t p0, struct FastOneByteString* const p1, int32_t p2) {
@@ -1646,7 +1670,7 @@ void readlinkSlow(const FunctionCallbackInfo<Value> &args) {
   char* v1 = reinterpret_cast<char*>(ptr1);
   uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
   uint32_t rc = readlink(*v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 uint32_t readlinkFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1, uint32_t p2) {
@@ -1678,7 +1702,7 @@ void fstatatSlow(const FunctionCallbackInfo<Value> &args) {
   struct stat * v2 = reinterpret_cast<struct stat *>(ptr2);
   int32_t v3 = Local<Integer>::Cast(args[3])->Value();
   int32_t rc = fstatat(v0, *v1, v2, v3);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t fstatatFast(void* p, int32_t p0, struct FastOneByteString* const p1, struct FastApiTypedArray* const p2, int32_t p3) {
@@ -1693,7 +1717,7 @@ void mkdirSlow(const FunctionCallbackInfo<Value> &args) {
   String::Utf8Value v0(isolate, args[0]);
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = mkdir(*v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t mkdirFast(void* p, struct FastOneByteString* const p0, uint32_t p1) {
@@ -1705,7 +1729,7 @@ void rmdirSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
   int32_t rc = rmdir(*v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t rmdirFast(void* p, struct FastOneByteString* const p0) {
@@ -1713,10 +1737,9 @@ int32_t rmdirFast(void* p, struct FastOneByteString* const p0) {
   return rmdir(v0->data);
 }
 void closedirSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   DIR* v0 = reinterpret_cast<DIR*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = closedir(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t closedirFast(void* p, void* p0) {
@@ -1727,7 +1750,7 @@ void chdirSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
   int32_t rc = chdir(*v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t chdirFast(void* p, struct FastOneByteString* const p0) {
@@ -1735,10 +1758,9 @@ int32_t chdirFast(void* p, struct FastOneByteString* const p0) {
   return chdir(v0->data);
 }
 void fchdirSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = fchdir(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t fchdirFast(void* p, int32_t p0) {
@@ -1746,12 +1768,11 @@ int32_t fchdirFast(void* p, int32_t p0) {
   return fchdir(v0);
 }
 void mprotectSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = mprotect(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t mprotectFast(void* p, void* p0, uint32_t p1, int32_t p2) {
@@ -1817,7 +1838,7 @@ void shm_openSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = shm_open(*v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t shm_openFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2) {
@@ -1830,7 +1851,7 @@ void shm_unlinkSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
   int32_t rc = shm_unlink(*v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t shm_unlinkFast(void* p, struct FastOneByteString* const p0) {
@@ -1861,11 +1882,10 @@ void mmapFast(void* p, void* p0, uint32_t p1, int32_t p2, int32_t p3, int32_t p4
 
 }
 void munmapSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = munmap(v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t munmapFast(void* p, void* p0, uint32_t p1) {
@@ -1874,12 +1894,11 @@ int32_t munmapFast(void* p, void* p0, uint32_t p1) {
   return munmap(v0, v1);
 }
 void msyncSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = msync(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t msyncFast(void* p, void* p0, uint32_t p1, int32_t p2) {
@@ -1900,6 +1919,21 @@ void callocFast(void* p, uint32_t p0, uint32_t p1, struct FastApiTypedArray* con
   uint32_t v0 = p0;
   uint32_t v1 = p1;
   void* r = calloc(v0, v1);
+  ((void**)p_ret->data)[0] = r;
+
+}
+void reallocSlow(const FunctionCallbackInfo<Value> &args) {
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  void* rc = realloc(v0, v1);
+  Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
+  ((void**)ab->Data())[0] = rc;
+}
+
+void reallocFast(void* p, void* p0, uint32_t p1, struct FastApiTypedArray* const p_ret) {
+  void* v0 = reinterpret_cast<void*>(p0);
+  uint32_t v1 = p1;
+  void* r = realloc(v0, v1);
   ((void**)p_ret->data)[0] = r;
 
 }
@@ -1956,7 +1990,7 @@ void setenvSlow(const FunctionCallbackInfo<Value> &args) {
   String::Utf8Value v1(isolate, args[1]);
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = setenv(*v0, *v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t setenvFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1, int32_t p2) {
@@ -1969,7 +2003,7 @@ void unsetenvSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
   int32_t rc = unsetenv(*v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t unsetenvFast(void* p, struct FastOneByteString* const p0) {
@@ -1986,10 +2020,9 @@ void sleepFast(void* p, int32_t p0) {
   sleep(v0);
 }
 void usleepSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = usleep(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t usleepFast(void* p, uint32_t p0) {
@@ -1997,10 +2030,9 @@ int32_t usleepFast(void* p, uint32_t p0) {
   return usleep(v0);
 }
 void dupSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = dup(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t dupFast(void* p, int32_t p0) {
@@ -2008,11 +2040,10 @@ int32_t dupFast(void* p, int32_t p0) {
   return dup(v0);
 }
 void dup2Slow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = dup2(v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t dup2Fast(void* p, int32_t p0, int32_t p1) {
@@ -2036,10 +2067,9 @@ void getcwdFast(void* p, void* p0, int32_t p1, struct FastApiTypedArray* const p
 
 }
 void getpidSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
 
   int32_t rc = getpid();
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t getpidFast(void* p) {
@@ -2047,10 +2077,9 @@ int32_t getpidFast(void* p) {
   return getpid();
 }
 void forkSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
 
   int32_t rc = fork();
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t forkFast(void* p) {
@@ -2058,11 +2087,10 @@ int32_t forkFast(void* p) {
   return fork();
 }
 void killSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = kill(v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t killFast(void* p, int32_t p0, int32_t p1) {
@@ -2071,14 +2099,13 @@ int32_t killFast(void* p, int32_t p0, int32_t p1) {
   return kill(v0, v1);
 }
 void waitpidSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   Local<Uint8Array> u81 = args[1].As<Uint8Array>();
   uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
   int* v1 = reinterpret_cast<int*>(ptr1);
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = waitpid(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t waitpidFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_t p2) {
@@ -2094,7 +2121,7 @@ void execvpSlow(const FunctionCallbackInfo<Value> &args) {
   uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
   char* const* v1 = reinterpret_cast<char* const*>(ptr1);
   int32_t rc = execvp(*v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t execvpFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1) {
@@ -2112,7 +2139,7 @@ void execveSlow(const FunctionCallbackInfo<Value> &args) {
   uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
   char* const* v2 = reinterpret_cast<char* const*>(ptr2);
   int32_t rc = execve(*v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t execveFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1, struct FastApiTypedArray* const p2) {
@@ -2122,10 +2149,9 @@ int32_t execveFast(void* p, struct FastOneByteString* const p0, struct FastApiTy
   return execve(v0->data, v1, v2);
 }
 void isattySlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = isatty(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t isattyFast(void* p, int32_t p0) {
@@ -2133,13 +2159,12 @@ int32_t isattyFast(void* p, int32_t p0) {
   return isatty(v0);
 }
 void tcgetattrSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   Local<Uint8Array> u81 = args[1].As<Uint8Array>();
   uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
   struct termios * v1 = reinterpret_cast<struct termios *>(ptr1);
   int32_t rc = tcgetattr(v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t tcgetattrFast(void* p, int32_t p0, struct FastApiTypedArray* const p1) {
@@ -2148,14 +2173,13 @@ int32_t tcgetattrFast(void* p, int32_t p0, struct FastApiTypedArray* const p1) {
   return tcgetattr(v0, v1);
 }
 void tcsetattrSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
   Local<Uint8Array> u82 = args[2].As<Uint8Array>();
   uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
   struct termios * v2 = reinterpret_cast<struct termios *>(ptr2);
   int32_t rc = tcsetattr(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t tcsetattrFast(void* p, int32_t p0, int32_t p1, struct FastApiTypedArray* const p2) {
@@ -2174,10 +2198,9 @@ void exitFast(void* p, int32_t p0) {
   exit(v0);
 }
 void sysconfSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t rc = sysconf(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 uint32_t sysconfFast(void* p, int32_t p0) {
@@ -2185,13 +2208,12 @@ uint32_t sysconfFast(void* p, int32_t p0) {
   return sysconf(v0);
 }
 void getrusageSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   Local<Uint8Array> u81 = args[1].As<Uint8Array>();
   uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
   struct rusage* v1 = reinterpret_cast<struct rusage*>(ptr1);
   int32_t rc = getrusage(v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t getrusageFast(void* p, int32_t p0, struct FastApiTypedArray* const p1) {
@@ -2200,12 +2222,11 @@ int32_t getrusageFast(void* p, int32_t p0, struct FastApiTypedArray* const p1) {
   return getrusage(v0, v1);
 }
 void timesSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   Local<Uint8Array> u80 = args[0].As<Uint8Array>();
   uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
   struct tms* v0 = reinterpret_cast<struct tms*>(ptr0);
   uint32_t rc = times(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 uint32_t timesFast(void* p, struct FastApiTypedArray* const p0) {
@@ -2234,7 +2255,7 @@ void isolate_createSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v13 = Local<Integer>::Cast(args[13])->Value();
   void* v14 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[14])->Value());
   int32_t rc = lo_create_isolate(v0, v1, *v2, v3, *v4, v5, v6, v7, v8, v9, *v10, *v11, v12, v13, v14);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 void isolate_context_createSlow(const FunctionCallbackInfo<Value> &args) {
@@ -2272,10 +2293,9 @@ void isolate_context_destroyFast(void* p, struct FastApiTypedArray* const p0) {
   lo_destroy_isolate_context(v0);
 }
 void isolate_context_sizeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
 
   int32_t rc = lo_context_size();
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t isolate_context_sizeFast(void* p) {
@@ -2314,11 +2334,10 @@ void memmemFast(void* p, void* p0, uint32_t p1, void* p2, uint32_t p3, struct Fa
 
 }
 void strnlenSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   const char* v0 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   uint32_t rc = strnlen(v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 uint32_t strnlenFast(void* p, void* p0, uint32_t p1) {
@@ -2331,7 +2350,7 @@ void strnlen_strSlow(const FunctionCallbackInfo<Value> &args) {
   String::Utf8Value v0(isolate, args[0]);
   uint32_t v1 = v0.length();
   uint32_t rc = strnlen(*v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 uint32_t strnlen_strFast(void* p, struct FastOneByteString* const p0) {
@@ -2351,13 +2370,12 @@ void syncFast(void* p) {
 #ifdef __linux__
 
 void posix_fadviseSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t v3 = Local<Integer>::Cast(args[3])->Value();
   int32_t rc = posix_fadvise(v0, v1, v2, v3);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t posix_fadviseFast(void* p, int32_t p0, uint32_t p1, uint32_t p2, int32_t p3) {
@@ -2368,14 +2386,13 @@ int32_t posix_fadviseFast(void* p, int32_t p0, uint32_t p1, uint32_t p2, int32_t
   return posix_fadvise(v0, v1, v2, v3);
 }
 void ioctlSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   Local<Uint8Array> u82 = args[2].As<Uint8Array>();
   uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
   void* v2 = reinterpret_cast<void*>(ptr2);
   int32_t rc = ioctl(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t ioctlFast(void* p, int32_t p0, uint32_t p1, struct FastApiTypedArray* const p2) {
@@ -2385,12 +2402,11 @@ int32_t ioctlFast(void* p, int32_t p0, uint32_t p1, struct FastApiTypedArray* co
   return ioctl(v0, v1, v2);
 }
 void ioctl2Slow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = ioctl(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t ioctl2Fast(void* p, int32_t p0, uint32_t p1, int32_t p2) {
@@ -2400,12 +2416,11 @@ int32_t ioctl2Fast(void* p, int32_t p0, uint32_t p1, int32_t p2) {
   return ioctl(v0, v1, v2);
 }
 void ioctl3Slow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   void* v2 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
   int32_t rc = ioctl(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t ioctl3Fast(void* p, int32_t p0, uint32_t p1, void* p2) {
@@ -2415,10 +2430,9 @@ int32_t ioctl3Fast(void* p, int32_t p0, uint32_t p1, void* p2) {
   return ioctl(v0, v1, v2);
 }
 void rebootSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = reboot(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t rebootFast(void* p, int32_t p0) {
@@ -2426,12 +2440,11 @@ int32_t rebootFast(void* p, int32_t p0) {
   return reboot(v0);
 }
 void getdentsSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
   uint32_t rc = getdents64(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 uint32_t getdentsFast(void* p, int32_t p0, void* p1, uint32_t p2) {
@@ -2441,12 +2454,11 @@ uint32_t getdentsFast(void* p, int32_t p0, void* p1, uint32_t p2) {
   return getdents64(v0, v1, v2);
 }
 void getaffinitySlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   cpu_set_t* v2 = reinterpret_cast<cpu_set_t*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
   int32_t rc = sched_getaffinity(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t getaffinityFast(void* p, int32_t p0, uint32_t p1, void* p2) {
@@ -2456,7 +2468,6 @@ int32_t getaffinityFast(void* p, int32_t p0, uint32_t p1, void* p2) {
   return sched_getaffinity(v0, v1, v2);
 }
 void copy_file_rangeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   loff_t* v1 = reinterpret_cast<loff_t*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
@@ -2464,7 +2475,7 @@ void copy_file_rangeSlow(const FunctionCallbackInfo<Value> &args) {
   uint32_t v4 = Local<Integer>::Cast(args[4])->Value();
   uint32_t v5 = Local<Integer>::Cast(args[5])->Value();
   uint32_t rc = copy_file_range(v0, v1, v2, v3, v4, v5);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 uint32_t copy_file_rangeFast(void* p, int32_t p0, void* p1, int32_t p2, void* p3, uint32_t p4, uint32_t p5) {
@@ -2481,7 +2492,7 @@ void memfd_createSlow(const FunctionCallbackInfo<Value> &args) {
   String::Utf8Value v0(isolate, args[0]);
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = memfd_create(*v0, v1);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t memfd_createFast(void* p, struct FastOneByteString* const p0, uint32_t p1) {
@@ -2490,12 +2501,11 @@ int32_t memfd_createFast(void* p, struct FastOneByteString* const p0, uint32_t p
   return memfd_create(v0->data, v1);
 }
 void setaffinitySlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   cpu_set_t* v2 = reinterpret_cast<cpu_set_t*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
   int32_t rc = sched_setaffinity(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t setaffinityFast(void* p, int32_t p0, uint32_t p1, void* p2) {
@@ -2505,10 +2515,9 @@ int32_t setaffinityFast(void* p, int32_t p0, uint32_t p1, void* p2) {
   return sched_setaffinity(v0, v1, v2);
 }
 void vforkSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
 
   int32_t rc = vfork();
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t vforkFast(void* p) {
@@ -2525,7 +2534,7 @@ void vexecveSlow(const FunctionCallbackInfo<Value> &args) {
   uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
   char* const* v2 = reinterpret_cast<char* const*>(ptr2);
   int32_t rc = vexecve(*v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t vexecveFast(void* p, struct FastOneByteString* const p0, struct FastApiTypedArray* const p1, struct FastApiTypedArray* const p2) {
@@ -2535,7 +2544,6 @@ int32_t vexecveFast(void* p, struct FastOneByteString* const p0, struct FastApiT
   return vexecve(v0->data, v1, v2);
 }
 void vfexecveSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   Local<Uint8Array> u81 = args[1].As<Uint8Array>();
   uint8_t* ptr1 = (uint8_t*)u81->Buffer()->Data() + u81->ByteOffset();
@@ -2544,7 +2552,7 @@ void vfexecveSlow(const FunctionCallbackInfo<Value> &args) {
   uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
   char* const* v2 = reinterpret_cast<char* const*>(ptr2);
   int32_t rc = vfexecve(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t vfexecveFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, struct FastApiTypedArray* const p2) {
@@ -2554,10 +2562,9 @@ int32_t vfexecveFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, st
   return vfexecve(v0, v1, v2);
 }
 void getpagesizeSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
 
   int32_t rc = getpagesize();
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t getpagesizeFast(void* p) {
@@ -2565,12 +2572,11 @@ int32_t getpagesizeFast(void* p) {
   return getpagesize();
 }
 void madviseSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = madvise(v0, v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t madviseFast(void* p, void* p0, uint32_t p1, int32_t p2) {
@@ -2626,6 +2632,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "munmap", &pFmunmap, munmapSlow);
   SET_FAST_METHOD(isolate, module, "msync", &pFmsync, msyncSlow);
   SET_FAST_METHOD(isolate, module, "calloc", &pFcalloc, callocSlow);
+  SET_FAST_METHOD(isolate, module, "realloc", &pFrealloc, reallocSlow);
   SET_FAST_METHOD(isolate, module, "aligned_alloc", &pFaligned_alloc, aligned_allocSlow);
   SET_FAST_METHOD(isolate, module, "free", &pFfree, freeSlow);
   SET_METHOD(isolate, module, "bind_fastcall", bind_fastcallSlow);
@@ -2741,6 +2748,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "PROT_READ", Integer::New(isolate, (int32_t)PROT_READ));
   SET_VALUE(isolate, module, "PROT_WRITE", Integer::New(isolate, (int32_t)PROT_WRITE));
   SET_VALUE(isolate, module, "PROT_EXEC", Integer::New(isolate, (int32_t)PROT_EXEC));
+  SET_VALUE(isolate, module, "_SC_PAGESIZE", Integer::New(isolate, (int32_t)_SC_PAGESIZE));
 
 #ifdef __linux__
   SET_VALUE(isolate, module, "LINUX_REBOOT_CMD_HALT", Integer::New(isolate, (uint32_t)LINUX_REBOOT_CMD_HALT));
@@ -2751,6 +2759,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "MFD_CLOEXEC", Integer::New(isolate, (int32_t)MFD_CLOEXEC));
   SET_VALUE(isolate, module, "MAP_HUGETLB", Integer::New(isolate, (int32_t)MAP_HUGETLB));
   SET_VALUE(isolate, module, "MAP_HUGE_SHIFT", Integer::New(isolate, (int32_t)MAP_HUGE_SHIFT));
+  SET_VALUE(isolate, module, "MFD_HUGETLB", Integer::New(isolate, (int32_t)MFD_HUGETLB));
   SET_VALUE(isolate, module, "MADV_HUGEPAGE", Integer::New(isolate, (int32_t)MADV_HUGEPAGE));
   SET_VALUE(isolate, module, "MAP_FIXED", Integer::New(isolate, (int32_t)MAP_FIXED));
   SET_VALUE(isolate, module, "POSIX_FADV_SEQUENTIAL", Integer::New(isolate, (int32_t)POSIX_FADV_SEQUENTIAL));
@@ -2768,10 +2777,12 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 
 #ifdef __MACH__
   SET_VALUE(isolate, module, "struct_clock_t_size", Integer::New(isolate, sizeof(clock_t)));
+  SET_VALUE(isolate, module, "struct_fastcall_size", Integer::New(isolate, sizeof(fastcall)));
 
 #endif
 #ifdef __linux__
   SET_VALUE(isolate, module, "struct_clock_t_size", Integer::New(isolate, sizeof(clock_t)));
+  SET_VALUE(isolate, module, "struct_fastcall_size", Integer::New(isolate, sizeof(fastcall)));
   SET_VALUE(isolate, module, "struct_cpu_set_t_size", Integer::New(isolate, sizeof(cpu_set_t)));
 
 #endif
