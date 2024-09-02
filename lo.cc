@@ -571,9 +571,7 @@ int lo::CreateIsolate(int argc, char** argv,
     opts->Set(isolate, lo::HostDefinedOptions::kType, 
       Number::New(isolate, lo::ScriptType::kModule));
     ScriptOrigin baseorigin(
-      isolate,
-      String::NewFromUtf8(isolate, scriptname, NewStringType::kInternalized, 
-      strnlen(scriptname, 1024)).ToLocalChecked(),
+      String::NewFromUtf8(isolate, scriptname, NewStringType::kInternalized, strnlen(scriptname, 1024)).ToLocalChecked(),
       0, // line offset
       0,  // column offset
       false, // is shared cross-origin
@@ -814,7 +812,7 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
   // https://github.com/nodejs/node/blob/main/src/compile_cache.cc#L247
   // https://github.com/nodejs/node/blob/75741a19524c3cf3a9671ee227e806cf842e9a86/src/node_builtins.cc#L365
   //opts->Set(isolate, produce_data_to_cache, true);
-  ScriptOrigin baseorigin(isolate,
+  ScriptOrigin baseorigin(
     path, // resource name
     0, // line offset
     0,  // column offset
@@ -1278,7 +1276,8 @@ void lo::RunScript(const FunctionCallbackInfo<Value> &args) {
   Local<v8::PrimitiveArray> opts =
       v8::PrimitiveArray::New(isolate, 1);
   opts->Set(isolate, 0, v8::Number::New(isolate, 1));
-  ScriptOrigin baseorigin(isolate, path, // resource name
+  ScriptOrigin baseorigin(
+    path, // resource name
     0, // line offset
     0,  // column offset
     false, // is shared cross-origin

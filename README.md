@@ -95,3 +95,11 @@ choco install make
 ```
 make cleanall lo.exe test
 ```
+
+# bumping v8 version
+
+```shell
+make cleanall
+## change v8 version in makefile
+make lo
+```
