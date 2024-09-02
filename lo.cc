@@ -114,7 +114,6 @@ CFunctionInfo infoutf8encodeinto = CFunctionInfo(rcutf8encodeinto, 3,
 CFunction pFutf8encodeinto = CFunction((const void*)&lo::fastUtf8EncodeInto, 
   &infoutf8encodeinto);
 
-
 CTypeInfo cargsutf8encodeintoPtr[3] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
@@ -397,6 +396,8 @@ MaybeLocal<Module> lo::OnModuleInstantiate(Local<Context> context,
   Local<String> specifier,
   Local<FixedArray> import_assertions, 
   Local<Module> referrer) {
+
+//  printf("OnModuleInstantiate, assertions: %i\n", import_assertions.->.Length());
   Isolate* isolate = context->GetIsolate();
   String::Utf8Value str(isolate, specifier);
   Local<Function> callback = 
@@ -413,6 +414,9 @@ MaybeLocal<Module> lo::OnModuleInstantiate(Local<Context> context,
 MaybeLocal<Promise> OnDynamicImport(Local<Context> context,
   Local<Data> host_defined_options, Local<Value> resource_name,
   Local<String> specifier,Local<FixedArray> import_assertions) {
+//  uint64_t start64 = (uint64_t)Local<Integer>::Cast(args[0])->Value();
+
+//  printf("OnModuleInstantiate, assertions: %i\n", import_assertions->Length());
   Local<Promise::Resolver> resolver =
       Promise::Resolver::New(context).ToLocalChecked();
   MaybeLocal<Promise> promise(resolver->GetPromise());
@@ -529,6 +533,12 @@ int lo::CreateIsolate(int argc, char** argv,
         std::move(backing));
       runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, 
         "buffer", NewStringType::kNormal), ab).Check();
+      runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, "buffer_address", 
+        NewStringType::kInternalized), 
+        Number::New(isolate, (uint64_t)buf)).Check();
+      runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, "buffer_len", 
+        NewStringType::kInternalized), 
+        Integer::New(isolate, buflen)).Check();
     }
     runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, "argv", 
       NewStringType::kInternalized), 
@@ -588,10 +598,20 @@ int lo::CreateIsolate(int argc, char** argv,
       PrintStackTrace(isolate, try_catch);
       return 1;
     }
+/*
+    if (!ScriptCompiler::CompileModule(isolate, &basescript, ScriptCompiler::kConsumeCodeCache).ToLocal(&module)) {
+      PrintStackTrace(isolate, try_catch);
+      return 1;
+    }
+*/
 //    if (!ScriptCompiler::CompileModule(isolate, &basescript, v8::ScriptCompiler::CompileOptions::kConsumeCodeCache).ToLocal(&module)) {
 //      PrintStackTrace(isolate, try_catch);
 //      return 1;
 //    }
+//  v8::ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
+//  v8::ScriptCompiler::CachedData* cache = v8::ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
+//  fprintf(stderr, "source: %i path: %s cache: %i\n", base->Length(), "main", cache->length);
+
 
     Maybe<bool> ok2 = module->InstantiateModule(context, 
       lo::OnModuleInstantiate);
@@ -791,6 +811,9 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
       PrimitiveArray::New(isolate, lo::HostDefinedOptions::kLength);
   opts->Set(isolate, lo::HostDefinedOptions::kType,
                             Number::New(isolate, lo::ScriptType::kModule));
+  // https://github.com/nodejs/node/blob/main/src/compile_cache.cc#L247
+  // https://github.com/nodejs/node/blob/75741a19524c3cf3a9671ee227e806cf842e9a86/src/node_builtins.cc#L365
+  //opts->Set(isolate, produce_data_to_cache, true);
   ScriptOrigin baseorigin(isolate,
     path, // resource name
     0, // line offset
@@ -813,6 +836,11 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
     }
     return;
   }
+
+//  v8::ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
+//  v8::ScriptCompiler::CachedData* cache = v8::ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
+//  String::Utf8Value path_c(args.GetIsolate(), path);
+//  fprintf(stderr, "source: %i path: %s cache: %i\n", source->Length(), *path_c, cache->length);
   Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
   Local<Object> data = tpl->NewInstance(context).ToLocalChecked();
   Local<Array> requests = Array::New(isolate);
@@ -1158,7 +1186,6 @@ int32_t lo::fastUtf8EncodeInto (void* p, struct FastOneByteString*
   return p_str->length;
 }
 
-
 void lo::Utf8EncodeIntoPtr(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
@@ -1396,6 +1423,8 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "latin1Decode", Latin1Decode);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
   SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
+  //SET_METHOD(isolate, target, "utf8EncodeInto", Utf8EncodeInto);
+
   SET_FAST_METHOD(isolate, target, "utf8Length", &pFutf8length, Utf8Length);
   SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto, 
     Utf8EncodeInto);
@@ -1483,10 +1512,10 @@ void lo_start_isolate (void* ptr) {
 }
 
 void lo_destroy_isolate_context (struct isolate_context* ctx) {
-  if (ctx->startup_data != NULL) {
+//  if (ctx->startup_data != NULL) {
 //    Isolate* isolate = (Isolate*)ctx->startup_data;
 //    cleanupIsolate(isolate);
-  }
+//  }
   free(ctx);
 }
 

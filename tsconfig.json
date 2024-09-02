@@ -17,5 +17,5 @@
     "module": "es2022"
   },
   "exclude": ["scratch", "v8", ".vscode", ".git", ".github"],
-  "include": ["globals.d.ts", "lib"]
+  "include": ["globals.d.ts", "lib", "."]
 }

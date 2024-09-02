@@ -481,3 +481,10 @@ interface Runtime {
   utf8_length: Runtime['utf8Length'];
   wrap_memory: Runtime['wrapMemory'];
 }
+
+declare module "lib/proc.js" {
+  interface Proc {
+    mem(): number;
+  }
+  export default Proc;
+}

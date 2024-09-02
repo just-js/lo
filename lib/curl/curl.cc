@@ -261,10 +261,9 @@ void fdopenFast(void* p, int32_t p0, struct FastOneByteString* const p1, struct 
 
 }
 void fcloseSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   FILE* v0 = reinterpret_cast<FILE*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = fclose(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t fcloseFast(void* p, void* p0) {
@@ -272,10 +271,9 @@ int32_t fcloseFast(void* p, void* p0) {
   return fclose(v0);
 }
 void fflushSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   FILE* v0 = reinterpret_cast<FILE*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = fflush(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t fflushFast(void* p, void* p0) {
@@ -283,10 +281,9 @@ int32_t fflushFast(void* p, void* p0) {
   return fflush(v0);
 }
 void global_initSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = curl_global_init(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t global_initFast(void* p, uint32_t p0) {
@@ -325,7 +322,7 @@ void easy_setoptSlow(const FunctionCallbackInfo<Value> &args) {
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   String::Utf8Value v2(isolate, args[2]);
   int32_t rc = curl_easy_setopt(v0, (CURLoption)v1, *v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t easy_setoptFast(void* p, void* p0, uint32_t p1, struct FastOneByteString* const p2) {
@@ -335,12 +332,11 @@ int32_t easy_setoptFast(void* p, void* p0, uint32_t p1, struct FastOneByteString
   return curl_easy_setopt(v0, (CURLoption)v1, v2->data);
 }
 void easy_setopt_2Slow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   CURL* v0 = reinterpret_cast<CURL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = curl_easy_setopt(v0, (CURLoption)v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t easy_setopt_2Fast(void* p, void* p0, uint32_t p1, uint32_t p2) {
@@ -350,12 +346,11 @@ int32_t easy_setopt_2Fast(void* p, void* p0, uint32_t p1, uint32_t p2) {
   return curl_easy_setopt(v0, (CURLoption)v1, v2);
 }
 void easy_setopt_3Slow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   CURL* v0 = reinterpret_cast<CURL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   uint64_t v2 = Local<Integer>::Cast(args[2])->Value();
   int32_t rc = curl_easy_setopt(v0, (CURLoption)v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t easy_setopt_3Fast(void* p, void* p0, uint32_t p1, uint64_t p2) {
@@ -365,10 +360,9 @@ int32_t easy_setopt_3Fast(void* p, void* p0, uint32_t p1, uint64_t p2) {
   return curl_easy_setopt(v0, (CURLoption)v1, v2);
 }
 void easy_performSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   CURL* v0 = reinterpret_cast<CURL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = curl_easy_perform(v0);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t easy_performFast(void* p, void* p0) {
@@ -394,14 +388,13 @@ void global_cleanupFast(void* p) {
   curl_global_cleanup();
 }
 void easy_getinfoSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   CURL* v0 = reinterpret_cast<CURL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   Local<Uint32Array> u322 = args[2].As<Uint32Array>();
   uint8_t* ptr2 = (uint8_t*)u322->Buffer()->Data() + u322->ByteOffset();
   void* v2 = reinterpret_cast<void*>(ptr2);
   int32_t rc = curl_easy_getinfo(v0, (CURLINFO)v1, v2);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t easy_getinfoFast(void* p, void* p0, uint32_t p1, struct FastApiTypedArray* const p2) {

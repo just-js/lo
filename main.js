@@ -141,6 +141,7 @@ function load (name) {
     return lib
   }
   // todo: we leak this handle - need to be able to unload
+  if (!core.dlopen) return
   const handle = core.dlopen(`lib/${name}/${name}.so`, RTLD_LAZY) ||
     core.dlopen(`${LO_HOME}/lib/${name}/${name}.so`, RTLD_LAZY)
   if (!handle) return
@@ -390,7 +391,7 @@ lo.getcwd = wrap_getcwd()
 const LO_HOME = lo.getenv('LO_HOME') || lo.getcwd()
 const LO_CACHE = parseInt(lo.getenv('LO_CACHE') || '0', 10)
 core.homedir = LO_HOME
-core.dlopen = wrap(handle, core.dlopen, 2)
+if (core.dlopen) core.dlopen = wrap(handle, core.dlopen, 2)
 core.dlsym = wrap(handle, core.dlsym, 2)
 core.mmap = wrap(handle, core.mmap, 6)
 core.calloc = wrap(handle, core.calloc, 2)
@@ -415,7 +416,11 @@ lo.bindings = lo.libraries
 //delete lo.library
 //const noop = () => {}
 //core.loader = core.sync_loader = noop
+// todo. we can override these to deny any access to internal modules for any user code
+// question - does this operate globally or do we get a new one per isolate?
 lo.setModuleCallbacks(on_module_load, on_module_instantiate)
+lo.on_module_load = on_module_load
+lo.on_module_instantiate = on_module_instantiate
 
 // TODO: remove camel case names when we do a cleanup
 
