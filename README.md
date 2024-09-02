@@ -103,3 +103,9 @@ make cleanall
 ## change v8 version in makefile
 make lo
 ```
+
+# install v8 source
+
+```shell
+make v8/src
+```
