@@ -1,4 +1,4 @@
-# lo test
+# test
 
 this folder contains tests and benchmarks for the lo runtime
 
