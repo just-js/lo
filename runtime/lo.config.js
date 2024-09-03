@@ -78,9 +78,9 @@ const embeds = [
   'lib/sqlite/api.js',
   'lib/sqlite/build.js',
   'lib/encode/api.js',
-  'runtimes/core.config.js',
-  'runtimes/base.config.js',
-  'runtimes/lo.config.js',
+  'runtime/core.config.js',
+  'runtime/base.config.js',
+  'runtime/lo.config.js',
   'globals.d.ts',
 ]
 

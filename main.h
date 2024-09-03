@@ -29,8 +29,8 @@ extern char _binary_lib_inflate_api_js_start[];
 extern char _binary_lib_inflate_build_js_start[];
 extern char _binary_lib_core_api_js_start[];
 extern char _binary_lib_curl_api_js_start[];
-extern char _binary_runtimes_base_config_js_start[];
-extern char _binary_runtimes_lo_config_js_start[];
+extern char _binary_runtime_base_config_js_start[];
+extern char _binary_runtime_lo_config_js_start[];
 extern char _binary_globals_d_ts_start[];
 extern char _binary_lib_curl_js_end[];
 extern char _binary_lib_gen_js_end[];
@@ -50,8 +50,8 @@ extern char _binary_lib_inflate_api_js_end[];
 extern char _binary_lib_inflate_build_js_end[];
 extern char _binary_lib_core_api_js_end[];
 extern char _binary_lib_curl_api_js_end[];
-extern char _binary_runtimes_base_config_js_end[];
-extern char _binary_runtimes_lo_config_js_end[];
+extern char _binary_runtime_base_config_js_end[];
+extern char _binary_runtime_lo_config_js_end[];
 extern char _binary_globals_d_ts_end[];
 
 #endif
@@ -87,8 +87,8 @@ void register_builtins() {
   lo::builtins_add("lib/inflate/build.js", _binary_lib_inflate_build_js_start, _binary_lib_inflate_build_js_end - _binary_lib_inflate_build_js_start);
   lo::builtins_add("lib/core/api.js", _binary_lib_core_api_js_start, _binary_lib_core_api_js_end - _binary_lib_core_api_js_start);
   lo::builtins_add("lib/curl/api.js", _binary_lib_curl_api_js_start, _binary_lib_curl_api_js_end - _binary_lib_curl_api_js_start);
-  lo::builtins_add("runtimes/base.config.js", _binary_runtimes_base_config_js_start, _binary_runtimes_base_config_js_end - _binary_runtimes_base_config_js_start);
-  lo::builtins_add("runtimes/lo.config.js", _binary_runtimes_lo_config_js_start, _binary_runtimes_lo_config_js_end - _binary_runtimes_lo_config_js_start);
+  lo::builtins_add("runtime/base.config.js", _binary_runtime_base_config_js_start, _binary_runtime_base_config_js_end - _binary_runtime_base_config_js_start);
+  lo::builtins_add("runtime/lo.config.js", _binary_runtime_lo_config_js_start, _binary_runtime_lo_config_js_end - _binary_runtime_lo_config_js_start);
   lo::builtins_add("globals.d.ts", _binary_globals_d_ts_start, _binary_globals_d_ts_end - _binary_globals_d_ts_start);
   lo::modules_add("core", &_register_core);
   lo::modules_add("inflate", &_register_inflate);
