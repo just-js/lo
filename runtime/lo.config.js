@@ -20,7 +20,7 @@ const libs = [
   'lib/binary.js', 
   'lib/curl.js',
   'lib/ffi.js', 
-  'lib/asm/asm.js', 
+  'lib/asm.js', 
   'lib/asm/assembler.js', 
   'lib/asm/compiler.js', 
   'lib/gen.js', 
@@ -48,7 +48,7 @@ const libs = [
   'lib/udp.js',
   'lib/pmon.js',
   'lib/bench.mjs',
-  'lib/dns/dns.js',
+  'lib/dns.js',
   'lib/dns/protocol.js',
   'lib/socket.js',
   'lib/packet.js',
@@ -93,8 +93,6 @@ const v8_opts = {
   v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --max-heap-size 1024'
 }
 
-//let link_type = '-rdynamic'
-//const link_args = ['-g']
 let link_type = '-rdynamic -static-libstdc++'
 if (lo.core.os === 'linux') link_type += ' -static-libgcc'
 
