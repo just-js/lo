@@ -4,9 +4,7 @@
 #include "main.h"
 #endif
 
-#include <unistd.h>
 #include <fcntl.h>
-#include <sys/mount.h>
 
 int main(int argc, char** argv) {
   // if we are called with no arguments, just dump the version and exit

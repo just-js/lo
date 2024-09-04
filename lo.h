@@ -4,8 +4,6 @@
 #include <libplatform/libplatform.h>
 #include <map>
 #include <v8-fast-api-calls.h>
-#include <unistd.h>
-#include <sys/mount.h>
 #include <fcntl.h>
 
 #ifdef __MACH__

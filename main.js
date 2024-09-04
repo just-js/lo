@@ -142,6 +142,7 @@ function load (name) {
   }
   // todo: we leak this handle - need to be able to unload
   if (!core.dlopen) return
+  // RTLD_LOCAL is the default
   const handle = core.dlopen(`lib/${name}/${name}.so`, RTLD_LAZY) ||
     core.dlopen(`${LO_HOME}/lib/${name}/${name}.so`, RTLD_LAZY)
   if (!handle) return

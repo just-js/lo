@@ -54,19 +54,19 @@ ifneq ($(os),win)
 endif
 
 v8/src: ## download the v8 source code for debugging
-	curl -L -o v8-src.tar.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/src.tar.gz
+	curl -C - -L -o v8-src.tar.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/src.tar.gz
 	tar -xf v8-src.tar.gz
 ifneq ($(os),win)
 	rm -f v8-src.tar.gz
 endif
 
 v8/libv8_monolith.a: ## download the v8 static libary for linux/macos
-	curl -L -o v8/libv8_monolith.a.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.a.gz
+	curl -C - -L -o v8/libv8_monolith.a.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.a.gz
 	gzip -d v8/libv8_monolith.a.gz
 	rm -f v8/libv8_monolith.a.gz
 
 v8/v8_monolith.lib: ## download the v8 static library for windows
-	curl -L -o v8/v8_monolith.lib.zip https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.zip
+	curl -C - -L -o v8/v8_monolith.lib.zip https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.zip
 	tar -C v8 -xf v8/v8_monolith.lib.zip
 
 main.o: ## compile the main.cc object file
