@@ -117,6 +117,7 @@ void Builtins(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Library(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Libraries(const v8::FunctionCallbackInfo<v8::Value> &args);
 void LoadModule(const v8::FunctionCallbackInfo<v8::Value> &args);
+void UnloadModule(const v8::FunctionCallbackInfo<v8::Value> &args);
 void EvaluateModule(const v8::FunctionCallbackInfo<v8::Value> &args);
 void SetModuleCallbacks(const v8::FunctionCallbackInfo<v8::Value> &args);
 void NextTick(const v8::FunctionCallbackInfo<v8::Value> &args);

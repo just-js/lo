@@ -416,6 +416,10 @@ pid_t vexecve (const char* pathname, char* const argv[], char* const envp[]) {
   return status;
 }
 
+/*
+we can use wait4 with rusage struct to get usage stats on waited process
+https://github.com/ziglang/zig/blob/master/lib/std/process/Child.zig#L86
+*/
 pid_t vfexecve (int fd, char* const argv[], char* const envp[]) {
   pid_t pid = vfork();
   if (pid == 0) {

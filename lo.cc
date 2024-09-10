@@ -799,6 +799,13 @@ void lo::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
 }
 
 // TODO: this is terribly slow
+void lo::UnloadModule(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int identity = Local<Integer>::Cast(args[0])->Value();
+  std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));
+  (*module_map).erase(identity);
+}
+
 void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
@@ -823,9 +830,20 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
     false, // is wasm
     true, // is module
     opts);
-  ScriptCompiler::Source base(source, baseorigin);
+  bool ok = false;
   Local<Module> module;
-  bool ok = ScriptCompiler::CompileModule(isolate, &base).ToLocal(&module);
+  if (args.Length() == 2) {
+    ScriptCompiler::Source base(source, baseorigin);
+    ok = ScriptCompiler::CompileModule(isolate, &base).ToLocal(&module);
+  } else {
+    Local<Object> meta = args[2].As<Object>();
+//    Local<ArrayBuffer> ab = args[2].As<ArrayBuffer>();
+//    v8::ScriptCompiler::CachedData cached((const uint8_t*)ab->Data(), ab->ByteLength(), v8::ScriptCompiler::CachedData::BufferPolicy::BufferNotOwned);
+    v8::ScriptCompiler::CachedData* cached = (v8::ScriptCompiler::CachedData*)meta->GetAlignedPointerFromInternalField(1);
+    ScriptCompiler::Source base(source, baseorigin, cached);
+    ScriptCompiler::CompileOptions options = ScriptCompiler::kConsumeCodeCache;
+    ok = ScriptCompiler::CompileModule(isolate, &base, options).ToLocal(&module);
+  }
   if (!ok) {
     String::Utf8Value path(args.GetIsolate(), args[1]);
     fprintf(stderr, "Error compiling %s\n", *path);
@@ -835,12 +853,26 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
     return;
   }
 
-//  v8::ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
-//  v8::ScriptCompiler::CachedData* cache = v8::ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
-//  String::Utf8Value path_c(args.GetIsolate(), path);
-//  fprintf(stderr, "source: %i path: %s cache: %i\n", source->Length(), *path_c, cache->length);
   Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
   Local<Object> data = tpl->NewInstance(context).ToLocalChecked();
+  if (args.Length() == 2) {
+    v8::ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
+    v8::ScriptCompiler::CachedData* cache = v8::ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
+/*
+    std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
+        (void*)cache->data, cache->length, v8::BackingStore::EmptyDeleter, nullptr);
+    Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
+*/
+    Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
+    tpl->SetInternalFieldCount(2);
+    Local<Object> d = tpl->NewInstance(context).ToLocalChecked();
+
+    d->SetAlignedPointerInInternalField(1, cache);
+//    d->Set(context, String::NewFromUtf8(isolate, "buffer")
+//      .ToLocalChecked(), ab).Check();
+    data->Set(context, String::NewFromUtf8(isolate, "cache")
+      .ToLocalChecked(), d).Check();
+  }
   Local<Array> requests = Array::New(isolate);
   Local<FixedArray> module_requests = module->GetModuleRequests();
   int length = module_requests->Length();
@@ -1417,6 +1449,7 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "library", Library);
   SET_METHOD(isolate, target, "setModuleCallbacks", SetModuleCallbacks);
   SET_METHOD(isolate, target, "loadModule", LoadModule);
+  SET_METHOD(isolate, target, "unloadModule", UnloadModule);
   SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
 
   SET_METHOD(isolate, target, "latin1Decode", Latin1Decode);
