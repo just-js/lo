@@ -5,6 +5,7 @@
 #include <map>
 #include <v8-fast-api-calls.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #ifdef __MACH__
 #include <mach/clock.h>
