@@ -461,7 +461,7 @@ int lo::CreateIsolate(int argc, char** argv,
   int statusCode = 0;
   create_params.array_buffer_allocator = 
     ArrayBuffer::Allocator::NewDefaultAllocator();
-  //create_params.array_buffer_allocator = new SpecialArrayBufferAllocator();
+//  create_params.array_buffer_allocator = new lo::SpecialArrayBufferAllocator();
   create_params.embedder_wrapper_type_index = 0;
   create_params.embedder_wrapper_object_index = 1;
   if (startup_data != NULL) {
@@ -655,6 +655,7 @@ int lo::CreateIsolate(int argc, char** argv,
         statusCode = result.ToLocalChecked()->Uint32Value(context).ToChecked();
       }
     }
+    module_map.clear();
     // todo: deref the globals in module_map - does it matter? won't they be cleaned up
     // when the isolate is destroyed?
 //    isolate->Exit();

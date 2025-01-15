@@ -467,8 +467,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 } // namespace curl
 } // namespace lo
 
-extern "C" {
-  void* _register_curl() {
+extern "C"  {
+  DLL_PUBLIC void* _register_curl() {
     return (void*)lo::curl::Init;
   }
 }

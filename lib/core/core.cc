@@ -862,6 +862,16 @@ v8::CTypeInfo rcmsync = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infomsync = v8::CFunctionInfo(rcmsync, 4, cargsmsync);
 v8::CFunction pFmsync = v8::CFunction((const void*)&msyncFast, &infomsync);
 
+void mallocFast(void* p, uint32_t p0, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsmalloc[3] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcmalloc = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infomalloc = v8::CFunctionInfo(rcmalloc, 3, cargsmalloc);
+v8::CFunction pFmalloc = v8::CFunction((const void*)&mallocFast, &infomalloc);
+
 void callocFast(void* p, uint32_t p0, uint32_t p1, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargscalloc[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -1911,6 +1921,19 @@ int32_t msyncFast(void* p, void* p0, uint32_t p1, int32_t p2) {
   int32_t v2 = p2;
   return msync(v0, v1, v2);
 }
+void mallocSlow(const FunctionCallbackInfo<Value> &args) {
+  uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  void* rc = malloc(v0);
+  Local<ArrayBuffer> ab = args[1].As<Uint32Array>()->Buffer();
+  ((void**)ab->Data())[0] = rc;
+}
+
+void mallocFast(void* p, uint32_t p0, struct FastApiTypedArray* const p_ret) {
+  uint32_t v0 = p0;
+  void* r = malloc(v0);
+  ((void**)p_ret->data)[0] = r;
+
+}
 void callocSlow(const FunctionCallbackInfo<Value> &args) {
   uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2635,6 +2658,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "mmap", &pFmmap, mmapSlow);
   SET_FAST_METHOD(isolate, module, "munmap", &pFmunmap, munmapSlow);
   SET_FAST_METHOD(isolate, module, "msync", &pFmsync, msyncSlow);
+  SET_FAST_METHOD(isolate, module, "malloc", &pFmalloc, mallocSlow);
   SET_FAST_METHOD(isolate, module, "calloc", &pFcalloc, callocSlow);
   SET_FAST_METHOD(isolate, module, "realloc", &pFrealloc, reallocSlow);
   SET_FAST_METHOD(isolate, module, "aligned_alloc", &pFaligned_alloc, aligned_allocSlow);
@@ -2753,6 +2777,14 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "PROT_WRITE", Integer::New(isolate, (int32_t)PROT_WRITE));
   SET_VALUE(isolate, module, "PROT_EXEC", Integer::New(isolate, (int32_t)PROT_EXEC));
   SET_VALUE(isolate, module, "_SC_PAGESIZE", Integer::New(isolate, (int32_t)_SC_PAGESIZE));
+  SET_VALUE(isolate, module, "DT_BLK", Integer::New(isolate, (int32_t)DT_BLK));
+  SET_VALUE(isolate, module, "DT_CHR", Integer::New(isolate, (int32_t)DT_CHR));
+  SET_VALUE(isolate, module, "DT_DIR", Integer::New(isolate, (int32_t)DT_DIR));
+  SET_VALUE(isolate, module, "DT_FIFO", Integer::New(isolate, (int32_t)DT_FIFO));
+  SET_VALUE(isolate, module, "DT_LNK", Integer::New(isolate, (int32_t)DT_LNK));
+  SET_VALUE(isolate, module, "DT_REG", Integer::New(isolate, (int32_t)DT_REG));
+  SET_VALUE(isolate, module, "DT_SOCK", Integer::New(isolate, (int32_t)DT_SOCK));
+  SET_VALUE(isolate, module, "DT_UNKNOWN", Integer::New(isolate, (int32_t)DT_UNKNOWN));
 
 #ifdef __linux__
   SET_VALUE(isolate, module, "LINUX_REBOOT_CMD_HALT", Integer::New(isolate, (uint32_t)LINUX_REBOOT_CMD_HALT));
@@ -2776,6 +2808,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "RTLD_FIRST", Integer::New(isolate, (int32_t)RTLD_FIRST));
   SET_VALUE(isolate, module, "RTLD_SELF", BigInt::New(isolate, (int64_t)RTLD_SELF));
   SET_VALUE(isolate, module, "RTLD_MAIN_ONLY", BigInt::New(isolate, (int64_t)RTLD_MAIN_ONLY));
+  SET_VALUE(isolate, module, "MAP_JIT", Integer::New(isolate, (int32_t)MAP_JIT));
 
 #endif
 
@@ -2795,8 +2828,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 } // namespace core
 } // namespace lo
 
-extern "C" {
-  void* _register_core() {
+extern "C"  {
+  DLL_PUBLIC void* _register_core() {
     return (void*)lo::core::Init;
   }
 }

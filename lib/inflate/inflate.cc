@@ -182,8 +182,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 } // namespace inflate
 } // namespace lo
 
-extern "C" {
-  void* _register_inflate() {
+extern "C"  {
+  DLL_PUBLIC void* _register_inflate() {
     return (void*)lo::inflate::Init;
   }
 }

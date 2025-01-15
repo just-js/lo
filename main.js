@@ -29,12 +29,22 @@ class TextDecoder {
 
 // externally exposed functions
 
+function fix_stack (err) {
+  err.stack = err.stack.split('\n')
+    .filter(line => !line.match(/\s+at assert \(main\.js.+/))
+    .join('\n')
+}
+
 function assert (condition, message, ErrorType = Error) {
   if (!condition) {
     if (message && message.constructor.name === 'Function') {
-      throw new ErrorType(message(condition))
+      const err = new ErrorType(message(condition))
+      fix_stack(err)
+      throw(err)
     }
-    throw new ErrorType(message || "Assertion failed")
+    const err = new ErrorType(message || "Assertion failed")
+    fix_stack(err)
+    throw(err)
   }
   return condition
 }
@@ -195,6 +205,7 @@ async function load_source (specifier, resource) {
   return src
 }
 
+// async module loader
 async function on_module_load (specifier, resource) {
   if (!specifier) return
   if (moduleCache.has(specifier)) {
@@ -224,6 +235,7 @@ async function on_module_load (specifier, resource) {
   return mod.namespace
 }
 
+// sync module loader
 function on_module_instantiate (specifier) {
   //lo.print(`on_module_instantiate: ${specifier}\n`)
   if (moduleCache.has(specifier)) {
@@ -265,7 +277,6 @@ function require (file_path) {
 */
 function on_unhandled_rejection (err) {
   console.error(`${AR}Unhandled Rejection${AD}`)
-  //console.error(err.stack)
   die(err, true)
 }
 
@@ -310,7 +321,7 @@ function wrap_getcwd () {
 
 function die (err, hide_fatal = false) {
   if (!hide_fatal) console.error(`${AR}Fatal Exception${AD}`)
-  console.error(err.stack)
+  handle_error(err)
   console.error(`${AY}process will exit${AD}`)
   exit(1)
 }
@@ -379,6 +390,7 @@ lo.moduleCache = moduleCache
 lo.libCache = libCache
 lo.requireCache = requireCache
 lo.wrap = wrap
+lo.handle_error = handle_error
 lo.wrapMemory = (ptr, len, free = 0) => 
   new Uint8Array(wrapMemory(ptr, len, free))
 lo.cstr = cstr
@@ -396,6 +408,7 @@ if (core.dlopen) core.dlopen = wrap(handle, core.dlopen, 2)
 core.dlsym = wrap(handle, core.dlsym, 2)
 core.mmap = wrap(handle, core.mmap, 6)
 core.calloc = wrap(handle, core.calloc, 2)
+core.malloc = wrap(handle, core.malloc, 1)
 core.memcpy = wrap(handle, core.memcpy, 3)
 core.memmove = wrap(handle, core.memmove, 3)
 core.aligned_alloc = wrap(handle, core.aligned_alloc, 2)
@@ -454,7 +467,6 @@ lo.wrap_memory = lo.wrapMemory
 lo.latin1_decode = lo.latin1Decode
 
 
-
 // todo: fix this and write up/decide exactly what module resolution does
 // currently we check/open each file twice
 /*
@@ -482,6 +494,60 @@ function show_usage () {
 //  console.log('show_usage not implemented')
 }
 
+function get_lines_for_error (file_name, line_num, col_num) {
+  console.log(`get_lines_for_error ${file_name}`)
+  if (lo.builtins().includes(file_name)) {
+    return builtin(file_name)
+      .split('\n')
+      .slice(line_num - 5, line_num + 5)
+      .map((l, i) => `${AY}${(i + line_num - 4).toString().padStart(4, ' ')}${AD}: ${i === 4 ? AM : ''}${l}${AD}`)
+      .join('\n')
+  }
+  if (lo.module_cache.has(file_name)) {
+    return lo.module_cache.get(file_name).src
+      .split('\n')
+      .slice(line_num - 5, line_num + 5)
+      .map((l, i) => `${AY}${(i + line_num - 4).toString().padStart(4, ' ')}${AD}: ${i === 5 ? AM : ''}${l}${AD}`)
+      .join('\n')
+  }
+  // we might have failed importing the module, which means it won't be in the cache, so try to read it from the path
+  try {
+    const src = decoder.decode(read_file(file_name))
+    return src
+      .split('\n')
+      .slice(line_num - 5, line_num + 5)
+      .map((l, i) => `${AY}${(i + line_num - 4).toString().padStart(4, ' ')}${AD}: ${i === 5 ? AM : ''}${l}${AD}`)
+      .join('\n')
+
+  } catch (err) {
+    // eat the exception
+    console.log(`error loading ${file_name}`)
+    console.log(err.stack)
+  }
+  return ''
+}
+
+const rx_err = /\(?([\w\/\.-_]+):(\d+):(\d+)\)?/
+
+function handle_error (err) {
+  const { stack } = err
+  const stack_lines = stack.split('\n')
+  console.log(stack_lines)
+  if (stack_lines.length > 1) {
+    const match = rx_err.exec(stack_lines[1])
+    if (match && match.length > 3) {
+      const file_name = match[1].trim()
+      const line_num = parseInt(match[2], 10)
+      const col_num = parseInt(match[3], 10)
+      const lines = get_lines_for_error(file_name, line_num, col_num)
+      console.error(`${AR}Error${AD} ${err.message}${AD}\n${stack.split('\n').slice(1).join('\n')}`)
+      console.error(lines)
+      return
+    }
+  }
+  console.error(`${AR}Error${AD} ${err.message}${AD}\n${stack.split('\n').slice(1).join('\n')}`)
+}
+
 async function global_main () {
   // todo: upgrade, install etc. maybe install these as command scripts, but that would not be very secure
   if (args.length === 1) {
@@ -489,31 +555,35 @@ async function global_main () {
     return Promise.resolve()
   }
   const command = args[1]
-  if (command === 'gen') {
-    (await import('lib/gen.js')).gen(args.slice(2))
-  } else if (command === 'build') {
-    //todo: should be awaited
-    (await import('lib/build.js')).build(args.slice(2))
-  } else if (command === 'install') {
-    (await import('lib/build.js')).install(args.slice(2))
-  } else if (command === 'init') {
-    (await import('lib/build.js')).init(args.slice(2))
-  } else if (command === 'uninstall') {
-    (await import('lib/build.js')).uninstall(args.slice(2))
-  } else if (command === 'upgrade') {
-    (await import('lib/build.js')).upgrade(args.slice(2))
-  } else if (command === 'repl') {
-    (await import('lib/repl.js')).repl().catch(die)
-  } else if (command === 'eval') {
-    await (new AsyncFunction(args[2]))()
-  } else {
-    let filePath = command
-    const { main, serve, test, bench } = await import(filePath)
-    const pargs = args.slice(2)
-    if (test) await test(...pargs)
-    if (bench) await bench(...pargs)
-    if (main) await main(...pargs)
-    if (serve) await serve(...pargs)
+  try {
+    if (command === 'gen') {
+      await (await import('lib/gen.js')).gen(args.slice(2))
+    } else if (command === 'build') {
+      //todo: should be awaited
+      await (await import('lib/build.js')).build(args.slice(2))
+    } else if (command === 'install') {
+      await (await import('lib/build.js')).install(args.slice(2))
+    } else if (command === 'init') {
+      await (await import('lib/build.js')).init(args.slice(2))
+    } else if (command === 'uninstall') {
+      await (await import('lib/build.js')).uninstall(args.slice(2))
+    } else if (command === 'upgrade') {
+      await (await import('lib/build.js')).upgrade(args.slice(2))
+    } else if (command === 'repl') {
+      await (await import('lib/repl.js')).repl()
+    } else if (command === 'eval') {
+      await (new AsyncFunction(args[2]))()
+    } else {
+      let filePath = command
+      const { main, serve, test, bench } = await import(filePath)
+      const pargs = args.slice(2)
+      if (test) await test(...pargs)
+      if (bench) await bench(...pargs)
+      if (main) await main(...pargs)
+      if (serve) await serve(...pargs)
+    }
+  } catch (err) {
+    handle_error(err)
   }
 }
 
