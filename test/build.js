@@ -79,8 +79,8 @@ for (const name of bindings) {
 }
 
 console.log(`${AY}building runtimes${AD}`)
-build_runtime('build_test_lo', 'runtimes/lo')
-build_runtime('build_test_base', 'runtimes/base')
+build_runtime('build_test_lo', 'runtime/lo')
+build_runtime('build_test_base', 'runtime/base')
 console.log(`${AY}deleting runtimes${AD}`)
 assert(isFile('build_test_lo')) && assert(unlink('build_test_lo') === 0)
 assert(isFile('build_test_base')) && assert(unlink('build_test_base') === 0)

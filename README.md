@@ -1,29 +1,3 @@
-```
-                                  ⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛
-                                  ⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬛
-                                  ⬛⬜⬜⬜⬜⬛⬛⬜⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜⬛⬛⬜⬛
-                                  ⬛⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬛⬜⬜⬛⬜⬛⬜⬛
-                                  ⬛⬜⬜⬛⬜⬜⬜⬛⬛⬜⬜⬜⬜⬜⬛⬛⬜⬛⬛⬜⬜⬛
-                                  ⬛⬜⬛⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬛
-                                  ⬛⬜⬛⬜⬜⬛⬜⬜⬜⬛⬛⬜⬜⬛⬛⬜⬜⬜⬜⬜⬜⬛
-                                  ⬛⬜⬜⬜⬛⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜⬜⬛
-                                  ⬛⬜⬜⬜⬛⬜⬜⬛⬜⬜⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜⬛
-                                  ⬛⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜⬛
-                                  ⬛⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬛⬛⬜⬜⬛⬜⬜⬜⬛
-                                  ⬛⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜⬜⬛⬜⬜⬛⬜⬛⬜⬜⬜⬛
-                                  ⬛⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜⬜⬛⬜⬜⬛⬜⬛⬜⬜⬜⬛
-                                  ⬛⬜⬜⬜⬜⬛⬜⬛⬜⬜⬜⬜⬜⬛⬛⬜⬛⬜⬛⬜⬜⬛
-                                  ⬛⬜⬜⬜⬛⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜⬛⬜⬛
-                                  ⬛⬜⬜⬜⬛⬜⬜⬜⬜⬛⬛⬜⬜⬛⬛⬜⬜⬜⬜⬛⬜⬛
-                                  ⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬛
-                                  ⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛
-```
-```
-                                👾 it's JavaScript Jim, but not as we know it. 👾
-```
-
-
-
 # prerequisites
 
 ## linux/macos
@@ -110,9 +84,19 @@ run in powershell terminal as administrator
 Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 ```
 
+https://visualstudio.microsoft.com/downloads/
+download and run this
+https://aka.ms/vs/17/release/vs_BuildTools.exe
+
+choose "Desktop Development with C++"
+
+https://learn.microsoft.com/en-us/cpp/build/msbuild-visual-cpp?view=msvc-170
+
 - install make
 ```
 choco install make
+choco install git
+
 ```
 
 - install visual studio or msbuild
@@ -120,4 +104,18 @@ choco install make
 
 ```
 make cleanall lo.exe test
+```
+
+# bumping v8 version
+
+```shell
+make cleanall
+## change v8 version in makefile
+make lo
+```
+
+# install v8 source
+
+```shell
+make v8/src
 ```

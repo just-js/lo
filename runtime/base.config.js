@@ -27,8 +27,8 @@ const embeds = [
   'lib/inflate/build.js',
   'lib/core/api.js',
   'lib/curl/api.js',
-  'runtimes/base.config.js',
-  'runtimes/lo.config.js',
+  'runtime/base.config.js',
+  'runtime/lo.config.js',
   'globals.d.ts',
 ]
 
@@ -41,9 +41,9 @@ const v8_opts = {
   v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --cppgc-young-generation'
 }
 
-let link_type = '-rdynamic -static-libstdc++'
+let link_type = '-rdynamic'
 if (lo.core.os === 'linux') {
-  link_type += ' -static-libgcc'
+  link_type += ' -static-libgcc -static-libstdc++'
 }
 
 export default { bindings, libs, embeds, target, opt, v8_opts, link_type }

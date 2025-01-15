@@ -27,7 +27,7 @@ jobs:
           pip install jsonschema
           brew install lz4 zstd openssl@3
           ./lo test/build.js
-          ./lo build runtime runtimes/lo
+          ./lo build runtime runtime/lo
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
         with:
@@ -59,7 +59,7 @@ jobs:
           pip install jsonschema
           brew install lz4 zstd openssl@3
           ./lo test/build.js
-          ./lo build runtime runtimes/lo
+          ./lo build runtime runtime/lo
       - name: upload runtime artifact
         uses: actions/upload-artifact@v3
         with:
@@ -90,7 +90,7 @@ jobs:
           make check
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
           ./lo test/build.js
-          ./lo build runtime runtimes/lo
+          ./lo build runtime runtime/lo
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:

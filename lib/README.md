@@ -1,14 +1,3 @@
-## path.js
+# lib
 
-## proc.js
-
-## ffi.js
-
-## gen.js
-
-## binary.js
-
-## bench.js
-
-## asm.js
-
+lo bindings and modules

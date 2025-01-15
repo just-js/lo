@@ -4,8 +4,7 @@
 #include <libplatform/libplatform.h>
 #include <map>
 #include <v8-fast-api-calls.h>
-#include <unistd.h>
-#include <sys/mount.h>
+#include <v8-array-buffer.h>
 #include <fcntl.h>
 
 #ifdef __MACH__
@@ -13,7 +12,57 @@
 #include <mach/mach.h>
 #endif
 
+#if defined _WIN32 || defined __CYGWIN__
+  #ifdef BUILDING_DLL
+    #ifdef __GNUC__
+      #define DLL_PUBLIC __attribute__ ((dllexport))
+    #else
+      #define DLL_PUBLIC __declspec(dllexport) // Note: actually gcc seems to also supports this syntax.
+    #endif
+  #else
+    #ifdef __GNUC__
+      #define DLL_PUBLIC __attribute__ ((dllimport))
+    #else
+      #define DLL_PUBLIC __declspec(dllimport) // Note: actually gcc seems to also supports this syntax.
+    #endif
+  #endif
+  #define DLL_LOCAL
+#else
+  #if __GNUC__ >= 4
+    #define DLL_PUBLIC __attribute__ ((visibility ("default")))
+    #define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
+  #else
+    #define DLL_PUBLIC
+    #define DLL_LOCAL
+  #endif
+#endif
+
+using v8::ArrayBuffer;
+
 namespace lo {
+
+class SpecialArrayBufferAllocator : public ArrayBuffer::Allocator {
+ public:
+  void* Allocate(size_t length) override { 
+    return calloc(length, 1); 
+  }
+
+  void* AllocateUninitialized(size_t length) override {
+    return malloc(length);
+  }
+
+  void Free(void* data, size_t) override { free(data); }
+
+  void* Reallocate(void* data, size_t old_length, size_t new_length) override {
+    void* new_data = realloc(data, new_length);
+    if (new_length > old_length) {
+      memset(reinterpret_cast<uint8_t*>(new_data) + old_length, 0,
+             new_length - old_length);
+    }
+    return new_data;
+  }
+};
+
 
 // structs for passing typed arrays & strings in and out of v8 fast api calls
 struct FastApiTypedArray {
@@ -74,18 +123,18 @@ v8::MaybeLocal<v8::Module> OnModuleInstantiate(v8::Local<v8::Context> context,
   v8::Local<v8::Module> referrer);
 
 // helpers for adding properties and methods to JS object templates
-void SET_PROP(v8::Isolate *isolate, v8::Local<v8::ObjectTemplate> 
+DLL_PUBLIC void SET_PROP(v8::Isolate *isolate, v8::Local<v8::ObjectTemplate> 
   recv, const char *name, v8::FunctionCallback getter,
   v8::FunctionCallback setter);
-void SET_METHOD(v8::Isolate *isolate, v8::Local<v8::ObjectTemplate> 
+DLL_PUBLIC void SET_METHOD(v8::Isolate *isolate, v8::Local<v8::ObjectTemplate> 
   recv, const char *name, v8::FunctionCallback callback);
-void SET_MODULE(v8::Isolate *isolate, v8::Local<v8::ObjectTemplate> 
+DLL_PUBLIC void SET_MODULE(v8::Isolate *isolate, v8::Local<v8::ObjectTemplate> 
   recv, const char *name, v8::Local<v8::ObjectTemplate> module);
-void SET_VALUE(v8::Isolate *isolate, v8::Local<v8::ObjectTemplate> 
+DLL_PUBLIC void SET_VALUE(v8::Isolate *isolate, v8::Local<v8::ObjectTemplate> 
   recv, const char *name, v8::Local<v8::Value> value);
-void SET_FAST_METHOD(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> exports, 
+DLL_PUBLIC void SET_FAST_METHOD(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> exports, 
   const char * name, v8::CFunction* fastCFunc, v8::FunctionCallback slowFunc);
-void SET_FAST_PROP(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> exports, 
+DLL_PUBLIC void SET_FAST_PROP(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> exports, 
   const char * name, v8::CFunction* fastGetter, v8::FunctionCallback slowGetter,
   v8::CFunction* fastSetter, v8::FunctionCallback slowSetter);
 
@@ -119,6 +168,7 @@ void Builtins(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Library(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Libraries(const v8::FunctionCallbackInfo<v8::Value> &args);
 void LoadModule(const v8::FunctionCallbackInfo<v8::Value> &args);
+void UnloadModule(const v8::FunctionCallbackInfo<v8::Value> &args);
 void EvaluateModule(const v8::FunctionCallbackInfo<v8::Value> &args);
 void SetModuleCallbacks(const v8::FunctionCallbackInfo<v8::Value> &args);
 void NextTick(const v8::FunctionCallbackInfo<v8::Value> &args);

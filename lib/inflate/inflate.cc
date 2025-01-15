@@ -111,7 +111,6 @@ v8::CFunction pFinflate2 = v8::CFunction((const void*)&inflate2Fast, &infoinflat
 #endif
 
 void inflateSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   Local<Uint8Array> u80 = args[0].As<Uint8Array>();
   uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
   unsigned char* v0 = reinterpret_cast<unsigned char*>(ptr0);
@@ -121,7 +120,7 @@ void inflateSlow(const FunctionCallbackInfo<Value> &args) {
   unsigned char* v2 = reinterpret_cast<unsigned char*>(ptr2);
   uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
   int32_t rc = em_inflate(v0, v1, v2, v3);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t inflateFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, uint32_t p3) {
@@ -132,13 +131,12 @@ int32_t inflateFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, st
   return em_inflate(v0, v1, v2, v3);
 }
 void inflate2Slow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   unsigned char* v0 = reinterpret_cast<unsigned char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   unsigned char* v2 = reinterpret_cast<unsigned char*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
   uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
   int32_t rc = em_inflate(v0, v1, v2, v3);
-  args.GetReturnValue().Set(Number::New(isolate, rc));
+  args.GetReturnValue().Set(rc);
 }
 
 int32_t inflate2Fast(void* p, void* p0, uint32_t p1, void* p2, uint32_t p3) {
@@ -184,8 +182,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 } // namespace inflate
 } // namespace lo
 
-extern "C" {
-  void* _register_inflate() {
+extern "C"  {
+  DLL_PUBLIC void* _register_inflate() {
     return (void*)lo::inflate::Init;
   }
 }
