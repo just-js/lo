@@ -26,6 +26,3 @@ lib/bestlines/bestline.c
 lib/bestlines/bestline.h
 lib/pico/picohttpparser.c
 lib/pico/picohttpparser.h
-globals.d.ts
-lib/globals.d.ts
-lib/apis.all.d.ts
