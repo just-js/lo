@@ -1,9 +1,12 @@
-interface eventCallback { ( fd: number, events: number ): void }
+const EPOLL_CLOEXEC = 524288
+const EPOLLIN = 0x1
 
-declare class Loop<T extends OS> {
-  constructor(nevents?: number, flags?: number);
+interface eventCallback { ( fd: number, events: number ): void };
+
+declare class Loop {
+  constructor(nevents?: 4096, flags?: EPOLL_CLOEXEC);
   readonly size: Number;
-  callbacks: Array<Function>;
+  callbacks: Array<function>;
   static readonly Writable: number;
   static readonly EdgeTriggered: number;
   static readonly Readable: number;
@@ -36,21 +39,13 @@ declare class Loop<T extends OS> {
    * @param flags optional flags - Loop.Readable | Loop.Writable | Loop.EdgeTriggered, default = Loop.Readable + Level Triggered
    * @param errHandler optional callback called when we get ERR or HUP on fd
    */
-  add(fd: number, callback: eventCallback, flags?: number, errHandler?: Function): number;
-  modify(fd: number, callback: eventCallback, flags?: number, errHandler?: Function): number;
-  remove: T extends 'linux'
-    ? (fd: number) => number
-    : T extends 'mac'
-      ? (fd: number, flags?: number) => number
-      : never;
+  add(fd: number, callback: eventCallback, flags?: EPOLLIN, errHandler?: function): number;
+  modify(fd: number, callback: eventCallback, flags?: EPOLLIN, errHandler?: function): number;
+  remove(fd: number): number;
   poll(timeout?: number): number;
-  close(): number;
-  add_data: T extends 'mac'
-    ? (fd: number, callback: Function, flags?: number, data?: Parameters<typeof BigInt>[number], onerror?: Function) => number
-    : never;
-}
+};
 
-export interface bindings<T extends OS = CurrentRuntimeGenerics['os']> {
-  Loop: T extends 'win' ? never : Loop<T>;
-}
+export interface bindings {
+  Loop: Loop;
+};
 

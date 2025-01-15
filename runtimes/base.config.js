@@ -1,5 +1,5 @@
 const bindings = [
-  'core',
+  'core', 
   'inflate',
   'curl',
   { mach: ['mac'] }
@@ -7,16 +7,15 @@ const bindings = [
 
 const libs = [
   'lib/curl.js',
-  'lib/gen.js',
-  'lib/fs.js',
-  'lib/untar.js',
-  'lib/proc.js',
+  'lib/gen.js', 
+  'lib/fs.js', 
+  'lib/untar.js', 
+  'lib/proc.js', 
   'lib/path.js',
   'lib/curl.js',
   'lib/inflate.js',
   'lib/build.js',
   'lib/stringify.js',
-  'lib/types.js',
 ]
 
 const embeds = [
