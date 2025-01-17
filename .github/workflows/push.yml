@@ -123,7 +123,7 @@ jobs:
           name: lo-linux-arm64
   
   build-windows:
-    if: ${{ false }}  # disable
+#    if: ${{ false }}  # disable
     name: windows
     runs-on: windows-latest
     strategy:
