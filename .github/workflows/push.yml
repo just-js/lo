@@ -9,39 +9,11 @@ jobs:
   build-mac:
 #    if: ${{ false }}  # disable
     name: mac
-    runs-on: macos-13
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [x64]
-    steps:
-      - uses: actions/checkout@v3
-      - name: compile runtime
-        run: |
-          make ARCH=${{ matrix.platform }} lo
-      - name: check
-        env:
-          LO_HOME: ${{ github.workspace }}
-        run: |
-          make check
-          pip install jsonschema
-          brew install lz4 zstd openssl@3
-          ./lo test/build.js
-          ./lo build runtime runtime/lo
-      - name: upload runtime artifact
-        uses: actions/upload-artifact@v3
-        with:
-          path: ${{ github.workspace }}/lo
-          name: lo-mac-${{ matrix.platform }}
-
-  build-mac-arm:
-#    if: ${{ false }}  # disable
-    name: mac
     runs-on: macos-14
     strategy:
       fail-fast: false
       matrix:
-        platform: [arm64]
+        platform: [x64,arm64]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v5
@@ -66,14 +38,14 @@ jobs:
           path: ${{ github.workspace }}/lo
           name: lo-mac-${{ matrix.platform }}
 
-  build-linux-x64:
+  build-linux:
 #    if: ${{ false }}  # disable
     name: linux-x64
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        platform: [x64]
+        platform: [x64,arm64]
     steps:
       - uses: actions/checkout@v3
       - name: install libcurl
@@ -82,7 +54,7 @@ jobs:
           sudo apt-get install -qy libcurl4-openssl-dev
       - name: compile
         run: |
-          make lo
+          make ARCH=${{ matrix.platform }} lo
       - name: check
         env:
           LO_HOME: ${{ github.workspace }}
@@ -95,31 +67,8 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           path: ${{ github.workspace }}/lo
-          name: lo-linux-x64
+          name: lo-linux-${{ matrix.platform }}
 
-  build-linux-arm:
-#    if: ${{ false }}  # disable
-    name: linux-arm64
-    runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [arm64]
-    steps:
-      - uses: actions/checkout@v3
-      - name: install libcurl
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -qy libcurl4-openssl-dev
-      - name: compile
-        run: |
-          make ARCH=arm64 lo
-      - name: upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          path: ${{ github.workspace }}/lo
-          name: lo-linux-arm64
-  
   build-windows:
 #    if: ${{ false }}  # disable
     name: windows
