@@ -98,24 +98,22 @@ jobs:
           name: lo-linux-x64
 
   build-linux-arm:
-    if: ${{ false }}  # disable
+#    if: ${{ false }}  # disable
     name: linux-arm64
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        platform: [x64]
+        platform: [arm64]
     steps:
       - uses: actions/checkout@v3
       - name: install libcurl
         run: |
+          sudo apt-get update -y
           sudo apt-get install -qy libcurl4-openssl-dev
-      - name: install arm64 tools
-        run: |
-          sudo apt-get install -qy binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
       - name: compile
         run: |
-          make ARCH=arm64 CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ lo
+          make ARCH=arm64 lo
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:

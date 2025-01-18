@@ -121,16 +121,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [x64]
+        platform: [arm64]
     steps:
       - uses: actions/checkout@v3
-      - name: install arm64 tools
+      - name: install libcurl
         run: |
           sudo apt-get update -y
-          sudo apt-get install -qy binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          sudo apt-get install -qy libcurl4-openssl-dev
       - name: compile
         run: |
-          make ARCH=arm64 C=aarch64-linux-gnu-gcc CC=aarch64-linux-gnu-g++ lo
+          make ARCH=arm64 lo
       - name: compress runtime
         run: |
           gzip -9 -c lo > lo-linux-arm64.gz
