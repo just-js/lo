@@ -77,7 +77,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [x64,arm64]
+        platform: [x64]
     steps:
       - uses: actions/checkout@v3
       - name: install libcurl
@@ -102,7 +102,7 @@ jobs:
           name: lo-linux-${{ matrix.platform }}
 
   build-windows:
-#    if: ${{ false }}  # disable
+    if: ${{ false }}  # disable
     name: windows
     runs-on: windows-2022
     strategy:
