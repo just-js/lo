@@ -101,6 +101,37 @@ jobs:
           path: ${{ github.workspace }}/lo
           name: lo-linux-${{ matrix.platform }}
 
+  build-linux-arm64:
+#    if: ${{ false }}  # disable
+    name: linux
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [arm64]
+    steps:
+      - uses: actions/checkout@v3
+      - name: install libcurl
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -qy libcurl4-openssl-dev clang
+      - name: compile
+        run: |
+          make CC=clang CXX=clang++ ARCH=${{ matrix.platform }} lo
+      - name: check
+        env:
+          LO_HOME: ${{ github.workspace }}
+        run: |
+          make check
+          sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
+          CC=clang CXX=clang++ ./lo test/build.js
+          CC=clang CXX=clang++ ./lo build runtime runtime/lo
+      - name: upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{ github.workspace }}/lo
+          name: lo-linux-${{ matrix.platform }}
+
   build-windows:
     if: ${{ false }}  # disable
     name: windows
