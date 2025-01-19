@@ -13,7 +13,39 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [x64,arm64]
+        platform: [arm64]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '^1.22.1'
+      - name: compile runtime
+        run: |
+          make ARCH=${{ matrix.platform }} lo
+      - name: check
+        env:
+          LO_HOME: ${{ github.workspace }}
+          PREFIX: /opt/homebrew/opt
+        run: |
+          make check
+          pip install jsonschema
+          brew install lz4 zstd openssl@3
+          ./lo test/build.js
+          ./lo build runtime runtime/lo
+      - name: upload runtime artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{ github.workspace }}/lo
+          name: lo-mac-${{ matrix.platform }}
+
+  build-mac-x64:
+#    if: ${{ false }}  # disable
+    name: mac-x64
+    runs-on: macos-13
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [x64]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v5
