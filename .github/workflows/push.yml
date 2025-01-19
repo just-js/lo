@@ -60,7 +60,7 @@ jobs:
           PREFIX: /opt/homebrew/opt
         run: |
           make check
-          pip install jsonschema
+          pip install jsonschema jinja2
           brew install lz4 zstd openssl@3
           ./lo test/build.js
           ./lo build runtime runtime/lo
