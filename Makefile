@@ -67,7 +67,7 @@ v8/libv8_monolith.a: ## download the v8 static libary for linux/macos
 
 v8/v8_monolith.lib: ## download the v8 static library for windows
 	curl -C - -L -o v8/v8_monolith.lib.zip https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.zip
-	tar -C v8 -xf v8/v8_monolith.lib.zip
+	unzip v8/v8_monolith.lib.zip
 
 main.o: ## compile the main.cc object file
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I./v8 -I./v8/include ${WARN} ${V8_FLAGS} main.cc

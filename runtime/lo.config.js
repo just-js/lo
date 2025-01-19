@@ -86,10 +86,10 @@ const embeds = [
 
 
 const target = 'lo'
-const opt = '-DV8_ATOMIC_OBJECT_FIELD_WRITES -O3 -march=native -mtune=native -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions'
+const opt = '-O3 -march=native -mtune=native -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions'
 
 const v8_opts = {
-  v8_cleanup: 0, v8_threads: 8, on_exit: 0,
+  v8_cleanup: 0, v8_threads: 2, on_exit: 0,
   v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init'
 //  v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --max-heap-size 1024'
 }

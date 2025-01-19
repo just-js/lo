@@ -10,6 +10,7 @@
 #ifdef __MACH__
 #include <mach/clock.h>
 #include <mach/mach.h>
+#include <unistd.h>
 #endif
 
 #if defined _WIN32 || defined __CYGWIN__
