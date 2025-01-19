@@ -90,12 +90,11 @@ jobs:
         platform: [x64,arm64]
     steps:
       - uses: actions/checkout@v3
-      - uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: ${{ matrix.platform }}
+      - name: Install MSVC/MCBuild (Windows)
+        uses: microsoft/setup-msbuild@v1.0.2
       - name: compile
         run: |
-          make lo.exe
+          make BINDINGS= ARCH=${{ matrix.platform }} lo.exe
       - name: check
         run: |
           make check
