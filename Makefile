@@ -6,7 +6,7 @@ CCARGS=-std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
 CARGS=-c -fno-omit-frame-pointer
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3
-VERSION=0.0.18-pre
+VERSION=0.0.19-pre
 V8_VERSION=12.9
 RUNTIME=lo
 LO_HOME=$(shell pwd)
@@ -15,7 +15,7 @@ ARCH=x64
 os=linux
 TARGET=${RUNTIME}
 LIBS=-ldl -lcurl -lssl -lz
-V8_FLAGS=-DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_INTL_SUPPORT=1
+V8_FLAGS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_INTL_SUPPORT=1
 LIB_DIRS=
 
 ifeq ($(OS),Windows_NT)
