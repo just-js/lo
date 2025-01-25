@@ -12,7 +12,6 @@ const libs = [
   'lib/untar.js', 
   'lib/proc.js', 
   'lib/path.js',
-  'lib/curl.js',
   'lib/inflate.js',
   'lib/build.js',
   'lib/stringify.js',

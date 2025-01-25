@@ -18,7 +18,6 @@ const bindings = [
 const libs = [
   'lib/bench.js', 
   'lib/binary.js', 
-  'lib/curl.js',
   'lib/ffi.js', 
   'lib/asm.js', 
   'lib/asm/assembler.js', 
