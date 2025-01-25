@@ -114,18 +114,18 @@ jobs:
       - name: install libcurl
         run: |
           sudo apt-get update -y
-          sudo apt-get install -qy libcurl4-openssl-dev clang
+          sudo apt-get install -qy libcurl4-openssl-dev
       - name: compile
         run: |
-          make CC=clang CXX=clang++ LINK=clang++ ARCH=${{ matrix.platform }} lo
+          make ARCH=${{ matrix.platform }} lo
       - name: check
         env:
           LO_HOME: ${{ github.workspace }}
         run: |
           make check
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
-          LINK=clang++ CC=clang CXX=clang++ ./lo test/build.js
-          LINK=clang++ CC=clang CXX=clang++ ./lo build runtime runtime/lo
+          ./lo test/build.js
+          ./lo build runtime runtime/lo
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
