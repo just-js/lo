@@ -4,13 +4,9 @@
 #include <em_inflate.h>
 
 
-#ifdef __linux__
 
-#endif
 
-#ifdef __MACH__
 
-#endif
 
 #include <lo.h>
 

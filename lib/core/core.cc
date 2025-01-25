@@ -37,9 +37,7 @@
 #include <sched.h>
 #endif
 
-#ifdef __MACH__
 
-#endif
 
 #include <lo.h>
 
