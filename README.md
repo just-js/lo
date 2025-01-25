@@ -39,6 +39,15 @@ make ARCH=arm64 lo
 make CC="clang" CXX="clang++" lo
 ```
 
+### building from a branch/tag
+
+```
+export LO_HOME=$(pwd)
+LO_VERSION=main make lo
+CC="ccache gcc" CXX="ccache g++" LO_VERSION=main ./lo build runtime runtime/lo
+```
+
+
 ### ccache and mold for fast rebuilds
 ```
 mold -run make C="ccache gcc" CC="ccache g++" lo

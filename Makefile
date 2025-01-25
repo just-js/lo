@@ -2,8 +2,8 @@ CC=clang
 CXX=clang++
 LINK=clang++
 LARGS=-rdynamic -pthread -static-libstdc++
-CCARGS=-std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
-CARGS=-c -fno-omit-frame-pointer
+CCARGS=-fPIC -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions -fvisibility=hidden
+CARGS=-fPIC -c -fno-omit-frame-pointer -fvisibility=hidden
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3
 VERSION=0.0.19-pre
