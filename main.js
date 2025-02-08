@@ -58,7 +58,6 @@ function wrap (handle, fn, plen = 0) {
     'call',
     `return function ${fn.name} (${params}) {
     call(${params}${plen > 0 ? ', ' : ''}handle);
-    const v = handle[0] + ((2 ** 32) * handle[1])
     return handle[0] + ((2 ** 32) * handle[1]);
   }`,)
   const fun = f(handle, call)
@@ -495,7 +494,7 @@ function show_usage () {
 }
 
 function get_lines_for_error (file_name, line_num, col_num) {
-  console.log(`get_lines_for_error ${file_name}`)
+//  console.log(`get_lines_for_error ${file_name}`)
   if (lo.builtins().includes(file_name)) {
     return builtin(file_name)
       .split('\n')
@@ -507,7 +506,7 @@ function get_lines_for_error (file_name, line_num, col_num) {
     return lo.module_cache.get(file_name).src
       .split('\n')
       .slice(line_num - 5, line_num + 5)
-      .map((l, i) => `${AY}${(i + line_num - 4).toString().padStart(4, ' ')}${AD}: ${i === 5 ? AM : ''}${l}${AD}`)
+      .map((l, i) => `${AY}${(i + line_num - 4).toString().padStart(4, ' ')}${AD}: ${i === 4 ? AM : ''}${l}${AD}`)
       .join('\n')
   }
   // we might have failed importing the module, which means it won't be in the cache, so try to read it from the path
@@ -516,35 +515,36 @@ function get_lines_for_error (file_name, line_num, col_num) {
     return src
       .split('\n')
       .slice(line_num - 5, line_num + 5)
-      .map((l, i) => `${AY}${(i + line_num - 4).toString().padStart(4, ' ')}${AD}: ${i === 5 ? AM : ''}${l}${AD}`)
+      .map((l, i) => `${AY}${(i + line_num - 4).toString().padStart(4, ' ')}${AD}: ${i === 4 ? AM : ''}${l}${AD}`)
       .join('\n')
 
   } catch (err) {
     // eat the exception
-    console.log(`error loading ${file_name}`)
-    console.log(err.stack)
+//    console.log(`error loading ${file_name}`)
+//    console.log(err.stack)
   }
   return ''
 }
 
-const rx_err = /\(?([\w\/\.-_]+):(\d+):(\d+)\)?/
+const rx_err = /\(?([\w\/\.\-_]+):(\d+):(\d+)\)?/
 
 function handle_error (err) {
   const { stack } = err
-  const stack_lines = stack.split('\n')
-  console.log(stack_lines)
-  if (stack_lines.length > 1) {
-    const match = rx_err.exec(stack_lines[1])
-    if (match && match.length > 3) {
-      const file_name = match[1].trim()
-      const line_num = parseInt(match[2], 10)
-      const col_num = parseInt(match[3], 10)
-      const lines = get_lines_for_error(file_name, line_num, col_num)
-      console.error(`${AR}Error${AD} ${err.message}${AD}\n${stack.split('\n').slice(1).join('\n')}`)
-      console.error(lines)
-      return
+  try {
+    const stack_lines = stack.split('\n')
+    if (stack_lines.length > 1) {
+      const match = rx_err.exec(stack_lines[1])
+      if (match && match.length > 3) {
+        const file_name = match[1].trim()
+        const line_num = parseInt(match[2], 10)
+        const col_num = parseInt(match[3], 10)
+        const lines = get_lines_for_error(file_name, line_num, col_num)
+        console.error(`${AR}Error${AD} ${err.message}${AD}\n${stack.split('\n').slice(1).join('\n')}`)
+        console.error(lines)
+        return
+      }
     }
-  }
+  } catch (err) {}
   console.error(`${AR}Error${AD} ${err.message}${AD}\n${stack.split('\n').slice(1).join('\n')}`)
 }
 
