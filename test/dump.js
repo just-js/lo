@@ -48,8 +48,12 @@ ${AG}v8${AD}         ${lo.version.v8}`)
   for (const builtin of builtins) {
     console.log(`  ${AM}${builtin.padEnd(32, ' ')}${AD}: ${lo.builtin(builtin).length} bytes`)
     if (extName(builtin) === 'js' && builtin !== 'main.js') {
-      const lib = await import(builtin)
-      dump_object(lib, builtin)
+      try {
+        const lib = await import(builtin)
+        dump_object(lib, builtin)
+      } catch (err) {
+        lo.handle_error(err)
+      }
     }
   }
   console.log(`${AG}bindings${AD}`)
