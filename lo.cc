@@ -1293,6 +1293,11 @@ int32_t lo::fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString*
   return p_str->length;
 }
 
+void lo::GetIsolateStartAddress(const FunctionCallbackInfo<Value> &args) {
+  Local<ArrayBuffer> ab = args[0].As<Uint32Array>()->Buffer();
+  ((void**)ab->Data())[0] = (void*)&lo_start_isolate;
+}
+
 void lo::Print(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   if (args[0].IsEmpty()) return;
@@ -1452,6 +1457,7 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "loadModule", LoadModule);
   SET_METHOD(isolate, target, "unloadModule", UnloadModule);
   SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
+  SET_METHOD(isolate, target, "isolate_start_address", GetIsolateStartAddress);
 
   SET_METHOD(isolate, target, "latin1Decode", Latin1Decode);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);

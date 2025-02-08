@@ -29,13 +29,8 @@
   #endif
   #define DLL_LOCAL
 #else
-  #if __GNUC__ >= 4
-    #define DLL_PUBLIC __attribute__ ((visibility ("default")))
-    #define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
-  #else
-    #define DLL_PUBLIC
-    #define DLL_LOCAL
-  #endif
+  #define DLL_PUBLIC __attribute__ ((visibility ("default")))
+  #define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
 #endif
 
 using v8::ArrayBuffer;
@@ -188,6 +183,7 @@ void WrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
 void UnWrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
 void GetMeta(const v8::FunctionCallbackInfo<v8::Value> &args);
 void HeapUsage(const v8::FunctionCallbackInfo<v8::Value> &args);
+void GetIsolateStartAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
 
 // fast api methods
 void GetAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
@@ -256,7 +252,7 @@ void lo_create_isolate_context (int argc, char** argv,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname,
   int cleanup, int onexit, void* startup_data, struct isolate_context* ctx);
-void lo_start_isolate (void* ptr);
+DLL_PUBLIC void lo_start_isolate (void* ptr);
 void lo_destroy_isolate_context (struct isolate_context* ctx);
 
 struct exec_info {
@@ -272,7 +268,7 @@ struct callback_state {
   exec_info** contexts;
 };
 
-void lo_callback (exec_info* info);
+DLL_PUBLIC void lo_callback (exec_info* info);
 void lo_async_callback (exec_info* info, callback_state* state);
 
 void lo_shutdown (int cleanup);

@@ -2,12 +2,12 @@ CC=clang
 CXX=clang++
 LINK=clang++
 LARGS=-rdynamic -pthread -static-libstdc++
-CCARGS=-std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
-CARGS=-c -fno-omit-frame-pointer
+CCARGS=-fPIC -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions -fvisibility=hidden
+CARGS=-fPIC -c -fno-omit-frame-pointer -fvisibility=hidden
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3
-VERSION=0.0.18-pre
-V8_VERSION=12.9
+VERSION=0.0.19-pre
+V8_VERSION=13.1
 RUNTIME=lo
 LO_HOME=$(shell pwd)
 BINDINGS=core.o inflate.a curl.o
@@ -15,7 +15,7 @@ ARCH=x64
 os=linux
 TARGET=${RUNTIME}
 LIBS=-ldl -lcurl -lssl -lz
-V8_FLAGS=-DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_INTL_SUPPORT=1
+V8_FLAGS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS
 LIB_DIRS=
 
 ifeq ($(OS),Windows_NT)
