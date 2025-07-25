@@ -66,6 +66,7 @@ function wrap (handle, fn, plen = 0) {
 }
 
 function ptr (u8) {
+  if (u8.ptr) return u8
   u8.ptr = lo.getAddress(u8)
   u8.size = u8.byteLength
   return u8
@@ -382,6 +383,7 @@ lo.colors = { AD, A0, AR, AG, AY, AB, AM, AC, AW }
 lo.builtin = on_load_builtin
 lo.utf8Encode = utf8Encode
 lo.load = load
+lo._hrtime = hrtime
 lo.hrtime = wrap(handle, hrtime, 0)
 lo.getAddress = wrap(handle, getAddress, 1)
 lo.assert = assert

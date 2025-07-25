@@ -1,3 +1,4 @@
+#include <map>
 #include "lo.h"
 
 using v8::String;
@@ -54,7 +55,6 @@ using v8::kPromiseRejectAfterResolved;
 using v8::kPromiseResolveAfterResolved;
 using v8::kPromiseHandlerAddedAfterReject;
 using v8::Script;
-using v8::HeapSpaceStatistics;
 using v8::HeapStatistics;
 using v8::BigUint64Array;
 
@@ -631,6 +631,7 @@ int lo::CreateIsolate(int argc, char** argv,
     close(fd);
 */
 
+    errno = 0;
     module->Evaluate(context).ToLocalChecked();
     if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
       try_catch.ReThrow();
@@ -1119,9 +1120,34 @@ void lo::WrapMemory(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(ab);
 }
 
+// todo: need this for sharedarraybuffer
+void lo::WrapMemoryShared(const FunctionCallbackInfo<Value> &args) {
+  Isolate* isolate = args.GetIsolate();
+//  HandleScope scope(isolate);
+  uint64_t start64 = (uint64_t)Local<Number>::Cast(args[0])->Value();
+  uint32_t size = (uint32_t)Local<Integer>::Cast(args[1])->Value();
+  void* start = reinterpret_cast<void*>(start64);
+  int32_t free_memory = 0;
+  if (args.Length() > 2) {
+    free_memory = (int32_t)Local<Integer>::Cast(args[2])->Value();
+  }
+  if (free_memory == 0) {
+    std::unique_ptr<BackingStore> backing = SharedArrayBuffer::NewBackingStore(
+        start, size, v8::BackingStore::EmptyDeleter, nullptr);
+    Local<SharedArrayBuffer> ab = SharedArrayBuffer::New(isolate, std::move(backing));
+    args.GetReturnValue().Set(ab);
+    return;
+  }
+  std::unique_ptr<BackingStore> backing = SharedArrayBuffer::NewBackingStore(
+      start, size, lo::FreeMemory, nullptr);
+  Local<SharedArrayBuffer> ab = SharedArrayBuffer::New(isolate, std::move(backing));
+  args.GetReturnValue().Set(ab);
+}
+
 void lo::UnWrapMemory(const FunctionCallbackInfo<Value> &args) {
   Local<ArrayBuffer> ab = args[0].As<ArrayBuffer>();
   ab->Detach();
+  // todo: return pointer here so we don't need to get it before
 }
 
 void lo::SetFlags(const FunctionCallbackInfo<Value> &args) {
@@ -1475,6 +1501,7 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
     &pFutf8encodeintoatoffset, Utf8EncodeIntoAtOffset);
 
   SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
+  SET_METHOD(isolate, target, "wrapMemoryShared", WrapMemoryShared);
   SET_METHOD(isolate, target, "unwrapMemory", UnWrapMemory);
   SET_FAST_METHOD(isolate, target, "getAddress", &pFgetaddress, GetAddress);
   SET_FAST_METHOD(isolate, target, "readMemory", &pFreadmemory, ReadMemory);
@@ -1555,7 +1582,15 @@ void lo_destroy_isolate_context (struct isolate_context* ctx) {
 //    Isolate* isolate = (Isolate*)ctx->startup_data;
 //    cleanupIsolate(isolate);
 //  }
-  free(ctx);
+//  free(ctx);
+  free(ctx->main);
+  free(ctx->js);
+  for (int i = 0; i < ctx->argc; i++) {
+    free(ctx->argv[i]);
+  }
+  free(ctx->argv);
+  free(ctx->globalobj);
+  free(ctx->scriptname);
 }
 
 // generic callback used to trampoline ffi callbacks back into JS
