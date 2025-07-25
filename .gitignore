@@ -26,3 +26,5 @@ lib/bestlines/bestline.c
 lib/bestlines/bestline.h
 lib/pico/picohttpparser.c
 lib/pico/picohttpparser.h
+.cache
+compile_commands.json

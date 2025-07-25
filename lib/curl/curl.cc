@@ -17,7 +17,6 @@ namespace curl {
 
 using v8::String;
 using v8::FunctionCallbackInfo;
-using v8::Array;
 using v8::Local;
 using v8::ObjectTemplate;
 using v8::Isolate;
@@ -27,46 +26,18 @@ using v8::ArrayBuffer;
 using v8::Context;
 using v8::Integer;
 using v8::Function;
-using v8::NewStringType;
 using v8::Object;
-using v8::BackingStore;
-using v8::TryCatch;
-using v8::ScriptCompiler;
-using v8::Module;
-using v8::FixedArray;
-using v8::ScriptOrigin;
-using v8::SharedArrayBuffer;
-using v8::MaybeLocal;
 using v8::HandleScope;
-using v8::Promise;
 using v8::Number;
-using v8::StackTrace;
-using v8::Message;
-using v8::StackFrame;
-using v8::Maybe;
 using v8::FunctionTemplate;
 using v8::FunctionCallback;
-using v8::PromiseRejectMessage;
 using v8::CFunction;
-using v8::Global;
-using v8::Exception;
 using v8::CTypeInfo;
-using v8::PropertyAttribute;
 using v8::Signature;
 using v8::ConstructorBehavior;
 using v8::SideEffectType;
-using v8::kPromiseRejectAfterResolved;
-using v8::kPromiseResolveAfterResolved;
-using v8::kPromiseHandlerAddedAfterReject;
-using v8::Data;
-using v8::PrimitiveArray;
-using v8::TypedArray;
 using v8::Uint8Array;
-using v8::Boolean;
-using v8::ModuleRequest;
 using v8::CFunctionInfo;
-using v8::OOMDetails;
-using v8::V8;
 using v8::BigInt;
 
 
@@ -179,6 +150,28 @@ v8::CTypeInfo rceasy_setopt_3 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoeasy_setopt_3 = v8::CFunctionInfo(rceasy_setopt_3, 4, cargseasy_setopt_3);
 v8::CFunction pFeasy_setopt_3 = v8::CFunction((const void*)&easy_setopt_3Fast, &infoeasy_setopt_3);
 
+int32_t easy_setopt_4Fast(void* p, void* p0, uint32_t p1, void* p2);
+v8::CTypeInfo cargseasy_setopt_4[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rceasy_setopt_4 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoeasy_setopt_4 = v8::CFunctionInfo(rceasy_setopt_4, 4, cargseasy_setopt_4);
+v8::CFunction pFeasy_setopt_4 = v8::CFunction((const void*)&easy_setopt_4Fast, &infoeasy_setopt_4);
+
+int32_t easy_setopt_5Fast(void* p, void* p0, uint32_t p1, void* p2);
+v8::CTypeInfo cargseasy_setopt_5[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rceasy_setopt_5 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
+v8::CFunctionInfo infoeasy_setopt_5 = v8::CFunctionInfo(rceasy_setopt_5, 4, cargseasy_setopt_5);
+v8::CFunction pFeasy_setopt_5 = v8::CFunction((const void*)&easy_setopt_5Fast, &infoeasy_setopt_5);
+
 int32_t easy_performFast(void* p, void* p0);
 v8::CTypeInfo cargseasy_perform[2] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
@@ -216,6 +209,26 @@ v8::CTypeInfo cargseasy_getinfo[4] = {
 v8::CTypeInfo rceasy_getinfo = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoeasy_getinfo = v8::CFunctionInfo(rceasy_getinfo, 4, cargseasy_getinfo);
 v8::CFunction pFeasy_getinfo = v8::CFunction((const void*)&easy_getinfoFast, &infoeasy_getinfo);
+
+void slist_appendFast(void* p, void* p0, void* p1, struct FastApiTypedArray* const p_ret);
+v8::CTypeInfo cargsslist_append[4] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+};
+v8::CTypeInfo rcslist_append = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoslist_append = v8::CFunctionInfo(rcslist_append, 4, cargsslist_append);
+v8::CFunction pFslist_append = v8::CFunction((const void*)&slist_appendFast, &infoslist_append);
+
+void slist_free_allFast(void* p, void* p0);
+v8::CTypeInfo cargsslist_free_all[2] = {
+  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+};
+v8::CTypeInfo rcslist_free_all = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
+v8::CFunctionInfo infoslist_free_all = v8::CFunctionInfo(rcslist_free_all, 2, cargsslist_free_all);
+v8::CFunction pFslist_free_all = v8::CFunction((const void*)&slist_free_allFast, &infoslist_free_all);
 
 #ifdef __linux__
 
@@ -355,6 +368,34 @@ int32_t easy_setopt_3Fast(void* p, void* p0, uint32_t p1, uint64_t p2) {
   uint64_t v2 = p2;
   return curl_easy_setopt(v0, (CURLoption)v1, v2);
 }
+void easy_setopt_4Slow(const FunctionCallbackInfo<Value> &args) {
+  CURL* v0 = reinterpret_cast<CURL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  struct curl_slist * v2 = reinterpret_cast<struct curl_slist *>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  int32_t rc = curl_easy_setopt(v0, (CURLoption)v1, v2);
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t easy_setopt_4Fast(void* p, void* p0, uint32_t p1, void* p2) {
+  CURL* v0 = reinterpret_cast<CURL*>(p0);
+  uint32_t v1 = p1;
+  struct curl_slist * v2 = reinterpret_cast<struct curl_slist *>(p2);
+  return curl_easy_setopt(v0, (CURLoption)v1, v2);
+}
+void easy_setopt_5Slow(const FunctionCallbackInfo<Value> &args) {
+  CURL* v0 = reinterpret_cast<CURL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  char* v2 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  int32_t rc = curl_easy_setopt(v0, (CURLoption)v1, v2);
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t easy_setopt_5Fast(void* p, void* p0, uint32_t p1, void* p2) {
+  CURL* v0 = reinterpret_cast<CURL*>(p0);
+  uint32_t v1 = p1;
+  char* v2 = reinterpret_cast<char*>(p2);
+  return curl_easy_setopt(v0, (CURLoption)v1, v2);
+}
 void easy_performSlow(const FunctionCallbackInfo<Value> &args) {
   CURL* v0 = reinterpret_cast<CURL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = curl_easy_perform(v0);
@@ -399,6 +440,30 @@ int32_t easy_getinfoFast(void* p, void* p0, uint32_t p1, struct FastApiTypedArra
   void* v2 = reinterpret_cast<void*>(p2->data);
   return curl_easy_getinfo(v0, (CURLINFO)v1, v2);
 }
+void slist_appendSlow(const FunctionCallbackInfo<Value> &args) {
+  struct curl_slist* v0 = reinterpret_cast<struct curl_slist*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  const char* v1 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  struct curl_slist* rc = curl_slist_append(v0, v1);
+  Local<ArrayBuffer> ab = args[2].As<Uint32Array>()->Buffer();
+  ((struct curl_slist**)ab->Data())[0] = rc;
+}
+
+void slist_appendFast(void* p, void* p0, void* p1, struct FastApiTypedArray* const p_ret) {
+  struct curl_slist* v0 = reinterpret_cast<struct curl_slist*>(p0);
+  const char* v1 = reinterpret_cast<const char*>(p1);
+  struct curl_slist* r = curl_slist_append(v0, v1);
+  ((struct curl_slist**)p_ret->data)[0] = r;
+
+}
+void slist_free_allSlow(const FunctionCallbackInfo<Value> &args) {
+  struct curl_slist* v0 = reinterpret_cast<struct curl_slist*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  curl_slist_free_all(v0);
+}
+
+void slist_free_allFast(void* p, void* p0) {
+  struct curl_slist* v0 = reinterpret_cast<struct curl_slist*>(p0);
+  curl_slist_free_all(v0);
+}
 #ifdef __linux__
 
 #endif
@@ -417,10 +482,14 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "easy_setopt", &pFeasy_setopt, easy_setoptSlow);
   SET_FAST_METHOD(isolate, module, "easy_setopt_2", &pFeasy_setopt_2, easy_setopt_2Slow);
   SET_FAST_METHOD(isolate, module, "easy_setopt_3", &pFeasy_setopt_3, easy_setopt_3Slow);
+  SET_FAST_METHOD(isolate, module, "easy_setopt_4", &pFeasy_setopt_4, easy_setopt_4Slow);
+  SET_FAST_METHOD(isolate, module, "easy_setopt_5", &pFeasy_setopt_5, easy_setopt_5Slow);
   SET_FAST_METHOD(isolate, module, "easy_perform", &pFeasy_perform, easy_performSlow);
   SET_FAST_METHOD(isolate, module, "easy_cleanup", &pFeasy_cleanup, easy_cleanupSlow);
   SET_FAST_METHOD(isolate, module, "global_cleanup", &pFglobal_cleanup, global_cleanupSlow);
   SET_FAST_METHOD(isolate, module, "easy_getinfo", &pFeasy_getinfo, easy_getinfoSlow);
+  SET_FAST_METHOD(isolate, module, "slist_append", &pFslist_append, slist_appendSlow);
+  SET_FAST_METHOD(isolate, module, "slist_free_all", &pFslist_free_all, slist_free_allSlow);
 
 #ifdef __linux__
 
@@ -444,6 +513,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "CURLOPT_ERRORBUFFER", Integer::New(isolate, (int32_t)CURLOPT_ERRORBUFFER));
   SET_VALUE(isolate, module, "CURLOPT_HEADER", Integer::New(isolate, (int32_t)CURLOPT_HEADER));
   SET_VALUE(isolate, module, "CURLOPT_USERAGENT", Integer::New(isolate, (int32_t)CURLOPT_USERAGENT));
+  SET_VALUE(isolate, module, "CURLOPT_HTTPHEADER", Integer::New(isolate, (int32_t)CURLOPT_HTTPHEADER));
+  SET_VALUE(isolate, module, "CURLOPT_REFERER", Integer::New(isolate, (int32_t)CURLOPT_REFERER));
 
 #ifdef __linux__
 
@@ -453,9 +524,11 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 #endif
 
 #ifdef __MACH__
+  SET_VALUE(isolate, module, "struct_curl_slist_size", Integer::New(isolate, sizeof(curl_slist)));
 
 #endif
 #ifdef __linux__
+  SET_VALUE(isolate, module, "struct_curl_slist_size", Integer::New(isolate, sizeof(curl_slist)));
 
 #endif
   SET_MODULE(isolate, target, "curl", module);

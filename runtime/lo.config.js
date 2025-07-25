@@ -13,6 +13,7 @@ const bindings = [
   { 'epoll': ['linux'] },
   { 'kevents': ['mac'] },
   { 'mach': ['mac'] },
+  'zlib'
 ]
 
 const libs = [
@@ -46,7 +47,6 @@ const libs = [
   'lib/worker.js',
   'lib/udp.js',
   'lib/pmon.js',
-  'lib/bench.mjs',
   'lib/dns.js',
   'lib/dns/protocol.js',
   'lib/socket.js',
@@ -89,7 +89,7 @@ const opt = '-O3 -march=native -mtune=native -std=c++20 -c -fno-omit-frame-point
 
 const v8_opts = {
   v8_cleanup: 0, v8_threads: 2, on_exit: 0,
-  v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --cppgc-young-generation'
+  v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init'
 }
 
 let link_type = '-rdynamic'
