@@ -28,3 +28,6 @@ lib/pico/picohttpparser.c
 lib/pico/picohttpparser.h
 .cache
 compile_commands.json
+node_modules
+lib/lines/linenoise.h
+lib/lines/linenoise.c

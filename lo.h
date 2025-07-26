@@ -35,11 +35,9 @@
   #define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
 #endif
 
-using v8::ArrayBuffer;
-
 namespace lo {
 
-class SpecialArrayBufferAllocator : public ArrayBuffer::Allocator {
+class SpecialArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
  public:
   void* Allocate(size_t length) override { 
     return calloc(length, 1); 
