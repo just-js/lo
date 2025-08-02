@@ -1,7 +1,7 @@
 CC=clang
 CXX=clang++
 LINK=clang++
-LARGS=-rdynamic -pthread -static-libstdc++ -fuse-ld=lld
+LARGS=-rdynamic -pthread -static-libstdc++
 CCARGS=-fPIC -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions -fvisibility=hidden
 CARGS=-fPIC -c -fno-omit-frame-pointer -fvisibility=hidden
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
@@ -24,11 +24,11 @@ else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Linux)
 		os=linux
-		LARGS+=-s -static-libgcc
+		LARGS+=-s -static-libgcc -fuse-ld=lld
 	else ifeq ($(UNAME_S),Darwin)
 		os=mac
 		BINDINGS+=mach.o
-		LARGS+=-s -w
+		LARGS+=-s -w -framework CoreFoundation
 		LIB_DIRS+=-L"/opt/homebrew/lib"
 		ifeq ($(ARCH),arm64)
 			LARGS+=-arch arm64

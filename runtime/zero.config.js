@@ -2,7 +2,10 @@ const bindings = []
 const libs = []
 const embeds = []
 const target = 'zero' 
-const link_type = '-static -fuse-ld=lld'
+const link_type = '-static'
+if (lo.core.os === 'linux') link_type += ' -fuse-ld=lld'
+if (lo.core.os === 'mac') link_type += ' -w -framework CoreFoundation'
+
 const opt = '-O3 -march=native -mtune=native -std=c++20 -fomit-frame-pointer -fno-rtti -fno-exceptions -fvisibility=hidden'
 const v8_opts = {
   v8_cleanup: 0, v8_threads: 1, on_exit: 0,
