@@ -136,11 +136,11 @@ v8::CTypeInfo* CTypeFromV8 (uint8_t v8Type) {
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString);
   if (v8Type == lo::FastTypes::buffer) {
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint8,
-      v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
+      v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone);
   }
   if (v8Type == lo::FastTypes::u32array) {
     return new v8::CTypeInfo(v8::CTypeInfo::Type::kUint32,
-      v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone);
+      v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone);
   }
   return new v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 }
@@ -374,7 +374,7 @@ v8::CTypeInfo cargsdlopen[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcdlopen = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infodlopen = v8::CFunctionInfo(rcdlopen, 4, cargsdlopen);
@@ -385,7 +385,7 @@ v8::CTypeInfo cargsdlsym[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcdlsym = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infodlsym = v8::CFunctionInfo(rcdlsym, 4, cargsdlsym);
@@ -404,7 +404,7 @@ void dlerrorFast(void* p, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargsdlerror[2] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
 
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcdlerror = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infodlerror = v8::CFunctionInfo(rcdlerror, 2, cargsdlerror);
@@ -414,7 +414,7 @@ int32_t readFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32_
 v8::CTypeInfo cargsread[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
 };
 v8::CTypeInfo rcread = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
@@ -436,7 +436,7 @@ int32_t writeFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32
 v8::CTypeInfo cargswrite[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
 };
 v8::CTypeInfo rcwrite = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
@@ -484,7 +484,7 @@ int32_t preadFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int32
 v8::CTypeInfo cargspread[5] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
 };
@@ -507,7 +507,7 @@ int32_t fstatFast(void* p, int32_t p0, struct FastApiTypedArray* const p1);
 v8::CTypeInfo cargsfstat[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rcfstat = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infofstat = v8::CFunctionInfo(rcfstat, 3, cargsfstat);
@@ -549,7 +549,7 @@ int32_t statFast(void* p, struct FastOneByteString* const p0, struct FastApiType
 v8::CTypeInfo cargsstat[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rcstat = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infostat = v8::CFunctionInfo(rcstat, 3, cargsstat);
@@ -559,7 +559,7 @@ int32_t lstatFast(void* p, struct FastOneByteString* const p0, struct FastApiTyp
 v8::CTypeInfo cargslstat[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rclstat = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infolstat = v8::CFunctionInfo(rclstat, 3, cargslstat);
@@ -609,7 +609,7 @@ void readdirFast(void* p, void* p0, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargsreaddir[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcreaddir = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo inforeaddir = v8::CFunctionInfo(rcreaddir, 3, cargsreaddir);
@@ -619,7 +619,7 @@ uint32_t readlinkFast(void* p, struct FastOneByteString* const p0, struct FastAp
 v8::CTypeInfo cargsreadlink[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
 };
 v8::CTypeInfo rcreadlink = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
@@ -630,7 +630,7 @@ void opendirFast(void* p, struct FastOneByteString* const p0, struct FastApiType
 v8::CTypeInfo cargsopendir[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcopendir = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infoopendir = v8::CFunctionInfo(rcopendir, 3, cargsopendir);
@@ -641,7 +641,7 @@ v8::CTypeInfo cargsfstatat[5] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
 };
 v8::CTypeInfo rcfstatat = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
@@ -711,7 +711,7 @@ v8::CTypeInfo cargsmemcpy[5] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcmemcpy = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infomemcpy = v8::CFunctionInfo(rcmemcpy, 5, cargsmemcpy);
@@ -723,7 +723,7 @@ v8::CTypeInfo cargsmemset[5] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcmemset = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infomemset = v8::CFunctionInfo(rcmemset, 5, cargsmemset);
@@ -735,7 +735,7 @@ v8::CTypeInfo cargsmemmove[5] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcmemmove = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infomemmove = v8::CFunctionInfo(rcmemmove, 5, cargsmemmove);
@@ -770,7 +770,7 @@ v8::CTypeInfo cargsmmap[8] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcmmap = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infommap = v8::CFunctionInfo(rcmmap, 8, cargsmmap);
@@ -801,7 +801,7 @@ void mallocFast(void* p, uint32_t p0, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargsmalloc[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcmalloc = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infomalloc = v8::CFunctionInfo(rcmalloc, 3, cargsmalloc);
@@ -812,7 +812,7 @@ v8::CTypeInfo cargscalloc[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rccalloc = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infocalloc = v8::CFunctionInfo(rccalloc, 4, cargscalloc);
@@ -823,7 +823,7 @@ v8::CTypeInfo cargsrealloc[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcrealloc = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo inforealloc = v8::CFunctionInfo(rcrealloc, 4, cargsrealloc);
@@ -834,7 +834,7 @@ v8::CTypeInfo cargsaligned_alloc[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcaligned_alloc = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infoaligned_alloc = v8::CFunctionInfo(rcaligned_alloc, 4, cargsaligned_alloc);
@@ -862,7 +862,7 @@ void getenvFast(void* p, struct FastOneByteString* const p0, struct FastApiTyped
 v8::CTypeInfo cargsgetenv[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcgetenv = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infogetenv = v8::CFunctionInfo(rcgetenv, 3, cargsgetenv);
@@ -930,7 +930,7 @@ v8::CTypeInfo cargsgetcwd[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcgetcwd = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infogetcwd = v8::CFunctionInfo(rcgetcwd, 4, cargsgetcwd);
@@ -968,7 +968,7 @@ int32_t waitpidFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, int
 v8::CTypeInfo cargswaitpid[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
 };
 v8::CTypeInfo rcwaitpid = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
@@ -979,7 +979,7 @@ int32_t execvpFast(void* p, struct FastOneByteString* const p0, struct FastApiTy
 v8::CTypeInfo cargsexecvp[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rcexecvp = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoexecvp = v8::CFunctionInfo(rcexecvp, 3, cargsexecvp);
@@ -989,8 +989,8 @@ int32_t execveFast(void* p, struct FastOneByteString* const p0, struct FastApiTy
 v8::CTypeInfo cargsexecve[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rcexecve = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoexecve = v8::CFunctionInfo(rcexecve, 4, cargsexecve);
@@ -1009,7 +1009,7 @@ int32_t tcgetattrFast(void* p, int32_t p0, struct FastApiTypedArray* const p1);
 v8::CTypeInfo cargstcgetattr[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rctcgetattr = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infotcgetattr = v8::CFunctionInfo(rctcgetattr, 3, cargstcgetattr);
@@ -1020,7 +1020,7 @@ v8::CTypeInfo cargstcsetattr[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rctcsetattr = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infotcsetattr = v8::CFunctionInfo(rctcsetattr, 4, cargstcsetattr);
@@ -1048,7 +1048,7 @@ int32_t getrusageFast(void* p, int32_t p0, struct FastApiTypedArray* const p1);
 v8::CTypeInfo cargsgetrusage[3] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rcgetrusage = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infogetrusage = v8::CFunctionInfo(rcgetrusage, 3, cargsgetrusage);
@@ -1057,7 +1057,7 @@ v8::CFunction pFgetrusage = v8::CFunction((const void*)&getrusageFast, &infogetr
 uint32_t timesFast(void* p, struct FastApiTypedArray* const p0);
 v8::CTypeInfo cargstimes[2] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rctimes = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
 v8::CFunctionInfo infotimes = v8::CFunctionInfo(rctimes, 2, cargstimes);
@@ -1066,7 +1066,7 @@ v8::CFunction pFtimes = v8::CFunction((const void*)&timesFast, &infotimes);
 void isolate_context_destroyFast(void* p, struct FastApiTypedArray* const p0);
 v8::CTypeInfo cargsisolate_context_destroy[2] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rcisolate_context_destroy = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infoisolate_context_destroy = v8::CFunctionInfo(rcisolate_context_destroy, 2, cargsisolate_context_destroy);
@@ -1088,7 +1088,7 @@ v8::CTypeInfo cargsmemmem[6] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcmemmem = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infomemmem = v8::CFunctionInfo(rcmemmem, 6, cargsmemmem);
@@ -1151,7 +1151,7 @@ v8::CTypeInfo cargsioctl[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rcioctl = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoioctl = v8::CFunctionInfo(rcioctl, 4, cargsioctl);
@@ -1258,8 +1258,8 @@ int32_t vexecveFast(void* p, struct FastOneByteString* const p0, struct FastApiT
 v8::CTypeInfo cargsvexecve[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rcvexecve = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infovexecve = v8::CFunctionInfo(rcvexecve, 4, cargsvexecve);
@@ -1269,8 +1269,8 @@ int32_t vfexecveFast(void* p, int32_t p0, struct FastApiTypedArray* const p1, st
 v8::CTypeInfo cargsvfexecve[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rcvfexecve = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infovfexecve = v8::CFunctionInfo(rcvfexecve, 4, cargsvfexecve);

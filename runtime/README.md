@@ -35,3 +35,11 @@ to build the runtime:
 ```shell
 lo build runtime runtime/lo
 ```
+
+## zero.config.js
+
+a minimal runtime with static linking to produce the smallest possible binary
+
+```shell
+lo build runtime runtime/zero
+```

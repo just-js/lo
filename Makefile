@@ -1,13 +1,13 @@
 CC=clang
 CXX=clang++
 LINK=clang++
-LARGS=-rdynamic -pthread -static-libstdc++
+LARGS=-rdynamic -pthread -static-libstdc++ -fuse-ld=lld
 CCARGS=-fPIC -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions -fvisibility=hidden
 CARGS=-fPIC -c -fno-omit-frame-pointer -fvisibility=hidden
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
-OPT=-O3
+OPT=-O3 -march=native -mtune=native
 VERSION=0.0.19-pre
-V8_VERSION=13.1
+V8_VERSION=13.9
 RUNTIME=lo
 LO_HOME=$(shell pwd)
 BINDINGS=core.o inflate.a curl.o
@@ -25,9 +25,6 @@ else
 	ifeq ($(UNAME_S),Linux)
 		os=linux
 		LARGS+=-s -static-libgcc
-		CC=gcc
-		CXX=g++
-		LINK=g++
 	else ifeq ($(UNAME_S),Darwin)
 		os=mac
 		BINDINGS+=mach.o

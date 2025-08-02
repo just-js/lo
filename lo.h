@@ -12,9 +12,6 @@
 #include <unistd.h>
 #endif
 
-#define RUNTIME "lo"
-#define VERSION "0.0.19-pre"
-
 #if defined _WIN32 || defined __CYGWIN__
   #ifdef BUILDING_DLL
     #ifdef __GNUC__
@@ -36,7 +33,7 @@
 #endif
 
 namespace lo {
-
+/*
 class SpecialArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
  public:
   void* Allocate(size_t length) override { 
@@ -58,7 +55,7 @@ class SpecialArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
     return new_data;
   }
 };
-
+*/
 
 // structs for passing typed arrays & strings in and out of v8 fast api calls
 struct FastApiTypedArray {

@@ -49,9 +49,9 @@ using v8::BigInt;
 int32_t inflateFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, uint32_t p3);
 v8::CTypeInfo cargsinflate[5] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
 };
 v8::CTypeInfo rcinflate = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);

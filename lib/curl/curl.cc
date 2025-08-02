@@ -53,7 +53,7 @@ v8::CTypeInfo cargsfopen[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcfopen = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infofopen = v8::CFunctionInfo(rcfopen, 4, cargsfopen);
@@ -64,7 +64,7 @@ v8::CTypeInfo cargsfdopen[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
   v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcfdopen = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infofdopen = v8::CFunctionInfo(rcfdopen, 4, cargsfdopen);
@@ -101,7 +101,7 @@ void easy_initFast(void* p, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargseasy_init[2] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
 
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rceasy_init = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infoeasy_init = v8::CFunctionInfo(rceasy_init, 2, cargseasy_init);
@@ -111,7 +111,7 @@ void versionFast(void* p, struct FastApiTypedArray* const p_ret);
 v8::CTypeInfo cargsversion[2] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
 
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcversion = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infoversion = v8::CFunctionInfo(rcversion, 2, cargsversion);
@@ -204,7 +204,7 @@ v8::CTypeInfo cargseasy_getinfo[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
 v8::CTypeInfo rceasy_getinfo = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
 v8::CFunctionInfo infoeasy_getinfo = v8::CFunctionInfo(rceasy_getinfo, 4, cargseasy_getinfo);
@@ -215,7 +215,7 @@ v8::CTypeInfo cargsslist_append[4] = {
   v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
   v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsTypedArray, v8::CTypeInfo::Flags::kNone)
+  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
 };
 v8::CTypeInfo rcslist_append = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
 v8::CFunctionInfo infoslist_append = v8::CFunctionInfo(rcslist_append, 4, cargsslist_append);

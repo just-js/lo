@@ -71,7 +71,7 @@ struct timespec t;
 
 CTypeInfo cargshrtime[2] = { 
   CTypeInfo(CTypeInfo::Type::kV8Value), 
-  CTypeInfo(CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, 
+  CTypeInfo(CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsArrayBuffer, 
     CTypeInfo::Flags::kNone) 
 };
 CTypeInfo rchrtime = CTypeInfo(CTypeInfo::Type::kVoid);
@@ -82,9 +82,9 @@ CFunction pFhrtime = CFunction((const void*)&lo::fastHRTime,
 CTypeInfo cargsgetaddress[3] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+    CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
   CTypeInfo(CTypeInfo::Type::kUint32, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone)
+    CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone)
 };
 CTypeInfo rcgetaddress = CTypeInfo(CTypeInfo::Type::kVoid);
 CFunctionInfo infogetaddress = CFunctionInfo(rcgetaddress, 3, 
@@ -106,7 +106,7 @@ CTypeInfo cargsutf8encodeinto[3] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
   CTypeInfo(CTypeInfo::Type::kUint8,
-  CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone)
+  CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone)
 };
 CTypeInfo rcutf8encodeinto = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infoutf8encodeinto = CFunctionInfo(rcutf8encodeinto, 3, 
@@ -128,7 +128,7 @@ CTypeInfo cargsutf8encodeintoatoffset[4] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
   CTypeInfo(CTypeInfo::Type::kUint8,
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+    CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
   CTypeInfo(CTypeInfo::Type::kUint32)
 };
 CTypeInfo rcutf8encodeintoatoffset = CTypeInfo(CTypeInfo::Type::kInt32);
@@ -140,7 +140,7 @@ CFunction pFutf8encodeintoatoffset = CFunction((const void*)&lo::fastUtf8EncodeI
 CTypeInfo cargsreadmemory[4] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+    CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
   CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint32)
 };
@@ -153,7 +153,7 @@ CFunction pFreadmemory = CFunction((const void*)&lo::fastReadMemory,
 CTypeInfo cargsreadmemoryatoffset[5] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+    CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
   CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint32),
   CTypeInfo(CTypeInfo::Type::kUint32)
