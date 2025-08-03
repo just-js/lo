@@ -68,6 +68,7 @@ using v8::SideEffectType;
 using v8::Uint8Array;
 using v8::CFunctionInfo;
 using v8::BigInt;
+using v8::Array;
 
 
 #include <sys/types.h>
