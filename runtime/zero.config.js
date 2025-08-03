@@ -2,7 +2,7 @@ const bindings = []
 const libs = []
 const embeds = []
 const target = 'zero' 
-const link_type = '-static'
+let link_type = '-static'
 if (lo.core.os === 'linux') link_type += ' -fuse-ld=lld'
 if (lo.core.os === 'mac') link_type += ' -w -framework CoreFoundation'
 
