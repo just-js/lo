@@ -13,31 +13,27 @@
 namespace lo {
 namespace inflate {
 
-using v8::String;
 using v8::FunctionCallbackInfo;
 using v8::Local;
 using v8::ObjectTemplate;
 using v8::Isolate;
 using v8::Value;
-using v8::Uint32Array;
-using v8::ArrayBuffer;
-using v8::Context;
 using v8::Integer;
-using v8::Function;
-using v8::Object;
-using v8::HandleScope;
 using v8::Number;
 using v8::FunctionTemplate;
 using v8::FunctionCallback;
 using v8::CFunction;
 using v8::CTypeInfo;
-using v8::Signature;
-using v8::ConstructorBehavior;
-using v8::SideEffectType;
 using v8::Uint8Array;
 using v8::CFunctionInfo;
+using v8::String;
+using v8::Uint32Array;
+using v8::ArrayBuffer;
+using v8::Context;
+using v8::Function;
+using v8::Object;
+using v8::HandleScope;
 using v8::BigInt;
-using v8::Array;
 
 
 #ifdef __linux__
@@ -48,28 +44,28 @@ using v8::Array;
 #endif
 
 int32_t inflateFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, uint32_t p3);
-v8::CTypeInfo cargsinflate[5] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+CTypeInfo cargsinflate[5] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint32),
 };
-v8::CTypeInfo rcinflate = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoinflate = v8::CFunctionInfo(rcinflate, 5, cargsinflate);
-v8::CFunction pFinflate = v8::CFunction((const void*)&inflateFast, &infoinflate);
+CTypeInfo rcinflate = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoinflate = CFunctionInfo(rcinflate, 5, cargsinflate);
+CFunction pFinflate = CFunction((const void*)&inflateFast, &infoinflate);
 
 int32_t inflate2Fast(void* p, void* p0, uint32_t p1, void* p2, uint32_t p3);
-v8::CTypeInfo cargsinflate2[5] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+CTypeInfo cargsinflate2[5] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint32),
 };
-v8::CTypeInfo rcinflate2 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoinflate2 = v8::CFunctionInfo(rcinflate2, 5, cargsinflate2);
-v8::CFunction pFinflate2 = v8::CFunction((const void*)&inflate2Fast, &infoinflate2);
+CTypeInfo rcinflate2 = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoinflate2 = CFunctionInfo(rcinflate2, 5, cargsinflate2);
+CFunction pFinflate2 = CFunction((const void*)&inflate2Fast, &infoinflate2);
 
 #ifdef __linux__
 

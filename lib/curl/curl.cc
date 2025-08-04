@@ -15,31 +15,27 @@
 namespace lo {
 namespace curl {
 
-using v8::String;
 using v8::FunctionCallbackInfo;
 using v8::Local;
 using v8::ObjectTemplate;
 using v8::Isolate;
 using v8::Value;
-using v8::Uint32Array;
-using v8::ArrayBuffer;
-using v8::Context;
 using v8::Integer;
-using v8::Function;
-using v8::Object;
-using v8::HandleScope;
 using v8::Number;
 using v8::FunctionTemplate;
 using v8::FunctionCallback;
 using v8::CFunction;
 using v8::CTypeInfo;
-using v8::Signature;
-using v8::ConstructorBehavior;
-using v8::SideEffectType;
 using v8::Uint8Array;
 using v8::CFunctionInfo;
+using v8::String;
+using v8::Uint32Array;
+using v8::ArrayBuffer;
+using v8::Context;
+using v8::Function;
+using v8::Object;
+using v8::HandleScope;
 using v8::BigInt;
-using v8::Array;
 
 
 #ifdef __linux__
@@ -50,186 +46,186 @@ using v8::Array;
 #endif
 
 void fopenFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1, struct FastApiTypedArray* const p_ret);
-v8::CTypeInfo cargsfopen[4] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
+CTypeInfo cargsfopen[4] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
+  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
+  CTypeInfo(CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone)
 };
-v8::CTypeInfo rcfopen = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-v8::CFunctionInfo infofopen = v8::CFunctionInfo(rcfopen, 4, cargsfopen);
-v8::CFunction pFfopen = v8::CFunction((const void*)&fopenFast, &infofopen);
+CTypeInfo rcfopen = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infofopen = CFunctionInfo(rcfopen, 4, cargsfopen);
+CFunction pFfopen = CFunction((const void*)&fopenFast, &infofopen);
 
 void fdopenFast(void* p, int32_t p0, struct FastOneByteString* const p1, struct FastApiTypedArray* const p_ret);
-v8::CTypeInfo cargsfdopen[4] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
+CTypeInfo cargsfdopen[4] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
+  CTypeInfo(CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone)
 };
-v8::CTypeInfo rcfdopen = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-v8::CFunctionInfo infofdopen = v8::CFunctionInfo(rcfdopen, 4, cargsfdopen);
-v8::CFunction pFfdopen = v8::CFunction((const void*)&fdopenFast, &infofdopen);
+CTypeInfo rcfdopen = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infofdopen = CFunctionInfo(rcfdopen, 4, cargsfdopen);
+CFunction pFfdopen = CFunction((const void*)&fdopenFast, &infofdopen);
 
 int32_t fcloseFast(void* p, void* p0);
-v8::CTypeInfo cargsfclose[2] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+CTypeInfo cargsfclose[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
 };
-v8::CTypeInfo rcfclose = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infofclose = v8::CFunctionInfo(rcfclose, 2, cargsfclose);
-v8::CFunction pFfclose = v8::CFunction((const void*)&fcloseFast, &infofclose);
+CTypeInfo rcfclose = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infofclose = CFunctionInfo(rcfclose, 2, cargsfclose);
+CFunction pFfclose = CFunction((const void*)&fcloseFast, &infofclose);
 
 int32_t fflushFast(void* p, void* p0);
-v8::CTypeInfo cargsfflush[2] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+CTypeInfo cargsfflush[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
 };
-v8::CTypeInfo rcfflush = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infofflush = v8::CFunctionInfo(rcfflush, 2, cargsfflush);
-v8::CFunction pFfflush = v8::CFunction((const void*)&fflushFast, &infofflush);
+CTypeInfo rcfflush = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infofflush = CFunctionInfo(rcfflush, 2, cargsfflush);
+CFunction pFfflush = CFunction((const void*)&fflushFast, &infofflush);
 
 int32_t global_initFast(void* p, uint32_t p0);
-v8::CTypeInfo cargsglobal_init[2] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+CTypeInfo cargsglobal_init[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint32),
 };
-v8::CTypeInfo rcglobal_init = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoglobal_init = v8::CFunctionInfo(rcglobal_init, 2, cargsglobal_init);
-v8::CFunction pFglobal_init = v8::CFunction((const void*)&global_initFast, &infoglobal_init);
+CTypeInfo rcglobal_init = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoglobal_init = CFunctionInfo(rcglobal_init, 2, cargsglobal_init);
+CFunction pFglobal_init = CFunction((const void*)&global_initFast, &infoglobal_init);
 
 void easy_initFast(void* p, struct FastApiTypedArray* const p_ret);
-v8::CTypeInfo cargseasy_init[2] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+CTypeInfo cargseasy_init[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
 
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
+  CTypeInfo(CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone)
 };
-v8::CTypeInfo rceasy_init = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-v8::CFunctionInfo infoeasy_init = v8::CFunctionInfo(rceasy_init, 2, cargseasy_init);
-v8::CFunction pFeasy_init = v8::CFunction((const void*)&easy_initFast, &infoeasy_init);
+CTypeInfo rceasy_init = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infoeasy_init = CFunctionInfo(rceasy_init, 2, cargseasy_init);
+CFunction pFeasy_init = CFunction((const void*)&easy_initFast, &infoeasy_init);
 
 void versionFast(void* p, struct FastApiTypedArray* const p_ret);
-v8::CTypeInfo cargsversion[2] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+CTypeInfo cargsversion[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
 
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
+  CTypeInfo(CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone)
 };
-v8::CTypeInfo rcversion = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-v8::CFunctionInfo infoversion = v8::CFunctionInfo(rcversion, 2, cargsversion);
-v8::CFunction pFversion = v8::CFunction((const void*)&versionFast, &infoversion);
+CTypeInfo rcversion = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infoversion = CFunctionInfo(rcversion, 2, cargsversion);
+CFunction pFversion = CFunction((const void*)&versionFast, &infoversion);
 
 int32_t easy_setoptFast(void* p, void* p0, uint32_t p1, struct FastOneByteString* const p2);
-v8::CTypeInfo cargseasy_setopt[4] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kSeqOneByteString),
+CTypeInfo cargseasy_setopt[4] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
 };
-v8::CTypeInfo rceasy_setopt = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoeasy_setopt = v8::CFunctionInfo(rceasy_setopt, 4, cargseasy_setopt);
-v8::CFunction pFeasy_setopt = v8::CFunction((const void*)&easy_setoptFast, &infoeasy_setopt);
+CTypeInfo rceasy_setopt = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoeasy_setopt = CFunctionInfo(rceasy_setopt, 4, cargseasy_setopt);
+CFunction pFeasy_setopt = CFunction((const void*)&easy_setoptFast, &infoeasy_setopt);
 
 int32_t easy_setopt_2Fast(void* p, void* p0, uint32_t p1, uint32_t p2);
-v8::CTypeInfo cargseasy_setopt_2[4] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+CTypeInfo cargseasy_setopt_2[4] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kUint32),
 };
-v8::CTypeInfo rceasy_setopt_2 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoeasy_setopt_2 = v8::CFunctionInfo(rceasy_setopt_2, 4, cargseasy_setopt_2);
-v8::CFunction pFeasy_setopt_2 = v8::CFunction((const void*)&easy_setopt_2Fast, &infoeasy_setopt_2);
+CTypeInfo rceasy_setopt_2 = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoeasy_setopt_2 = CFunctionInfo(rceasy_setopt_2, 4, cargseasy_setopt_2);
+CFunction pFeasy_setopt_2 = CFunction((const void*)&easy_setopt_2Fast, &infoeasy_setopt_2);
 
 int32_t easy_setopt_3Fast(void* p, void* p0, uint32_t p1, uint64_t p2);
-v8::CTypeInfo cargseasy_setopt_3[4] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+CTypeInfo cargseasy_setopt_3[4] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kUint64),
 };
-v8::CTypeInfo rceasy_setopt_3 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoeasy_setopt_3 = v8::CFunctionInfo(rceasy_setopt_3, 4, cargseasy_setopt_3);
-v8::CFunction pFeasy_setopt_3 = v8::CFunction((const void*)&easy_setopt_3Fast, &infoeasy_setopt_3);
+CTypeInfo rceasy_setopt_3 = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoeasy_setopt_3 = CFunctionInfo(rceasy_setopt_3, 4, cargseasy_setopt_3);
+CFunction pFeasy_setopt_3 = CFunction((const void*)&easy_setopt_3Fast, &infoeasy_setopt_3);
 
 int32_t easy_setopt_4Fast(void* p, void* p0, uint32_t p1, void* p2);
-v8::CTypeInfo cargseasy_setopt_4[4] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+CTypeInfo cargseasy_setopt_4[4] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kUint64),
 };
-v8::CTypeInfo rceasy_setopt_4 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoeasy_setopt_4 = v8::CFunctionInfo(rceasy_setopt_4, 4, cargseasy_setopt_4);
-v8::CFunction pFeasy_setopt_4 = v8::CFunction((const void*)&easy_setopt_4Fast, &infoeasy_setopt_4);
+CTypeInfo rceasy_setopt_4 = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoeasy_setopt_4 = CFunctionInfo(rceasy_setopt_4, 4, cargseasy_setopt_4);
+CFunction pFeasy_setopt_4 = CFunction((const void*)&easy_setopt_4Fast, &infoeasy_setopt_4);
 
 int32_t easy_setopt_5Fast(void* p, void* p0, uint32_t p1, void* p2);
-v8::CTypeInfo cargseasy_setopt_5[4] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+CTypeInfo cargseasy_setopt_5[4] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kUint64),
 };
-v8::CTypeInfo rceasy_setopt_5 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoeasy_setopt_5 = v8::CFunctionInfo(rceasy_setopt_5, 4, cargseasy_setopt_5);
-v8::CFunction pFeasy_setopt_5 = v8::CFunction((const void*)&easy_setopt_5Fast, &infoeasy_setopt_5);
+CTypeInfo rceasy_setopt_5 = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoeasy_setopt_5 = CFunctionInfo(rceasy_setopt_5, 4, cargseasy_setopt_5);
+CFunction pFeasy_setopt_5 = CFunction((const void*)&easy_setopt_5Fast, &infoeasy_setopt_5);
 
 int32_t easy_performFast(void* p, void* p0);
-v8::CTypeInfo cargseasy_perform[2] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+CTypeInfo cargseasy_perform[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
 };
-v8::CTypeInfo rceasy_perform = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoeasy_perform = v8::CFunctionInfo(rceasy_perform, 2, cargseasy_perform);
-v8::CFunction pFeasy_perform = v8::CFunction((const void*)&easy_performFast, &infoeasy_perform);
+CTypeInfo rceasy_perform = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoeasy_perform = CFunctionInfo(rceasy_perform, 2, cargseasy_perform);
+CFunction pFeasy_perform = CFunction((const void*)&easy_performFast, &infoeasy_perform);
 
 void easy_cleanupFast(void* p, void* p0);
-v8::CTypeInfo cargseasy_cleanup[2] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+CTypeInfo cargseasy_cleanup[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
 };
-v8::CTypeInfo rceasy_cleanup = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-v8::CFunctionInfo infoeasy_cleanup = v8::CFunctionInfo(rceasy_cleanup, 2, cargseasy_cleanup);
-v8::CFunction pFeasy_cleanup = v8::CFunction((const void*)&easy_cleanupFast, &infoeasy_cleanup);
+CTypeInfo rceasy_cleanup = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infoeasy_cleanup = CFunctionInfo(rceasy_cleanup, 2, cargseasy_cleanup);
+CFunction pFeasy_cleanup = CFunction((const void*)&easy_cleanupFast, &infoeasy_cleanup);
 
 void global_cleanupFast(void* p);
-v8::CTypeInfo cargsglobal_cleanup[1] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+CTypeInfo cargsglobal_cleanup[1] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
 
 };
-v8::CTypeInfo rcglobal_cleanup = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-v8::CFunctionInfo infoglobal_cleanup = v8::CFunctionInfo(rcglobal_cleanup, 1, cargsglobal_cleanup);
-v8::CFunction pFglobal_cleanup = v8::CFunction((const void*)&global_cleanupFast, &infoglobal_cleanup);
+CTypeInfo rcglobal_cleanup = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infoglobal_cleanup = CFunctionInfo(rcglobal_cleanup, 1, cargsglobal_cleanup);
+CFunction pFglobal_cleanup = CFunction((const void*)&global_cleanupFast, &infoglobal_cleanup);
 
 int32_t easy_getinfoFast(void* p, void* p0, uint32_t p1, struct FastApiTypedArray* const p2);
-v8::CTypeInfo cargseasy_getinfo[4] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
+CTypeInfo cargseasy_getinfo[4] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
 };
-v8::CTypeInfo rceasy_getinfo = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoeasy_getinfo = v8::CFunctionInfo(rceasy_getinfo, 4, cargseasy_getinfo);
-v8::CFunction pFeasy_getinfo = v8::CFunction((const void*)&easy_getinfoFast, &infoeasy_getinfo);
+CTypeInfo rceasy_getinfo = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoeasy_getinfo = CFunctionInfo(rceasy_getinfo, 4, cargseasy_getinfo);
+CFunction pFeasy_getinfo = CFunction((const void*)&easy_getinfoFast, &infoeasy_getinfo);
 
 void slist_appendFast(void* p, void* p0, void* p1, struct FastApiTypedArray* const p_ret);
-v8::CTypeInfo cargsslist_append[4] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, v8::CTypeInfo::SequenceType::kIsArrayBuffer, v8::CTypeInfo::Flags::kNone)
+CTypeInfo cargsslist_append[4] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone)
 };
-v8::CTypeInfo rcslist_append = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-v8::CFunctionInfo infoslist_append = v8::CFunctionInfo(rcslist_append, 4, cargsslist_append);
-v8::CFunction pFslist_append = v8::CFunction((const void*)&slist_appendFast, &infoslist_append);
+CTypeInfo rcslist_append = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infoslist_append = CFunctionInfo(rcslist_append, 4, cargsslist_append);
+CFunction pFslist_append = CFunction((const void*)&slist_appendFast, &infoslist_append);
 
 void slist_free_allFast(void* p, void* p0);
-v8::CTypeInfo cargsslist_free_all[2] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+CTypeInfo cargsslist_free_all[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
 };
-v8::CTypeInfo rcslist_free_all = v8::CTypeInfo(v8::CTypeInfo::Type::kVoid);
-v8::CFunctionInfo infoslist_free_all = v8::CFunctionInfo(rcslist_free_all, 2, cargsslist_free_all);
-v8::CFunction pFslist_free_all = v8::CFunction((const void*)&slist_free_allFast, &infoslist_free_all);
+CTypeInfo rcslist_free_all = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infoslist_free_all = CFunctionInfo(rcslist_free_all, 2, cargsslist_free_all);
+CFunction pFslist_free_all = CFunction((const void*)&slist_free_allFast, &infoslist_free_all);
 
 #ifdef __linux__
 
