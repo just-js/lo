@@ -1,121 +1,172 @@
-# prerequisites
+# lo Runtime
 
-## linux/macos
+`lo` is a minimalist JavaScript runtime built on V8.
 
-- gcc/g++ or clang/clang++
-- make
-- curl
-- gunzip
+## Building
 
-## windows
+This guide provides instructions for building the `lo` runtime from source on Linux, macOS, and Windows.
 
-# building
+### Linux
 
-## linux
+#### Prerequisites
 
-the default build of lo runtime links to system libssl and zlib but we build a 
-custom version of libcurl as the default libcurl links to a ton of support 
-libraries we don't need and this slows down startup time. we will likely remove 
-dependency on libcurl at some point (i.e. when we have a robust implementation 
-of fetch in the runtime) but, for now, you will need to install libcurl as 
-follows.
+You will need the following tools installed:
+- `gcc`/`g++` or `clang`/`clang++`
+- `make`
+- `curl`
+- `gunzip`
 
+The `lo` runtime links to system libraries for SSL (`libssl`) and compression (`zlib`). However, it builds a custom version of `libcurl` to minimize dependencies and improve startup time. You will need to install the development headers for these libraries.
+
+On Debian/Ubuntu, you can install them with:
 ```shell
 sudo apt install -y libcurl4-openssl-dev libssl-dev zlib1g-dev
 ```
 
-### gcc/x64
-```
-make lo
-```
+#### Commands
 
-### arm64
-```
-make ARCH=arm64 lo
-```
+*   **Standard Build (x64 with GCC):**
+    ```shell
+    make lo
+    ```
 
-### clang
-```
-make CC="clang" CXX="clang++" lo
-```
+*   **ARM64 Build:**
+    ```shell
+    make ARCH=arm64 lo
+    ```
 
-### ccache and mold for fast rebuilds
-```
-mold -run make C="ccache gcc" CC="ccache g++" lo
-```
+*   **Build with Clang:**
+    ```shell
+    make CC="clang" CXX="clang++" lo
+    ```
 
-## macos
+*   **Fast Rebuilds (using ccache and mold):**
+    ```shell
+    mold -run make CC="ccache gcc" CXX="ccache g++" lo
+    ```
 
-the default build of lo runtime depends on libcurl, which is available out
-of the box on macos. it also depends on openssl, which does not seem to be 
-available as a static library by default.
+### macOS
 
-as such, you will need to install openssl using homebrew or some other 
-mechanism for the default build to succeed.
+#### Prerequisites
+
+The `lo` runtime depends on `libcurl`, which is available out of the box on macOS. However, it also requires OpenSSL, which must be installed separately. The recommended way is via Homebrew.
 
 ```shell
 brew install openssl@3
 ```
 
-this will install libssl libs in /opt/homebrew/lib by default. if you need to 
-override this default in the Makefile you can pass the LIB_DIRS argument to make
-as follows
+By default, the Makefile looks for Homebrew libraries in `/opt/homebrew/lib`. If your installation is in a different location, you can specify it with the `LIB_DIRS` argument.
 
-```shell
-make LIB_DIRS=/opt/somewhere_else/lib ARCH=arm64 lo
-```
+#### Commands
 
-### x64
-```
-make cleanall lo
-```
+*   **Standard Build (x64):**
+    ```shell
+    make cleanall lo
+    ```
 
-### arm64
-```
-make ARCH=arm64 cleanall lo
-```
+*   **ARM64 Build (Apple Silicon):**
+    ```shell
+    make ARCH=arm64 cleanall lo
+    ```
 
-## windows
+*   **Build with Custom Library Path:**
+    ```shell
+    make LIB_DIRS=/path/to/your/lib ARCH=arm64 lo
+    ```
 
-- install chocolatey
-run in powershell terminal as administrator
+### Windows
 
-```
+Building on Windows requires the Microsoft C++ (MSVC) toolchain.
+
+#### 1. Install a Package Manager (Chocolatey)
+
+Open **PowerShell as an Administrator** and run the following command to install Chocolatey:
+```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 ```
 
-https://visualstudio.microsoft.com/downloads/
-download and run this
-https://aka.ms/vs/17/release/vs_BuildTools.exe
+#### 2. Install Required Tools
 
-choose "Desktop Development with C++"
-
-https://learn.microsoft.com/en-us/cpp/build/msbuild-visual-cpp?view=msvc-170
-
-- install make
-```
-choco install make
-choco install git
-
+In the same administrative PowerShell terminal, use Chocolatey to install `make` and `git`:
+```powershell
+choco install make git
 ```
 
-- install visual studio or msbuild
-- open an 'x64 Native Tools' command prompt as described [here](https://learn.microsoft.com/en-us/cpp/build/how-to-enable-a-64-bit-visual-cpp-toolset-on-the-command-line?view=msvc-170)
+#### 3. Install C++ Build Tools
 
+Download and run the Visual Studio Build Tools installer:
+[**vs_BuildTools.exe**](https://aka.ms/vs/17/release/vs_BuildTools.exe)
+
+When the installer runs, you **must** select the **"Desktop development with C++"** workload. This will install the required MSVC compiler, libraries, and headers.
+
+#### 4. Open the Correct Terminal
+
+Open the Start Menu and search for **"x64 Native Tools Command Prompt for VS"**. All subsequent commands must be run from this specific command prompt, as it configures the environment paths needed for the compiler (`cl.exe`) to work.
+
+#### 5. Build
+
+In the x64 Native Tools Command Prompt, navigate to the project directory and run:
+```powershell
+make cleanall lo.exe
 ```
-make cleanall lo.exe test
+
+## Understanding the Build System
+
+The project uses a sophisticated, self-hosting build system. While you can use `make` for convenience, the actual compilation logic is handled by a JavaScript script (`lib/build.js`) which is executed by a pre-compiled `lo` runtime.
+the `Makefile` is now just a thin wrapper around this much more powerful JavaScript-based build system.
+
+### The Role of `make`
+
+The `Makefile` in the project root is a thin wrapper. Its primary job is to find or download a pre-compiled "bootstrap" version of the `lo` runtime and then use it to execute the main build script. For example, `make lo` is roughly equivalent to:
+
+```bash
+./lo lib/build.js runtime lo
 ```
 
-# bumping v8 version
+This approach allows the entire build process to be defined in portable JavaScript instead of platform-specific Make syntax.
 
-```shell
-make cleanall
-## change v8 version in makefile
-make lo
+### The `.lo` Directory: Our Local Home
+
+When you run a build for the first time, the system creates a `.lo` directory in your project root. This directory acts as a local cache and workspace for the build process. It contains:
+- The downloaded bootstrap `lo` source code.
+- The correct version of the V8 headers (`v8/include`).
+- The downloaded static V8 library (`v8/libv8_monolith.a`).
+- **Generated build artifacts**, including `main.h` and the `builtins` assembly files.
+
+You can safely delete the `.lo` directory at any time. The build script will automatically re-create and re-populate it on the next run.
+
+### The Story of `main.h`: Automatic Header Generation
+
+The C++ source code includes a header file named `main.h`. Inside this file, you will find a comment like this:
+
+```cpp
+// [do not edit,<auto-generated />]
+// This file has been automatically generated, please do not change unless you disable auto-generation in the Makefile
 ```
 
-# install v8 source
+This comment is accurate. `main.h` is **dynamically generated on every build** by the `lib/build.js` script.
 
-```shell
-make v8/src
-```
+#### How It Works
+
+1.  The build script analyzes the project's configuration (e.g., `runtime/base.config.js`) to determine which JavaScript files (`main.js`, libraries, etc.) and C++ bindings need to be included in the final binary.
+2.  It generates assembly files (`builtins.S` and `builtins_linux.S`) that embed the raw bytes of the JavaScript source code directly into the program.
+3.  It then generates the `main.h` file. This header contains the necessary `extern` declarations and registration functions so the C++ runtime knows how to find and load this embedded JavaScript code at startup.
+
+Because this generation happens automatically on every build, there is no "chicken-and-egg" problem. The build system ensures the header file is always up-to-date with the project's configuration.
+
+### When to Modify the Build
+
+You should **never edit `main.h` or the `builtins` files directly**, as your changes will be overwritten.
+
+Instead, if you need to add a new built-in JavaScript module or a new C++ binding, you should modify the appropriate configuration file (e.g., `runtime/base.config.js`). The build system will then automatically re-generate `main.h` to include your new additions.
+
+## Advanced Build Commands
+
+*   **`make check`**: Runs sanity tests to ensure the compiled runtime is working correctly.
+*   **`make clean`**: Removes all compiled object files and the final executable.
+*   **`make cleanall`**: Runs `clean` and also removes the `.lo` and `v8/` directories.
+*   **`make v8/src`**: Downloads the full V8 source code into the `v8/` directory for debugging purposes.
+*   **Bumping the V8 Version**: To update the V8 version, change the `V8_VERSION` variable in the `Makefile` and then run a full rebuild:
+    ```shell
+    make cleanall lo
+    ```
