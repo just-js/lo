@@ -71,8 +71,7 @@ struct timespec t;
 
 CTypeInfo cargshrtime[2] = { 
   CTypeInfo(CTypeInfo::Type::kV8Value), 
-  CTypeInfo(CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsArrayBuffer, 
-    CTypeInfo::Flags::kNone) 
+  CTypeInfo(CTypeInfo::Type::kUint64)
 };
 CTypeInfo rchrtime = CTypeInfo(CTypeInfo::Type::kVoid);
 CFunctionInfo infohrtime = CFunctionInfo(rchrtime, 2, cargshrtime);
@@ -81,10 +80,8 @@ CFunction pFhrtime = CFunction((const void*)&lo::fastHRTime,
 
 CTypeInfo cargsgetaddress[3] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
-  CTypeInfo(CTypeInfo::Type::kUint32, 
-    CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone)
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint64)
 };
 CTypeInfo rcgetaddress = CTypeInfo(CTypeInfo::Type::kVoid);
 CFunctionInfo infogetaddress = CFunctionInfo(rcgetaddress, 3, 
@@ -105,8 +102,7 @@ CFunction pFutf8length = CFunction((const void*)&lo::fastUtf8Length,
 CTypeInfo cargsutf8encodeinto[3] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint8,
-  CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone)
+  CTypeInfo(CTypeInfo::Type::kUint64)
 };
 CTypeInfo rcutf8encodeinto = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infoutf8encodeinto = CFunctionInfo(rcutf8encodeinto, 3, 
@@ -114,6 +110,7 @@ CFunctionInfo infoutf8encodeinto = CFunctionInfo(rcutf8encodeinto, 3,
 CFunction pFutf8encodeinto = CFunction((const void*)&lo::fastUtf8EncodeInto, 
   &infoutf8encodeinto);
 
+/*
 CTypeInfo cargsutf8encodeintoPtr[3] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
@@ -123,12 +120,12 @@ CFunctionInfo infoutf8encodeintoPtr = CFunctionInfo(rcutf8encodeinto, 3,
   cargsutf8encodeintoPtr);
 CFunction pFutf8encodeintoPtr = CFunction((const void*)&lo::fastUtf8EncodeIntoPtr, 
   &infoutf8encodeintoPtr);
+*/
 
 CTypeInfo cargsutf8encodeintoatoffset[4] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint8,
-    CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint32)
 };
 CTypeInfo rcutf8encodeintoatoffset = CTypeInfo(CTypeInfo::Type::kInt32);
@@ -139,8 +136,7 @@ CFunction pFutf8encodeintoatoffset = CFunction((const void*)&lo::fastUtf8EncodeI
 
 CTypeInfo cargsreadmemory[4] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint32)
 };
@@ -152,8 +148,7 @@ CFunction pFreadmemory = CFunction((const void*)&lo::fastReadMemory,
 
 CTypeInfo cargsreadmemoryatoffset[5] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint32),
   CTypeInfo(CTypeInfo::Type::kUint32)
@@ -975,11 +970,12 @@ uint64_t lo::hrtime() {
 }
 
 void lo::HRTime(const FunctionCallbackInfo<Value> &args) {
-  ((uint64_t*)args[0].As<Uint32Array>()->Buffer()->Data())[0] = hrtime();
+  uint64_t* v1 = reinterpret_cast<uint64_t*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  v1[0] = hrtime();
 }
 
-void lo::fastHRTime (void* p, struct FastApiTypedArray* const p_ret) {
-  ((uint64_t*)p_ret->data)[0] = hrtime();
+void lo::fastHRTime (void* p, uint64_t* p_ret) {
+  p_ret[0] = hrtime();
 }
 
 void lo::GetAddress(const FunctionCallbackInfo<Value> &args) {
@@ -988,9 +984,9 @@ void lo::GetAddress(const FunctionCallbackInfo<Value> &args) {
   ((uint64_t*)args[1].As<Uint32Array>()->Buffer()->Data())[0] = (uint64_t)ptr;
 }
 
-void lo::fastGetAddress(void* p, struct FastApiTypedArray* const p_buf, 
-  struct FastApiTypedArray* const p_ret) {
-  ((uint64_t*)p_ret->data)[0] = (uint64_t)p_buf->data;
+void lo::fastGetAddress(void* p, uint64_t* p_buf, 
+  uint64_t* p_ret) {
+  p_ret[0] = (uint64_t)p_buf;
 }
 
 void lo::Utf8Length(const FunctionCallbackInfo<Value> &args) {
@@ -1066,33 +1062,35 @@ void lo::GetMeta(const FunctionCallbackInfo<Value> &args) {
 }
 
 void lo::ReadMemory(const FunctionCallbackInfo<Value> &args) {
-  Local<Uint8Array> u8 = args[0].As<Uint8Array>();
-  uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + u8->ByteOffset();
+  char* dest = reinterpret_cast<char*>(Local<Integer>::Cast(args[0])->Value());
+//  Local<Uint8Array> u8 = args[0].As<Uint8Array>();
+//  uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + u8->ByteOffset();
   void* start = reinterpret_cast<void*>(
     (uint64_t)Local<Integer>::Cast(args[1])->Value());
   uint32_t size = Local<Integer>::Cast(args[2])->Value();
   memcpy(dest, start, size);
 }
 
-void lo::fastReadMemory (void* p, struct FastApiTypedArray* const p_buf, 
+void lo::fastReadMemory (void* p, uint64_t* p_buf, 
   void* start, uint32_t size) {
-  memcpy(p_buf->data, start, size);
+  memcpy(p_buf, start, size);
 }
 
 // todo: version that wraps memory in place with an arraybuffer
 void lo::ReadMemoryAtOffset(const FunctionCallbackInfo<Value> &args) {
-  Local<Uint8Array> u8 = args[0].As<Uint8Array>();
+//  Local<Uint8Array> u8 = args[0].As<Uint8Array>();
   uint32_t off = Local<Integer>::Cast(args[3])->Value();
-  uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + off;
+  char* dest = reinterpret_cast<char*>(Local<Integer>::Cast(args[0])->Value()) + off;
+//  uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + off;
   void* start = reinterpret_cast<void*>(
     (uint64_t)Local<Integer>::Cast(args[1])->Value());
   uint32_t size = Local<Integer>::Cast(args[2])->Value();
   memcpy(dest, start, size);
 }
 
-void lo::fastReadMemoryAtOffset (void* p, struct FastApiTypedArray* const p_buf, 
+void lo::fastReadMemoryAtOffset (void* p, uint64_t* p_buf, 
   void* start, uint32_t size, uint32_t off) {
-  uint8_t* ptr = (uint8_t*)p_buf->data + off;
+  uint8_t* ptr = (uint8_t*)p_buf + off;
   memcpy(ptr, start, size);
 }
 
@@ -1224,7 +1222,7 @@ void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Integer::New(isolate, written));
 }
 */
-
+/*
 void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
@@ -1238,12 +1236,12 @@ void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
 }
 
 int32_t lo::fastUtf8EncodeInto (void* p, struct FastOneByteString* 
-  const p_str, struct FastApiTypedArray* const p_buf) {
-  memcpy(p_buf->data, p_str->data, p_str->length);
+  const p_str, uint64_t* p_buf) {
+  memcpy(p_buf, p_str->data, p_str->length);
   return p_str->length;
 }
-
-void lo::Utf8EncodeIntoPtr(const FunctionCallbackInfo<Value> &args) {
+*/
+void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
 /*
@@ -1267,7 +1265,7 @@ void lo::Utf8EncodeIntoPtr(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Integer::New(isolate, written));
 }
 
-int32_t lo::fastUtf8EncodeIntoPtr (void* p, struct FastOneByteString* 
+int32_t lo::fastUtf8EncodeInto (void* p, struct FastOneByteString* 
   const p_str, void* p_buf) {
   memcpy(p_buf, p_str->data, p_str->length);
   return p_str->length;
@@ -1279,8 +1277,9 @@ void lo::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
   uint32_t off = Local<Integer>::Cast(args[2])->Value();
   int chars_written = 0;
   //int size = str->Utf8Length(isolate);
-  Local<Uint8Array> u8 = args[1].As<Uint8Array>();
-  char* dest = (char*)u8->Buffer()->Data() + off;
+  char* dest = reinterpret_cast<char*>(Local<Integer>::Cast(args[1])->Value()) + off;
+//  Local<Uint8Array> u8 = args[1].As<Uint8Array>();
+//  char* dest = (char*)u8->Buffer()->Data() + off;
   int written = str->WriteUtf8(isolate, dest, -1, &chars_written, 
     String::NO_NULL_TERMINATION | String::HINT_MANY_WRITES_EXPECTED);
 //    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
@@ -1313,8 +1312,8 @@ void lo::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
 */
 
 int32_t lo::fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString* 
-  const p_str, struct FastApiTypedArray* const p_buf, uint32_t off) {
-  uint8_t* dest = (uint8_t*)p_buf->data + off;
+  const p_str, uint64_t* p_buf, uint32_t off) {
+  uint8_t* dest = (uint8_t*)p_buf + off;
   memcpy(dest, p_str->data, p_str->length);
   return p_str->length;
 }
@@ -1465,7 +1464,9 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
     V8::GetVersion()).ToLocalChecked());
   SET_MODULE(isolate, target, "version", version);
   SET_METHOD(isolate, target, "print", Print);
+  // OK
   SET_FAST_METHOD(isolate, target, "hrtime", &pFhrtime, HRTime);
+  //SET_METHOD(isolate, target, "hrtime", HRTime);
   SET_METHOD(isolate, target, "nextTick", NextTick);
   SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);
   SET_METHOD(isolate, target, "pumpMessageLoop", PumpMessageLoop);
@@ -1490,21 +1491,26 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
   //SET_METHOD(isolate, target, "utf8EncodeInto", Utf8EncodeInto);
 
+  // OK
   SET_FAST_METHOD(isolate, target, "utf8Length", &pFutf8length, Utf8Length);
+//  SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto, 
+//    Utf8EncodeInto);
+  // OK
   SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto, 
     Utf8EncodeInto);
-
-  SET_FAST_METHOD(isolate, target, "utf8EncodeIntoPtr", &pFutf8encodeintoPtr, 
-    Utf8EncodeIntoPtr);
-
+  // OK
   SET_FAST_METHOD(isolate, target, "utf8EncodeIntoAtOffset", 
     &pFutf8encodeintoatoffset, Utf8EncodeIntoAtOffset);
 
   SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
   SET_METHOD(isolate, target, "wrapMemoryShared", WrapMemoryShared);
   SET_METHOD(isolate, target, "unwrapMemory", UnWrapMemory);
-  SET_FAST_METHOD(isolate, target, "getAddress", &pFgetaddress, GetAddress);
+  //SET_FAST_METHOD(isolate, target, "getAddress", &pFgetaddress, GetAddress);
+  // 50% throughput
+  SET_METHOD(isolate, target, "getAddress", GetAddress);
+  // OK
   SET_FAST_METHOD(isolate, target, "readMemory", &pFreadmemory, ReadMemory);
+  // OK
   SET_FAST_METHOD(isolate, target, "readMemoryAtOffset", &pFreadmemoryatoffset, 
     ReadMemoryAtOffset);
 

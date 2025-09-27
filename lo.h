@@ -185,24 +185,24 @@ void GetIsolateStartAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
 
 // fast api methods
 void GetAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
-void fastGetAddress(void* p, struct FastApiTypedArray* const p_buf, 
-  struct FastApiTypedArray* const p_ret);
-void Utf8EncodeInto(const v8::FunctionCallbackInfo<v8::Value> &args);
-int32_t fastUtf8EncodeInto (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf);
+void fastGetAddress(void* p, uint64_t* p_buf, 
+  uint64_t* p_ret);
+//void Utf8EncodeInto(const v8::FunctionCallbackInfo<v8::Value> &args);
+//int32_t fastUtf8EncodeInto (void* p, struct FastOneByteString* const p_str, uint64_t* p_buf);
 
-void Utf8EncodeIntoPtr(const v8::FunctionCallbackInfo<v8::Value> &args);
-int32_t fastUtf8EncodeIntoPtr (void* p, struct FastOneByteString* const p_str, void* p_buf);
+void Utf8EncodeInto(const v8::FunctionCallbackInfo<v8::Value> &args);
+int32_t fastUtf8EncodeInto (void* p, struct FastOneByteString* const p_str, void* p_buf);
 
 void Utf8EncodeIntoAtOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
-int32_t fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf, uint32_t off);
+int32_t fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString* const p_str, uint64_t* p_buf, uint32_t off);
 void Utf8Length(const v8::FunctionCallbackInfo<v8::Value> &args);
 int32_t fastUtf8Length (void* p, struct FastOneByteString* const p_ret);
 void HRTime(const v8::FunctionCallbackInfo<v8::Value> &args);
-void fastHRTime (void* p, struct FastApiTypedArray* const p_ret);
+void fastHRTime (void* p, uint64_t* p_ret);
 void ReadMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
-void fastReadMemory (void* p, struct FastApiTypedArray* const p_buf, void* start, uint32_t size);
+void fastReadMemory (void* p, uint64_t* p_buf, void* start, uint32_t size);
 void ReadMemoryAtOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
-void fastReadMemoryAtOffset (void* p, struct FastApiTypedArray* const p_buf, void* start, uint32_t size, uint32_t off);
+void fastReadMemoryAtOffset (void* p, uint64_t* p_buf, void* start, uint32_t size, uint32_t off);
 
 // fast api properties
 void GetErrno(const v8::FunctionCallbackInfo<v8::Value> &args);
