@@ -43,19 +43,19 @@ using v8::BigInt;
 
 #endif
 
-int32_t inflateFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, uint32_t p3);
+int32_t inflateFast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t p3);
 CTypeInfo cargsinflate[5] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint32),
 };
 CTypeInfo rcinflate = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infoinflate = CFunctionInfo(rcinflate, 5, cargsinflate);
 CFunction pFinflate = CFunction((const void*)&inflateFast, &infoinflate);
 
-int32_t inflate2Fast(void* p, void* p0, uint32_t p1, void* p2, uint32_t p3);
+int32_t inflate2Fast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t p3);
 CTypeInfo cargsinflate2[5] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kUint64),
@@ -75,22 +75,18 @@ CFunction pFinflate2 = CFunction((const void*)&inflate2Fast, &infoinflate2);
 #endif
 
 void inflateSlow(const FunctionCallbackInfo<Value> &args) {
-  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
-  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
-  unsigned char* v0 = reinterpret_cast<unsigned char*>(ptr0);
+  unsigned char* v0 = reinterpret_cast<unsigned char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  Local<Uint8Array> u82 = args[2].As<Uint8Array>();
-  uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
-  unsigned char* v2 = reinterpret_cast<unsigned char*>(ptr2);
+  unsigned char* v2 = reinterpret_cast<unsigned char*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
   uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
   int32_t rc = em_inflate(v0, v1, v2, v3);
   args.GetReturnValue().Set(rc);
 }
 
-int32_t inflateFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, uint32_t p3) {
-  unsigned char* v0 = reinterpret_cast<unsigned char*>(p0->data);
+int32_t inflateFast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t p3) {
+  unsigned char* v0 = reinterpret_cast<unsigned char*>(p0);
   uint32_t v1 = p1;
-  unsigned char* v2 = reinterpret_cast<unsigned char*>(p2->data);
+  unsigned char* v2 = reinterpret_cast<unsigned char*>(p2);
   uint32_t v3 = p3;
   return em_inflate(v0, v1, v2, v3);
 }
@@ -103,7 +99,7 @@ void inflate2Slow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t inflate2Fast(void* p, void* p0, uint32_t p1, void* p2, uint32_t p3) {
+int32_t inflate2Fast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t p3) {
   unsigned char* v0 = reinterpret_cast<unsigned char*>(p0);
   uint32_t v1 = p1;
   unsigned char* v2 = reinterpret_cast<unsigned char*>(p2);
