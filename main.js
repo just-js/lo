@@ -313,7 +313,8 @@ function on_load_builtin (identifier) {
 }
 
 function wrap_getenv () {
-  const getenv = wrap(handle, core.getenv, 1)
+  const { getenv } = core
+//  const getenv = wrap(handle, core.getenv, 1)
   return str => {
     const ptr = getenv(str)
     if (!ptr) return ''
