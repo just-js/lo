@@ -7,7 +7,7 @@ CARGS=-fPIC -c -fno-omit-frame-pointer -fvisibility=hidden
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
 OPT=-O3 -march=native -mtune=native
 VERSION=0.0.19-pre
-V8_VERSION=13.9
+V8_VERSION=13.8
 RUNTIME=lo
 LO_HOME=$(shell pwd)
 BINDINGS=core.o inflate.a curl.o
@@ -43,9 +43,14 @@ endif
 help:
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9\/_\.-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-v8/include: ## download the v8 headers
+v8:
+	mkdir v8
+
+v8/include: v8 ## download the v8 headers
 	curl -L -o v8-include.tar.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/include.tar.gz
 	tar -xvf v8-include.tar.gz
+	mv include v8/
+
 ifneq ($(os),win)
 	rm -f v8-include.tar.gz
 endif
