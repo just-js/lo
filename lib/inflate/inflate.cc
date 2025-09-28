@@ -55,18 +55,6 @@ CTypeInfo rcinflate = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infoinflate = CFunctionInfo(rcinflate, 5, cargsinflate);
 CFunction pFinflate = CFunction((const void*)&inflateFast, &infoinflate);
 
-int32_t inflate2Fast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t p3);
-CTypeInfo cargsinflate2[5] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-};
-CTypeInfo rcinflate2 = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoinflate2 = CFunctionInfo(rcinflate2, 5, cargsinflate2);
-CFunction pFinflate2 = CFunction((const void*)&inflate2Fast, &infoinflate2);
-
 #ifdef __linux__
 
 #endif
@@ -90,22 +78,6 @@ int32_t inflateFast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t p
   uint32_t v3 = p3;
   return em_inflate(v0, v1, v2, v3);
 }
-void inflate2Slow(const FunctionCallbackInfo<Value> &args) {
-  unsigned char* v0 = reinterpret_cast<unsigned char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
-  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  unsigned char* v2 = reinterpret_cast<unsigned char*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
-  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
-  int32_t rc = em_inflate(v0, v1, v2, v3);
-  args.GetReturnValue().Set(rc);
-}
-
-int32_t inflate2Fast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t p3) {
-  unsigned char* v0 = reinterpret_cast<unsigned char*>(p0);
-  uint32_t v1 = p1;
-  unsigned char* v2 = reinterpret_cast<unsigned char*>(p2);
-  uint32_t v3 = p3;
-  return em_inflate(v0, v1, v2, v3);
-}
 #ifdef __linux__
 
 #endif
@@ -115,7 +87,6 @@ int32_t inflate2Fast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t 
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
   SET_FAST_METHOD(isolate, module, "inflate", &pFinflate, inflateSlow);
-  SET_FAST_METHOD(isolate, module, "inflate2", &pFinflate2, inflate2Slow);
 
 #ifdef __linux__
 
