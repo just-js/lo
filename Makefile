@@ -45,14 +45,11 @@ help:
 
 v8:
 	mkdir v8
-
-v8/include: v8 ## download the v8 headers
-	curl -L -o v8-include.tar.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/include.tar.gz
-	tar -xvf v8-include.tar.gz
+	curl -L -O https://github.com/just-js/v8/releases/download/${V8_VERSION}/include.tar.gz
+	tar -xvf include.tar.gz
 	mv include v8/
-
 ifneq ($(os),win)
-	rm -f v8-include.tar.gz
+	rm -f include.tar.gz
 endif
 
 v8/src: ## download the v8 source code for debugging
@@ -71,7 +68,7 @@ v8/v8_monolith.lib: ## download the v8 static library for windows
 	curl -C - -L -o v8/v8_monolith.lib.zip https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.zip
 	unzip v8/v8_monolith.lib.zip
 
-main.o: ## compile the main.cc object file
+main.o: v8  ## compile the main.cc object file
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I./v8 -I./v8/include ${WARN} ${V8_FLAGS} main.cc
 
 builtins.o: ## link all source files and assets into an object file
@@ -81,14 +78,14 @@ else
 	$(CC) ${CARGS} builtins.S -o builtins.o
 endif
 
-${RUNTIME}.o: ## compile runtime into an object file 
+${RUNTIME}.o: v8 ## compile runtime into an object file 
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' ${V8_FLAGS} -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
 
-${RUNTIME}: v8/include v8/libv8_monolith.a main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
+${RUNTIME}: v8 v8/libv8_monolith.a main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
 	@echo building ${RUNTIME} for ${os} on ${ARCH}
 	$(LINK) $(LARGS) ${OPT} main.o ${RUNTIME}.o builtins.o ${BINDINGS} ${LIBS} -o ${TARGET} -L"./v8" -lv8_monolith ${LIB_DIRS}
 
-${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js ## link the runtime for windows
+${RUNTIME}.exe: v8 v8/v8_monolith.lib main.js ## link the runtime for windows
 	cl /EHsc /std:c++20 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I. /I./v8 /I./v8/include /c ${V8_FLAGS} main.cc
 #	cl /EHsc /std:c++20 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I./v8 /I./v8/include /c main.cc
 	cl /EHsc /std:c++20 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I. /I./v8 /I./v8/include /c ${V8_FLAGS} ${RUNTIME}.cc
@@ -99,16 +96,16 @@ ${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js ## link the runtime for wi
 #builtins.h: main.js
 #	./lo .\gen.js main.js > builtins.h
 
-mach.o: lib/mach/mach.cc ## build the mach binding
+mach.o: lib/mach/mach.cc v8 ## build the mach binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o mach.o lib/mach/mach.cc
 
-core.o: lib/core/core.cc ## build the core binding
+core.o: lib/core/core.cc v8 ## build the core binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o core.o lib/core/core.cc
 
-core.obj: core.cc
+core.obj: core.cc v8 
 	cl /EHsc /std:c++20 /I. /I./v8 /I./v8/include /c core.cc
 
-curl.o: lib/curl/curl.cc ## build the curl binding
+curl.o: lib/curl/curl.cc v8 ## build the curl binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o curl.o lib/curl/curl.cc
 
 lib/inflate/em_inflate.h:
