@@ -15,29 +15,26 @@
 namespace lo {
 namespace mach {
 
-using v8::String;
 using v8::FunctionCallbackInfo;
 using v8::Local;
 using v8::ObjectTemplate;
 using v8::Isolate;
 using v8::Value;
-using v8::Uint32Array;
-using v8::ArrayBuffer;
-using v8::Context;
 using v8::Integer;
-using v8::Function;
-using v8::Object;
-using v8::HandleScope;
 using v8::Number;
 using v8::FunctionTemplate;
 using v8::FunctionCallback;
 using v8::CFunction;
 using v8::CTypeInfo;
-using v8::Signature;
-using v8::ConstructorBehavior;
-using v8::SideEffectType;
 using v8::Uint8Array;
 using v8::CFunctionInfo;
+using v8::String;
+using v8::Uint32Array;
+using v8::ArrayBuffer;
+using v8::Context;
+using v8::Function;
+using v8::Object;
+using v8::HandleScope;
 using v8::BigInt;
 
 
@@ -48,36 +45,36 @@ using v8::BigInt;
 
 #endif
 
-int32_t task_infoFast(void* p, uint32_t p0, int32_t p1, void* p2, void* p3);
-v8::CTypeInfo cargstask_info[5] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kInt32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
+int32_t task_infoFast(void* p, uint32_t p0, int32_t p1, uint64_t* p2, uint64_t* p3);
+CTypeInfo cargstask_info[5] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint64),
 };
-v8::CTypeInfo rctask_info = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infotask_info = v8::CFunctionInfo(rctask_info, 5, cargstask_info);
-v8::CFunction pFtask_info = v8::CFunction((const void*)&task_infoFast, &infotask_info);
+CTypeInfo rctask_info = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infotask_info = CFunctionInfo(rctask_info, 5, cargstask_info);
+CFunction pFtask_info = CFunction((const void*)&task_infoFast, &infotask_info);
 
 uint32_t task_selfFast(void* p);
-v8::CTypeInfo cargstask_self[1] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
+CTypeInfo cargstask_self[1] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
 
 };
-v8::CTypeInfo rctask_self = v8::CTypeInfo(v8::CTypeInfo::Type::kUint32);
-v8::CFunctionInfo infotask_self = v8::CFunctionInfo(rctask_self, 1, cargstask_self);
-v8::CFunction pFtask_self = v8::CFunction((const void*)&task_selfFast, &infotask_self);
+CTypeInfo rctask_self = CTypeInfo(CTypeInfo::Type::kUint32);
+CFunctionInfo infotask_self = CFunctionInfo(rctask_self, 1, cargstask_self);
+CFunction pFtask_self = CFunction((const void*)&task_selfFast, &infotask_self);
 
-int32_t get_executable_pathFast(void* p, void* p0, struct FastApiTypedArray* const p1);
-v8::CTypeInfo cargsget_executable_path[3] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsArrayBuffer, CTypeInfo::Flags::kNone),
+int32_t get_executable_pathFast(void* p, uint64_t* p0, uint64_t* p1);
+CTypeInfo cargsget_executable_path[3] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint64),
 };
-v8::CTypeInfo rcget_executable_path = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoget_executable_path = v8::CFunctionInfo(rcget_executable_path, 3, cargsget_executable_path);
-v8::CFunction pFget_executable_path = v8::CFunction((const void*)&get_executable_pathFast, &infoget_executable_path);
+CTypeInfo rcget_executable_path = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoget_executable_path = CFunctionInfo(rcget_executable_path, 3, cargsget_executable_path);
+CFunction pFget_executable_path = CFunction((const void*)&get_executable_pathFast, &infoget_executable_path);
 
 #ifdef __linux__
 
@@ -95,7 +92,7 @@ void task_infoSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t task_infoFast(void* p, uint32_t p0, int32_t p1, void* p2, void* p3) {
+int32_t task_infoFast(void* p, uint32_t p0, int32_t p1, uint64_t* p2, uint64_t* p3) {
   uint32_t v0 = p0;
   int32_t v1 = p1;
   task_info_t v2 = reinterpret_cast<task_info_t>(p2);
@@ -114,16 +111,14 @@ uint32_t task_selfFast(void* p) {
 }
 void get_executable_pathSlow(const FunctionCallbackInfo<Value> &args) {
   char* v0 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
-  Local<Uint32Array> u321 = args[1].As<Uint32Array>();
-  uint8_t* ptr1 = (uint8_t*)u321->Buffer()->Data() + u321->ByteOffset();
-  uint32_t* v1 = reinterpret_cast<uint32_t*>(ptr1);
+  uint32_t* v1 = reinterpret_cast<uint32_t*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t rc = _NSGetExecutablePath(v0, v1);
   args.GetReturnValue().Set(rc);
 }
 
-int32_t get_executable_pathFast(void* p, void* p0, struct FastApiTypedArray* const p1) {
+int32_t get_executable_pathFast(void* p, uint64_t* p0, uint64_t* p1) {
   char* v0 = reinterpret_cast<char*>(p0);
-  uint32_t* v1 = reinterpret_cast<uint32_t*>(p1->data);
+  uint32_t* v1 = reinterpret_cast<uint32_t*>(p1);
   return _NSGetExecutablePath(v0, v1);
 }
 #ifdef __linux__
