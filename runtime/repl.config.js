@@ -19,12 +19,12 @@ const opt = '-O3 -march=native -mtune=native -std=c++20 -c -fno-omit-frame-point
 
 const v8_opts = {
   v8_cleanup: 0, v8_threads: 1, on_exit: 0,
-  v8flags: '--lite-mode --jitless --single-threaded --disable-write-barriers --max-heap-size=16 --no-verify-heap --no-expose-wasm --memory-reducer --optimize-for-size --stack-trace-limit=10 --use-strict'
-//  v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --cppgc-young-generation'
+  v8flags: '--lite-mode --jitless --single-threaded --disable-write-barriers --max-heap-size=16 --no-verify-heap --memory-reducer --optimize-for-size --stack-trace-limit=10 --use-strict --turbo-fast-api-calls'
 }
 
-let link_type = '-rdynamic'
+let link_type = '-static'
 if (lo.core.os === 'linux') link_type += ' -fuse-ld=lld -static-libgcc -static-libstdc++'
 if (lo.core.os === 'mac') link_type += ' -w -framework CoreFoundation'
+const index = 'runtime/repl.js'
 
-export default { bindings, libs, embeds, target, opt, v8_opts, link_type }
+export default { bindings, libs, embeds, target, opt, v8_opts, link_type, index }
