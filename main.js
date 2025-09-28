@@ -327,7 +327,7 @@ function wrap_getenv () {
 }
 
 function wrap_getcwd () {
-  const getcwd = wrap(handle, core.getcwd, 2)
+  const getcwd = core.getcwd
   const cwdbuf = ptr(new Uint8Array(MAX_DIR))
 
   return () => {
@@ -389,6 +389,7 @@ core.defaultWriteMode = defaultWriteMode
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 const handle = new Uint32Array(2)
+handle.ptr = get_address(handle)
 const stat = ptr(new Uint8Array(160))
 const stat32 = new Uint32Array(stat.buffer)
 const st = new BigUint64Array(stat.buffer)
@@ -434,14 +435,15 @@ lo.getcwd = wrap_getcwd()
 const LO_HOME = lo.getenv('LO_HOME') || lo.getcwd()
 const LO_CACHE = parseInt(lo.getenv('LO_CACHE') || '0', 10)
 core.homedir = LO_HOME
-if (core.dlopen) core.dlopen = wrap(handle, core.dlopen, 2)
-core.dlsym = wrap(handle, core.dlsym, 2)
-core.mmap = wrap(handle, core.mmap, 6)
-core.calloc = wrap(handle, core.calloc, 2)
-core.malloc = wrap(handle, core.malloc, 1)
-core.memcpy = wrap(handle, core.memcpy, 3)
-core.memmove = wrap(handle, core.memmove, 3)
-core.aligned_alloc = wrap(handle, core.aligned_alloc, 2)
+//if (core.dlopen) core.dlopen = wrap(handle, core.dlopen, 2)
+
+//core.dlsym = wrap(handle, core.dlsym, 2)
+//core.mmap = wrap(handle, core.mmap, 6)
+//core.calloc = wrap(handle, core.calloc, 2)
+//core.malloc = wrap(handle, core.malloc, 1)
+//core.memcpy = wrap(handle, core.memcpy, 3)
+//core.memmove = wrap(handle, core.memmove, 3)
+//core.aligned_alloc = wrap(handle, core.aligned_alloc, 2)
 core.isFile = is_file
 core.read_file = read_file
 core.write_file = write_file
