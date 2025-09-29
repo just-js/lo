@@ -4,7 +4,7 @@ LINK=clang++
 LARGS=-rdynamic -pthread -static-libstdc++
 CCARGS=-fPIC -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions -fvisibility=hidden
 CARGS=-fPIC -c -fno-omit-frame-pointer -fvisibility=hidden
-WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
+WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter -Wno-error=unknown-warning-option
 OPT=-O3 -march=native -mtune=native
 VERSION=0.0.19-pre
 V8_VERSION=13.8
