@@ -11,7 +11,7 @@ const LINK = getenv('LINK') || 'clang++'
 
 const bindings = [
   'bestlines',
-  'boringssl',
+//  'boringssl',
   'cfzlib',
   'core',
   'curl',
