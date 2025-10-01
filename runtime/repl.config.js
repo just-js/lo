@@ -24,7 +24,7 @@ const v8_opts = {
 
 let link_type = '-static'
 if (lo.core.os === 'linux') link_type += ' -fuse-ld=lld -static-libgcc -static-libstdc++'
-if (lo.core.os === 'mac') link_type += ' -w -framework CoreFoundation'
+if (lo.core.os === 'mac') link_type = '-static-libstdc++'
 const index = 'runtime/repl.js'
 
 export default { bindings, libs, embeds, target, opt, v8_opts, link_type, index }

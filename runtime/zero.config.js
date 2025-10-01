@@ -4,7 +4,7 @@ const embeds = []
 const target = 'zero' 
 let link_type = '-static'
 if (lo.core.os === 'linux') link_type += ' -fuse-ld=lld'
-if (lo.core.os === 'mac') link_type = '-w -framework CoreFoundation -static-libstdc++'
+if (lo.core.os === 'mac') link_type = '-static-libstdc++'
 
 const opt = '-O3 -march=native -mtune=native -std=c++20 -fomit-frame-pointer -fno-rtti -fno-exceptions -fvisibility=hidden'
 const v8_opts = {
