@@ -53,10 +53,11 @@ ifneq ($(os),win)
 endif
 
 v8/src: ## download the v8 source code for debugging
-	curl -C - -L -o v8-src.tar.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/src.tar.gz
-	tar -xf v8-src.tar.gz
+	curl -L -O https://github.com/just-js/v8/releases/download/${V8_VERSION}/src.tar.gz
+	tar -xvf src.tar.gz
+	mv src v8/
 ifneq ($(os),win)
-	rm -f v8-src.tar.gz
+	rm -f src.tar.gz
 endif
 
 v8/libv8_monolith.a: ## download the v8 static libary for linux/macos
