@@ -380,7 +380,7 @@ void lo::PromiseRejectCallback(PromiseRejectMessage data) {
     return;
   }
   Local<Value> argv[1] = { exception };
-  MaybeLocal<Value> result = onUnhandledRejection->Call(context, 
+  MaybeLocal<Value> result = onUnhandledRejection->Call(isolate, context, 
     globalInstance, 1, argv);
   if (result.IsEmpty() && try_catch.HasCaught()) {
     fprintf(stderr, "PromiseRejectCallback: Call\n");
@@ -398,7 +398,7 @@ MaybeLocal<Module> lo::OnModuleInstantiate(Local<Context> context,
   Local<Function> callback = 
     context->GetEmbedderData(2).As<Function>();
   Local<Value> argv[1] = { specifier };
-  MaybeLocal<Value> result = callback->Call(context, 
+  MaybeLocal<Value> result = callback->Call(isolate, context, 
     context->Global(), 1, argv);
   int identity = result.ToLocalChecked()->Uint32Value(context).ToChecked();
   std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));
@@ -1603,7 +1603,7 @@ void lo_destroy_isolate_context (struct isolate_context* ctx) {
 void lo_callback (exec_info* info) {
   Isolate* isolate = info->isolate;
   HandleScope scope(isolate);
-  info->js_fn.Get(isolate)->Call(isolate->GetCurrentContext(), 
+  info->js_fn.Get(isolate)->Call(isolate, isolate->GetCurrentContext(), 
     v8::Null(isolate), 0, 0).ToLocalChecked();
 }
 
