@@ -469,6 +469,29 @@ lo.on_module_load = on_module_load
 lo.on_module_instantiate = on_module_instantiate
 
 // TODO: remove camel case names when we do a cleanup
+/*
+const usage = lo.heap_usage
+const heapstats = new BigUint64Array(16)
+lo.heap_usage = () => {
+  usage(heapstats)
+  const [
+    total_heap_size, used_heap_size, external_memory, does_zap_garbage, 
+    heap_size_limit, malloced_memory, number_of_detached_contexts, 
+    number_of_native_contexts, peak_malloced_memory, total_available_size,
+    total_heap_size_executable, total_physical_size
+  ] = heapstats
+  return {
+    total_heap_size, used_heap_size, external_memory, does_zap_garbage, 
+    heap_size_limit, malloced_memory, number_of_detached_contexts, 
+    number_of_native_contexts, peak_malloced_memory, total_available_size,
+    total_heap_size_executable, total_physical_size
+  }
+}
+*/
+
+const heapstats = new BigUint64Array(16)
+const usage = lo.heap_usage
+lo.heap_usage = () => usage(heapstats) || heapstats
 
 core.readFile = read_file
 core.writeFile = write_file
