@@ -447,6 +447,10 @@ void LogEvent (const char* name, int status) {
   fprintf(stderr, "log %i %s\n", status, name);
 }
 
+void HistogramSampleCallback (void* histogram, int sample) {
+
+}
+
 int lo::CreateIsolate(int argc, char** argv, 
   const char* main_src, unsigned int main_len, 
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
@@ -466,9 +470,10 @@ int lo::CreateIsolate(int argc, char** argv,
 //  V8::InitializeExternalStartupDataFromFile("./scratch/snaps/foo.bin");
 
   //create_params.code_event_handler = JitCodeEventHandler;
-  //create_params.counter_lookup_callback = CounterLookupCallback;
+//  create_params.counter_lookup_callback = CounterLookupCallback;
   //create_params.allow_atomics_wait = false;
   //create_params.only_terminate_in_safe_scope = false;
+//  create_params.add_histogram_sample_callback = HistogramSampleCallback;
   create_params.fatal_error_callback = fatalErrorcallback;
   create_params.oom_error_callback = OOMErrorcallback;
   //Isolate *isolate = Isolate::Allocate();
@@ -998,6 +1003,16 @@ int32_t lo::fastUtf8Length (void* p, struct FastOneByteString* const p_str) {
   return p_str->length;
 }
 
+void lo::SharedMemoryUsage(const FunctionCallbackInfo<Value> &args) {
+  v8::SharedMemoryStatistics v8_shm_stats;
+  v8::V8::GetSharedMemoryStatistics(&v8_shm_stats);
+  Local<BigUint64Array> array = args[0].As<BigUint64Array>();
+  uint64_t *fields = static_cast<uint64_t *>(array->Buffer()->Data());
+  fields[0] = v8_shm_stats.read_only_space_size();
+  fields[1] = v8_shm_stats.read_only_space_used_size();
+  fields[2] = v8_shm_stats.read_only_space_physical_size();
+}
+
 void lo::HeapUsage(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   HeapStatistics v8_heap_stats;
@@ -1006,6 +1021,7 @@ void lo::HeapUsage(const FunctionCallbackInfo<Value> &args) {
   uint64_t *fields = static_cast<uint64_t *>(array->Buffer()->Data());
   fields[0] = v8_heap_stats.total_heap_size();
   fields[1] = v8_heap_stats.used_heap_size();
+  //fields[2] = isolate->AdjustAmountOfExternalAllocatedMemory(0);
   fields[2] = v8_heap_stats.external_memory();
   fields[3] = v8_heap_stats.does_zap_garbage();
   fields[4] = v8_heap_stats.heap_size_limit();
@@ -1016,7 +1032,6 @@ void lo::HeapUsage(const FunctionCallbackInfo<Value> &args) {
   fields[9] = v8_heap_stats.total_available_size();
   fields[10] = v8_heap_stats.total_heap_size_executable();
   fields[11] = v8_heap_stats.total_physical_size();
-  fields[12] = isolate->AdjustAmountOfExternalAllocatedMemory(0);
 }
 
 void lo::GetMeta(const FunctionCallbackInfo<Value> &args) {
@@ -1517,6 +1532,7 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "setFlags", SetFlags);
   SET_METHOD(isolate, target, "get_meta", GetMeta);
   SET_METHOD(isolate, target, "heap_usage", HeapUsage);
+  SET_METHOD(isolate, target, "shm_usage", SharedMemoryUsage);
   
   SET_METHOD(isolate, target, "runScript", RunScript);
   SET_METHOD(isolate, target, "registerCallback", RegisterCallback);
