@@ -290,6 +290,10 @@ interface Core {
   write(fd: number, buf: TypedArray, count: number): number;
   close(fd: number): ZeroOrMinusOne;
   readFile(path: string, flags?: number, size?: number): Uint8Array;
+
+  isolate_context_size(): number;
+  isolate_context_destroy(context: TypedArray): void;
+  isolate_context_create(argc: number, argv: number, main: string, main_size: number, script: string, script_size: number, buffer: number, buffer_len: number, fd: number, starttime: number, globalname: string, scriptname: string, cleanup: number, onexit: number, startupdata: number, context: TypedArray): void;
   writeFile(
     path: string,
     u8: Uint8Array,

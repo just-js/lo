@@ -1,4 +1,6 @@
+#include <map>
 #include "lo.h"
+#include <unistd.h>
 
 using v8::String;
 using v8::FunctionCallbackInfo;
@@ -54,7 +56,6 @@ using v8::kPromiseRejectAfterResolved;
 using v8::kPromiseResolveAfterResolved;
 using v8::kPromiseHandlerAddedAfterReject;
 using v8::Script;
-using v8::HeapSpaceStatistics;
 using v8::HeapStatistics;
 using v8::BigUint64Array;
 
@@ -71,8 +72,7 @@ struct timespec t;
 
 CTypeInfo cargshrtime[2] = { 
   CTypeInfo(CTypeInfo::Type::kV8Value), 
-  CTypeInfo(CTypeInfo::Type::kUint32, CTypeInfo::SequenceType::kIsTypedArray, 
-    CTypeInfo::Flags::kNone) 
+  CTypeInfo(CTypeInfo::Type::kUint64)
 };
 CTypeInfo rchrtime = CTypeInfo(CTypeInfo::Type::kVoid);
 CFunctionInfo infohrtime = CFunctionInfo(rchrtime, 2, cargshrtime);
@@ -81,10 +81,8 @@ CFunction pFhrtime = CFunction((const void*)&lo::fastHRTime,
 
 CTypeInfo cargsgetaddress[3] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
-  CTypeInfo(CTypeInfo::Type::kUint32, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone)
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint64)
 };
 CTypeInfo rcgetaddress = CTypeInfo(CTypeInfo::Type::kVoid);
 CFunctionInfo infogetaddress = CFunctionInfo(rcgetaddress, 3, 
@@ -105,8 +103,7 @@ CFunction pFutf8length = CFunction((const void*)&lo::fastUtf8Length,
 CTypeInfo cargsutf8encodeinto[3] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint8,
-  CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone)
+  CTypeInfo(CTypeInfo::Type::kUint64)
 };
 CTypeInfo rcutf8encodeinto = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infoutf8encodeinto = CFunctionInfo(rcutf8encodeinto, 3, 
@@ -114,6 +111,7 @@ CFunctionInfo infoutf8encodeinto = CFunctionInfo(rcutf8encodeinto, 3,
 CFunction pFutf8encodeinto = CFunction((const void*)&lo::fastUtf8EncodeInto, 
   &infoutf8encodeinto);
 
+/*
 CTypeInfo cargsutf8encodeintoPtr[3] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
@@ -123,12 +121,12 @@ CFunctionInfo infoutf8encodeintoPtr = CFunctionInfo(rcutf8encodeinto, 3,
   cargsutf8encodeintoPtr);
 CFunction pFutf8encodeintoPtr = CFunction((const void*)&lo::fastUtf8EncodeIntoPtr, 
   &infoutf8encodeintoPtr);
+*/
 
 CTypeInfo cargsutf8encodeintoatoffset[4] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint8,
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint32)
 };
 CTypeInfo rcutf8encodeintoatoffset = CTypeInfo(CTypeInfo::Type::kInt32);
@@ -139,8 +137,7 @@ CFunction pFutf8encodeintoatoffset = CFunction((const void*)&lo::fastUtf8EncodeI
 
 CTypeInfo cargsreadmemory[4] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint32)
 };
@@ -152,8 +149,7 @@ CFunction pFreadmemory = CFunction((const void*)&lo::fastReadMemory,
 
 CTypeInfo cargsreadmemoryatoffset[5] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint8, 
-    CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
+  CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint32),
   CTypeInfo(CTypeInfo::Type::kUint32)
@@ -385,7 +381,7 @@ void lo::PromiseRejectCallback(PromiseRejectMessage data) {
     return;
   }
   Local<Value> argv[1] = { exception };
-  MaybeLocal<Value> result = onUnhandledRejection->Call(context, 
+  MaybeLocal<Value> result = onUnhandledRejection->Call(isolate, context, 
     globalInstance, 1, argv);
   if (result.IsEmpty() && try_catch.HasCaught()) {
     fprintf(stderr, "PromiseRejectCallback: Call\n");
@@ -403,7 +399,7 @@ MaybeLocal<Module> lo::OnModuleInstantiate(Local<Context> context,
   Local<Function> callback = 
     context->GetEmbedderData(2).As<Function>();
   Local<Value> argv[1] = { specifier };
-  MaybeLocal<Value> result = callback->Call(context, 
+  MaybeLocal<Value> result = callback->Call(isolate, context, 
     context->Global(), 1, argv);
   int identity = result.ToLocalChecked()->Uint32Value(context).ToChecked();
   std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));
@@ -452,6 +448,10 @@ void LogEvent (const char* name, int status) {
   fprintf(stderr, "log %i %s\n", status, name);
 }
 
+void HistogramSampleCallback (void* histogram, int sample) {
+
+}
+
 int lo::CreateIsolate(int argc, char** argv, 
   const char* main_src, unsigned int main_len, 
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
@@ -471,9 +471,10 @@ int lo::CreateIsolate(int argc, char** argv,
 //  V8::InitializeExternalStartupDataFromFile("./scratch/snaps/foo.bin");
 
   //create_params.code_event_handler = JitCodeEventHandler;
-  //create_params.counter_lookup_callback = CounterLookupCallback;
+//  create_params.counter_lookup_callback = CounterLookupCallback;
   //create_params.allow_atomics_wait = false;
   //create_params.only_terminate_in_safe_scope = false;
+//  create_params.add_histogram_sample_callback = HistogramSampleCallback;
   create_params.fatal_error_callback = fatalErrorcallback;
   create_params.oom_error_callback = OOMErrorcallback;
   //Isolate *isolate = Isolate::Allocate();
@@ -631,6 +632,7 @@ int lo::CreateIsolate(int argc, char** argv,
     close(fd);
 */
 
+    errno = 0;
     module->Evaluate(context).ToLocalChecked();
     if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
       try_catch.ReThrow();
@@ -974,11 +976,12 @@ uint64_t lo::hrtime() {
 }
 
 void lo::HRTime(const FunctionCallbackInfo<Value> &args) {
-  ((uint64_t*)args[0].As<Uint32Array>()->Buffer()->Data())[0] = hrtime();
+  uint64_t* v1 = reinterpret_cast<uint64_t*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  v1[0] = hrtime();
 }
 
-void lo::fastHRTime (void* p, struct FastApiTypedArray* const p_ret) {
-  ((uint64_t*)p_ret->data)[0] = hrtime();
+void lo::fastHRTime (void* p, uint64_t* p_ret) {
+  p_ret[0] = hrtime();
 }
 
 void lo::GetAddress(const FunctionCallbackInfo<Value> &args) {
@@ -987,9 +990,9 @@ void lo::GetAddress(const FunctionCallbackInfo<Value> &args) {
   ((uint64_t*)args[1].As<Uint32Array>()->Buffer()->Data())[0] = (uint64_t)ptr;
 }
 
-void lo::fastGetAddress(void* p, struct FastApiTypedArray* const p_buf, 
-  struct FastApiTypedArray* const p_ret) {
-  ((uint64_t*)p_ret->data)[0] = (uint64_t)p_buf->data;
+void lo::fastGetAddress(void* p, uint64_t* p_buf, 
+  uint64_t* p_ret) {
+  p_ret[0] = (uint64_t)p_buf;
 }
 
 void lo::Utf8Length(const FunctionCallbackInfo<Value> &args) {
@@ -1001,6 +1004,16 @@ int32_t lo::fastUtf8Length (void* p, struct FastOneByteString* const p_str) {
   return p_str->length;
 }
 
+void lo::SharedMemoryUsage(const FunctionCallbackInfo<Value> &args) {
+  v8::SharedMemoryStatistics v8_shm_stats;
+  v8::V8::GetSharedMemoryStatistics(&v8_shm_stats);
+  Local<BigUint64Array> array = args[0].As<BigUint64Array>();
+  uint64_t *fields = static_cast<uint64_t *>(array->Buffer()->Data());
+  fields[0] = v8_shm_stats.read_only_space_size();
+  fields[1] = v8_shm_stats.read_only_space_used_size();
+  fields[2] = v8_shm_stats.read_only_space_physical_size();
+}
+
 void lo::HeapUsage(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   HeapStatistics v8_heap_stats;
@@ -1009,6 +1022,7 @@ void lo::HeapUsage(const FunctionCallbackInfo<Value> &args) {
   uint64_t *fields = static_cast<uint64_t *>(array->Buffer()->Data());
   fields[0] = v8_heap_stats.total_heap_size();
   fields[1] = v8_heap_stats.used_heap_size();
+  //fields[2] = isolate->AdjustAmountOfExternalAllocatedMemory(0);
   fields[2] = v8_heap_stats.external_memory();
   fields[3] = v8_heap_stats.does_zap_garbage();
   fields[4] = v8_heap_stats.heap_size_limit();
@@ -1019,7 +1033,6 @@ void lo::HeapUsage(const FunctionCallbackInfo<Value> &args) {
   fields[9] = v8_heap_stats.total_available_size();
   fields[10] = v8_heap_stats.total_heap_size_executable();
   fields[11] = v8_heap_stats.total_physical_size();
-  fields[12] = isolate->AdjustAmountOfExternalAllocatedMemory(0);
 }
 
 void lo::GetMeta(const FunctionCallbackInfo<Value> &args) {
@@ -1065,33 +1078,35 @@ void lo::GetMeta(const FunctionCallbackInfo<Value> &args) {
 }
 
 void lo::ReadMemory(const FunctionCallbackInfo<Value> &args) {
-  Local<Uint8Array> u8 = args[0].As<Uint8Array>();
-  uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + u8->ByteOffset();
+  char* dest = reinterpret_cast<char*>(Local<Integer>::Cast(args[0])->Value());
+//  Local<Uint8Array> u8 = args[0].As<Uint8Array>();
+//  uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + u8->ByteOffset();
   void* start = reinterpret_cast<void*>(
     (uint64_t)Local<Integer>::Cast(args[1])->Value());
   uint32_t size = Local<Integer>::Cast(args[2])->Value();
   memcpy(dest, start, size);
 }
 
-void lo::fastReadMemory (void* p, struct FastApiTypedArray* const p_buf, 
+void lo::fastReadMemory (void* p, uint64_t* p_buf, 
   void* start, uint32_t size) {
-  memcpy(p_buf->data, start, size);
+  memcpy(p_buf, start, size);
 }
 
 // todo: version that wraps memory in place with an arraybuffer
 void lo::ReadMemoryAtOffset(const FunctionCallbackInfo<Value> &args) {
-  Local<Uint8Array> u8 = args[0].As<Uint8Array>();
+//  Local<Uint8Array> u8 = args[0].As<Uint8Array>();
   uint32_t off = Local<Integer>::Cast(args[3])->Value();
-  uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + off;
+  char* dest = reinterpret_cast<char*>(Local<Integer>::Cast(args[0])->Value()) + off;
+//  uint8_t* dest = (uint8_t*)u8->Buffer()->Data() + off;
   void* start = reinterpret_cast<void*>(
     (uint64_t)Local<Integer>::Cast(args[1])->Value());
   uint32_t size = Local<Integer>::Cast(args[2])->Value();
   memcpy(dest, start, size);
 }
 
-void lo::fastReadMemoryAtOffset (void* p, struct FastApiTypedArray* const p_buf, 
+void lo::fastReadMemoryAtOffset (void* p, uint64_t* p_buf, 
   void* start, uint32_t size, uint32_t off) {
-  uint8_t* ptr = (uint8_t*)p_buf->data + off;
+  uint8_t* ptr = (uint8_t*)p_buf + off;
   memcpy(ptr, start, size);
 }
 
@@ -1119,9 +1134,34 @@ void lo::WrapMemory(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(ab);
 }
 
+// todo: need this for sharedarraybuffer
+void lo::WrapMemoryShared(const FunctionCallbackInfo<Value> &args) {
+  Isolate* isolate = args.GetIsolate();
+//  HandleScope scope(isolate);
+  uint64_t start64 = (uint64_t)Local<Number>::Cast(args[0])->Value();
+  uint32_t size = (uint32_t)Local<Integer>::Cast(args[1])->Value();
+  void* start = reinterpret_cast<void*>(start64);
+  int32_t free_memory = 0;
+  if (args.Length() > 2) {
+    free_memory = (int32_t)Local<Integer>::Cast(args[2])->Value();
+  }
+  if (free_memory == 0) {
+    std::unique_ptr<BackingStore> backing = SharedArrayBuffer::NewBackingStore(
+        start, size, v8::BackingStore::EmptyDeleter, nullptr);
+    Local<SharedArrayBuffer> ab = SharedArrayBuffer::New(isolate, std::move(backing));
+    args.GetReturnValue().Set(ab);
+    return;
+  }
+  std::unique_ptr<BackingStore> backing = SharedArrayBuffer::NewBackingStore(
+      start, size, lo::FreeMemory, nullptr);
+  Local<SharedArrayBuffer> ab = SharedArrayBuffer::New(isolate, std::move(backing));
+  args.GetReturnValue().Set(ab);
+}
+
 void lo::UnWrapMemory(const FunctionCallbackInfo<Value> &args) {
   Local<ArrayBuffer> ab = args[0].As<ArrayBuffer>();
   ab->Detach();
+  // todo: return pointer here so we don't need to get it before
 }
 
 void lo::SetFlags(const FunctionCallbackInfo<Value> &args) {
@@ -1198,7 +1238,7 @@ void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Integer::New(isolate, written));
 }
 */
-
+/*
 void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
@@ -1212,12 +1252,12 @@ void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
 }
 
 int32_t lo::fastUtf8EncodeInto (void* p, struct FastOneByteString* 
-  const p_str, struct FastApiTypedArray* const p_buf) {
-  memcpy(p_buf->data, p_str->data, p_str->length);
+  const p_str, uint64_t* p_buf) {
+  memcpy(p_buf, p_str->data, p_str->length);
   return p_str->length;
 }
-
-void lo::Utf8EncodeIntoPtr(const FunctionCallbackInfo<Value> &args) {
+*/
+void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
 /*
@@ -1241,7 +1281,7 @@ void lo::Utf8EncodeIntoPtr(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Integer::New(isolate, written));
 }
 
-int32_t lo::fastUtf8EncodeIntoPtr (void* p, struct FastOneByteString* 
+int32_t lo::fastUtf8EncodeInto (void* p, struct FastOneByteString* 
   const p_str, void* p_buf) {
   memcpy(p_buf, p_str->data, p_str->length);
   return p_str->length;
@@ -1253,8 +1293,9 @@ void lo::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
   uint32_t off = Local<Integer>::Cast(args[2])->Value();
   int chars_written = 0;
   //int size = str->Utf8Length(isolate);
-  Local<Uint8Array> u8 = args[1].As<Uint8Array>();
-  char* dest = (char*)u8->Buffer()->Data() + off;
+  char* dest = reinterpret_cast<char*>(Local<Integer>::Cast(args[1])->Value()) + off;
+//  Local<Uint8Array> u8 = args[1].As<Uint8Array>();
+//  char* dest = (char*)u8->Buffer()->Data() + off;
   int written = str->WriteUtf8(isolate, dest, -1, &chars_written, 
     String::NO_NULL_TERMINATION | String::HINT_MANY_WRITES_EXPECTED);
 //    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
@@ -1287,10 +1328,15 @@ void lo::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
 */
 
 int32_t lo::fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString* 
-  const p_str, struct FastApiTypedArray* const p_buf, uint32_t off) {
-  uint8_t* dest = (uint8_t*)p_buf->data + off;
+  const p_str, uint64_t* p_buf, uint32_t off) {
+  uint8_t* dest = (uint8_t*)p_buf + off;
   memcpy(dest, p_str->data, p_str->length);
   return p_str->length;
+}
+
+void lo::GetIsolateStartAddress(const FunctionCallbackInfo<Value> &args) {
+  Local<ArrayBuffer> ab = args[0].As<Uint32Array>()->Buffer();
+  ((void**)ab->Data())[0] = (void*)&lo_start_isolate;
 }
 
 void lo::Print(const FunctionCallbackInfo<Value> &args) {
@@ -1434,7 +1480,9 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
     V8::GetVersion()).ToLocalChecked());
   SET_MODULE(isolate, target, "version", version);
   SET_METHOD(isolate, target, "print", Print);
+  // OK
   SET_FAST_METHOD(isolate, target, "hrtime", &pFhrtime, HRTime);
+  //SET_METHOD(isolate, target, "hrtime", HRTime);
   SET_METHOD(isolate, target, "nextTick", NextTick);
   SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);
   SET_METHOD(isolate, target, "pumpMessageLoop", PumpMessageLoop);
@@ -1452,32 +1500,40 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "loadModule", LoadModule);
   SET_METHOD(isolate, target, "unloadModule", UnloadModule);
   SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
+  SET_METHOD(isolate, target, "isolate_start_address", GetIsolateStartAddress);
 
   SET_METHOD(isolate, target, "latin1Decode", Latin1Decode);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
   SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
   //SET_METHOD(isolate, target, "utf8EncodeInto", Utf8EncodeInto);
 
+  // OK
   SET_FAST_METHOD(isolate, target, "utf8Length", &pFutf8length, Utf8Length);
+//  SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto, 
+//    Utf8EncodeInto);
+  // OK
   SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto, 
     Utf8EncodeInto);
-
-  SET_FAST_METHOD(isolate, target, "utf8EncodeIntoPtr", &pFutf8encodeintoPtr, 
-    Utf8EncodeIntoPtr);
-
+  // OK
   SET_FAST_METHOD(isolate, target, "utf8EncodeIntoAtOffset", 
     &pFutf8encodeintoatoffset, Utf8EncodeIntoAtOffset);
 
   SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
+  SET_METHOD(isolate, target, "wrapMemoryShared", WrapMemoryShared);
   SET_METHOD(isolate, target, "unwrapMemory", UnWrapMemory);
-  SET_FAST_METHOD(isolate, target, "getAddress", &pFgetaddress, GetAddress);
+  //SET_FAST_METHOD(isolate, target, "getAddress", &pFgetaddress, GetAddress);
+  // 50% throughput
+  SET_METHOD(isolate, target, "getAddress", GetAddress);
+  // OK
   SET_FAST_METHOD(isolate, target, "readMemory", &pFreadmemory, ReadMemory);
+  // OK
   SET_FAST_METHOD(isolate, target, "readMemoryAtOffset", &pFreadmemoryatoffset, 
     ReadMemoryAtOffset);
 
   SET_METHOD(isolate, target, "setFlags", SetFlags);
   SET_METHOD(isolate, target, "get_meta", GetMeta);
   SET_METHOD(isolate, target, "heap_usage", HeapUsage);
+  SET_METHOD(isolate, target, "shm_usage", SharedMemoryUsage);
   
   SET_METHOD(isolate, target, "runScript", RunScript);
   SET_METHOD(isolate, target, "registerCallback", RegisterCallback);
@@ -1549,14 +1605,22 @@ void lo_destroy_isolate_context (struct isolate_context* ctx) {
 //    Isolate* isolate = (Isolate*)ctx->startup_data;
 //    cleanupIsolate(isolate);
 //  }
-  free(ctx);
+//  free(ctx);
+  free(ctx->main);
+  free(ctx->js);
+  for (int i = 0; i < ctx->argc; i++) {
+    free(ctx->argv[i]);
+  }
+  free(ctx->argv);
+  free(ctx->globalobj);
+  free(ctx->scriptname);
 }
 
 // generic callback used to trampoline ffi callbacks back into JS
 void lo_callback (exec_info* info) {
   Isolate* isolate = info->isolate;
   HandleScope scope(isolate);
-  info->js_fn.Get(isolate)->Call(isolate->GetCurrentContext(), 
+  info->js_fn.Get(isolate)->Call(isolate, isolate->GetCurrentContext(), 
     v8::Null(isolate), 0, 0).ToLocalChecked();
 }
 

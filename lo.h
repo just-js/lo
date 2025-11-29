@@ -2,7 +2,6 @@
 
 #include <v8.h>
 #include <libplatform/libplatform.h>
-#include <map>
 #include <v8-fast-api-calls.h>
 #include <v8-array-buffer.h>
 #include <fcntl.h>
@@ -29,20 +28,13 @@
   #endif
   #define DLL_LOCAL
 #else
-  #if __GNUC__ >= 4
-    #define DLL_PUBLIC __attribute__ ((visibility ("default")))
-    #define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
-  #else
-    #define DLL_PUBLIC
-    #define DLL_LOCAL
-  #endif
+  #define DLL_PUBLIC __attribute__ ((visibility ("default")))
+  #define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
 #endif
 
-using v8::ArrayBuffer;
-
 namespace lo {
-
-class SpecialArrayBufferAllocator : public ArrayBuffer::Allocator {
+/*
+class SpecialArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
  public:
   void* Allocate(size_t length) override { 
     return calloc(length, 1); 
@@ -63,7 +55,7 @@ class SpecialArrayBufferAllocator : public ArrayBuffer::Allocator {
     return new_data;
   }
 };
-
+*/
 
 // structs for passing typed arrays & strings in and out of v8 fast api calls
 struct FastApiTypedArray {
@@ -140,22 +132,22 @@ DLL_PUBLIC void SET_FAST_PROP(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate
   v8::CFunction* fastSetter, v8::FunctionCallback slowSetter);
 
 // internal API - on the lo:: namespace so can be used from other modules
-uint64_t hrtime();
-void builtins_add (const char* name, const char* source, 
+DLL_PUBLIC uint64_t hrtime();
+DLL_PUBLIC void builtins_add (const char* name, const char* source, 
   unsigned int size);
-void modules_add (const char* name, register_plugin plugin_handler);
-void Setup(
+DLL_PUBLIC void modules_add (const char* name, register_plugin plugin_handler);
+DLL_PUBLIC void Setup(
     int* argc, 
     char** argv,
     const char* v8flags,
     int v8_threads,
     int v8flags_from_commandline);
-int CreateIsolate(int argc, char** argv, 
+DLL_PUBLIC int CreateIsolate(int argc, char** argv, 
   const char* main, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname,
   int cleanup, int onexit, void* startup_data);
-int CreateIsolate(int argc, char** argv,
+DLL_PUBLIC int CreateIsolate(int argc, char** argv,
   const char* main, unsigned int main_len, uint64_t start,
   const char* globalobj, int cleanup, int onexit, void* startup_data);
 void PrintStackTrace(v8::Isolate* isolate, const v8::TryCatch& try_catch);
@@ -185,30 +177,34 @@ void Arch(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Os(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Exit(const v8::FunctionCallbackInfo<v8::Value> &args);
 void WrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
+void WrapMemoryShared(const v8::FunctionCallbackInfo<v8::Value> &args);
 void UnWrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
+
 void GetMeta(const v8::FunctionCallbackInfo<v8::Value> &args);
 void HeapUsage(const v8::FunctionCallbackInfo<v8::Value> &args);
+void SharedMemoryUsage(const v8::FunctionCallbackInfo<v8::Value> &args);
+void GetIsolateStartAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
 
 // fast api methods
 void GetAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
-void fastGetAddress(void* p, struct FastApiTypedArray* const p_buf, 
-  struct FastApiTypedArray* const p_ret);
-void Utf8EncodeInto(const v8::FunctionCallbackInfo<v8::Value> &args);
-int32_t fastUtf8EncodeInto (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf);
+void fastGetAddress(void* p, uint64_t* p_buf, 
+  uint64_t* p_ret);
+//void Utf8EncodeInto(const v8::FunctionCallbackInfo<v8::Value> &args);
+//int32_t fastUtf8EncodeInto (void* p, struct FastOneByteString* const p_str, uint64_t* p_buf);
 
-void Utf8EncodeIntoPtr(const v8::FunctionCallbackInfo<v8::Value> &args);
-int32_t fastUtf8EncodeIntoPtr (void* p, struct FastOneByteString* const p_str, void* p_buf);
+void Utf8EncodeInto(const v8::FunctionCallbackInfo<v8::Value> &args);
+int32_t fastUtf8EncodeInto (void* p, struct FastOneByteString* const p_str, void* p_buf);
 
 void Utf8EncodeIntoAtOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
-int32_t fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString* const p_str, struct FastApiTypedArray* const p_buf, uint32_t off);
+int32_t fastUtf8EncodeIntoAtOffset (void* p, struct FastOneByteString* const p_str, uint64_t* p_buf, uint32_t off);
 void Utf8Length(const v8::FunctionCallbackInfo<v8::Value> &args);
 int32_t fastUtf8Length (void* p, struct FastOneByteString* const p_ret);
 void HRTime(const v8::FunctionCallbackInfo<v8::Value> &args);
-void fastHRTime (void* p, struct FastApiTypedArray* const p_ret);
+void fastHRTime (void* p, uint64_t* p_ret);
 void ReadMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
-void fastReadMemory (void* p, struct FastApiTypedArray* const p_buf, void* start, uint32_t size);
+void fastReadMemory (void* p, uint64_t* p_buf, void* start, uint32_t size);
 void ReadMemoryAtOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
-void fastReadMemoryAtOffset (void* p, struct FastApiTypedArray* const p_buf, void* start, uint32_t size, uint32_t off);
+void fastReadMemoryAtOffset (void* p, uint64_t* p_buf, void* start, uint32_t size, uint32_t off);
 
 // fast api properties
 void GetErrno(const v8::FunctionCallbackInfo<v8::Value> &args);
@@ -226,6 +222,7 @@ extern "C"
 #endif
 
 struct isolate_context {
+  uint64_t start;
   int rc;
   int argc;
   int fd;
@@ -234,7 +231,6 @@ struct isolate_context {
   int onexit;
   unsigned int main_len;
   unsigned int js_len;
-  uint64_t start;
   char** argv;
   char* main;
   char* js;
@@ -245,19 +241,19 @@ struct isolate_context {
   void* isolate;
 };
 
-int lo_create_isolate (int argc, char** argv, 
+DLL_PUBLIC int lo_create_isolate (int argc, char** argv, 
   const char* main, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname,
   int cleanup, int onexit, void* startup_data);
-int lo_context_size ();
-void lo_create_isolate_context (int argc, char** argv, 
+DLL_PUBLIC int lo_context_size ();
+DLL_PUBLIC void lo_create_isolate_context (int argc, char** argv, 
   const char* main, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname,
   int cleanup, int onexit, void* startup_data, struct isolate_context* ctx);
-void lo_start_isolate (void* ptr);
-void lo_destroy_isolate_context (struct isolate_context* ctx);
+DLL_PUBLIC void lo_start_isolate (void* ptr);
+DLL_PUBLIC void lo_destroy_isolate_context (struct isolate_context* ctx);
 
 struct exec_info {
   v8::Global<v8::Function> js_fn;
@@ -272,10 +268,10 @@ struct callback_state {
   exec_info** contexts;
 };
 
-void lo_callback (exec_info* info);
+DLL_PUBLIC void lo_callback (exec_info* info);
 void lo_async_callback (exec_info* info, callback_state* state);
 
-void lo_shutdown (int cleanup);
+DLL_PUBLIC void lo_shutdown (int cleanup);
 
 #ifdef __cplusplus
     }

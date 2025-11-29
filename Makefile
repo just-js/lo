@@ -2,12 +2,12 @@ CC=clang
 CXX=clang++
 LINK=clang++
 LARGS=-rdynamic -pthread -static-libstdc++
-CCARGS=-std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions
-CARGS=-c -fno-omit-frame-pointer
-WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter
-OPT=-O3
-VERSION=0.0.18-pre
-V8_VERSION=12.9
+CCARGS=-fPIC -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions -fvisibility=hidden
+CARGS=-fPIC -c -fno-omit-frame-pointer -fvisibility=hidden
+WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter -Wno-error=unknown-warning-option
+OPT=-O3 -march=native -mtune=native
+VERSION=0.0.19-pre
+V8_VERSION=14.0
 RUNTIME=lo
 LO_HOME=$(shell pwd)
 BINDINGS=core.o inflate.a curl.o
@@ -15,7 +15,7 @@ ARCH=x64
 os=linux
 TARGET=${RUNTIME}
 LIBS=-ldl -lcurl -lssl -lz
-V8_FLAGS=-DV8_COMPRESS_POINTERS -DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_INTL_SUPPORT=1
+V8_FLAGS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS
 LIB_DIRS=
 
 ifeq ($(OS),Windows_NT)
@@ -24,14 +24,11 @@ else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Linux)
 		os=linux
-		LARGS+=-s -static-libgcc
-		CC=gcc
-		CXX=g++
-		LINK=g++
+		LARGS+=-s -static-libgcc -fuse-ld=lld
 	else ifeq ($(UNAME_S),Darwin)
 		os=mac
 		BINDINGS+=mach.o
-		LARGS+=-s -w
+		LARGS+=-s -w -framework CoreFoundation
 		LIB_DIRS+=-L"/opt/homebrew/lib"
 		ifeq ($(ARCH),arm64)
 			LARGS+=-arch arm64
@@ -46,21 +43,24 @@ endif
 help:
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9\/_\.-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-v8/include: ## download the v8 headers
-	curl -L -o v8-include.tar.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/include.tar.gz
-	tar -xvf v8-include.tar.gz
+v8:
+	mkdir v8
+	curl -L -O https://github.com/just-js/v8/releases/download/${V8_VERSION}/include.tar.gz
+	tar -xvf include.tar.gz
+	mv include v8/
 ifneq ($(os),win)
-	rm -f v8-include.tar.gz
+	rm -f include.tar.gz
 endif
 
 v8/src: ## download the v8 source code for debugging
-	curl -C - -L -o v8-src.tar.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/src.tar.gz
-	tar -xf v8-src.tar.gz
+	curl -L -O https://github.com/just-js/v8/releases/download/${V8_VERSION}/src.tar.gz
+	tar -xvf src.tar.gz
+	mv src v8/
 ifneq ($(os),win)
-	rm -f v8-src.tar.gz
+	rm -f src.tar.gz
 endif
 
-v8/libv8_monolith.a: ## download the v8 static libary for linux/macos
+v8/libv8_monolith.a: v8 ## download the v8 static libary for linux/macos
 	curl -C - -L -o v8/libv8_monolith.a.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.a.gz
 	gzip -d v8/libv8_monolith.a.gz
 	rm -f v8/libv8_monolith.a.gz
@@ -69,7 +69,7 @@ v8/v8_monolith.lib: ## download the v8 static library for windows
 	curl -C - -L -o v8/v8_monolith.lib.zip https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.zip
 	unzip v8/v8_monolith.lib.zip
 
-main.o: ## compile the main.cc object file
+main.o: v8  ## compile the main.cc object file
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I./v8 -I./v8/include ${WARN} ${V8_FLAGS} main.cc
 
 builtins.o: ## link all source files and assets into an object file
@@ -79,14 +79,14 @@ else
 	$(CC) ${CARGS} builtins.S -o builtins.o
 endif
 
-${RUNTIME}.o: ## compile runtime into an object file 
+${RUNTIME}.o: v8 ## compile runtime into an object file 
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' ${V8_FLAGS} -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
 
-${RUNTIME}: v8/include v8/libv8_monolith.a main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
+${RUNTIME}: v8 v8/libv8_monolith.a main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
 	@echo building ${RUNTIME} for ${os} on ${ARCH}
 	$(LINK) $(LARGS) ${OPT} main.o ${RUNTIME}.o builtins.o ${BINDINGS} ${LIBS} -o ${TARGET} -L"./v8" -lv8_monolith ${LIB_DIRS}
 
-${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js ## link the runtime for windows
+${RUNTIME}.exe: v8 v8/v8_monolith.lib main.js ## link the runtime for windows
 	cl /EHsc /std:c++20 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I. /I./v8 /I./v8/include /c ${V8_FLAGS} main.cc
 #	cl /EHsc /std:c++20 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I./v8 /I./v8/include /c main.cc
 	cl /EHsc /std:c++20 /DRUNTIME='"${RUNTIME}"' /DVERSION='"${VERSION}"' /I. /I./v8 /I./v8/include /c ${V8_FLAGS} ${RUNTIME}.cc
@@ -97,16 +97,16 @@ ${RUNTIME}.exe: v8/include v8/v8_monolith.lib main.js ## link the runtime for wi
 #builtins.h: main.js
 #	./lo .\gen.js main.js > builtins.h
 
-mach.o: lib/mach/mach.cc ## build the mach binding
+mach.o: lib/mach/mach.cc v8 ## build the mach binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o mach.o lib/mach/mach.cc
 
-core.o: lib/core/core.cc ## build the core binding
+core.o: lib/core/core.cc v8 ## build the core binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o core.o lib/core/core.cc
 
-core.obj: core.cc
+core.obj: core.cc v8 
 	cl /EHsc /std:c++20 /I. /I./v8 /I./v8/include /c core.cc
 
-curl.o: lib/curl/curl.cc ## build the curl binding
+curl.o: lib/curl/curl.cc v8 ## build the curl binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o curl.o lib/curl/curl.cc
 
 lib/inflate/em_inflate.h:

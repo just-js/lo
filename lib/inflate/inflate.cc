@@ -4,71 +4,35 @@
 #include <em_inflate.h>
 
 
-#ifdef __linux__
 
-#endif
 
-#ifdef __MACH__
 
-#endif
 
 #include <lo.h>
 
 namespace lo {
 namespace inflate {
 
-using v8::String;
 using v8::FunctionCallbackInfo;
-using v8::Array;
 using v8::Local;
 using v8::ObjectTemplate;
 using v8::Isolate;
 using v8::Value;
+using v8::Integer;
+using v8::Number;
+using v8::FunctionTemplate;
+using v8::FunctionCallback;
+using v8::CFunction;
+using v8::CTypeInfo;
+using v8::Uint8Array;
+using v8::CFunctionInfo;
+using v8::String;
 using v8::Uint32Array;
 using v8::ArrayBuffer;
 using v8::Context;
-using v8::Integer;
 using v8::Function;
-using v8::NewStringType;
 using v8::Object;
-using v8::BackingStore;
-using v8::TryCatch;
-using v8::ScriptCompiler;
-using v8::Module;
-using v8::FixedArray;
-using v8::ScriptOrigin;
-using v8::SharedArrayBuffer;
-using v8::MaybeLocal;
 using v8::HandleScope;
-using v8::Promise;
-using v8::Number;
-using v8::StackTrace;
-using v8::Message;
-using v8::StackFrame;
-using v8::Maybe;
-using v8::FunctionTemplate;
-using v8::FunctionCallback;
-using v8::PromiseRejectMessage;
-using v8::CFunction;
-using v8::Global;
-using v8::Exception;
-using v8::CTypeInfo;
-using v8::PropertyAttribute;
-using v8::Signature;
-using v8::ConstructorBehavior;
-using v8::SideEffectType;
-using v8::kPromiseRejectAfterResolved;
-using v8::kPromiseResolveAfterResolved;
-using v8::kPromiseHandlerAddedAfterReject;
-using v8::Data;
-using v8::PrimitiveArray;
-using v8::TypedArray;
-using v8::Uint8Array;
-using v8::Boolean;
-using v8::ModuleRequest;
-using v8::CFunctionInfo;
-using v8::OOMDetails;
-using v8::V8;
 using v8::BigInt;
 
 
@@ -79,29 +43,17 @@ using v8::BigInt;
 
 #endif
 
-int32_t inflateFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, uint32_t p3);
-v8::CTypeInfo cargsinflate[5] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint8, CTypeInfo::SequenceType::kIsTypedArray, CTypeInfo::Flags::kNone),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
+int32_t inflateFast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t p3);
+CTypeInfo cargsinflate[5] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint32),
 };
-v8::CTypeInfo rcinflate = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoinflate = v8::CFunctionInfo(rcinflate, 5, cargsinflate);
-v8::CFunction pFinflate = v8::CFunction((const void*)&inflateFast, &infoinflate);
-
-int32_t inflate2Fast(void* p, void* p0, uint32_t p1, void* p2, uint32_t p3);
-v8::CTypeInfo cargsinflate2[5] = {
-  v8::CTypeInfo(v8::CTypeInfo::Type::kV8Value),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint64),
-  v8::CTypeInfo(v8::CTypeInfo::Type::kUint32),
-};
-v8::CTypeInfo rcinflate2 = v8::CTypeInfo(v8::CTypeInfo::Type::kInt32);
-v8::CFunctionInfo infoinflate2 = v8::CFunctionInfo(rcinflate2, 5, cargsinflate2);
-v8::CFunction pFinflate2 = v8::CFunction((const void*)&inflate2Fast, &infoinflate2);
+CTypeInfo rcinflate = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoinflate = CFunctionInfo(rcinflate, 5, cargsinflate);
+CFunction pFinflate = CFunction((const void*)&inflateFast, &infoinflate);
 
 #ifdef __linux__
 
@@ -111,26 +63,6 @@ v8::CFunction pFinflate2 = v8::CFunction((const void*)&inflate2Fast, &infoinflat
 #endif
 
 void inflateSlow(const FunctionCallbackInfo<Value> &args) {
-  Local<Uint8Array> u80 = args[0].As<Uint8Array>();
-  uint8_t* ptr0 = (uint8_t*)u80->Buffer()->Data() + u80->ByteOffset();
-  unsigned char* v0 = reinterpret_cast<unsigned char*>(ptr0);
-  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  Local<Uint8Array> u82 = args[2].As<Uint8Array>();
-  uint8_t* ptr2 = (uint8_t*)u82->Buffer()->Data() + u82->ByteOffset();
-  unsigned char* v2 = reinterpret_cast<unsigned char*>(ptr2);
-  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
-  int32_t rc = em_inflate(v0, v1, v2, v3);
-  args.GetReturnValue().Set(rc);
-}
-
-int32_t inflateFast(void* p, struct FastApiTypedArray* const p0, uint32_t p1, struct FastApiTypedArray* const p2, uint32_t p3) {
-  unsigned char* v0 = reinterpret_cast<unsigned char*>(p0->data);
-  uint32_t v1 = p1;
-  unsigned char* v2 = reinterpret_cast<unsigned char*>(p2->data);
-  uint32_t v3 = p3;
-  return em_inflate(v0, v1, v2, v3);
-}
-void inflate2Slow(const FunctionCallbackInfo<Value> &args) {
   unsigned char* v0 = reinterpret_cast<unsigned char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   unsigned char* v2 = reinterpret_cast<unsigned char*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
@@ -139,7 +71,7 @@ void inflate2Slow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t inflate2Fast(void* p, void* p0, uint32_t p1, void* p2, uint32_t p3) {
+int32_t inflateFast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t p3) {
   unsigned char* v0 = reinterpret_cast<unsigned char*>(p0);
   uint32_t v1 = p1;
   unsigned char* v2 = reinterpret_cast<unsigned char*>(p2);
@@ -155,7 +87,6 @@ int32_t inflate2Fast(void* p, void* p0, uint32_t p1, void* p2, uint32_t p3) {
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
   SET_FAST_METHOD(isolate, module, "inflate", &pFinflate, inflateSlow);
-  SET_FAST_METHOD(isolate, module, "inflate2", &pFinflate2, inflate2Slow);
 
 #ifdef __linux__
 

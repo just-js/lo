@@ -5,18 +5,13 @@ const { assert, core, colors, getenv, load } = lo
 const { AD, AY, AC } = colors
 const { os, unlink } = core
 
-let CC = getenv('CC') || 'clang'
-let CXX = getenv('CXX') || 'clang++'
-let LINK = getenv('LINK') || 'clang++'
-if (os === 'linux') {
-  CC = getenv('CC') || 'gcc'
-  CXX = getenv('CXX') || 'g++'
-  LINK = getenv('LINK') || 'g++'
-}
+const CC = getenv('CC') || 'clang'
+const CXX = getenv('CXX') || 'clang++'
+const LINK = getenv('LINK') || 'clang++'
 
 const bindings = [
   'bestlines',
-  'boringssl',
+//  'boringssl',
   'cfzlib',
   'core',
   'curl',

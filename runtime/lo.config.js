@@ -13,15 +13,15 @@ const bindings = [
   { 'epoll': ['linux'] },
   { 'kevents': ['mac'] },
   { 'mach': ['mac'] },
+  'zlib'
 ]
 
 const libs = [
   'lib/bench.js', 
   'lib/binary.js', 
-  'lib/curl.js',
   'lib/ffi.js', 
   'lib/asm.js', 
-  'lib/asm/assembler.js', 
+  `lib/asm/${lo.core.arch}.js`, 
   'lib/asm/compiler.js', 
   'lib/gen.js', 
   'lib/fs.js', 
@@ -47,7 +47,6 @@ const libs = [
   'lib/worker.js',
   'lib/udp.js',
   'lib/pmon.js',
-  'lib/bench.mjs',
   'lib/dns.js',
   'lib/dns/protocol.js',
   'lib/socket.js',
@@ -86,16 +85,16 @@ const embeds = [
 
 
 const target = 'lo'
-const opt = '-O3 -march=native -mtune=native -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions'
+const opt = '-O3 -march=native -mtune=native -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions -fvisibility=hidden'
 
 const v8_opts = {
   v8_cleanup: 0, v8_threads: 2, on_exit: 0,
   v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init'
-//  v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --max-heap-size 1024'
 }
 
 let link_type = '-rdynamic'
-if (lo.core.os === 'linux') link_type += ' -static-libgcc -static-libstdc++'
+if (lo.core.os === 'linux') link_type += ' -fuse-ld=lld -static-libgcc -static-libstdc++'
+if (lo.core.os === 'mac') link_type += ' -w -framework CoreFoundation'
 
 export default { bindings, libs, embeds, target, opt, v8_opts, link_type }
 

@@ -1,3 +1,4 @@
+// @ts-check
 // global classes
 
 function bootstrap_runtime () {
@@ -11,15 +12,23 @@ class TextEncoder {
     return utf8Encode(input)
   }
 
+  /**
+  * @param {string} src
+  * @param {TypedArray} dest
+  */
   encodeInto (src, dest) {
     // todo: pass a u32array(2) handle in here so we can return read, written
-    return utf8EncodeInto(src, dest)
+    if (!dest.ptr) ptr(dest)
+    return utf8EncodeInto(src, dest.ptr)
   }
 }
 
 class TextDecoder {
   encoding = 'utf-8'
 
+  /**
+  * @param {TypedArray} u8
+  */
   decode (u8) {
     // todo: result cache
     if (!u8.ptr) ptr(u8)
@@ -29,12 +38,19 @@ class TextDecoder {
 
 // externally exposed functions
 
+/**
+* @param {Error} err
+*/
 function fix_stack (err) {
   err.stack = err.stack.split('\n')
     .filter(line => !line.match(/\s+at assert \(main\.js.+/))
     .join('\n')
 }
 
+/**
+* @param {string} condition
+* @param {function} message
+*/
 function assert (condition, message, ErrorType = Error) {
   if (!condition) {
     if (message && message.constructor.name === 'Function') {
@@ -50,6 +66,7 @@ function assert (condition, message, ErrorType = Error) {
 }
 
 function wrap (handle, fn, plen = 0) {
+  if (!handle.ptr) ptr(handle)
   const call = fn
   const params = (new Array(plen)).fill(0).map((_, i) => `p${i}`).join(', ')
   // TODO: Number.IsSafeInteger check - return BigInt if not safe
@@ -57,8 +74,7 @@ function wrap (handle, fn, plen = 0) {
     'handle',
     'call',
     `return function ${fn.name} (${params}) {
-    call(${params}${plen > 0 ? ', ' : ''}handle);
-    const v = handle[0] + ((2 ** 32) * handle[1])
+    call(${params}${plen > 0 ? ', ' : ''}handle.ptr);
     return handle[0] + ((2 ** 32) * handle[1]);
   }`,)
   const fun = f(handle, call)
@@ -67,8 +83,9 @@ function wrap (handle, fn, plen = 0) {
 }
 
 function ptr (u8) {
-  u8.ptr = lo.getAddress(u8)
-  u8.size = u8.byteLength
+  if (u8.ptr) return u8
+  u8.ptr = get_address(u8)
+  u8.size = u8.byteLength // TODO: this is not right?
   return u8
 }
 
@@ -89,7 +106,7 @@ function check_mode (val, mode) {
 function is_file (path) {
   const fd = open(path, O_RDONLY)
   if (fd <= 2) return false
-  if (fstat(fd, stat) !== 0) return false
+  if (fstat(fd, stat.ptr) !== 0) return false
   close(fd)
   return check_mode(stat32[MODE_WORD], S_IFREG)
 }
@@ -98,7 +115,7 @@ function read_file (path, flags = O_RDONLY, size = 0) {
   const fd = open(path, flags)
   assert(fd > 0, `failed to open ${path} with flags ${flags}`)
   if (size === 0) {
-    assert(fstat(fd, stat) === 0)
+    assert(fstat(fd, stat.ptr) === 0)
     if (core.os === 'mac') {
       size = Number(st[12])
     } else {
@@ -108,14 +125,15 @@ function read_file (path, flags = O_RDONLY, size = 0) {
   let off = 0
   let len = 0
   // todo - check for max size
-  const u8 = new Uint8Array(size)
-  while ((len = read(fd, u8, size - off)) > 0) off += len
+  const u8 = ptr(new Uint8Array(size))
+  while ((len = read(fd, u8.ptr, size - off)) > 0) off += len
   close(fd)
   return u8
 }
 
 function write_file (path, u8, flags = defaultWriteFlags, 
   mode = defaultWriteMode) {
+  if (!u8.ptr) ptr(u8)
   const len = u8.length
   if (!len) return -1
   const fd = open(path, flags, mode)
@@ -125,7 +143,8 @@ function write_file (path, u8, flags = defaultWriteFlags,
   let bytes = 0
   for (let i = 0, off = 0; i < chunks; ++i, off += 4096) {
     const towrite = Math.min(len - off, 4096)
-    bytes = write(fd, u8.subarray(off, off + towrite), towrite)
+    bytes = write(fd, u8.ptr + off, towrite);
+    //bytes = write(fd, u8.subarray(off, off + towrite), towrite)
     if (bytes <= 0) break
     total += bytes
   }
@@ -294,7 +313,8 @@ function on_load_builtin (identifier) {
 }
 
 function wrap_getenv () {
-  const getenv = wrap(handle, core.getenv, 1)
+  const { getenv } = core
+//  const getenv = wrap(handle, core.getenv, 1)
   return str => {
     const ptr = getenv(str)
     if (!ptr) return ''
@@ -307,11 +327,11 @@ function wrap_getenv () {
 }
 
 function wrap_getcwd () {
-  const getcwd = wrap(handle, core.getcwd, 2)
-  const cwdbuf = new Uint8Array(MAX_DIR)
+  const getcwd = core.getcwd
+  const cwdbuf = ptr(new Uint8Array(MAX_DIR))
 
   return () => {
-    const ptr = getcwd(cwdbuf, cwdbuf.length)
+    const ptr = getcwd(cwdbuf.ptr, cwdbuf.length)
     if (!ptr) return ''
     const len = strnlen(ptr, MAX_DIR)
     if (len === 0) return ''
@@ -345,6 +365,11 @@ function little_endian () {
   return new Int16Array(buffer)[0] === 256
 }
 
+function get_address (buf) {
+  getAddress(buf, handle)
+  return addr(handle)
+}
+
 const MAX_ENV = 65536 // maximum environment variable size - todo
 const MAX_DIR = 65536 // maximum path len - todo
 const isatty = core.isatty(STDOUT)
@@ -364,7 +389,8 @@ core.defaultWriteMode = defaultWriteMode
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 const handle = new Uint32Array(2)
-const stat = new Uint8Array(160)
+handle.ptr = get_address(handle)
+const stat = ptr(new Uint8Array(160))
 const stat32 = new Uint32Array(stat.buffer)
 const st = new BigUint64Array(stat.buffer)
 const moduleCache = new Map()
@@ -383,8 +409,13 @@ lo.colors = { AD, A0, AR, AG, AY, AB, AM, AC, AW }
 lo.builtin = on_load_builtin
 lo.utf8Encode = utf8Encode
 lo.load = load
-lo.hrtime = wrap(handle, hrtime, 0)
-lo.getAddress = wrap(handle, getAddress, 1)
+lo.hrtime = function () {
+  hrtime(handle.ptr)
+  return handle[0] + ((2 ** 32) * handle[1])
+}
+//lo._hrtime = hrtime
+//lo.hrtime = wrap(handle, hrtime, 0)
+//lo.getAddress = wrap(handle, getAddress, 1)
 lo.assert = assert
 lo.moduleCache = moduleCache
 lo.libCache = libCache
@@ -404,14 +435,15 @@ lo.getcwd = wrap_getcwd()
 const LO_HOME = lo.getenv('LO_HOME') || lo.getcwd()
 const LO_CACHE = parseInt(lo.getenv('LO_CACHE') || '0', 10)
 core.homedir = LO_HOME
-if (core.dlopen) core.dlopen = wrap(handle, core.dlopen, 2)
-core.dlsym = wrap(handle, core.dlsym, 2)
-core.mmap = wrap(handle, core.mmap, 6)
-core.calloc = wrap(handle, core.calloc, 2)
-core.malloc = wrap(handle, core.malloc, 1)
-core.memcpy = wrap(handle, core.memcpy, 3)
-core.memmove = wrap(handle, core.memmove, 3)
-core.aligned_alloc = wrap(handle, core.aligned_alloc, 2)
+//if (core.dlopen) core.dlopen = wrap(handle, core.dlopen, 2)
+
+//core.dlsym = wrap(handle, core.dlsym, 2)
+//core.mmap = wrap(handle, core.mmap, 6)
+//core.calloc = wrap(handle, core.calloc, 2)
+//core.malloc = wrap(handle, core.malloc, 1)
+//core.memcpy = wrap(handle, core.memcpy, 3)
+//core.memmove = wrap(handle, core.memmove, 3)
+//core.aligned_alloc = wrap(handle, core.aligned_alloc, 2)
 core.isFile = is_file
 core.read_file = read_file
 core.write_file = write_file
@@ -437,11 +469,35 @@ lo.on_module_load = on_module_load
 lo.on_module_instantiate = on_module_instantiate
 
 // TODO: remove camel case names when we do a cleanup
+/*
+const usage = lo.heap_usage
+const heapstats = new BigUint64Array(16)
+lo.heap_usage = () => {
+  usage(heapstats)
+  const [
+    total_heap_size, used_heap_size, external_memory, does_zap_garbage, 
+    heap_size_limit, malloced_memory, number_of_detached_contexts, 
+    number_of_native_contexts, peak_malloced_memory, total_available_size,
+    total_heap_size_executable, total_physical_size
+  ] = heapstats
+  return {
+    total_heap_size, used_heap_size, external_memory, does_zap_garbage, 
+    heap_size_limit, malloced_memory, number_of_detached_contexts, 
+    number_of_native_contexts, peak_malloced_memory, total_available_size,
+    total_heap_size_executable, total_physical_size
+  }
+}
+*/
+
+const heapstats = new BigUint64Array(16)
+const usage = lo.heap_usage
+lo.heap_usage = () => usage(heapstats) || heapstats
 
 core.readFile = read_file
 core.writeFile = write_file
 lo.evaluate_module = lo.evaluateModule
-lo.get_address = lo.getAddress
+lo.get_address = get_address
+//lo.get_address = lo.getAddress
 lo.latin1_decode = lo.latin1Decode
 lo.lib_cache = lo.libCache
 lo.load_module = lo.loadModule
@@ -495,7 +551,7 @@ function show_usage () {
 }
 
 function get_lines_for_error (file_name, line_num, col_num) {
-  console.log(`get_lines_for_error ${file_name}`)
+//  console.log(`get_lines_for_error ${file_name}`)
   if (lo.builtins().includes(file_name)) {
     return builtin(file_name)
       .split('\n')
@@ -507,7 +563,7 @@ function get_lines_for_error (file_name, line_num, col_num) {
     return lo.module_cache.get(file_name).src
       .split('\n')
       .slice(line_num - 5, line_num + 5)
-      .map((l, i) => `${AY}${(i + line_num - 4).toString().padStart(4, ' ')}${AD}: ${i === 5 ? AM : ''}${l}${AD}`)
+      .map((l, i) => `${AY}${(i + line_num - 4).toString().padStart(4, ' ')}${AD}: ${i === 4 ? AM : ''}${l}${AD}`)
       .join('\n')
   }
   // we might have failed importing the module, which means it won't be in the cache, so try to read it from the path
@@ -516,35 +572,36 @@ function get_lines_for_error (file_name, line_num, col_num) {
     return src
       .split('\n')
       .slice(line_num - 5, line_num + 5)
-      .map((l, i) => `${AY}${(i + line_num - 4).toString().padStart(4, ' ')}${AD}: ${i === 5 ? AM : ''}${l}${AD}`)
+      .map((l, i) => `${AY}${(i + line_num - 4).toString().padStart(4, ' ')}${AD}: ${i === 4 ? AM : ''}${l}${AD}`)
       .join('\n')
 
   } catch (err) {
     // eat the exception
-    console.log(`error loading ${file_name}`)
-    console.log(err.stack)
+//    console.log(`error loading ${file_name}`)
+//    console.log(err.stack)
   }
   return ''
 }
 
-const rx_err = /\(?([\w\/\.-_]+):(\d+):(\d+)\)?/
+const rx_err = /\(?([\w\/\.\-_]+):(\d+):(\d+)\)?/
 
 function handle_error (err) {
   const { stack } = err
-  const stack_lines = stack.split('\n')
-  console.log(stack_lines)
-  if (stack_lines.length > 1) {
-    const match = rx_err.exec(stack_lines[1])
-    if (match && match.length > 3) {
-      const file_name = match[1].trim()
-      const line_num = parseInt(match[2], 10)
-      const col_num = parseInt(match[3], 10)
-      const lines = get_lines_for_error(file_name, line_num, col_num)
-      console.error(`${AR}Error${AD} ${err.message}${AD}\n${stack.split('\n').slice(1).join('\n')}`)
-      console.error(lines)
-      return
+  try {
+    const stack_lines = stack.split('\n')
+    if (stack_lines.length > 1) {
+      const match = rx_err.exec(stack_lines[1])
+      if (match && match.length > 3) {
+        const file_name = match[1].trim()
+        const line_num = parseInt(match[2], 10)
+        const col_num = parseInt(match[3], 10)
+        const lines = get_lines_for_error(file_name, line_num, col_num)
+        console.error(`${AR}Error${AD} ${err.message}${AD}\n${stack.split('\n').slice(1).join('\n')}`)
+        console.error(lines)
+        return
+      }
     }
-  }
+  } catch (err) {}
   console.error(`${AR}Error${AD} ${err.message}${AD}\n${stack.split('\n').slice(1).join('\n')}`)
 }
 
