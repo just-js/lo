@@ -33,7 +33,7 @@ jobs:
           ./lo test/build.js
           ./lo build runtime runtime/lo
       - name: upload runtime artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/lo
           name: lo-mac-${{ matrix.platform }}
@@ -65,7 +65,7 @@ jobs:
           ./lo test/build.js
           ./lo build runtime runtime/lo
       - name: upload runtime artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/lo
           name: lo-mac-${{ matrix.platform }}
@@ -96,7 +96,7 @@ jobs:
           ./lo test/build.js
           ./lo build runtime runtime/lo
       - name: upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/lo
           name: lo-linux-${{ matrix.platform }}
@@ -127,7 +127,7 @@ jobs:
           ./lo test/build.js
           ./lo build runtime runtime/lo
       - name: upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/lo
           name: lo-linux-${{ matrix.platform }}
@@ -151,7 +151,7 @@ jobs:
         run: |
           make check
       - name: upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/lo.exe
           name: lo.exe
