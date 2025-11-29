@@ -7,7 +7,7 @@ CARGS=-fPIC -c -fno-omit-frame-pointer -fvisibility=hidden
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter -Wno-error=unknown-warning-option
 OPT=-O3 -march=native -mtune=native
 VERSION=0.0.19-pre
-V8_VERSION=13.8
+V8_VERSION=14.0
 RUNTIME=lo
 LO_HOME=$(shell pwd)
 BINDINGS=core.o inflate.a curl.o
@@ -60,7 +60,7 @@ ifneq ($(os),win)
 	rm -f src.tar.gz
 endif
 
-v8/libv8_monolith.a: ## download the v8 static libary for linux/macos
+v8/libv8_monolith.a: v8 ## download the v8 static libary for linux/macos
 	curl -C - -L -o v8/libv8_monolith.a.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.a.gz
 	gzip -d v8/libv8_monolith.a.gz
 	rm -f v8/libv8_monolith.a.gz

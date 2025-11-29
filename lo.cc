@@ -1,5 +1,6 @@
 #include <map>
 #include "lo.h"
+#include <unistd.h>
 
 using v8::String;
 using v8::FunctionCallbackInfo;

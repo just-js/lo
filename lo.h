@@ -222,6 +222,7 @@ extern "C"
 #endif
 
 struct isolate_context {
+  uint64_t start;
   int rc;
   int argc;
   int fd;
@@ -230,7 +231,6 @@ struct isolate_context {
   int onexit;
   unsigned int main_len;
   unsigned int js_len;
-  uint64_t start;
   char** argv;
   char* main;
   char* js;
