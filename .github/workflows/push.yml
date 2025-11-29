@@ -102,7 +102,7 @@ jobs:
           name: lo-linux-${{ matrix.platform }}
 
   build-linux-arm64:
-#    if: ${{ false }}  # disable
+    if: ${{ false }}  # disable
     name: linux
     runs-on: ubuntu-22.04-arm
     strategy:
@@ -133,7 +133,7 @@ jobs:
           name: lo-linux-${{ matrix.platform }}
 
   build-windows:
-#    if: ${{ false }}  # disable
+    if: ${{ false }}  # disable
     name: windows
     runs-on: windows-2022
     strategy:

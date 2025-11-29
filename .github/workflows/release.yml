@@ -79,7 +79,7 @@ jobs:
   build-linux:
 #    if: ${{ false }}  # disable
     name: linux
-    runs-on: ubuntu-22.04-arm
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
