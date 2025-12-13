@@ -1,6 +1,7 @@
 #include <map>
 #include "lo.h"
 #include <unistd.h>
+#include <iostream>
 
 using v8::String;
 using v8::FunctionCallbackInfo;
@@ -350,8 +351,8 @@ void lo::PromiseRejectCallback(PromiseRejectMessage data) {
       data.GetEvent() == kPromiseResolveAfterResolved) {
     return;
   }
-  Local<Promise> promise = data.GetPromise();
-  Isolate* isolate = promise->GetIsolate();
+  //Local<Promise> promise = data.GetPromise();
+  Isolate* isolate = v8::Isolate::GetCurrent();
   if (data.GetEvent() == kPromiseHandlerAddedAfterReject) {
     return;
   }
@@ -381,9 +382,11 @@ void lo::PromiseRejectCallback(PromiseRejectMessage data) {
     return;
   }
   Local<Value> argv[1] = { exception };
+  TryCatch try_catch2(isolate);
   MaybeLocal<Value> result = onUnhandledRejection->Call(isolate, context, 
     globalInstance, 1, argv);
-  if (result.IsEmpty() && try_catch.HasCaught()) {
+  std::cerr << result.IsEmpty() << "\n" << try_catch2.HasCaught() << "\n";
+  if (result.IsEmpty() && try_catch2.HasCaught()) {
     fprintf(stderr, "PromiseRejectCallback: Call\n");
   }
 }
@@ -394,7 +397,7 @@ MaybeLocal<Module> lo::OnModuleInstantiate(Local<Context> context,
   Local<Module> referrer) {
 
 //  printf("OnModuleInstantiate, assertions: %i\n", import_assertions.->.Length());
-  Isolate* isolate = context->GetIsolate();
+  Isolate* isolate = v8::Isolate::GetCurrent();
   String::Utf8Value str(isolate, specifier);
   Local<Function> callback = 
     context->GetEmbedderData(2).As<Function>();
@@ -403,7 +406,7 @@ MaybeLocal<Module> lo::OnModuleInstantiate(Local<Context> context,
     context->Global(), 1, argv);
   int identity = result.ToLocalChecked()->Uint32Value(context).ToChecked();
   std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));
-  Local<Module> module = (*module_map)[identity].Get(context->GetIsolate());
+  Local<Module> module = (*module_map)[identity].Get(isolate);
   return module;
 }
 
@@ -462,8 +465,8 @@ int lo::CreateIsolate(int argc, char** argv,
   create_params.array_buffer_allocator = 
     ArrayBuffer::Allocator::NewDefaultAllocator();
 //  create_params.array_buffer_allocator = new lo::SpecialArrayBufferAllocator();
-  create_params.embedder_wrapper_type_index = 0;
-  create_params.embedder_wrapper_object_index = 1;
+  //create_params.embedder_wrapper_type_index = 0;
+  //create_params.embedder_wrapper_object_index = 1;
   if (startup_data != NULL) {
     create_params.snapshot_blob = (const v8::StartupData*)startup_data;
   }
@@ -997,7 +1000,7 @@ void lo::fastGetAddress(void* p, uint64_t* p_buf,
 
 void lo::Utf8Length(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-  args.GetReturnValue().Set(args[0].As<String>()->Utf8Length(isolate));
+  args.GetReturnValue().Set(Integer::New(isolate, args[0].As<String>()->Utf8LengthV2(isolate)));
 }
 
 int32_t lo::fastUtf8Length (void* p, struct FastOneByteString* const p_str) {
@@ -1177,18 +1180,16 @@ void lo::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
     int size = str->Length();
     std::unique_ptr<BackingStore> backing = 
       ArrayBuffer::NewBackingStore(isolate, size);
-    str->WriteOneByte(isolate, static_cast<uint8_t*>(backing->Data()), 0, 
-      size, String::NO_NULL_TERMINATION);
+    str->WriteOneByteV2(isolate, 0, size, static_cast<uint8_t*>(backing->Data()), String::WriteFlags::kNullTerminate);
     Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
     args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
     return;
   }
-  int written = 0;
-  int size = str->Utf8Length(isolate);
+  size_t written = 0;
+  int size = str->Utf8LengthV2(isolate);
   std::unique_ptr<BackingStore> backing = 
     ArrayBuffer::NewBackingStore(isolate, size);
-  str->WriteUtf8(isolate, static_cast<char*>(backing->Data()), size, &written, 
-    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
+  str->WriteUtf8V2(isolate, static_cast<char*>(backing->Data()), size, String::WriteFlags::kNullTerminate, &written);
   Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
   args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
 }
@@ -1276,8 +1277,8 @@ void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
 //  uint64_t start64 = (uint64_t)Local<Number>::Cast(args[1])->Value();
 //  char* dest = reinterpret_cast<char*>(start64);
   char* dest = reinterpret_cast<char*>(Local<Integer>::Cast(args[1])->Value());
-  int written = str->WriteUtf8(isolate, dest, -1, nullptr, 
-    String::NO_NULL_TERMINATION);
+  size_t written;
+  str->WriteUtf8V2(isolate, static_cast<char*>(dest), -1, String::WriteFlags::kNullTerminate, &written);
   args.GetReturnValue().Set(Integer::New(isolate, written));
 }
 
@@ -1291,13 +1292,12 @@ void lo::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
   uint32_t off = Local<Integer>::Cast(args[2])->Value();
-  int chars_written = 0;
   //int size = str->Utf8Length(isolate);
   char* dest = reinterpret_cast<char*>(Local<Integer>::Cast(args[1])->Value()) + off;
 //  Local<Uint8Array> u8 = args[1].As<Uint8Array>();
 //  char* dest = (char*)u8->Buffer()->Data() + off;
-  int written = str->WriteUtf8(isolate, dest, -1, &chars_written, 
-    String::NO_NULL_TERMINATION | String::HINT_MANY_WRITES_EXPECTED);
+  size_t written;
+  str->WriteUtf8V2(isolate, static_cast<char*>(dest), -1, String::WriteFlags::kNullTerminate, &written);
 //    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
   args.GetReturnValue().Set(Integer::New(isolate, written));
 }
