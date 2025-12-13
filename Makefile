@@ -1,11 +1,11 @@
 CC=clang
 CXX=clang++
 LINK=clang++
-LARGS=-rdynamic -pthread -static-libstdc++
+LARGS=-rdynamic -pthread
 CCARGS=-fPIC -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions -fvisibility=hidden
 CARGS=-fPIC -c -fno-omit-frame-pointer -fvisibility=hidden
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter -Wno-error=unknown-warning-option
-OPT=-O3 -march=native -mtune=native
+OPT=-O3
 VERSION=0.0.19-pre
 V8_VERSION=14.0
 RUNTIME=lo
@@ -25,7 +25,8 @@ else
 	ifeq ($(UNAME_S),Linux)
 		os=linux
 		LARGS+=-s -static-libgcc -fuse-ld=lld
-	else ifeq ($(UNAME_S),Darwin)
+	  OPT+=-march=native -mtune=native
+  else ifeq ($(UNAME_S),Darwin)
 		os=mac
 		BINDINGS+=mach.o
 		LARGS+=-s -w -framework CoreFoundation
@@ -34,6 +35,11 @@ else
 			LARGS+=-arch arm64
 			CARGS+=-arch arm64
 			CCARGS+=-arch arm64
+      OPT+=-march=native -mtune=native
+    else
+      CARGS+=-arch x86_64
+      CCARGS+=-arch x86_64
+      LARGS+=-arch x86_64 -target x86_64-apple-darwin
 		endif
 	endif
 endif
