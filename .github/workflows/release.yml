@@ -46,7 +46,7 @@ jobs:
   build-mac-x64:
 #    if: ${{ false }}  # disable
     name: mac-x64
-    runs-on: macos-13
+    runs-on: macos-14
     strategy:
       fail-fast: false
       matrix:
