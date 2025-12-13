@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [arm64,x64]
+        platform: [arm64]
     steps:
       - uses: actions/checkout@v3
       - name: compile
@@ -30,6 +30,37 @@ jobs:
           make check
           brew install lz4 zstd openssl@3
           ./lo build runtime runtime/lo
+      - name: compress runtime
+        run: |
+          gzip -9 -c lo > lo-mac-${{ matrix.platform }}.gz
+      - name: upload compressed artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: lo-mac-${{ matrix.platform }}.gz
+          asset_name: lo-mac-${{ matrix.platform }}.gz
+          asset_content_type: application/gzip
+
+  build-mac-x64:
+#    if: ${{ false }}  # disable
+    name: mac
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [arm64]
+    steps:
+      - uses: actions/checkout@v3
+      - name: compile
+        run: |
+          make ARCH=x64 lo
+      - name: check
+        env:
+          LO_HOME: ${{ github.workspace }}
+        run: |
+          make check
       - name: compress runtime
         run: |
           gzip -9 -c lo > lo-mac-${{ matrix.platform }}.gz

@@ -39,7 +39,7 @@ else
     else
       CARGS+=-arch x86_64
       CCARGS+=-arch x86_64
-      LARGS+=-arch x86_64 -target x86_64-apple-darwin
+      LARGS+=-arch x86_64
 		endif
 	endif
 endif
