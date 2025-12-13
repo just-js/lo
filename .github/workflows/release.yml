@@ -63,15 +63,15 @@ jobs:
           make check
       - name: compress runtime
         run: |
-          gzip -9 -c lo > lo-mac-${{ matrix.platform }}.gz
+          gzip -9 -c lo > lo-mac-x64.gz
       - name: upload compressed artifact
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: lo-mac-${{ matrix.platform }}.gz
-          asset_name: lo-mac-${{ matrix.platform }}.gz
+          asset_path: lo-mac-x64.gz
+          asset_name: lo-mac-x64.gz
           asset_content_type: application/gzip
 
   build-linux:
