@@ -6,8 +6,8 @@ CCARGS=-fPIC -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions -fv
 CARGS=-fPIC -c -fno-omit-frame-pointer -fvisibility=hidden
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter -Wno-error=unknown-warning-option
 OPT=-O3
-VERSION=0.0.19-pre
-V8_VERSION=14.0
+VERSION=0.0.20-pre
+V8_VERSION=14.1
 RUNTIME=lo
 LO_HOME=$(shell pwd)
 BINDINGS=core.o inflate.a curl.o
