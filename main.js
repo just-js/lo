@@ -335,7 +335,7 @@ function wrap_getcwd () {
     if (!ptr) return ''
     const len = strnlen(ptr, MAX_DIR)
     if (len === 0) return ''
-    return utf8Decode(ptr, -1)
+    return utf8Decode(ptr, len)
   }
 }
 
@@ -521,7 +521,6 @@ lo.utf8_encode_into_at_offset = lo.utf8EncodeIntoAtOffset
 lo.utf8_length = lo.utf8Length
 lo.wrap_memory = lo.wrapMemory
 lo.latin1_decode = lo.latin1Decode
-
 
 // todo: fix this and write up/decide exactly what module resolution does
 // currently we check/open each file twice

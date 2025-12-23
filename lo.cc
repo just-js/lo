@@ -351,7 +351,6 @@ void lo::PromiseRejectCallback(PromiseRejectMessage data) {
       data.GetEvent() == kPromiseResolveAfterResolved) {
     return;
   }
-  //Local<Promise> promise = data.GetPromise();
   Isolate* isolate = v8::Isolate::GetCurrent();
   if (data.GetEvent() == kPromiseHandlerAddedAfterReject) {
     return;
@@ -382,11 +381,9 @@ void lo::PromiseRejectCallback(PromiseRejectMessage data) {
     return;
   }
   Local<Value> argv[1] = { exception };
-  TryCatch try_catch2(isolate);
   MaybeLocal<Value> result = onUnhandledRejection->Call(isolate, context, 
     globalInstance, 1, argv);
-  std::cerr << result.IsEmpty() << "\n" << try_catch2.HasCaught() << "\n";
-  if (result.IsEmpty() && try_catch2.HasCaught()) {
+  if (result.IsEmpty() && try_catch.HasCaught()) {
     fprintf(stderr, "PromiseRejectCallback: Call\n");
   }
 }
@@ -414,7 +411,6 @@ MaybeLocal<Promise> OnDynamicImport(Local<Context> context,
   Local<Data> host_defined_options, Local<Value> resource_name,
   Local<String> specifier,Local<FixedArray> import_assertions) {
 //  uint64_t start64 = (uint64_t)Local<Integer>::Cast(args[0])->Value();
-
 //  printf("OnModuleInstantiate, assertions: %i\n", import_assertions->Length());
   Local<Promise::Resolver> resolver =
       Promise::Resolver::New(context).ToLocalChecked();
@@ -1180,7 +1176,7 @@ void lo::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
     int size = str->Length();
     std::unique_ptr<BackingStore> backing = 
       ArrayBuffer::NewBackingStore(isolate, size);
-    str->WriteOneByteV2(isolate, 0, size, static_cast<uint8_t*>(backing->Data()), String::WriteFlags::kNullTerminate);
+    str->WriteOneByteV2(isolate, 0, size, static_cast<uint8_t*>(backing->Data()), String::WriteFlags::kNone);
     Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
     args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
     return;
@@ -1189,7 +1185,7 @@ void lo::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   int size = str->Utf8LengthV2(isolate);
   std::unique_ptr<BackingStore> backing = 
     ArrayBuffer::NewBackingStore(isolate, size);
-  str->WriteUtf8V2(isolate, static_cast<char*>(backing->Data()), size, String::WriteFlags::kNullTerminate, &written);
+  str->WriteUtf8V2(isolate, static_cast<char*>(backing->Data()), size, String::WriteFlags::kNone, &written);
   Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
   args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
 }
@@ -1297,8 +1293,7 @@ void lo::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
 //  Local<Uint8Array> u8 = args[1].As<Uint8Array>();
 //  char* dest = (char*)u8->Buffer()->Data() + off;
   size_t written;
-  str->WriteUtf8V2(isolate, static_cast<char*>(dest), -1, String::WriteFlags::kNullTerminate, &written);
-//    String::NO_NULL_TERMINATION | String::REPLACE_INVALID_UTF8);
+  str->WriteUtf8V2(isolate, static_cast<char*>(dest), -1, String::WriteFlags::kNone, &written);
   args.GetReturnValue().Set(Integer::New(isolate, written));
 }
 

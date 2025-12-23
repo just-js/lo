@@ -7,7 +7,7 @@ CARGS=-fPIC -c -fno-omit-frame-pointer -fvisibility=hidden
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter -Wno-error=unknown-warning-option
 OPT=-O3
 VERSION=0.0.21-pre
-V8_VERSION=14.2
+V8_VERSION=14.1
 RUNTIME=lo
 LO_HOME=$(shell pwd)
 BINDINGS=core.o inflate.a curl.o
@@ -50,7 +50,9 @@ help:
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9\/_\.-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 v8:
-	mkdir v8
+	mkdir -p v8
+
+v8/include: v8 ## download the v8 source code for debugging
 	curl -L -O https://github.com/just-js/v8/releases/download/${V8_VERSION}/include.tar.gz
 	tar -xvf include.tar.gz
 	mv include v8/
@@ -66,7 +68,7 @@ ifneq ($(os),win)
 	rm -f src.tar.gz
 endif
 
-v8/libv8_monolith.a: v8 ## download the v8 static libary for linux/macos
+v8/libv8_monolith.a: v8/include ## download the v8 static libary for linux/macos
 	curl -C - -L -o v8/libv8_monolith.a.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.a.gz
 	gzip -d v8/libv8_monolith.a.gz
 	rm -f v8/libv8_monolith.a.gz
@@ -75,7 +77,7 @@ v8/v8_monolith.lib: ## download the v8 static library for windows
 	curl -C - -L -o v8/v8_monolith.lib.zip https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.zip
 	unzip v8/v8_monolith.lib.zip
 
-main.o: v8  ## compile the main.cc object file
+main.o: ## compile the main.cc object file
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I./v8 -I./v8/include ${WARN} ${V8_FLAGS} main.cc
 
 builtins.o: ## link all source files and assets into an object file
@@ -85,10 +87,10 @@ else
 	$(CC) ${CARGS} builtins.S -o builtins.o
 endif
 
-${RUNTIME}.o: v8 ## compile runtime into an object file 
+${RUNTIME}.o: ## compile runtime into an object file 
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' ${V8_FLAGS} -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
 
-${RUNTIME}: v8 v8/libv8_monolith.a main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
+${RUNTIME}: v8/libv8_monolith.a main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
 	@echo building ${RUNTIME} for ${os} on ${ARCH}
 	$(LINK) $(LARGS) ${OPT} main.o ${RUNTIME}.o builtins.o ${BINDINGS} ${LIBS} -o ${TARGET} -L"./v8" -lv8_monolith ${LIB_DIRS}
 
