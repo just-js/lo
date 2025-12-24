@@ -27,8 +27,9 @@ jobs:
         env:
           LO_HOME: ${{ github.workspace }}
         run: |
-          make check
+          pip install jsonschema
           brew install lz4 zstd openssl@3
+          make check
           ./lo build runtime runtime/lo
       - name: compress runtime
         run: |
@@ -60,7 +61,7 @@ jobs:
         env:
           LO_HOME: ${{ github.workspace }}
         run: |
-          make check
+          make ARCH=x64 check
       - name: compress runtime
         run: |
           gzip -9 -c lo > lo-mac-x64.gz
@@ -95,8 +96,8 @@ jobs:
         env:
           LO_HOME: ${{ github.workspace }}
         run: |
-          make check
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
+          make check
           ./lo build runtime runtime/lo
       - name: compress runtime
         run: |

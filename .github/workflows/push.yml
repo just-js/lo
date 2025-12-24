@@ -27,11 +27,10 @@ jobs:
           LO_HOME: ${{ github.workspace }}
           PREFIX: /opt/homebrew/opt
         run: |
-          make check
           pip install jsonschema
           brew install lz4 zstd openssl@3
+          make check
           ./lo build runtime runtime/lo
-          #./lo test/build.js
       - name: upload runtime artifact
         uses: actions/upload-artifact@v4
         with:
@@ -59,7 +58,7 @@ jobs:
           LO_HOME: ${{ github.workspace }}
           PREFIX: /opt/homebrew/opt
         run: |
-          make check
+          make ARCH=x64 check
       - name: upload runtime artifact
         uses: actions/upload-artifact@v4
         with:
@@ -69,7 +68,7 @@ jobs:
   build-linux:
 #    if: ${{ false }}  # disable
     name: linux
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -87,9 +86,8 @@ jobs:
         env:
           LO_HOME: ${{ github.workspace }}
         run: |
-          make check
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
-          ./lo test/build.js
+          make check
           ./lo build runtime runtime/lo
       - name: upload artifact
         uses: actions/upload-artifact@v4
