@@ -92,6 +92,7 @@ jobs:
           sudo apt-get install -qy libcurl4-openssl-dev
       - name: compile
         run: |
+          clang++ --version
           make ARCH=${{ matrix.platform }} lo
       - name: check
         env:
