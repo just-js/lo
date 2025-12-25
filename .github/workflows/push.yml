@@ -80,6 +80,7 @@ jobs:
           sudo ./update-alternatives 15 200
       - name: install libcurl
         run: |
+          clang++ --version
           sudo apt-get update -y
           sudo apt-get install -qy libcurl4-openssl-dev
       - name: compile
