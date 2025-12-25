@@ -75,6 +75,9 @@ jobs:
         platform: [x64]
     steps:
       - uses: actions/checkout@v3
+      - name: select clang
+        run: |
+          sudo ./update-alternatives.sh 15 200
       - name: install libcurl
         run: |
           sudo apt-get update -y
