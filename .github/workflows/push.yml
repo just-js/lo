@@ -73,24 +73,34 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        llvm-version: [22]
         platform: [x64]
+    env:
+      CC: clang-${{ matrix.llvm-version }}
+      CXX: clang++-${{ matrix.llvm-version }}
     steps:
       - uses: actions/checkout@v3
+      - name: install llvm
+        run: |
+            wget https://apt.llvm.org/llvm.sh
+            chmod +x llvm.sh
+            sudo ./llvm.sh ${{ matrix.llvm-version }}
+            sudo apt-get update
       - name: install libcurl
         run: |
           sudo apt-get update -y
           sudo apt-get install -qy libcurl4-openssl-dev
       - name: compile
         run: |
-          make CC=clang-18 CXX=clang++-18 LINK=clang++-18 ARCH=${{ matrix.platform }} lo
+          make ARCH=${{ matrix.platform }} lo
       - name: check
         env:
           LO_HOME: ${{ github.workspace }}
         run: |
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
-          make CC=clang-18 CXX=clang++-18 LINK=clang++-18 check
-          make CC=clang-18 CXX=clang++-18 LINK=clang++-18 check-build
-          CC=clang-18 CXX=clang++-18 LINK=clang++-18 ./lo build runtime runtime/lo
+          make check
+          make check-build
+          ./lo build runtime runtime/lo
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
