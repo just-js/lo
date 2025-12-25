@@ -82,15 +82,15 @@ jobs:
           sudo apt-get install -qy libcurl4-openssl-dev
       - name: compile
         run: |
-          make ARCH=${{ matrix.platform }} lo
+          make CC=clang-18 CXX=clang++-18 LINK=clang++-18 ARCH=${{ matrix.platform }} lo
       - name: check
         env:
           LO_HOME: ${{ github.workspace }}
         run: |
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
-          make check
-          make check-build
-          ./lo build runtime runtime/lo
+          make CC=clang-18 CXX=clang++-18 LINK=clang++-18 check
+          make CC=clang-18 CXX=clang++-18 LINK=clang++-18 check-build
+          CC=clang-18 CXX=clang++-18 LINK=clang++-18 ./lo build runtime runtime/lo
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
