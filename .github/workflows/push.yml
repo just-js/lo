@@ -30,6 +30,7 @@ jobs:
           pip install jsonschema
           brew install lz4 zstd openssl@3
           make check
+          make check-build
           ./lo build runtime runtime/lo
       - name: upload runtime artifact
         uses: actions/upload-artifact@v4
@@ -39,7 +40,7 @@ jobs:
 
   build-mac-x64:
 #    if: ${{ false }}  # disable
-    name: mac
+    name: mac-x64
     runs-on: macos-15
     strategy:
       fail-fast: false
@@ -68,19 +69,15 @@ jobs:
   build-linux:
 #    if: ${{ false }}  # disable
     name: linux
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
         platform: [x64]
     steps:
       - uses: actions/checkout@v3
-      - name: select clang
-        run: |
-          sudo ./update-alternatives 15 100
       - name: install libcurl
         run: |
-          clang++ --version
           sudo apt-get update -y
           sudo apt-get install -qy libcurl4-openssl-dev
       - name: compile
@@ -92,6 +89,7 @@ jobs:
         run: |
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
           make check
+          make check-build
           ./lo build runtime runtime/lo
       - name: upload artifact
         uses: actions/upload-artifact@v4

@@ -44,7 +44,7 @@ else
 	endif
 endif
 
-.PHONY: help clean cleanall check install builtins.h
+.PHONY: help clean cleanall check install builtins.h check-build
 
 help:
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9\/_\.-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -137,6 +137,8 @@ check: ## run the runtime sanity tests
 	./${RUNTIME} test/dump-binding.js core
 	./${RUNTIME} test/dump-binding.js inflate
 	./${RUNTIME} test/dump-binding.js curl
+
+check-build: ## test building works
 	./${RUNTIME} test/build.js
 
 docs:

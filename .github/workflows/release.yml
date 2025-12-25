@@ -30,6 +30,7 @@ jobs:
           pip install jsonschema
           brew install lz4 zstd openssl@3
           make check
+          make check-build
           ./lo build runtime runtime/lo
       - name: compress runtime
         run: |
@@ -46,7 +47,7 @@ jobs:
 
   build-mac-x64:
 #    if: ${{ false }}  # disable
-    name: mac
+    name: mac-x64
     runs-on: macos-15
     strategy:
       fail-fast: false
@@ -98,6 +99,7 @@ jobs:
         run: |
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
           make check
+          make check-build
           ./lo build runtime runtime/lo
       - name: compress runtime
         run: |
