@@ -93,14 +93,14 @@ jobs:
       - name: compile
         run: |
           clang++ --version
-          make ARCH=${{ matrix.platform }} lo
+          make CC=clang-22 CXX=clang++-22 LINK=clang++-22 ARCH=${{ matrix.platform }} lo
       - name: check
         env:
           LO_HOME: ${{ github.workspace }}
         run: |
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
-          make check
-          make check-build
+          make CC=clang-22 CXX=clang++-22 LINK=clang++-22 check
+          make CC=clang-22 CXX=clang++-22 LINK=clang++-22 check-build
           ./lo build runtime runtime/lo
       - name: upload artifact
         uses: actions/upload-artifact@v4
