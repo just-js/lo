@@ -31,7 +31,7 @@ jobs:
           brew install lz4 zstd openssl@3
           make check
           make check-build
-          ./lo build runtime runtime/lo
+          ./lo build runtime runtime/lo -v
       - name: upload runtime artifact
         uses: actions/upload-artifact@v4
         with:
@@ -100,7 +100,7 @@ jobs:
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
           make CC=clang-22 CXX=clang++-22 LINK=clang++-22 check
           make CC=clang-22 CXX=clang++-22 LINK=clang++-22 check-build
-          LINK=clang++-22 ./lo build runtime runtime/lo
+          LINK=clang++-22 ./lo build runtime runtime/lo -v
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
