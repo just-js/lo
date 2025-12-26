@@ -90,6 +90,12 @@ jobs:
       CXX: clang++-${{ matrix.llvm-version }}
     steps:
       - uses: actions/checkout@v3
+      - name: install llvm
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh ${{ matrix.llvm-version }}
+          sudo apt-get update
       - name: install libcurl
         run: |
           sudo apt-get update -y
