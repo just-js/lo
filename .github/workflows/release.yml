@@ -83,7 +83,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        llvm-version: [22]
         platform: [x64]
+    env:
+      CC: clang-${{ matrix.llvm-version }}
+      CXX: clang++-${{ matrix.llvm-version }}
     steps:
       - uses: actions/checkout@v3
       - name: install libcurl
@@ -92,15 +96,15 @@ jobs:
           sudo apt-get install -qy libcurl4-openssl-dev
       - name: compile
         run: |
-          make lo
+          make CC=clang-22 CXX=clang++-22 LINK=clang++-22 ARCH=${{ matrix.platform }} lo
       - name: check
         env:
           LO_HOME: ${{ github.workspace }}
         run: |
           sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
-          make check
-          make check-build
-          ./lo build runtime runtime/lo
+          make CC=clang-22 CXX=clang++-22 LINK=clang++-22 check
+          make CC=clang-22 CXX=clang++-22 LINK=clang++-22 check-build
+          LINK=clang++-22 ./lo build runtime runtime/lo
       - name: compress runtime
         run: |
           gzip -9 -c lo > lo-linux-${{ matrix.platform }}.gz
