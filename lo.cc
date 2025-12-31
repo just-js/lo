@@ -944,6 +944,7 @@ void lo::fastSetErrno (void* p, int32_t e) {
 
 uint64_t lo::hrtime() {
 #ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+  struct timespec t;
   clock_serv_t cclock;
   mach_timespec_t mts;
   host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
