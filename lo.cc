@@ -970,7 +970,7 @@ uint64_t lo::hrtime() {
   return (uint64_t) result;
 #else
   struct timespec t;
-  if (clock_gettime(clock_id, &t)) return 0;
+  if (clock_gettime(CLOCK_MONOTONIC, &t)) return 0;
   return (t.tv_sec * (uint64_t) 1e9) + t.tv_nsec;
 #endif
 }
