@@ -1,8 +1,9 @@
 #include <lo.h>
 #include <windows.h>
+#include <io.h>
 
 namespace lo {
-namespace core {
+namespace win {
 
 using v8::Local;
 using v8::ObjectTemplate;
@@ -187,6 +188,16 @@ void getProcAddress(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(fp)));
 }
 
+// https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/isatty?view=msvc-170
+void isatty(const FunctionCallbackInfo<Value> &args) {
+  uint32_t fd = Local<Integer>::Cast(args[0])->Value();
+  if (_isatty(fd) == 0) {
+    args.GetReturnValue().Set(false);
+    return;
+  }
+  args.GetReturnValue().Set(true);
+}
+
 void Init(Isolate *isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
 
@@ -209,6 +220,8 @@ void Init(Isolate *isolate, Local<ObjectTemplate> target) {
 
   SET_METHOD(isolate, module, "getenv", getEnv);
   SET_METHOD(isolate, module, "setenv", setEnv);
+
+  SET_METHOD(isolate, module, "isatty", isatty);
 
   SET_VALUE(isolate, module, "GENERIC_READ", Integer::New(isolate, (int32_t)GENERIC_READ));
   SET_VALUE(isolate, module, "GENERIC_WRITE", Integer::New(isolate, (int32_t)GENERIC_WRITE));
@@ -234,14 +247,18 @@ void Init(Isolate *isolate, Local<ObjectTemplate> target) {
 
   SET_VALUE(isolate, module, "INVALID_HANDLE_VALUE", Integer::New(isolate, -1));
 
-  SET_MODULE(isolate, target, "core", module);
+  SET_VALUE(isolate, module, "STDOUT", Integer::New(isolate, _fileno(stdout)));
+  SET_VALUE(isolate, module, "STDERR", Integer::New(isolate, _fileno(stderr)));
+  SET_VALUE(isolate, module, "STDIN", Integer::New(isolate, _fileno(stdin)));
+
+  SET_MODULE(isolate, target, "win", module);
 }
 
-} // namespace core
+} // namespace win
 } // namespace lo
 
 extern "C"  {
-  void* _register_core() {
-    return (void*)lo::core::Init;
+  void* _register_win() {
+    return (void*)lo::win::Init;
   }
 }

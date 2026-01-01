@@ -8,11 +8,13 @@
 static unsigned int main_js_len = _binary_main_js_len;
 
 extern "C" {
+  extern void* _register_win();
   extern void* _register_core();
 }
 
 void register_builtins() {
   lo::builtins_add("main.js", _binary_main_js_start, main_js_len);
+  lo::modules_add("win", &_register_win);
   lo::modules_add("core", &_register_core);
 }
 

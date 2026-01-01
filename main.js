@@ -32,7 +32,7 @@ class TextDecoder {
   decode (u8) {
     // todo: result cache
     if (!u8.ptr) ptr(u8)
-    return utf8Decode(u8.ptr, u8.size)
+    return utf8Decode(u8.ptr, u8.length)
   }
 }
 
@@ -85,13 +85,13 @@ function wrap (handle, fn, plen = 0) {
 function ptr (u8) {
   if (u8.ptr) return u8
   u8.ptr = get_address(u8)
-  u8.size = u8.byteLength // TODO: this is not right?
+//  u8.size = u8.byteLength // TODO: this is not right?
   return u8
 }
 
 function cstr (str) {
   const buf = ptr(encoder.encode(`${str}\0`))
-  buf.size = buf.size - 1
+//  buf.size = buf.size - 1
   return buf
 }
 
@@ -104,20 +104,25 @@ function check_mode (val, mode) {
 }
 
 function is_file (path) {
-  const fd = open(path, O_RDONLY)
+  const fd = open(path, defaultReadFlags)
   if (fd <= 2) return false
   if (fstat(fd, stat.ptr) !== 0) return false
   close(fd)
+  if (core.os === 'win') {
+    return check_mode(stat16[3], S_IFREG)
+  }
   return check_mode(stat32[MODE_WORD], S_IFREG)
 }
 
-function read_file (path, flags = O_RDONLY, size = 0) {
+function read_file (path, flags = defaultReadFlags, size = 0) {
   const fd = open(path, flags)
   assert(fd > 0, `failed to open ${path} with flags ${flags}`)
   if (size === 0) {
     assert(fstat(fd, stat.ptr) === 0)
     if (core.os === 'mac') {
       size = Number(st[12])
+    } else if (core.os === 'win') {
+      size = stat32[5]
     } else {
       size = Number(st[6])
     }
@@ -144,7 +149,6 @@ function write_file (path, u8, flags = defaultWriteFlags,
   for (let i = 0, off = 0; i < chunks; ++i, off += 4096) {
     const towrite = Math.min(len - off, 4096)
     bytes = write(fd, u8.ptr + off, towrite);
-    //bytes = write(fd, u8.subarray(off, off + towrite), towrite)
     if (bytes <= 0) break
     total += bytes
   }
@@ -170,16 +174,19 @@ function load (name) {
     return lib
   }
   // todo: we leak this handle - need to be able to unload
-  if (!core.dlopen) return
-  // RTLD_LOCAL is the default
-  const handle = core.dlopen(`lib/${name}/${name}.so`, RTLD_LAZY) ||
-    core.dlopen(`${LO_HOME}/lib/${name}/${name}.so`, RTLD_LAZY)
-  if (!handle) return
-  const sym = core.dlsym(handle, `_register_${name}`)
-  if (!sym) return
-  lib = library(sym)
-  lib.handle = handle
-  if (!lib) return
+  if (core.os === 'win') {
+    // TODO
+    return
+  } else {
+    const handle = core.dlopen(`lib/${name}/${name}.so`, RTLD_LAZY) ||
+      core.dlopen(`${LO_HOME}/lib/${name}/${name}.so`, RTLD_LAZY)
+    if (!handle) return
+    const sym = core.dlsym(handle, `_register_${name}`)
+    if (!sym) return
+    lib = library(sym)
+    lib.handle = handle
+    if (!lib) return
+  }
   lib.fileName = `lib/${name}/${name}.so`
   libCache.set(name, lib)
   return lib
@@ -370,7 +377,9 @@ function get_address (buf) {
   return addr(handle)
 }
 
-const MAX_ENV = 65536 // maximum environment variable size - todo
+core.os = lo.os()
+core.arch = lo.arch()
+const MAX_ENV = core.os === 'win' ? 32767 : 65536 // maximum environment variable size - todo
 const MAX_DIR = 65536 // maximum path len - todo
 const isatty = core.isatty(STDOUT)
 const AD = isatty ? '\u001b[0m' : '' // ANSI Default
@@ -382,8 +391,16 @@ const AB = isatty ? '\u001b[34m' : '' // ANSI Blue
 const AM = isatty ? '\u001b[35m' : '' // ANSI Magenta
 const AC = isatty ? '\u001b[36m' : '' // ANSI Cyan
 const AW = isatty ? '\u001b[37m' : '' // ANSI White
-const defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC
-const defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
+const env_buf = ptr(new Uint8Array(MAX_ENV))
+
+let defaultReadFlags = O_RDONLY
+let defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC
+let defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
+if (core.os === 'win') {
+  defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC | core._O_BINARY
+  defaultWriteMode = core._S_IWRITE
+  defaultReadFlags = O_RDONLY | core._O_BINARY
+}
 core.defaultWriteFlags = defaultWriteFlags
 core.defaultWriteMode = defaultWriteMode
 const encoder = new TextEncoder()
@@ -392,6 +409,7 @@ const handle = new Uint32Array(2)
 handle.ptr = get_address(handle)
 const stat = ptr(new Uint8Array(160))
 const stat32 = new Uint32Array(stat.buffer)
+const stat16 = new Uint16Array(stat.buffer)
 const st = new BigUint64Array(stat.buffer)
 const moduleCache = new Map()
 const requireCache = new Map()
@@ -430,7 +448,10 @@ lo.addr = addr
 lo.core = core
 // todo: should we just overwrite the existing ones and not put these on "lo"?
 lo.getenv = wrap_getenv()
-lo.setenv = lo.core.setenv
+if (core.os !== 'win') {
+  // TODO
+  lo.setenv = lo.core.setenv
+}
 lo.getcwd = wrap_getcwd()
 const LO_HOME = lo.getenv('LO_HOME') || lo.getcwd()
 const LO_CACHE = parseInt(lo.getenv('LO_CACHE') || '0', 10)
@@ -450,8 +471,6 @@ core.write_file = write_file
 core.little_endian = little_endian()
 
 // todo: optimize this - return numbers and make a single call to get both
-core.os = lo.os()
-core.arch = lo.arch()
 const MODE_WORD = core.arch === 'arm64' ? 4 : 6
 const _builtins = lo.builtins()
 lo.builtins = () => _builtins
@@ -516,7 +535,6 @@ lo.unwrap_memory = lo.unwrapMemory
 lo.utf8_decode = lo.utf8Decode
 lo.utf8_encode = lo.utf8Encode
 lo.utf8_encode_into = lo.utf8EncodeInto
-lo.utf8_encode_into_ptr = lo.utf8EncodeIntoPtr
 lo.utf8_encode_into_at_offset = lo.utf8EncodeIntoAtOffset
 lo.utf8_length = lo.utf8Length
 lo.wrap_memory = lo.wrapMemory
