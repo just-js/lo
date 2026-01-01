@@ -34,3 +34,4 @@ lib/lines/linenoise.h
 lib/lines/linenoise.c
 zero
 dist
+*.pdb

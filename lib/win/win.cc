@@ -33,7 +33,6 @@ unsigned int testFast(void* p) {
 }
 
 void testSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   args.GetReturnValue().Set(1);
 }
 
@@ -55,7 +54,6 @@ void getLastError(const FunctionCallbackInfo<Value> &args) {
 
 // https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
 void closeHandle (const FunctionCallbackInfo<Value> & args) {
-  Isolate *isolate = args.GetIsolate();
   uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
   HANDLE file = reinterpret_cast<HANDLE>(v0);
   BOOL ok = CloseHandle(file);
@@ -168,7 +166,6 @@ void loadLibrary(const FunctionCallbackInfo<Value> &args) {
 
 // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-freelibrary
 void freeLibrary(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
   uint64_t v0 = (uint64_t)Local<Number>::Cast(args[0])->Value();
   HMODULE handle = reinterpret_cast<HMODULE>(v0);
   BOOL ok = FreeLibrary(handle);
