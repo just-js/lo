@@ -1,6 +1,7 @@
 #include <lo.h>
 #include <windows.h>
 #include <io.h>
+#include <psapi.h>
 
 namespace lo {
 namespace win {
@@ -198,6 +199,30 @@ void isatty(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(true);
 }
 
+// https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getprocessmemoryinfo
+void getProcessMemoryInfo(const FunctionCallbackInfo<Value> &args) {
+  //uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  //HANDLE pid = reinterpret_cast<HANDLE>(v0);
+  PROCESS_MEMORY_COUNTERS* counter = reinterpret_cast<PROCESS_MEMORY_COUNTERS*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  DWORD size = Local<Integer>::Cast(args[1])->Value();
+  BOOL ok = GetProcessMemoryInfo(GetCurrentProcess(), counter, size);
+  if (ok) {
+    args.GetReturnValue().Set(true);
+    return;
+  }
+  args.GetReturnValue().Set(false);
+}
+
+// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess
+void getCurrentProcess(const FunctionCallbackInfo<Value> &args) {
+  HANDLE pid = GetCurrentProcess();
+  if (pid == INVALID_HANDLE_VALUE) {
+    args.GetReturnValue().Set(-1);
+    return;
+  }
+  args.GetReturnValue().Set(Number::New(args.GetIsolate(), reinterpret_cast<uint64_t>(pid)));
+}
+
 void Init(Isolate *isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
 
@@ -222,6 +247,10 @@ void Init(Isolate *isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, module, "setenv", setEnv);
 
   SET_METHOD(isolate, module, "isatty", isatty);
+
+  SET_METHOD(isolate, module, "getProcessMemoryInfo", getProcessMemoryInfo);
+  SET_METHOD(isolate, module, "getCurrentProcess", getCurrentProcess);
+
 
   SET_VALUE(isolate, module, "GENERIC_READ", Integer::New(isolate, (int32_t)GENERIC_READ));
   SET_VALUE(isolate, module, "GENERIC_WRITE", Integer::New(isolate, (int32_t)GENERIC_WRITE));
