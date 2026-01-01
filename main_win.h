@@ -16,6 +16,11 @@ extern "C" {
 void register_builtins() {
   lo::builtins_add("main.js", _binary_main_js_start, _binary_main_js_len);
   lo::builtins_add("lib/inflate.js", _binary_lib_inflate_js_start, _binary_lib_inflate_js_len);
+  lo::builtins_add("lib/gen.js", _binary_lib_gen_js_start, _binary_lib_gen_js_len);
+  lo::builtins_add("lib/path.js", _binary_lib_path_js_start, _binary_lib_path_js_len);
+  lo::builtins_add("lib/proc.js", _binary_lib_proc_js_start, _binary_lib_proc_js_len);
+  lo::builtins_add("lib/stringify.js", _binary_lib_stringify_js_start, _binary_lib_stringify_js_len);
+  lo::builtins_add("lib/binary.js", _binary_lib_binary_js_start, _binary_lib_binary_js_len);
   lo::modules_add("core", &_register_core);
   lo::modules_add("win", &_register_win);
   lo::modules_add("inflate", &_register_inflate);
