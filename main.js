@@ -377,6 +377,7 @@ function get_address (buf) {
   return addr(handle)
 }
 
+const handle = new Uint32Array(2)
 core.os = lo.os()
 core.arch = lo.arch()
 const MAX_ENV = core.os === 'win' ? 32767 : 65536 // maximum environment variable size - todo
@@ -391,8 +392,6 @@ const AB = isatty ? '\u001b[34m' : '' // ANSI Blue
 const AM = isatty ? '\u001b[35m' : '' // ANSI Magenta
 const AC = isatty ? '\u001b[36m' : '' // ANSI Cyan
 const AW = isatty ? '\u001b[37m' : '' // ANSI White
-const env_buf = ptr(new Uint8Array(MAX_ENV))
-
 let defaultReadFlags = O_RDONLY
 let defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC
 let defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
@@ -405,8 +404,8 @@ core.defaultWriteFlags = defaultWriteFlags
 core.defaultWriteMode = defaultWriteMode
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
-const handle = new Uint32Array(2)
 handle.ptr = get_address(handle)
+//const env_buf = ptr(new Uint8Array(MAX_ENV))
 const stat = ptr(new Uint8Array(160))
 const stat32 = new Uint32Array(stat.buffer)
 const stat16 = new Uint16Array(stat.buffer)
@@ -631,7 +630,8 @@ async function global_main () {
   const command = args[1]
   try {
     if (command === 'gen') {
-      await (await import('lib/gen.js')).gen(args.slice(2))
+      const src = await (await import('lib/gen.js')).gen(args.slice(2))
+      console.log(src)
     } else if (command === 'build') {
       //todo: should be awaited
       await (await import('lib/build.js')).build(args.slice(2))
@@ -673,6 +673,10 @@ if (workerSource) {
 
 } // end bootstrap_runtime
 
-bootstrap_runtime()
+try {
+  bootstrap_runtime()
+} catch (err) {
+  lo.print(`${err.stack}\n`)
+}
 
 export {}
