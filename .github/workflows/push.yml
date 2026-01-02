@@ -139,7 +139,7 @@ jobs:
           name: lo-linux-${{ matrix.platform }}
 
   build-windows:
-    if: ${{ false }}  # disable
+#    if: ${{ false }}  # disable
     name: windows
     runs-on: windows-2022
     strategy:
@@ -152,10 +152,7 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
       - name: compile
         run: |
-          make BINDINGS= ARCH=${{ matrix.platform }} lo.exe
-      - name: check
-        run: |
-          make check
+          build.cmd
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
