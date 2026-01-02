@@ -19,6 +19,7 @@ lib/inflate/em_inflate.h
 lib/**/*.cc
 !lib/win/win.cc
 !lib/core/core.cc
+!lib/core2/core.cc
 !lib/curl/curl.cc
 !lib/inflate/inflate.cc
 !lib/mach/mach.cc
