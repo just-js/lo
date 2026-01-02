@@ -1,5 +1,6 @@
 @echo off
 set VERSION=0.0.24-pre
+set V8=14.3
 set RUNTIME=lo
 set V8_OPTS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS
 set OPTS=-std=c++20 -fomit-frame-pointer -fno-rtti -fno-exceptions -O3 -march=native -mtune=native
@@ -11,10 +12,21 @@ set BUILTINS=lib/inflate.js lib/gen.js lib/path.js lib/proc.js lib/stringify.js 
 if "%WindowsSdkDir%"== "" (
   call "C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
 )
+if not exist v8 (
+  mkdir v8
+  cd v8
+  curl -L -O https://github.com/just-js/v8/releases/download/%V8%/include.tar.gz
+  tar -xvf include.tar.gz
+  curl -L -O https://github.com/just-js/v8/releases/download/%V8%/libv8_monolith-win-x64.zip
+  tar -xvf libv8_monolith-win-x64.zip
+  del /Q *.zip
+  del /Q *.gz
+  cd ..
+)
 if exist lo.exe (
-REM  lo.exe gen --builtins --win main.js %BUILTINS% > builtins.h
-REM  lo.exe gen lib\core2\api.js > lib\core2\core.cc
-REM  lo.exe gen --header --win core.a win.a inflate.a %BUILTINS% > main_win.h
+  lo.exe gen --builtins --win main.js %BUILTINS% > builtins.h
+  lo.exe gen lib\core2\api.js > lib\core2\core.cc
+  lo.exe gen --header --win core.a win.a inflate.a %BUILTINS% > main_win.h
 )
 if not exist em_inflate.o (
   cd lib\inflate

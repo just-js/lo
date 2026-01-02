@@ -151,8 +151,9 @@ jobs:
       - name: Install MSVC/MCBuild (Windows)
         uses: microsoft/setup-msbuild@v1.0.2
       - name: compile
+        shell: cmd
         run: |
-          build.cmd
+          call ${{ github.workspace}}\build.cmd
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
