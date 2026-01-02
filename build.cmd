@@ -12,9 +12,9 @@ if "%WindowsSdkDir%"== "" (
   call "C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
 )
 if exist lo.exe (
-  lo.exe gen --builtins --win main.js %BUILTINS% > builtins.h
-  lo.exe gen lib\core2\api.js > lib\core2\core.cc
-  lo.exe gen --header --win core.a win.a inflate.a %BUILTINS% > main_win.h
+REM  lo.exe gen --builtins --win main.js %BUILTINS% > builtins.h
+REM  lo.exe gen lib\core2\api.js > lib\core2\core.cc
+REM  lo.exe gen --header --win core.a win.a inflate.a %BUILTINS% > main_win.h
 )
 if not exist em_inflate.o (
   cd lib\inflate
@@ -32,9 +32,9 @@ clang++ %OPTS% %WARN% %INCLUDE% -c %V8_OPTS% lib/win/win.cc
 clang++ %OPTS% %WARN% %INCLUDE% -c %V8_OPTS% -D_CRT_SECURE_NO_WARNINGS lib/core2/core.cc
 clang++ %OPTS% %WARN% %INCLUDE% -c %V8_OPTS% -DVERSION=\"%VERSION%\" -DRUNTIME=\"%RUNTIME%\" lo.cc
 clang++ %OPTS% %WARN% %INCLUDE% -c %V8_OPTS% -DVERSION=\"%VERSION%\" -DRUNTIME=\"%RUNTIME%\" main.cc
-REM clang++ %OPTS% %INCLUDE% -Iscratch\curl\curl-8.17.0_6-win64-mingw\include -c %V8_OPTS% -DNOMINMAX lib/curl/curl.cc
 REM set CURLP=scratch\curl\curl-8.17.0_6-win64-mingw\
-REM clang++ v8\v8_monolith.lib lo.o main.o win.o core.o inflate.o lib\inflate\em_inflate.o curl.o %CURLP%lib\libcurl.a %CURLP%lib\libcurl.dll.a -lwinmm -ldbghelp -lbcrypt -o lo.tmp.exe
+REM clang++ %OPTS% %INCLUDE% -I%CURLP%include -c %V8_OPTS% -DNOMINMAX lib/curl/curl.cc
+REM clang++ v8\v8_monolith.lib %OBJS% curl.o -L %CURLP%lib -l libcurl -l libcurl.dll -l libbrotlicommon -l libbrotlidec -l libcrypto -l libnghttp2 -l libnghttp3 -l libngtcp2 -l libngtcp2_crypto_libressl -l libpsl -l libssh2 -l libz -l libzstd %LOPTS% -o lo.tmp.exe
 clang++ v8\v8_monolith.lib %OBJS% %LOPTS% -o %RUNTIME%.tmp.exe
 move /Y %RUNTIME%.tmp.exe %RUNTIME%.exe
 del *.lib
