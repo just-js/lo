@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <io.h>
 #include <psapi.h>
+#include <tchar.h>
 
 namespace lo {
 namespace win {
@@ -220,6 +221,37 @@ void getCurrentProcess(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(args.GetIsolate(), reinterpret_cast<uint64_t>(pid)));
 }
 
+// https://learn.microsoft.com/en-us/windows/win32/procthread/creating-processes
+// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa
+void createProcess(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  STARTUPINFO si;
+  PROCESS_INFORMATION pi;
+  ZeroMemory( &si, sizeof(si) );
+  si.cb = sizeof(si);
+  ZeroMemory( &pi, sizeof(pi) );
+  String::Utf8Value cmdline(isolate, args[0]);
+  LPSTR szCmdline = _tcsdup(TEXT(*cmdline));
+  if( !CreateProcess( NULL,   // No module name (use command line)
+      szCmdline,        // Command line
+      NULL,           // Process handle not inheritable
+      NULL,           // Thread handle not inheritable
+      FALSE,          // Set handle inheritance to FALSE
+      0,              // No creation flags
+      NULL,           // Use parent's environment block
+      NULL,           // Use parent's starting directory 
+      &si,            // Pointer to STARTUPINFO structure
+      &pi )           // Pointer to PROCESS_INFORMATION structure
+  ) 
+  {
+      printf( "CreateProcess failed (%lu).\n", GetLastError() );
+      return;
+  }
+  WaitForSingleObject( pi.hProcess, INFINITE );
+  CloseHandle( pi.hProcess );
+  CloseHandle( pi.hThread );
+}
+
 void Init(Isolate *isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
 
@@ -247,7 +279,7 @@ void Init(Isolate *isolate, Local<ObjectTemplate> target) {
 
   SET_METHOD(isolate, module, "getProcessMemoryInfo", getProcessMemoryInfo);
   SET_METHOD(isolate, module, "getCurrentProcess", getCurrentProcess);
-
+  SET_METHOD(isolate, module, "createProcess", createProcess);
 
   SET_VALUE(isolate, module, "GENERIC_READ", Integer::New(isolate, (int32_t)GENERIC_READ));
   SET_VALUE(isolate, module, "GENERIC_WRITE", Integer::New(isolate, (int32_t)GENERIC_WRITE));

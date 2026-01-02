@@ -16,8 +16,6 @@ if exist lo.exe (
   lo.exe gen lib\core2\api.js > lib\core2\core.cc
   lo.exe gen --header --win core.a win.a inflate.a %BUILTINS% > main_win.h
 )
-clang++ %OPTS% %WARN% %INCLUDE% -c %V8_OPTS% lib/win/win.cc
-clang++ %OPTS% %WARN% %INCLUDE% -c %V8_OPTS% -D_CRT_SECURE_NO_WARNINGS lib/core2/core.cc
 if not exist em_inflate.o (
   cd lib\inflate
   if not exist em_inflate.h (
@@ -30,6 +28,11 @@ if not exist em_inflate.o (
   cd ..\..
 )
 clang++ %OPTS% %WARN% %INCLUDE% -c %V8_OPTS% -Ilib/inflate lib/inflate/inflate.cc
+clang++ %OPTS% %WARN% %INCLUDE% -c %V8_OPTS% lib/win/win.cc
+clang++ %OPTS% %WARN% %INCLUDE% -c %V8_OPTS% -D_CRT_SECURE_NO_WARNINGS lib/core2/core.cc
 clang++ %OPTS% %WARN% %INCLUDE% -c %V8_OPTS% -DVERSION=\"%VERSION%\" -DRUNTIME=\"%RUNTIME%\" lo.cc
 clang++ %OPTS% %WARN% %INCLUDE% -c %V8_OPTS% -DVERSION=\"%VERSION%\" -DRUNTIME=\"%RUNTIME%\" main.cc
-clang++ v8\v8_monolith.lib %OBJS% %LOPTS% -o %RUNTIME%.exe
+clang++ v8\v8_monolith.lib %OBJS% %LOPTS% -o %RUNTIME%.tmp.exe
+move /Y %RUNTIME%.tmp.exe %RUNTIME%.exe
+del *.lib
+del *.exp
