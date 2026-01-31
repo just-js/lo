@@ -112,10 +112,10 @@ mach.o: lib/mach/mach.cc v8 ## build the mach binding
 core.o: lib/core/core.cc v8 ## build the core binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o core.o lib/core/core.cc
 
-epoll.o: lib/core/epoll.cc v8 ## build the epoll binding
+epoll.o: lib/epoll/epoll.cc v8 ## build the epoll binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o epoll.o lib/epoll/epoll.cc
 
-kevents.o: lib/core/kevents.cc v8 ## build the kqueue binding
+kevents.o: lib/kevents/kevents.cc v8 ## build the kqueue binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o kevents.o lib/kevents/kevents.cc
 
 core.obj: core.cc v8 
