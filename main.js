@@ -19,7 +19,7 @@ class TextEncoder {
   encodeInto (src, dest) {
     // todo: pass a u32array(2) handle in here so we can return read, written
     if (!dest.ptr) ptr(dest)
-    return utf8EncodeInto(src, dest.ptr)
+    return { written: utf8EncodeInto(src, dest.ptr) }
   }
 }
 
@@ -384,14 +384,14 @@ const MAX_ENV = core.os === 'win' ? 32767 : 65536 // maximum environment variabl
 const MAX_DIR = 65536 // maximum path len - todo
 const isatty = core.isatty(STDOUT)
 const AD = isatty ? '\u001b[0m' : '' // ANSI Default
-const A0 = isatty ? '\u001b[30m' : '' // ANSI Black
-const AR = isatty ? '\u001b[31m' : '' // ANSI Red
-const AG = isatty ? '\u001b[32m' : '' // ANSI Green
-const AY = isatty ? '\u001b[33m' : '' // ANSI Yellow
-const AB = isatty ? '\u001b[34m' : '' // ANSI Blue
-const AM = isatty ? '\u001b[35m' : '' // ANSI Magenta
-const AC = isatty ? '\u001b[36m' : '' // ANSI Cyan
-const AW = isatty ? '\u001b[37m' : '' // ANSI White
+const A0 = isatty ? '\u001b[90m' : '' // ANSI Black
+const AR = isatty ? '\u001b[91m' : '' // ANSI Red
+const AG = isatty ? '\u001b[92m' : '' // ANSI Green
+const AY = isatty ? '\u001b[93m' : '' // ANSI Yellow
+const AB = isatty ? '\u001b[94m' : '' // ANSI Blue
+const AM = isatty ? '\u001b[95m' : '' // ANSI Magenta
+const AC = isatty ? '\u001b[96m' : '' // ANSI Cyan
+const AW = isatty ? '\u001b[97m' : '' // ANSI White
 let defaultReadFlags = O_RDONLY
 let defaultWriteFlags = O_WRONLY | O_CREAT | O_TRUNC
 let defaultWriteMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
@@ -538,6 +538,9 @@ lo.utf8_encode_into_at_offset = lo.utf8EncodeIntoAtOffset
 lo.utf8_length = lo.utf8Length
 lo.wrap_memory = lo.wrapMemory
 lo.latin1_decode = lo.latin1Decode
+globalThis.performance = {
+  now: () => lo.hrtime() / 1e6
+}
 
 // todo: fix this and write up/decide exactly what module resolution does
 // currently we check/open each file twice
@@ -621,44 +624,65 @@ function handle_error (err) {
   console.error(`${AR}Error${AD} ${err.message}${AD}\n${stack.split('\n').slice(1).join('\n')}`)
 }
 
+async function handleCommand (args) {
+  const command = args[1]
+  if (command === 'gen') {
+    const src = await (await import('lib/gen.js')).gen(args.slice(2))
+    console.log(src)
+  } else if (command === 'build') {
+    //todo: should be awaited
+    await (await import('lib/build.js')).build(args.slice(2))
+  } else if (command === 'install') {
+    await (await import('lib/build.js')).install(args.slice(2))
+  } else if (command === 'init') {
+    await (await import('lib/build.js')).init(args.slice(2))
+  } else if (command === 'uninstall') {
+    await (await import('lib/build.js')).uninstall(args.slice(2))
+  } else if (command === 'upgrade') {
+    await (await import('lib/build.js')).upgrade(args.slice(2))
+  } else if (command === 'repl') {
+    await (await import('lib/repl.js')).repl()
+  } else if (command === 'eval') {
+    await (new AsyncFunction(args[2]))()
+  } else {
+    let filePath = command
+    const { main, serve, test, bench } = await import(filePath)
+    const pargs = args.slice(2)
+    if (test) await test(...pargs)
+    if (bench) await bench(...pargs)
+    if (main) await main(...pargs)
+    if (serve) await serve(...pargs)
+  }
+}
+
 async function global_main () {
   // todo: upgrade, install etc. maybe install these as command scripts, but that would not be very secure
   if (args.length === 1) {
     show_usage()
     return Promise.resolve()
   }
-  const command = args[1]
-  try {
-    if (command === 'gen') {
-      const src = await (await import('lib/gen.js')).gen(args.slice(2))
-      console.log(src)
-    } else if (command === 'build') {
-      //todo: should be awaited
-      await (await import('lib/build.js')).build(args.slice(2))
-    } else if (command === 'install') {
-      await (await import('lib/build.js')).install(args.slice(2))
-    } else if (command === 'init') {
-      await (await import('lib/build.js')).init(args.slice(2))
-    } else if (command === 'uninstall') {
-      await (await import('lib/build.js')).uninstall(args.slice(2))
-    } else if (command === 'upgrade') {
-      await (await import('lib/build.js')).upgrade(args.slice(2))
-    } else if (command === 'repl') {
-      await (await import('lib/repl.js')).repl()
-    } else if (command === 'eval') {
-      await (new AsyncFunction(args[2]))()
-    } else {
-      let filePath = command
-      const { main, serve, test, bench } = await import(filePath)
-      const pargs = args.slice(2)
-      if (test) await test(...pargs)
-      if (bench) await bench(...pargs)
-      if (main) await main(...pargs)
-      if (serve) await serve(...pargs)
-    }
-  } catch (err) {
-    handle_error(err)
+  const { Loop } = await import('lib/loop.js')
+  const { Timer } = await import('lib/timer.js')
+
+  const loop = new Loop()
+  lo.loop = loop
+  globalThis.setTimeout = (fn, ms) => {
+    const timer = new Timer(loop, ms, () => {
+      timer.close()
+      fn()
+    })
+    return timer
   }
+  globalThis.clearTimeout = timer => timer.close()
+  globalThis.setInterval = (fn, ms) => new Timer(loop, ms, fn)
+  globalThis.clearInterval = globalThis.clearTimeout
+
+  handleCommand(args)
+    .then(() => {
+      while (loop.poll() > 0) {}
+    })
+    .catch(err => handle_error(err))
+  while (loop.poll() > 0) {}
 }
 
 const AsyncFunction = async function () {}.constructor
