@@ -677,6 +677,7 @@ void lo::Library(const FunctionCallbackInfo<Value> &args) {
     String::Utf8Value name(isolate, args[0]);
     auto iter = modules.find(*name);
     if (iter == modules.end()) {
+//      fprintf(stderr, "ohno %s\n", *name);
       return;
     } else {
       // TODO does it need to register if called multiple times??
@@ -1259,21 +1260,13 @@ int32_t lo::fastUtf8EncodeInto (void* p, struct FastOneByteString*
 void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
-/*
-// this check is expensive and it seems to provide little benefit unless
-// we are dealing with flat non unicode strings. need to benchmark further
-
   if (str->IsOneByte()) {
-    uint64_t start64 = (uint64_t)Local<Number>::Cast(args[1])->Value();
-    uint8_t* dest = reinterpret_cast<uint8_t*>(start64);
-    int written = str->WriteOneByte(isolate, dest, 0, -1, 
-      String::NO_NULL_TERMINATION);
+    uint8_t* dest = reinterpret_cast<uint8_t*>(Local<Integer>::Cast(args[1])->Value());
+    size_t written = str->Length();
+    str->WriteOneByteV2(isolate, 0, written, dest, String::WriteFlags::kNullTerminate);
     args.GetReturnValue().Set(Integer::New(isolate, written));
+    return;
   }
-*/
-  //int chars_written = 0;
-//  uint64_t start64 = (uint64_t)Local<Number>::Cast(args[1])->Value();
-//  char* dest = reinterpret_cast<char*>(start64);
   char* dest = reinterpret_cast<char*>(Local<Integer>::Cast(args[1])->Value());
   size_t written;
   str->WriteUtf8V2(isolate, static_cast<char*>(dest), -1, String::WriteFlags::kNullTerminate, &written);
@@ -1445,6 +1438,10 @@ bool EntropySource(unsigned char* buffer, size_t length) {
 #endif
 }
 
+void EnvironSlow(const FunctionCallbackInfo<Value> &args) {
+  args.GetReturnValue().Set(Number::New(args.GetIsolate(), reinterpret_cast<uint64_t>(environ)));
+}
+
 void lo::Setup(
     int* argc, 
     char** argv,
@@ -1534,7 +1531,9 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "get_meta", GetMeta);
   SET_METHOD(isolate, target, "heap_usage", HeapUsage);
   SET_METHOD(isolate, target, "shm_usage", SharedMemoryUsage);
-  
+
+  SET_METHOD(isolate, target, "environ", EnvironSlow);
+
   SET_METHOD(isolate, target, "runScript", RunScript);
   SET_METHOD(isolate, target, "registerCallback", RegisterCallback);
 }
