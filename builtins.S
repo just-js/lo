@@ -28,6 +28,21 @@ __binary_lib_proc_js_start:
         .incbin "lib/proc.js"
         .global __binary_lib_proc_js_end
 __binary_lib_proc_js_end:
+.global __binary_lib_loop_js_start
+__binary_lib_loop_js_start:
+        .incbin "lib/loop.js"
+        .global __binary_lib_loop_js_end
+__binary_lib_loop_js_end:
+.global __binary_lib_timer_js_start
+__binary_lib_timer_js_start:
+        .incbin "lib/timer.js"
+        .global __binary_lib_timer_js_end
+__binary_lib_timer_js_end:
+.global __binary_lib_system_js_start
+__binary_lib_system_js_start:
+        .incbin "lib/system.js"
+        .global __binary_lib_system_js_end
+__binary_lib_system_js_end:
 .global __binary_lib_path_js_start
 __binary_lib_path_js_start:
         .incbin "lib/path.js"
@@ -88,6 +103,16 @@ __binary_lib_curl_api_js_start:
         .incbin "lib/curl/api.js"
         .global __binary_lib_curl_api_js_end
 __binary_lib_curl_api_js_end:
+.global __binary_lib_epoll_api_js_start
+__binary_lib_epoll_api_js_start:
+        .incbin "lib/epoll/api.js"
+        .global __binary_lib_epoll_api_js_end
+__binary_lib_epoll_api_js_end:
+.global __binary_lib_kevents_api_js_start
+__binary_lib_kevents_api_js_start:
+        .incbin "lib/kevents/api.js"
+        .global __binary_lib_kevents_api_js_end
+__binary_lib_kevents_api_js_end:
 .global __binary_runtime_base_config_js_start
 __binary_runtime_base_config_js_start:
         .incbin "runtime/base.config.js"

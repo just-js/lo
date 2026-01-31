@@ -16,6 +16,9 @@ extern char _binary_lib_gen_js_start[];
 extern char _binary_lib_fs_js_start[];
 extern char _binary_lib_untar_js_start[];
 extern char _binary_lib_proc_js_start[];
+extern char _binary_lib_loop_js_start[];
+extern char _binary_lib_timer_js_start[];
+extern char _binary_lib_system_js_start[];
 extern char _binary_lib_path_js_start[];
 extern char _binary_lib_inflate_js_start[];
 extern char _binary_lib_build_js_start[];
@@ -28,6 +31,8 @@ extern char _binary_lib_inflate_api_js_start[];
 extern char _binary_lib_inflate_build_js_start[];
 extern char _binary_lib_core_api_js_start[];
 extern char _binary_lib_curl_api_js_start[];
+extern char _binary_lib_epoll_api_js_start[];
+extern char _binary_lib_kevents_api_js_start[];
 extern char _binary_runtime_base_config_js_start[];
 extern char _binary_runtime_lo_config_js_start[];
 extern char _binary_globals_d_ts_start[];
@@ -36,6 +41,9 @@ extern char _binary_lib_gen_js_end[];
 extern char _binary_lib_fs_js_end[];
 extern char _binary_lib_untar_js_end[];
 extern char _binary_lib_proc_js_end[];
+extern char _binary_lib_loop_js_end[];
+extern char _binary_lib_timer_js_end[];
+extern char _binary_lib_system_js_end[];
 extern char _binary_lib_path_js_end[];
 extern char _binary_lib_inflate_js_end[];
 extern char _binary_lib_build_js_end[];
@@ -48,6 +56,8 @@ extern char _binary_lib_inflate_api_js_end[];
 extern char _binary_lib_inflate_build_js_end[];
 extern char _binary_lib_core_api_js_end[];
 extern char _binary_lib_curl_api_js_end[];
+extern char _binary_lib_epoll_api_js_end[];
+extern char _binary_lib_kevents_api_js_end[];
 extern char _binary_runtime_base_config_js_end[];
 extern char _binary_runtime_lo_config_js_end[];
 extern char _binary_globals_d_ts_end[];
@@ -58,9 +68,20 @@ extern "C" {
   extern void* _register_core();
   extern void* _register_inflate();
   extern void* _register_curl();
+  extern void* _register_system();
   
 #ifdef __MACH__
   extern void* _register_mach();
+#endif
+
+  
+#ifdef __MACH__
+  extern void* _register_kevents();
+#endif
+
+  
+#ifdef __linux__
+  extern void* _register_epoll();
 #endif
 
 }
@@ -72,6 +93,9 @@ void register_builtins() {
   lo::builtins_add("lib/fs.js", _binary_lib_fs_js_start, _binary_lib_fs_js_end - _binary_lib_fs_js_start);
   lo::builtins_add("lib/untar.js", _binary_lib_untar_js_start, _binary_lib_untar_js_end - _binary_lib_untar_js_start);
   lo::builtins_add("lib/proc.js", _binary_lib_proc_js_start, _binary_lib_proc_js_end - _binary_lib_proc_js_start);
+  lo::builtins_add("lib/loop.js", _binary_lib_loop_js_start, _binary_lib_loop_js_end - _binary_lib_loop_js_start);
+  lo::builtins_add("lib/timer.js", _binary_lib_timer_js_start, _binary_lib_timer_js_end - _binary_lib_timer_js_start);
+  lo::builtins_add("lib/system.js", _binary_lib_system_js_start, _binary_lib_system_js_end - _binary_lib_system_js_start);
   lo::builtins_add("lib/path.js", _binary_lib_path_js_start, _binary_lib_path_js_end - _binary_lib_path_js_start);
   lo::builtins_add("lib/inflate.js", _binary_lib_inflate_js_start, _binary_lib_inflate_js_end - _binary_lib_inflate_js_start);
   lo::builtins_add("lib/build.js", _binary_lib_build_js_start, _binary_lib_build_js_end - _binary_lib_build_js_start);
@@ -84,15 +108,28 @@ void register_builtins() {
   lo::builtins_add("lib/inflate/build.js", _binary_lib_inflate_build_js_start, _binary_lib_inflate_build_js_end - _binary_lib_inflate_build_js_start);
   lo::builtins_add("lib/core/api.js", _binary_lib_core_api_js_start, _binary_lib_core_api_js_end - _binary_lib_core_api_js_start);
   lo::builtins_add("lib/curl/api.js", _binary_lib_curl_api_js_start, _binary_lib_curl_api_js_end - _binary_lib_curl_api_js_start);
+  lo::builtins_add("lib/epoll/api.js", _binary_lib_epoll_api_js_start, _binary_lib_epoll_api_js_end - _binary_lib_epoll_api_js_start);
+  lo::builtins_add("lib/kevents/api.js", _binary_lib_kevents_api_js_start, _binary_lib_kevents_api_js_end - _binary_lib_kevents_api_js_start);
   lo::builtins_add("runtime/base.config.js", _binary_runtime_base_config_js_start, _binary_runtime_base_config_js_end - _binary_runtime_base_config_js_start);
   lo::builtins_add("runtime/lo.config.js", _binary_runtime_lo_config_js_start, _binary_runtime_lo_config_js_end - _binary_runtime_lo_config_js_start);
   lo::builtins_add("globals.d.ts", _binary_globals_d_ts_start, _binary_globals_d_ts_end - _binary_globals_d_ts_start);
   lo::modules_add("core", &_register_core);
   lo::modules_add("inflate", &_register_inflate);
   lo::modules_add("curl", &_register_curl);
+  lo::modules_add("system", &_register_system);
   
 #ifdef __MACH__
   lo::modules_add("mach", &_register_mach);
+#endif
+
+  
+#ifdef __MACH__
+  lo::modules_add("kevents", &_register_kevents);
+#endif
+
+  
+#ifdef __linux__
+  lo::modules_add("epoll", &_register_epoll);
 #endif
 
 }

@@ -2,7 +2,10 @@ const bindings = [
   'core', 
   'inflate',
   'curl',
-  { mach: ['mac'] }
+  'system',
+  { mach: ['mac'] },
+  { kevents: ['mac'] },
+  { epoll: ['linux'] },
 ]
 
 const libs = [
@@ -11,6 +14,9 @@ const libs = [
   'lib/fs.js', 
   'lib/untar.js', 
   'lib/proc.js', 
+  'lib/loop.js', 
+  'lib/timer.js', 
+  'lib/system.js', 
   'lib/path.js',
   'lib/inflate.js',
   'lib/build.js',
@@ -26,6 +32,8 @@ const embeds = [
   'lib/inflate/build.js',
   'lib/core/api.js',
   'lib/curl/api.js',
+  'lib/epoll/api.js',
+  'lib/kevents/api.js',
   'runtime/base.config.js',
   'runtime/lo.config.js',
   'globals.d.ts',
