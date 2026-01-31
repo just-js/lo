@@ -6,7 +6,7 @@ CCARGS=-fPIC -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions -fv
 CARGS=-fPIC -c -fno-omit-frame-pointer -fvisibility=hidden
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter -Wno-error=unknown-warning-option
 OPT=-O3
-VERSION=0.0.23-pre
+VERSION=0.0.24-pre
 V8_VERSION=14.3
 RUNTIME=lo
 LO_HOME=$(shell pwd)

@@ -139,23 +139,21 @@ jobs:
           name: lo-linux-${{ matrix.platform }}
 
   build-windows:
-    if: ${{ false }}  # disable
+#    if: ${{ false }}  # disable
     name: windows
-    runs-on: windows-2022
+    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
-        platform: [x64,arm64]
+        platform: [x64]
     steps:
       - uses: actions/checkout@v3
       - name: Install MSVC/MCBuild (Windows)
         uses: microsoft/setup-msbuild@v1.0.2
       - name: compile
+        shell: cmd
         run: |
-          make BINDINGS= ARCH=${{ matrix.platform }} lo.exe
-      - name: check
-        run: |
-          make check
+          call ${{ github.workspace}}\build.cmd
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:

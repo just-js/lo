@@ -1,6 +1,5 @@
 #include <map>
 #include "lo.h"
-#include <unistd.h>
 
 using v8::String;
 using v8::FunctionCallbackInfo;
@@ -59,16 +58,15 @@ using v8::Script;
 using v8::HeapStatistics;
 using v8::BigUint64Array;
 
-// TODO: thread safety
+#ifdef _WIN32
+static uint64_t hrtime_frequency_ = 0;
+#else
+int random_fd = -1;
+#endif
+
 std::map<std::string, lo::builtin*> builtins;
 std::map<std::string, lo::register_plugin> modules;
 std::unique_ptr<v8::Platform> platform;
-
-#ifndef _WIN64
-clock_t clock_id = CLOCK_MONOTONIC;
-#endif
-
-struct timespec t;
 
 CTypeInfo cargshrtime[2] = { 
   CTypeInfo(CTypeInfo::Type::kV8Value), 
@@ -110,18 +108,6 @@ CFunctionInfo infoutf8encodeinto = CFunctionInfo(rcutf8encodeinto, 3,
   cargsutf8encodeinto);
 CFunction pFutf8encodeinto = CFunction((const void*)&lo::fastUtf8EncodeInto, 
   &infoutf8encodeinto);
-
-/*
-CTypeInfo cargsutf8encodeintoPtr[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CFunctionInfo infoutf8encodeintoPtr = CFunctionInfo(rcutf8encodeinto, 3, 
-  cargsutf8encodeintoPtr);
-CFunction pFutf8encodeintoPtr = CFunction((const void*)&lo::fastUtf8EncodeIntoPtr, 
-  &infoutf8encodeintoPtr);
-*/
 
 CTypeInfo cargsutf8encodeintoatoffset[4] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
@@ -958,6 +944,7 @@ void lo::fastSetErrno (void* p, int32_t e) {
 
 uint64_t lo::hrtime() {
 #ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+  struct timespec t;
   clock_serv_t cclock;
   mach_timespec_t mts;
   host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
@@ -965,12 +952,28 @@ uint64_t lo::hrtime() {
   mach_port_deallocate(mach_task_self(), cclock);
   t.tv_sec = mts.tv_sec;
   t.tv_nsec = mts.tv_nsec;
-#elif defined(_WIN32)
-  // TODO
-#else
-  if (clock_gettime(clock_id, &t)) return 0;
-#endif
   return (t.tv_sec * (uint64_t) 1e9) + t.tv_nsec;
+#elif defined(_WIN32)
+  // stolen from libuv: https://github.com/libuv/libuv/blob/v1.x/src/win/util.c
+  LARGE_INTEGER counter;
+  double scaled_freq;
+  double result;
+  if (hrtime_frequency_ == 0) {
+    LARGE_INTEGER perf_frequency;
+    if (QueryPerformanceFrequency(&perf_frequency)) {
+      hrtime_frequency_ = perf_frequency.QuadPart;
+    }
+    if (hrtime_frequency_ == 0) return 0;
+  }
+  if (!QueryPerformanceCounter(&counter)) return 0;
+  scaled_freq = (double) hrtime_frequency_ / 1000000000;
+  result = (double) counter.QuadPart / scaled_freq;
+  return (uint64_t) result;
+#else
+  struct timespec t;
+  if (clock_gettime(CLOCK_MONOTONIC, &t)) return 0;
+  return (t.tv_sec * (uint64_t) 1e9) + t.tv_nsec;
+#endif
 }
 
 void lo::HRTime(const FunctionCallbackInfo<Value> &args) {
@@ -1418,9 +1421,6 @@ void lo::Exit(const FunctionCallbackInfo<Value> &args) {
   exit(status);
 }
 
-// keep the /dev/urandom file open for lifetime of process
-int random_fd = -1;
-
 /**
  * fill the provided buffer with random bytes
  * 
@@ -1432,11 +1432,17 @@ int random_fd = -1;
  * @param length Write this number of random bytes, no more, no less.
  */
 bool EntropySource(unsigned char* buffer, size_t length) {
+#ifdef _WIN32
+// https://learn.microsoft.com/en-us/windows/win32/api/Bcrypt/nf-bcrypt-bcryptgenrandom
+  NTSTATUS status = BCryptGenRandom(NULL, buffer, length, BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+  if (status != 0) return false;
+  return true;
+#else
   if (random_fd == -1) random_fd = open("/dev/urandom", O_RDONLY);
-  //todo check return
   size_t bytes = read(random_fd, buffer, length);
   if (bytes != length) return false;
   return true;
+#endif
 }
 
 void lo::Setup(
@@ -1664,7 +1670,9 @@ void lo_shutdown (int cleanup) {
     V8::Dispose();
     platform.reset();
   }
+#ifndef _WIN32
   close(random_fd);
+#endif
   builtins.clear();
   modules.clear();
 }

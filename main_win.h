@@ -3,32 +3,34 @@
 // This file has been automatically generated, please do not change unless you disable auto-generation in the Makefile
 
 #include "lo.h"
-#include "builtins.h"
 
+#include "builtins.h"
 static unsigned int main_js_len = _binary_main_js_len;
 
 extern "C" {
   extern void* _register_core();
+  extern void* _register_win();
+  extern void* _register_inflate();
 }
 
 void register_builtins() {
-  lo::builtins_add("main.js", _binary_main_js_start, main_js_len);
+  lo::builtins_add("main.js", _binary_main_js_start, _binary_main_js_len);
+  lo::builtins_add("lib/inflate.js", _binary_lib_inflate_js_start, _binary_lib_inflate_js_len);
+  lo::builtins_add("lib/gen.js", _binary_lib_gen_js_start, _binary_lib_gen_js_len);
+  lo::builtins_add("lib/path.js", _binary_lib_path_js_start, _binary_lib_path_js_len);
+  lo::builtins_add("lib/proc.js", _binary_lib_proc_js_start, _binary_lib_proc_js_len);
+  lo::builtins_add("lib/stringify.js", _binary_lib_stringify_js_start, _binary_lib_stringify_js_len);
+  lo::builtins_add("lib/binary.js", _binary_lib_binary_js_start, _binary_lib_binary_js_len);
   lo::modules_add("core", &_register_core);
+  lo::modules_add("win", &_register_win);
+  lo::modules_add("inflate", &_register_inflate);
 }
-
 static const char* index_js = NULL;
 static unsigned int index_js_len = 0;
-
 static const char* main_js = _binary_main_js_start;
-
 static const char* v8flags = "--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --cppgc-young-generation";
 static unsigned int _v8flags_from_commandline = 1;
 static unsigned int _v8_threads = 2;
 static unsigned int _v8_cleanup = 0;
 static unsigned int _on_exit = 0;
-#ifdef __linux__
 
-#endif
-#ifdef __MACH__
-
-#endif

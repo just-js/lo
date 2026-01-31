@@ -35,6 +35,7 @@
 #include <sys/ioctl.h>
 #include <dirent.h>
 #include <sched.h>
+#include <sys/sysmacros.h>
 #endif
 
 
@@ -947,6 +948,43 @@ CTypeInfo rcgetpid = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infogetpid = CFunctionInfo(rcgetpid, 1, cargsgetpid);
 CFunction pFgetpid = CFunction((const void*)&getpidFast, &infogetpid);
 
+int32_t getsidFast(void* p, int32_t p0);
+CTypeInfo cargsgetsid[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+};
+CTypeInfo rcgetsid = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infogetsid = CFunctionInfo(rcgetsid, 2, cargsgetsid);
+CFunction pFgetsid = CFunction((const void*)&getsidFast, &infogetsid);
+
+int32_t setsidFast(void* p);
+CTypeInfo cargssetsid[1] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+
+};
+CTypeInfo rcsetsid = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infosetsid = CFunctionInfo(rcsetsid, 1, cargssetsid);
+CFunction pFsetsid = CFunction((const void*)&setsidFast, &infosetsid);
+
+int32_t getpgrpFast(void* p);
+CTypeInfo cargsgetpgrp[1] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+
+};
+CTypeInfo rcgetpgrp = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infogetpgrp = CFunctionInfo(rcgetpgrp, 1, cargsgetpgrp);
+CFunction pFgetpgrp = CFunction((const void*)&getpgrpFast, &infogetpgrp);
+
+int32_t setpgidFast(void* p, int32_t p0, int32_t p1);
+CTypeInfo cargssetpgid[3] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+};
+CTypeInfo rcsetpgid = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infosetpgid = CFunctionInfo(rcsetpgid, 3, cargssetpgid);
+CFunction pFsetpgid = CFunction((const void*)&setpgidFast, &infosetpgid);
+
 int32_t forkFast(void* p);
 CTypeInfo cargsfork[1] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
@@ -1135,6 +1173,16 @@ CFunctionInfo infosync = CFunctionInfo(rcsync, 1, cargssync);
 CFunction pFsync = CFunction((const void*)&syncFast, &infosync);
 
 #ifdef __linux__
+
+uint32_t makedevFast(void* p, uint32_t p0, uint32_t p1);
+CTypeInfo cargsmakedev[3] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+};
+CTypeInfo rcmakedev = CTypeInfo(CTypeInfo::Type::kUint32);
+CFunctionInfo infomakedev = CFunctionInfo(rcmakedev, 3, cargsmakedev);
+CFunction pFmakedev = CFunction((const void*)&makedevFast, &infomakedev);
 
 int32_t posix_fadviseFast(void* p, int32_t p0, uint32_t p1, uint32_t p2, int32_t p3);
 CTypeInfo cargsposix_fadvise[5] = {
@@ -2052,6 +2100,48 @@ int32_t getpidFast(void* p) {
 
   return getpid();
 }
+void getsidSlow(const FunctionCallbackInfo<Value> &args) {
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t rc = getsid(v0);
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t getsidFast(void* p, int32_t p0) {
+  int32_t v0 = p0;
+  return getsid(v0);
+}
+void setsidSlow(const FunctionCallbackInfo<Value> &args) {
+
+  int32_t rc = setsid();
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t setsidFast(void* p) {
+
+  return setsid();
+}
+void getpgrpSlow(const FunctionCallbackInfo<Value> &args) {
+
+  int32_t rc = getpgrp();
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t getpgrpFast(void* p) {
+
+  return getpgrp();
+}
+void setpgidSlow(const FunctionCallbackInfo<Value> &args) {
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t rc = setpgid(v0, v1);
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t setpgidFast(void* p, int32_t p0, int32_t p1) {
+  int32_t v0 = p0;
+  int32_t v1 = p1;
+  return setpgid(v0, v1);
+}
 void forkSlow(const FunctionCallbackInfo<Value> &args) {
 
   int32_t rc = fork();
@@ -2332,6 +2422,18 @@ void syncFast(void* p) {
 }
 #ifdef __linux__
 
+void makedevSlow(const FunctionCallbackInfo<Value> &args) {
+  uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  uint32_t rc = gnu_dev_makedev(v0, v1);
+  args.GetReturnValue().Set(rc);
+}
+
+uint32_t makedevFast(void* p, uint32_t p0, uint32_t p1) {
+  uint32_t v0 = p0;
+  uint32_t v1 = p1;
+  return gnu_dev_makedev(v0, v1);
+}
 void posix_fadviseSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2603,6 +2705,10 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "dup2", &pFdup2, dup2Slow);
   SET_FAST_METHOD(isolate, module, "getcwd", &pFgetcwd, getcwdSlow);
   SET_FAST_METHOD(isolate, module, "getpid", &pFgetpid, getpidSlow);
+  SET_FAST_METHOD(isolate, module, "getsid", &pFgetsid, getsidSlow);
+  SET_FAST_METHOD(isolate, module, "setsid", &pFsetsid, setsidSlow);
+  SET_FAST_METHOD(isolate, module, "getpgrp", &pFgetpgrp, getpgrpSlow);
+  SET_FAST_METHOD(isolate, module, "setpgid", &pFsetpgid, setpgidSlow);
   SET_FAST_METHOD(isolate, module, "fork", &pFfork, forkSlow);
   SET_FAST_METHOD(isolate, module, "kill", &pFkill, killSlow);
   SET_FAST_METHOD(isolate, module, "waitpid", &pFwaitpid, waitpidSlow);
@@ -2628,6 +2734,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "sync", &pFsync, syncSlow);
 
 #ifdef __linux__
+  SET_FAST_METHOD(isolate, module, "makedev", &pFmakedev, makedevSlow);
   SET_FAST_METHOD(isolate, module, "posix_fadvise", &pFposix_fadvise, posix_fadviseSlow);
   SET_FAST_METHOD(isolate, module, "ioctl", &pFioctl, ioctlSlow);
   SET_FAST_METHOD(isolate, module, "ioctl2", &pFioctl2, ioctl2Slow);
@@ -2660,9 +2767,11 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "O_RDONLY", Integer::New(isolate, (int32_t)O_RDONLY));
   SET_VALUE(isolate, module, "O_WRONLY", Integer::New(isolate, (int32_t)O_WRONLY));
   SET_VALUE(isolate, module, "O_CREAT", Integer::New(isolate, (int32_t)O_CREAT));
+  SET_VALUE(isolate, module, "S_IXOTH", Integer::New(isolate, (int32_t)S_IXOTH));
+  SET_VALUE(isolate, module, "S_IXUSR", Integer::New(isolate, (int32_t)S_IXUSR));
+  SET_VALUE(isolate, module, "S_IXGRP", Integer::New(isolate, (int32_t)S_IXGRP));
   SET_VALUE(isolate, module, "S_IRWXU", Integer::New(isolate, (int32_t)S_IRWXU));
   SET_VALUE(isolate, module, "S_IRWXG", Integer::New(isolate, (int32_t)S_IRWXG));
-  SET_VALUE(isolate, module, "S_IXOTH", Integer::New(isolate, (int32_t)S_IXOTH));
   SET_VALUE(isolate, module, "O_TRUNC", Integer::New(isolate, (int32_t)O_TRUNC));
   SET_VALUE(isolate, module, "STDIN", Number::New(isolate, (int64_t)0));
   SET_VALUE(isolate, module, "STDOUT", Number::New(isolate, (int64_t)1));
@@ -2744,11 +2853,33 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 #ifdef __MACH__
   SET_VALUE(isolate, module, "struct_clock_t_size", Integer::New(isolate, sizeof(clock_t)));
   SET_VALUE(isolate, module, "struct_fastcall_size", Integer::New(isolate, sizeof(fastcall)));
+  SET_VALUE(isolate, module, "struct_struct_stat_size", Integer::New(isolate, sizeof(struct stat)));
+  SET_VALUE(isolate, module, "struct_struct_timespec_size", Integer::New(isolate, sizeof(struct timespec)));
+  SET_VALUE(isolate, module, "struct_dev_t_size", Integer::New(isolate, sizeof(dev_t)));
+  SET_VALUE(isolate, module, "struct_ino_t_size", Integer::New(isolate, sizeof(ino_t)));
+  SET_VALUE(isolate, module, "struct_mode_t_size", Integer::New(isolate, sizeof(mode_t)));
+  SET_VALUE(isolate, module, "struct_nlink_t_size", Integer::New(isolate, sizeof(nlink_t)));
+  SET_VALUE(isolate, module, "struct_uid_t_size", Integer::New(isolate, sizeof(uid_t)));
+  SET_VALUE(isolate, module, "struct_gid_t_size", Integer::New(isolate, sizeof(gid_t)));
+  SET_VALUE(isolate, module, "struct_off_t_size", Integer::New(isolate, sizeof(off_t)));
+  SET_VALUE(isolate, module, "struct_blksize_t_size", Integer::New(isolate, sizeof(blksize_t)));
+  SET_VALUE(isolate, module, "struct_blkcnt_t_size", Integer::New(isolate, sizeof(blkcnt_t)));
 
 #endif
 #ifdef __linux__
   SET_VALUE(isolate, module, "struct_clock_t_size", Integer::New(isolate, sizeof(clock_t)));
   SET_VALUE(isolate, module, "struct_fastcall_size", Integer::New(isolate, sizeof(fastcall)));
+  SET_VALUE(isolate, module, "struct_struct_stat_size", Integer::New(isolate, sizeof(struct stat)));
+  SET_VALUE(isolate, module, "struct_struct_timespec_size", Integer::New(isolate, sizeof(struct timespec)));
+  SET_VALUE(isolate, module, "struct_dev_t_size", Integer::New(isolate, sizeof(dev_t)));
+  SET_VALUE(isolate, module, "struct_ino_t_size", Integer::New(isolate, sizeof(ino_t)));
+  SET_VALUE(isolate, module, "struct_mode_t_size", Integer::New(isolate, sizeof(mode_t)));
+  SET_VALUE(isolate, module, "struct_nlink_t_size", Integer::New(isolate, sizeof(nlink_t)));
+  SET_VALUE(isolate, module, "struct_uid_t_size", Integer::New(isolate, sizeof(uid_t)));
+  SET_VALUE(isolate, module, "struct_gid_t_size", Integer::New(isolate, sizeof(gid_t)));
+  SET_VALUE(isolate, module, "struct_off_t_size", Integer::New(isolate, sizeof(off_t)));
+  SET_VALUE(isolate, module, "struct_blksize_t_size", Integer::New(isolate, sizeof(blksize_t)));
+  SET_VALUE(isolate, module, "struct_blkcnt_t_size", Integer::New(isolate, sizeof(blkcnt_t)));
   SET_VALUE(isolate, module, "struct_cpu_set_t_size", Integer::New(isolate, sizeof(cpu_set_t)));
 
 #endif
