@@ -683,6 +683,7 @@ async function global_main () {
     })
     .catch(err => handle_error(err))
   while (loop.poll() > 0) {}
+//  handleCommand(args).catch(err => handle_error(err))
 }
 
 const AsyncFunction = async function () {}.constructor
