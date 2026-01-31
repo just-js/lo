@@ -23,6 +23,7 @@ lib/**/*.cc
 !lib/kevents/kevents.cc
 !lib/core2/core.cc
 !lib/curl/curl.cc
+!lib/system/system.cc
 !lib/inflate/inflate.cc
 !lib/mach/mach.cc
 .lo_history

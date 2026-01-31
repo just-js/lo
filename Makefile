@@ -10,7 +10,7 @@ VERSION=0.0.24-pre
 V8_VERSION=14.3
 RUNTIME=lo
 LO_HOME=$(shell pwd)
-BINDINGS=core.o inflate.a curl.o
+BINDINGS=core.o inflate.a curl.o system.o
 ARCH=x64
 os=linux
 TARGET=${RUNTIME}
@@ -114,6 +114,9 @@ core.o: lib/core/core.cc v8 ## build the core binding
 
 epoll.o: lib/epoll/epoll.cc v8 ## build the epoll binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o epoll.o lib/epoll/epoll.cc
+
+system.o: lib/system/system.cc v8 ## build the system binding
+	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o system.o lib/system/system.cc
 
 kevents.o: lib/kevents/kevents.cc v8 ## build the kqueue binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o kevents.o lib/kevents/kevents.cc
