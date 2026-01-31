@@ -64,6 +64,8 @@ static uint64_t hrtime_frequency_ = 0;
 int random_fd = -1;
 #endif
 
+extern char **environ;
+
 std::map<std::string, lo::builtin*> builtins;
 std::map<std::string, lo::register_plugin> modules;
 std::unique_ptr<v8::Platform> platform;
