@@ -1180,7 +1180,7 @@ void lo::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   if (str->IsOneByte()) {
     int size = str->Length();
     std::unique_ptr<BackingStore> backing = 
-      ArrayBuffer::NewBackingStore(isolate, size);
+      ArrayBuffer::NewBackingStore(isolate, size, v8::BackingStoreInitializationMode::kUninitialized);
     str->WriteOneByteV2(isolate, 0, size, static_cast<uint8_t*>(backing->Data()), String::WriteFlags::kNone);
     Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
     args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
@@ -1189,7 +1189,7 @@ void lo::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   size_t written = 0;
   int size = str->Utf8LengthV2(isolate);
   std::unique_ptr<BackingStore> backing = 
-    ArrayBuffer::NewBackingStore(isolate, size);
+    ArrayBuffer::NewBackingStore(isolate, size, v8::BackingStoreInitializationMode::kUninitialized);
   str->WriteUtf8V2(isolate, static_cast<char*>(backing->Data()), size, String::WriteFlags::kNone, &written);
   Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
   args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
