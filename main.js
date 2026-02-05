@@ -661,29 +661,32 @@ async function global_main () {
     show_usage()
     return Promise.resolve()
   }
-  const { Loop } = await import('lib/loop.js')
-  const { Timer } = await import('lib/timer.js')
+  if (core.os === 'win') {
+    handleCommand(args).catch(err => handle_error(err))
+  } else {
+    const { Loop } = await import('lib/loop.js')
+    const { Timer } = await import('lib/timer.js')
 
-  const loop = new Loop()
-  lo.loop = loop
-  globalThis.setTimeout = (fn, ms) => {
-    const timer = new Timer(loop, ms, () => {
-      timer.close()
-      fn()
-    })
-    return timer
+    const loop = new Loop()
+    lo.loop = loop
+    globalThis.setTimeout = (fn, ms) => {
+      const timer = new Timer(loop, ms, () => {
+        timer.close()
+        fn()
+      })
+      return timer
+    }
+    globalThis.clearTimeout = timer => timer.close()
+    globalThis.setInterval = (fn, ms) => new Timer(loop, ms, fn)
+    globalThis.clearInterval = globalThis.clearTimeout
+
+    handleCommand(args)
+      .then(() => {
+        while (loop.poll() > 0) {}
+      })
+      .catch(err => handle_error(err))
+    while (loop.poll() > 0) {}
   }
-  globalThis.clearTimeout = timer => timer.close()
-  globalThis.setInterval = (fn, ms) => new Timer(loop, ms, fn)
-  globalThis.clearInterval = globalThis.clearTimeout
-
-  handleCommand(args)
-    .then(() => {
-      while (loop.poll() > 0) {}
-    })
-    .catch(err => handle_error(err))
-  while (loop.poll() > 0) {}
-//  handleCommand(args).catch(err => handle_error(err))
 }
 
 const AsyncFunction = async function () {}.constructor

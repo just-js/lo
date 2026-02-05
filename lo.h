@@ -14,9 +14,13 @@
 
 #if defined _WIN32 || defined __CYGWIN__
 #include <windows.h>
-#endif
+#define DLL_PUBLIC __declspec(dllexport)
+#else
 #define DLL_PUBLIC __attribute__ ((visibility ("default")))
-#define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
+//#define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
+#endif
+//#define DLL_PUBLIC __attribute__ ((visibility ("default")))
+//#define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
 
 namespace lo {
 /*
