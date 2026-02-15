@@ -79,17 +79,6 @@ CFunctionInfo infohrtime = CFunctionInfo(rchrtime, 2, cargshrtime);
 CFunction pFhrtime = CFunction((const void*)&lo::fastHRTime, 
   &infohrtime);
 
-CTypeInfo cargsgetaddress[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcgetaddress = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infogetaddress = CFunctionInfo(rcgetaddress, 3, 
-  cargsgetaddress);
-CFunction pFgetaddress = CFunction((const void*)&lo::fastGetAddress, 
-  &infogetaddress);
-
 CTypeInfo cargsutf8length[2] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kSeqOneByteString)
@@ -984,11 +973,6 @@ void lo::GetAddress(const FunctionCallbackInfo<Value> &args) {
   ((uint64_t*)args[1].As<Uint32Array>()->Buffer()->Data())[0] = (uint64_t)ptr;
 }
 
-void lo::fastGetAddress(void* p, uint64_t* p_buf, 
-  uint64_t* p_ret) {
-  p_ret[0] = (uint64_t)p_buf;
-}
-
 void lo::Utf8Length(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   args.GetReturnValue().Set(Integer::New(isolate, args[0].As<String>()->Utf8LengthV2(isolate)));
@@ -1498,9 +1482,6 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
 
   // OK
   SET_FAST_METHOD(isolate, target, "utf8Length", &pFutf8length, Utf8Length);
-//  SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto, 
-//    Utf8EncodeInto);
-  // OK
   SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto, 
     Utf8EncodeInto);
   // OK
@@ -1510,7 +1491,7 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
   SET_METHOD(isolate, target, "wrapMemoryShared", WrapMemoryShared);
   SET_METHOD(isolate, target, "unwrapMemory", UnWrapMemory);
-  //SET_FAST_METHOD(isolate, target, "getAddress", &pFgetaddress, GetAddress);
+
   // 50% throughput
   SET_METHOD(isolate, target, "getAddress", GetAddress);
   // OK
