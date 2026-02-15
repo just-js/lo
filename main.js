@@ -679,7 +679,8 @@ async function global_main () {
     globalThis.clearTimeout = timer => timer.close()
     globalThis.setInterval = (fn, ms) => new Timer(loop, ms, fn)
     globalThis.clearInterval = globalThis.clearTimeout
-
+    globalThis.setImmediate = fn => loop.setImmediate(fn)
+    
     handleCommand(args)
       .then(() => {
         while (loop.poll() > 0) {}

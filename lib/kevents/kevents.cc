@@ -181,6 +181,32 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "EV_OOBAND", Integer::New(isolate, (int32_t)EV_OOBAND));
   SET_VALUE(isolate, module, "EV_ERROR", Integer::New(isolate, (int32_t)EV_ERROR));
   SET_VALUE(isolate, module, "KEVENT_FLAG_IMMEDIATE", Integer::New(isolate, (int32_t)KEVENT_FLAG_IMMEDIATE));
+  SET_VALUE(isolate, module, "KEVENT_FLAG_ERROR_EVENTS", Integer::New(isolate, (int32_t)KEVENT_FLAG_ERROR_EVENTS));
+  SET_VALUE(isolate, module, "NOTE_DELETE", Integer::New(isolate, (int32_t)NOTE_DELETE));
+  SET_VALUE(isolate, module, "NOTE_WRITE", Integer::New(isolate, (int32_t)NOTE_WRITE));
+  SET_VALUE(isolate, module, "NOTE_EXTEND", Integer::New(isolate, (int32_t)NOTE_EXTEND));
+  SET_VALUE(isolate, module, "NOTE_ATTRIB", Integer::New(isolate, (int32_t)NOTE_ATTRIB));
+  SET_VALUE(isolate, module, "NOTE_LINK", Integer::New(isolate, (int32_t)NOTE_LINK));
+  SET_VALUE(isolate, module, "NOTE_RENAME", Integer::New(isolate, (int32_t)NOTE_RENAME));
+  SET_VALUE(isolate, module, "NOTE_REVOKE", Integer::New(isolate, (int32_t)NOTE_REVOKE));
+  SET_VALUE(isolate, module, "NOTE_FUNLOCK", Integer::New(isolate, (int32_t)NOTE_FUNLOCK));
+  SET_VALUE(isolate, module, "NOTE_LEASE_DOWNGRADE", Integer::New(isolate, (int32_t)NOTE_LEASE_DOWNGRADE));
+  SET_VALUE(isolate, module, "NOTE_LEASE_RELEASE", Integer::New(isolate, (int32_t)NOTE_LEASE_RELEASE));
+  SET_VALUE(isolate, module, "NOTE_EXIT", Integer::New(isolate, (int32_t)NOTE_EXIT));
+  SET_VALUE(isolate, module, "NOTE_EXITSTATUS", Integer::New(isolate, (int32_t)NOTE_EXITSTATUS));
+  SET_VALUE(isolate, module, "NOTE_FORK", Integer::New(isolate, (int32_t)NOTE_FORK));
+  SET_VALUE(isolate, module, "NOTE_EXEC", Integer::New(isolate, (int32_t)NOTE_EXEC));
+  SET_VALUE(isolate, module, "NOTE_SIGNAL", Integer::New(isolate, (int32_t)NOTE_SIGNAL));
+  SET_VALUE(isolate, module, "NOTE_SECONDS", Integer::New(isolate, (int32_t)NOTE_SECONDS));
+  SET_VALUE(isolate, module, "NOTE_USECONDS", Integer::New(isolate, (int32_t)NOTE_USECONDS));
+  SET_VALUE(isolate, module, "NOTE_NSECONDS", Integer::New(isolate, (int32_t)NOTE_NSECONDS));
+  SET_VALUE(isolate, module, "NOTE_MACHTIME", Integer::New(isolate, (int32_t)NOTE_MACHTIME));
+  SET_VALUE(isolate, module, "NOTE_CRITICAL", Integer::New(isolate, (int32_t)NOTE_CRITICAL));
+  SET_VALUE(isolate, module, "NOTE_BACKGROUND", Integer::New(isolate, (int32_t)NOTE_BACKGROUND));
+  SET_VALUE(isolate, module, "NOTE_LEEWAY", Integer::New(isolate, (int32_t)NOTE_LEEWAY));
+  SET_VALUE(isolate, module, "NOTE_ABSOLUTE", Integer::New(isolate, (int32_t)NOTE_ABSOLUTE));
+  SET_VALUE(isolate, module, "NOTE_OOB", Integer::New(isolate, (int32_t)NOTE_OOB));
+  SET_VALUE(isolate, module, "NOTE_LOWAT", Integer::New(isolate, (int32_t)NOTE_LOWAT));
 
 #ifdef __linux__
 
@@ -190,12 +216,14 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 #endif
 
 #ifdef __MACH__
+  SET_VALUE(isolate, module, "struct_struct_kevent_size", Integer::New(isolate, sizeof(struct kevent)));
   SET_VALUE(isolate, module, "struct_kevent64_s_size", Integer::New(isolate, sizeof(kevent64_s)));
   SET_VALUE(isolate, module, "struct_time_t_size", Integer::New(isolate, sizeof(time_t)));
   SET_VALUE(isolate, module, "struct_timespec_size", Integer::New(isolate, sizeof(timespec)));
 
 #endif
 #ifdef __linux__
+  SET_VALUE(isolate, module, "struct_struct_kevent_size", Integer::New(isolate, sizeof(struct kevent)));
   SET_VALUE(isolate, module, "struct_kevent64_s_size", Integer::New(isolate, sizeof(kevent64_s)));
   SET_VALUE(isolate, module, "struct_time_t_size", Integer::New(isolate, sizeof(time_t)));
   SET_VALUE(isolate, module, "struct_timespec_size", Integer::New(isolate, sizeof(timespec)));
