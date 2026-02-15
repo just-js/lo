@@ -266,7 +266,6 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "EPOLL_CTL_ADD", Integer::New(isolate, (int32_t)EPOLL_CTL_ADD));
   SET_VALUE(isolate, module, "EPOLL_CTL_DEL", Integer::New(isolate, (int32_t)EPOLL_CTL_DEL));
   SET_VALUE(isolate, module, "EPOLL_CTL_MOD", Integer::New(isolate, (int32_t)EPOLL_CTL_MOD));
-  SET_VALUE(isolate, module, "EVENT_SIZE", Number::New(isolate, (int64_t)12));
   SET_VALUE(isolate, module, "EAGAIN", Integer::New(isolate, (int32_t)EAGAIN));
   SET_VALUE(isolate, module, "PR_SET_TIMERSLACK", Integer::New(isolate, (int32_t)PR_SET_TIMERSLACK));
 
@@ -278,9 +277,11 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 #endif
 
 #ifdef __MACH__
+  SET_VALUE(isolate, module, "struct_epoll_event_size", Integer::New(isolate, sizeof(epoll_event)));
 
 #endif
 #ifdef __linux__
+  SET_VALUE(isolate, module, "struct_epoll_event_size", Integer::New(isolate, sizeof(epoll_event)));
 
 #endif
   SET_MODULE(isolate, target, "epoll", module);
