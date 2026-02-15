@@ -946,17 +946,7 @@ void lo::fastSetErrno (void* p, int32_t e) {
 }
 
 uint64_t lo::hrtime() {
-#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
-  struct timespec t;
-  clock_serv_t cclock;
-  mach_timespec_t mts;
-  host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
-  clock_get_time(cclock, &mts);
-  mach_port_deallocate(mach_task_self(), cclock);
-  t.tv_sec = mts.tv_sec;
-  t.tv_nsec = mts.tv_nsec;
-  return (t.tv_sec * (uint64_t) 1e9) + t.tv_nsec;
-#elif defined(_WIN32)
+#if defined(_WIN32)
   // stolen from libuv: https://github.com/libuv/libuv/blob/v1.x/src/win/util.c
   LARGE_INTEGER counter;
   double scaled_freq;
