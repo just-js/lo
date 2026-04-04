@@ -427,6 +427,10 @@ void HistogramSampleCallback (void* histogram, int sample) {
 
 }
 
+void onJitEvent (const v8::JitCodeEvent* ev) {
+  fprintf(stderr, "onJitEvent %i\n", ev->type);
+}
+
 int lo::CreateIsolate(int argc, char** argv, 
   const char* main_src, unsigned int main_len, 
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
@@ -453,6 +457,7 @@ int lo::CreateIsolate(int argc, char** argv,
   create_params.fatal_error_callback = fatalErrorcallback;
   create_params.oom_error_callback = OOMErrorcallback;
   //Isolate *isolate = Isolate::Allocate();
+  //create_params.code_event_handler = onJitEvent;
   Isolate *isolate = Isolate::New(create_params);
 //  {
 //    v8::Locker locker(isolate);
@@ -1169,6 +1174,17 @@ void lo::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
 }
 
+void lo::latin1Encode(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<String> str = args[0].As<String>();
+  int size = str->Length();
+  std::unique_ptr<BackingStore> backing = 
+    ArrayBuffer::NewBackingStore(isolate, size, v8::BackingStoreInitializationMode::kUninitialized);
+  str->WriteOneByteV2(isolate, 0, size, static_cast<uint8_t*>(backing->Data()), String::WriteFlags::kNone);
+  Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
+  args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
+}
+
 // todo - we should have latin1 methods 
 void lo::Utf8Decode(const FunctionCallbackInfo<Value> &args) {
   int size = -1;
@@ -1478,6 +1494,7 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "latin1Decode", Latin1Decode);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
   SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
+  SET_METHOD(isolate, target, "latin1Encode", latin1Encode);
   //SET_METHOD(isolate, target, "utf8EncodeInto", Utf8EncodeInto);
 
   // OK

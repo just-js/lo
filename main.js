@@ -533,6 +533,7 @@ lo.set_module_callbacks = lo.setModuleCallbacks
 lo.unwrap_memory = lo.unwrapMemory
 lo.utf8_decode = lo.utf8Decode
 lo.utf8_encode = lo.utf8Encode
+lo.latin1_encode = lo.latin1Encode
 lo.utf8_encode_into = lo.utf8EncodeInto
 lo.utf8_encode_into_at_offset = lo.utf8EncodeIntoAtOffset
 lo.utf8_length = lo.utf8Length
@@ -669,6 +670,7 @@ async function global_main () {
 
     const loop = new Loop()
     lo.loop = loop
+
     globalThis.setTimeout = (fn, ms) => {
       const timer = new Timer(loop, ms, () => {
         timer.close()

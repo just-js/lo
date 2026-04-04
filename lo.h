@@ -161,6 +161,7 @@ void PumpMessageLoop(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Latin1Decode(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Utf8Decode(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Utf8Encode(const v8::FunctionCallbackInfo<v8::Value> &args);
+void latin1Encode(const v8::FunctionCallbackInfo<v8::Value> &args);
 void RunScript(const v8::FunctionCallbackInfo<v8::Value> &args);
 void SetFlags(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Arch(const v8::FunctionCallbackInfo<v8::Value> &args);
