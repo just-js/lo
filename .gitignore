@@ -39,3 +39,6 @@ lib/lines/linenoise.c
 zero
 dist
 *.pdb
+__pycache__
+build
+.stamp
