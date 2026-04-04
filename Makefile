@@ -50,31 +50,34 @@ endif
 help:
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9\/_\.-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-v8:
+v8/.stamp:
 	mkdir -p v8
+	touch v8/.stamp
 
-v8/include: v8 ## download the v8 source code for debugging
+v8/include/.stamp: v8/.stamp ## download the v8 source code for debugging
 	curl -L -O https://github.com/just-js/v8/releases/download/${V8_VERSION}/include.tar.gz
 	tar -xvf include.tar.gz
 	mv include v8/
+	touch v8/include/.stamp
 ifneq ($(os),win)
 	rm -f include.tar.gz
 endif
 
-v8/src: ## download the v8 source code for debugging
+v8/src/.stamp: v8/.stamp ## download the v8 source code for debugging
 	curl -L -O https://github.com/just-js/v8/releases/download/${V8_VERSION}/src.tar.gz
 	tar -xvf src.tar.gz
 	mv src v8/
+	touch v8/src/.stamp
 ifneq ($(os),win)
 	rm -f src.tar.gz
 endif
 
-v8/libv8_monolith.a: v8/include ## download the v8 static libary for linux/macos
+v8/libv8_monolith.a: v8/include/.stamp  ## download the v8 static libary for linux/macos
 	curl -C - -L -o v8/libv8_monolith.a.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.a.gz
 	gzip -d v8/libv8_monolith.a.gz
 	rm -f v8/libv8_monolith.a.gz
 
-v8/v8_monolith.lib: ## download the v8 static library for windows
+v8/v8_monolith.lib: v8/include/.stamp ## download the v8 static library for windows
 	curl -C - -L -o v8/v8_monolith.lib.zip https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.zip
 	unzip v8/v8_monolith.lib.zip
 
