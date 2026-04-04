@@ -1608,9 +1608,11 @@ void lo_destroy_isolate_context (struct isolate_context* ctx) {
 // generic callback used to trampoline ffi callbacks back into JS
 void lo_callback (exec_info* info) {
   Isolate* isolate = info->isolate;
-  HandleScope scope(isolate);
-  info->js_fn.Get(isolate)->Call(isolate, isolate->GetCurrentContext(), 
-    v8::Null(isolate), 0, 0).ToLocalChecked();
+  if (isolate == Isolate::GetCurrent()) {
+    HandleScope scope(isolate);
+    info->js_fn.Get(isolate)->Call(isolate, isolate->GetCurrentContext(), 
+      v8::Null(isolate), 0, 0).ToLocalChecked();
+  }
 }
 
 // trampoline callback which may be called async from another thread
