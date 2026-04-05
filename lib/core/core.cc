@@ -1075,6 +1075,15 @@ CTypeInfo rcexit = CTypeInfo(CTypeInfo::Type::kVoid);
 CFunctionInfo infoexit = CFunctionInfo(rcexit, 2, cargsexit);
 CFunction pFexit = CFunction((const void*)&exitFast, &infoexit);
 
+void _exitFast(void* p, int32_t p0);
+CTypeInfo cargs_exit[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+};
+CTypeInfo rc_exit = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo info_exit = CFunctionInfo(rc_exit, 2, cargs_exit);
+CFunction pF_exit = CFunction((const void*)&_exitFast, &info_exit);
+
 uint32_t sysconfFast(void* p, int32_t p0);
 CTypeInfo cargssysconf[2] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
@@ -2251,6 +2260,15 @@ void exitFast(void* p, int32_t p0) {
   int32_t v0 = p0;
   exit(v0);
 }
+void _exitSlow(const FunctionCallbackInfo<Value> &args) {
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  _exit(v0);
+}
+
+void _exitFast(void* p, int32_t p0) {
+  int32_t v0 = p0;
+  _exit(v0);
+}
 void sysconfSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t rc = sysconf(v0);
@@ -2718,6 +2736,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "tcgetattr", &pFtcgetattr, tcgetattrSlow);
   SET_FAST_METHOD(isolate, module, "tcsetattr", &pFtcsetattr, tcsetattrSlow);
   SET_FAST_METHOD(isolate, module, "exit", &pFexit, exitSlow);
+  SET_FAST_METHOD(isolate, module, "_exit", &pF_exit, _exitSlow);
   SET_FAST_METHOD(isolate, module, "sysconf", &pFsysconf, sysconfSlow);
   SET_FAST_METHOD(isolate, module, "getrusage", &pFgetrusage, getrusageSlow);
   SET_FAST_METHOD(isolate, module, "times", &pFtimes, timesSlow);
@@ -2840,6 +2859,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "POSIX_FADV_WILLNEED", Integer::New(isolate, (int32_t)POSIX_FADV_WILLNEED));
   SET_VALUE(isolate, module, "POSIX_FADV_RANDOM", Integer::New(isolate, (int32_t)POSIX_FADV_RANDOM));
   SET_VALUE(isolate, module, "POSIX_FADV_DONTNEED", Integer::New(isolate, (int32_t)POSIX_FADV_DONTNEED));
+  SET_VALUE(isolate, module, "S_IFLNK", Integer::New(isolate, (int32_t)S_IFLNK));
 
 #endif
 #ifdef __MACH__
