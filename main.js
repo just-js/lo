@@ -135,6 +135,31 @@ function read_file (path, flags = defaultReadFlags, size = 0) {
   close(fd)
   return u8
 }
+/*
+function write_file (path, u8, flags = defaultWriteFlags, 
+  mode = defaultWriteMode) {
+  if (!u8.ptr) ptr(u8)
+  const len = u8.length
+  if (!len) return -1
+  const chunkSize = 4096
+  const fd = open(path, flags, mode)
+  assert(fd > 0)
+  const chunks = Math.ceil(len / chunkSize)
+  let total = 0
+  let bytes = 0
+  for (let i = 0, off = 0; i < chunks; ++i, off += chunkSize) {
+    const towrite = Math.min(len - off, chunkSize)
+    bytes = core.write(fd, u8.ptr + off, towrite);
+    if (bytes <= 0) break
+    total += bytes
+//    core.fdatasync(fd)
+  }
+  close(fd)
+  assert(bytes > 0)
+  assert(total === u8.length)
+  return u8.length
+}
+*/
 
 function write_file (path, u8, flags = defaultWriteFlags, 
   mode = defaultWriteMode) {
@@ -262,14 +287,16 @@ async function on_module_load (specifier, resource) {
 }
 
 // sync module loader
-function on_module_instantiate (specifier) {
-  //lo.print(`on_module_instantiate: ${specifier}\n`)
+function on_module_instantiate (specifier, mod2) {
+//  lo.print(`on_module_instantiate: ${specifier}\n`)
+//  console.log(Object.getOwnPropertyNames(mod2.constructor.name))
   if (moduleCache.has(specifier)) {
     return moduleCache.get(specifier).identity
   }
   // todo: why is this function synchronous only??
   // todo: we need to specify the calling module path here
   const src = load_source_sync(specifier)
+//  if (!src) throw new Error("Willy")
   const mod = loadModule(src, specifier)
   moduleCache.set(specifier, mod)
   return mod.identity
@@ -542,7 +569,14 @@ lo.latin1_decode = lo.latin1Decode
 globalThis.performance = {
   now: () => lo.hrtime() / 1e6
 }
-
+/*
+core.loader = (specifier, resource) => {
+  console.log(`async_loader: ${specifier} ${resource}`)
+}
+core.sync_loader = (specifier, resource) => {
+  console.log(`sync_loader: ${specifier} ${resource}`)
+}
+*/
 // todo: fix this and write up/decide exactly what module resolution does
 // currently we check/open each file twice
 /*

@@ -170,7 +170,13 @@ void Exit(const v8::FunctionCallbackInfo<v8::Value> &args);
 void WrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
 void WrapMemoryShared(const v8::FunctionCallbackInfo<v8::Value> &args);
 void UnWrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
-
+/*
+void ReadPointer(const v8::FunctionCallbackInfo<v8::Value> &args);
+void WritePointer(const v8::FunctionCallbackInfo<v8::Value> &args);
+void WritePointer2(const v8::FunctionCallbackInfo<v8::Value> &args);
+void GetObjectPtr(const v8::FunctionCallbackInfo<v8::Value> &args);
+void CreatePointer(const v8::FunctionCallbackInfo<v8::Value> &args);
+*/
 void GetMeta(const v8::FunctionCallbackInfo<v8::Value> &args);
 void HeapUsage(const v8::FunctionCallbackInfo<v8::Value> &args);
 void SharedMemoryUsage(const v8::FunctionCallbackInfo<v8::Value> &args);

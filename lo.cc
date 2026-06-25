@@ -369,7 +369,7 @@ MaybeLocal<Module> lo::OnModuleInstantiate(Local<Context> context,
   Local<FixedArray> import_assertions, 
   Local<Module> referrer) {
 
-//  printf("OnModuleInstantiate, assertions: %i\n", import_assertions.->.Length());
+//  printf("OnModuleInstantiate, assertions: %i\n", import_assertions->Length());
   Isolate* isolate = v8::Isolate::GetCurrent();
   String::Utf8Value str(isolate, specifier);
   Local<Function> callback = 
@@ -387,7 +387,7 @@ MaybeLocal<Promise> OnDynamicImport(Local<Context> context,
   Local<Data> host_defined_options, Local<Value> resource_name,
   Local<String> specifier,Local<FixedArray> import_assertions) {
 //  uint64_t start64 = (uint64_t)Local<Integer>::Cast(args[0])->Value();
-//  printf("OnModuleInstantiate, assertions: %i\n", import_assertions->Length());
+//  printf("OnDynamicImport, assertions: %i\n", import_assertions->Length());
   Local<Promise::Resolver> resolver =
       Promise::Resolver::New(context).ToLocalChecked();
   MaybeLocal<Promise> promise(resolver->GetPromise());
@@ -1405,7 +1405,44 @@ void lo::Exit(const FunctionCallbackInfo<Value> &args) {
   int32_t status = Local<Integer>::Cast(args[0])->Value();
   exit(status);
 }
+/*
+void lo::GetObjectPtr(const FunctionCallbackInfo<Value> &args) {
+  Local<Object> obj = args[0].As<Object>();
+  void* ptr = *reinterpret_cast<void**>(*obj);
+  //args.GetReturnValue().Set(Number::New(args.GetIsolate(), reinterpret_cast<uint64_t>(ptr)));
+  args.GetReturnValue().Set(reinterpret_cast<uint64_t>(ptr));
+}
 
+void lo::ReadPointer(const FunctionCallbackInfo<Value> &args) {
+  //Local<Object> obj = args[0].As<Object>();
+  Local<Object> obj = Local<Object>::Cast(args[0]);
+  void* ptr = obj->GetAlignedPointerFromInternalField(0);
+  args.GetReturnValue().Set(Number::New(args.GetIsolate(), reinterpret_cast<uint64_t>(ptr)));
+}
+
+void lo::CreatePointer(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<Context> context = isolate->GetCurrentContext();
+  Local<ObjectTemplate> vfsTemplate = ObjectTemplate::New(isolate);
+  vfsTemplate->SetInternalFieldCount(1);
+  Local<Object> vfsObj = vfsTemplate->NewInstance(context).ToLocalChecked();
+  void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  vfsObj->SetAlignedPointerInInternalField(0, v1);
+  args.GetReturnValue().Set(vfsObj);
+}
+
+void lo::WritePointer(const FunctionCallbackInfo<Value> &args) {
+  Local<Object> obj = args[0].As<Object>();
+  void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  obj->SetAlignedPointerInInternalField(0, v1);
+}
+
+void lo::WritePointer2(const FunctionCallbackInfo<Value> &args) {
+  Local<ArrayBuffer> u8 = Local<ArrayBuffer>::Cast(args[0]);
+  void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  u8->SetAlignedPointerInInternalField(0, v1);
+}
+*/
 /**
  * fill the provided buffer with random bytes
  * 
@@ -1496,6 +1533,13 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
   SET_METHOD(isolate, target, "latin1Encode", latin1Encode);
   //SET_METHOD(isolate, target, "utf8EncodeInto", Utf8EncodeInto);
+/*
+  SET_METHOD(isolate, target, "readPointer", ReadPointer);
+  SET_METHOD(isolate, target, "writePointer", WritePointer);
+  SET_METHOD(isolate, target, "getObjPointer", GetObjectPtr);
+  SET_METHOD(isolate, target, "createPointer", CreatePointer);
+  SET_METHOD(isolate, target, "writePointer2", WritePointer2);
+*/
 
   // OK
   SET_FAST_METHOD(isolate, target, "utf8Length", &pFutf8length, Utf8Length);
