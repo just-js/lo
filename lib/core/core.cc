@@ -227,6 +227,12 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
     free(temp_strs[i]);
   }
   switch (state->result) {
+    case FastTypes::i16:
+      args.GetReturnValue().Set((int16_t)state->args[0]);
+      break;
+    case FastTypes::u16:
+      args.GetReturnValue().Set((uint16_t)state->args[0]);
+      break;
     case FastTypes::i32:
       args.GetReturnValue().Set((int32_t)state->args[0]);
       break;
@@ -1180,6 +1186,24 @@ CTypeInfo cargssync[1] = {
 CTypeInfo rcsync = CTypeInfo(CTypeInfo::Type::kVoid);
 CFunctionInfo infosync = CFunctionInfo(rcsync, 1, cargssync);
 CFunction pFsync = CFunction((const void*)&syncFast, &infosync);
+
+int32_t fsyncFast(void* p, int32_t p0);
+CTypeInfo cargsfsync[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+};
+CTypeInfo rcfsync = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infofsync = CFunctionInfo(rcfsync, 2, cargsfsync);
+CFunction pFfsync = CFunction((const void*)&fsyncFast, &infofsync);
+
+int32_t fdatasyncFast(void* p, int32_t p0);
+CTypeInfo cargsfdatasync[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+};
+CTypeInfo rcfdatasync = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infofdatasync = CFunctionInfo(rcfdatasync, 2, cargsfdatasync);
+CFunction pFfdatasync = CFunction((const void*)&fdatasyncFast, &infofdatasync);
 
 #ifdef __linux__
 
@@ -2438,6 +2462,26 @@ void syncFast(void* p) {
 
   sync();
 }
+void fsyncSlow(const FunctionCallbackInfo<Value> &args) {
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t rc = fsync(v0);
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t fsyncFast(void* p, int32_t p0) {
+  int32_t v0 = p0;
+  return fsync(v0);
+}
+void fdatasyncSlow(const FunctionCallbackInfo<Value> &args) {
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t rc = fdatasync(v0);
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t fdatasyncFast(void* p, int32_t p0) {
+  int32_t v0 = p0;
+  return fdatasync(v0);
+}
 #ifdef __linux__
 
 void makedevSlow(const FunctionCallbackInfo<Value> &args) {
@@ -2751,6 +2795,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "symlink", &pFsymlink, symlinkSlow);
   SET_FAST_METHOD(isolate, module, "strnlen_str", &pFstrnlen_str, strnlen_strSlow);
   SET_FAST_METHOD(isolate, module, "sync", &pFsync, syncSlow);
+  SET_FAST_METHOD(isolate, module, "fsync", &pFfsync, fsyncSlow);
+  SET_FAST_METHOD(isolate, module, "fdatasync", &pFfdatasync, fdatasyncSlow);
 
 #ifdef __linux__
   SET_FAST_METHOD(isolate, module, "makedev", &pFmakedev, makedevSlow);
