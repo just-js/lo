@@ -143,6 +143,9 @@ inflate.a: lib/inflate/em_inflate.o ## build the inflate binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include -Ilib/inflate $(WARN) ${V8_FLAGS} -o inflate.o lib/inflate/inflate.cc
 	ar crsT inflate.a inflate.o lib/inflate/em_inflate.o
 
+lo.node: lo
+	cd bindings && npm install && cp build/Release/lo.node ../
+
 check: ## run the runtime sanity tests
 	./${RUNTIME} test/runtime.js
 	./${RUNTIME} test/dump.js

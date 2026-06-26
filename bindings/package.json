@@ -1,0 +1,23 @@
+{
+  "name": "lo",
+  "version": "1.0.0",
+  "description": "node.js bindings for the lo runtime",
+  "homepage": "https://github.com/just-js/lo#bindings",
+  "bugs": {
+    "url": "https://github.com/just-js/lo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/just-js/lo.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "scripts": {
+    "install": "node-gyp rebuild",
+    "preinstall": "node pre.js",
+    "compile": "gcc -fPIC -o nums.so -shared nums.c",
+    "test": "node --import=./hooks.js nums.js"
+  },
+  "gypfile": true
+}
