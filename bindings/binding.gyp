@@ -17,6 +17,7 @@
       ],
       "cflags_cc": [
         "-O3",
+        "-fPIC",
         "-march=native",
         "-mtune=native",
         "-Wcast-function-type",
@@ -36,9 +37,11 @@
         "../lib/md4c/deps/md4c/src",
         "../lib/luajit/deps/luajit",
       ],
-      "libraries": [],
+      "libraries": [
+        "../../lib/luajit/deps/luajit/src/libluajit.a",
+      ],
       "link_settings": {
-        "libraries": []
+        "libraries": ["-lpython3.10"]
       }
     }
   ]
