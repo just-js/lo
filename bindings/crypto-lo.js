@@ -131,11 +131,14 @@ const expectedsha256 = [
 ]
 
 h.hash_string(str)
+console.log(Array.from(h.digest).map(n => n.toString(16)).join(', '))
 h.digest.forEach((v, i) => assert(v === expectedsha256[i]))
 h.digest.fill(0)
 h.hash(u8)
+console.log(Array.from(h.digest).map(n => n.toString(16)).join(', '))
 h.digest.forEach((v, i) => assert(v === expectedsha256[i]))
 h.digest.fill(0)
+
 
 {
   const runs = 3000000
@@ -146,6 +149,9 @@ h.digest.fill(0)
   }
 }
 
+console.log(Array.from(h.digest).map(n => n.toString(16)).join(', '))
+h.digest.forEach((v, i) => assert(v === expectedsha256[i]))
+
 {
   const runs = 3000000
   for (let i = 0; i < iter; i++) {
@@ -155,10 +161,5 @@ h.digest.fill(0)
   }
 }
 
-h.digest.fill(0)
-h.hash_string(str)
+console.log(Array.from(h.digest).map(n => n.toString(16)).join(', '))
 h.digest.forEach((v, i) => assert(v === expectedsha256[i]))
-h.digest.fill(0)
-h.hash(u8)
-h.digest.forEach((v, i) => assert(v === expectedsha256[i]))
-h.digest.fill(0)

@@ -110,8 +110,8 @@ function lo_load (name) {
     // TODO
     return
   } else {
-    const handle = core.dlopen(`lib/${name}/${name}.so`, RTLD_LAZY) ||
-      core.dlopen(`${LO_HOME}/lib/${name}/${name}.so`, RTLD_LAZY)
+    const handle = core.dlopen(`lib/${name}/${name}.so`, core.RTLD_NOW) ||
+      core.dlopen(`${LO_HOME}/lib/${name}/${name}.so`, core.RTLD_NOW)
     if (!handle) return
     const sym = core.dlsym(handle, `_register_${name}`)
     if (!sym) return
@@ -149,5 +149,6 @@ lo.require = require
 lo.wrap = wrap
 lo.utf8_length = lo.utf8Length
 lo.load = lo_load
+const LO_HOME = process.env.LO_HOME
 
 registerHooks({ resolve, load });

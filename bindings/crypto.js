@@ -2,7 +2,7 @@ import { Bench } from 'lib/bench.js'
 
 const { assert, ptr } = lo
 
-const libssl = lo.library('boringssl').boringssl
+const libssl = lo.load('boringssl').boringssl
 
 const {
   EVP_get_digestbyname, EVP_MD_CTX_new, EVP_DigestInit_ex, EVP_DigestUpdate, EVP_DigestFinal_ex, EVP_Digest

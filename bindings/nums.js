@@ -17,7 +17,7 @@ console.log(get_uint32(1))
 for (let i = 0; i < iter; i++) {
   bench.start('get_uint32')
   for (let j = 0; j < runs; j++) {
-    assert(get_uint32(1) === 1)
+    assert(get_uint32(j) === j)
   }
   bench.end(runs)
 }

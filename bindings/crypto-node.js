@@ -32,6 +32,8 @@ let total = parseInt(args[2] || '1', 10)
 const bench = new Bench()
 
 while (total--) {
+{
+  const runs = 1000000
   for (let i = 0; i < iter; i++) {
     bench.start('sha256-buffer')
     for (let j = 0; j < runs; j++) {
@@ -39,7 +41,9 @@ while (total--) {
     }
     bench.end(runs, hello.length)
   }
-
+}
+{
+  const runs = 3000000
   for (let i = 0; i < iter; i++) {
     bench.start('sha256-string')
     for (let j = 0; j < runs; j++) {
@@ -47,4 +51,5 @@ while (total--) {
     }
     bench.end(runs, hello.length)
   }
+}
 }
