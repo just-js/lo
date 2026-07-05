@@ -28,3 +28,8 @@ _binary_lib_asm_compiler_js_start:
         .incbin "lib/asm/compiler.js"
         .global _binary_lib_asm_compiler_js_end
 _binary_lib_asm_compiler_js_end:
+.global _binary_lib_fs_js_start
+_binary_lib_fs_js_start:
+        .incbin "lib/fs.js"
+        .global _binary_lib_fs_js_end
+_binary_lib_fs_js_end:

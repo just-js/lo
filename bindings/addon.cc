@@ -13,6 +13,8 @@ extern char _binary_lib_asm_x64_js_start[];
 extern char _binary_lib_asm_x64_js_end[];
 extern char _binary_lib_asm_compiler_js_start[];
 extern char _binary_lib_asm_compiler_js_end[];
+extern char _binary_lib_fs_js_start[];
+extern char _binary_lib_fs_js_end[];
 
 #ifdef __cplusplus
 extern "C"
@@ -43,6 +45,7 @@ void Initialize(v8::Local<v8::Object> exports) {
   lo::builtins_add("lib/asm.js", _binary_lib_asm_js_start, _binary_lib_asm_js_end - _binary_lib_asm_js_start);
   lo::builtins_add("lib/asm/x64.js", _binary_lib_asm_x64_js_start, _binary_lib_asm_x64_js_end - _binary_lib_asm_x64_js_start);
   lo::builtins_add("lib/asm/compiler.js", _binary_lib_asm_compiler_js_start, _binary_lib_asm_compiler_js_end - _binary_lib_asm_compiler_js_start);
+  lo::builtins_add("lib/fs.js", _binary_lib_fs_js_start, _binary_lib_fs_js_end - _binary_lib_fs_js_start);
 
   lo::modules_add("core", &_register_core);
   lo::modules_add("boringssl", &_register_boringssl);

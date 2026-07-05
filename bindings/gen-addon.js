@@ -7,6 +7,7 @@ const libs = [
   'lib/asm.js',
   'lib/asm/x64.js',
   'lib/asm/compiler.js',
+  'lib/fs.js',
 ]
 
 const bindings = [

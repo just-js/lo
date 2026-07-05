@@ -14,7 +14,8 @@
   "author": "",
   "type": "module",
   "scripts": {
-    "install": "node-gyp rebuild",
+    "install": "npm run gen && node-gyp rebuild",
+    "gen": "node gen-addon.js",
     "preinstall": "node pre.js",
     "compile": "gcc -fPIC -o nums.so -shared nums.c",
     "test": "node --import=./hooks.js nums.js"
