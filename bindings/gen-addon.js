@@ -1,21 +1,23 @@
+import { writeFileSync } from "node:fs"
+
 const libs = [
-  'lib/asm.js',
-  'lib/asm/compiler.js',
-  'lib/asm/x64.js',
-  'lib/bench.js',
   'lib/ffi.js',
   'lib/proc.js',
+  'lib/bench.js',
+  'lib/asm.js',
+  'lib/asm/x64.js',
+  'lib/asm/compiler.js',
 ]
 
 const bindings = [
   'core',
-  'ada',
   'boringssl',
+  'ada',
   'curl',
   'heap',
-  'luajit',
   'md4c',
-  'python'
+  'python',
+  'luajit',
 ]
 
 const rx = /[./-]/g
@@ -49,7 +51,7 @@ function genBindingsExterns(bindings) {
 
 function getLibInit (lib) {
   const name = `${lib.replace(rx, '_')}`
-  return `lo::builtins_add("${lib}", _binary_${name}_start, _binary_${name}_end - _binary_${name}_start);`
+  return `  lo::builtins_add("${lib}", _binary_${name}_start, _binary_${name}_end - _binary_${name}_start);`
 }
 
 function genLibInits (libs) {
@@ -57,7 +59,7 @@ function genLibInits (libs) {
 }
 
 function genBinaryInit (binding) {
-  return `lo::modules_add("${binding}", &_register_${binding});`
+  return `  lo::modules_add("${binding}", &_register_${binding});`
 }
 
 function genBindingsInits(bindings) {
@@ -90,9 +92,9 @@ void Initialize(v8::Local<v8::Object> exports) {
   lo::Init(isolate,runtime);
   v8::Local<v8::Object> runtimeInstance = runtime->NewInstance(context).ToLocalChecked();
 
-  ${genLibInits(libs)}
+${genLibInits(libs)}
 
-  ${genBindingsInits(bindings)}
+${genBindingsInits(bindings)}
 
   exports->Set(context, v8::String::NewFromUtf8(isolate, "lo")
     .ToLocalChecked(), runtimeInstance).Check();

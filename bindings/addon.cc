@@ -3,6 +3,8 @@
 
 extern char _binary_lib_ffi_js_start[];
 extern char _binary_lib_ffi_js_end[];
+extern char _binary_lib_proc_js_start[];
+extern char _binary_lib_proc_js_end[];
 extern char _binary_lib_bench_js_start[];
 extern char _binary_lib_bench_js_end[];
 extern char _binary_lib_asm_js_start[];
@@ -11,8 +13,6 @@ extern char _binary_lib_asm_x64_js_start[];
 extern char _binary_lib_asm_x64_js_end[];
 extern char _binary_lib_asm_compiler_js_start[];
 extern char _binary_lib_asm_compiler_js_end[];
-extern char _binary_lib_proc_js_start[];
-extern char _binary_lib_proc_js_end[];
 
 #ifdef __cplusplus
 extern "C"
