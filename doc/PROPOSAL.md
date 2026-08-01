@@ -16,6 +16,16 @@ It does not attempt to design the ABI's function surface; it assumes the
 `lo_shutdown`, ...) is the seed of that future ABI, and that more functions
 will be added to it as bindings are migrated off direct `v8::` calls.
 
+**Update**: the original version of this proposal treated
+`v8/libv8_monolith.a` as a fixed third-party artifact we couldn't change the
+compile flags of. That's not accurate — the `just-js/v8` release it's
+downloaded from is itself built by us; it's published prebuilt purely for
+build-speed convenience. A fully local V8 build (compiling V8 from source
+with our own GN args in place of downloading that release) is in progress,
+which opens up source-level fixes that a link-time-only approach can't
+reach. This is folded into the relevant sections below, with a summary in
+[V8 build control changes the assessment](#v8-build-control-changes-the-assessment).
+
 ## Current baseline (measured)
 
 Numbers below are from the `arm64`/macOS binary already in this tree
@@ -68,15 +78,18 @@ explicitly marked `DLL_PUBLIC` (`__attribute__((visibility("default")))`,
 etc. That list is currently ~20 functions (`Setup`, `CreateIsolate`,
 `SET_METHOD`/`SET_FAST_METHOD`/..., plus the `extern "C"` block) — small.
 
-**V8's own object files are not compiled with hidden visibility** (they're
+**V8's own object files are not compiled with hidden visibility** — they're
 consumed as a prebuilt archive, `v8/libv8_monolith.a`, downloaded from
-[`just-js/v8` releases](https://github.com/just-js/v8/releases) — we don't
-control their compile flags). `-fvisibility=hidden` on *our* command line
-has no effect on symbols already baked into that archive with default
-visibility. That's the real source of the ~28k exported V8 symbols: nothing
-in `lo` chose to export them, they simply weren't hidden at the point they
-were compiled, and nothing at link time currently tells the linker to hide
-them either.
+[`just-js/v8` releases](https://github.com/just-js/v8/releases) for build
+speed, and that release simply wasn't built with `-fvisibility=hidden` (or
+GN's equivalent) applied. `-fvisibility=hidden` on *our* command line has no
+effect on symbols already baked into that archive with default visibility.
+That's the real source of the ~28k exported V8 symbols: nothing in `lo`
+chose to export them, they simply weren't hidden at the point they were
+compiled, and nothing at link time currently tells the linker to hide them
+either. As covered below, this is a build-configuration choice rather than
+an inherent constraint — see
+[V8 build control changes the assessment](#v8-build-control-changes-the-assessment).
 
 What actually causes them to end up in the *final executable's* export
 table differs by OS, and this matters for the fix:
@@ -101,9 +114,79 @@ table differs by OS, and this matters for the fix:
 
 Either way: **as long as any part of the toolchain needs `v8::`/internal
 `lo::` symbols resolvable across a `dlopen`/bundle boundary, they have to be
-in the final executable's export table** — hiding them at the source level
-isn't possible (we don't own V8's compile step), so this has to be a
-link-time allow/deny-list problem.
+in the final executable's export table** — that part doesn't change no
+matter how V8 is built. What changes with a locally-built V8 is *how
+completely* we can prevent everything else from being exportable in the
+first place (see next section), rather than needing the link-time
+allow-list to be the only thing standing between "hidden" and "not."
+
+## V8 build control changes the assessment
+
+Since we control the V8 build (not just consume someone else's binary), two
+things upstream of "hide at the link stage" become available once the local
+build lands, and they're stronger than a link-time allow-list because they
+remove the underlying capability rather than just curating what's visible
+in one particular output binary:
+
+1. **Compile V8 itself with `-fvisibility=hidden`** (passed via GN
+   `extra_cflags`, or whatever the equivalent is called in the GN args this
+   local build ends up using — needs confirming against the actual V8
+   checkout/GN setup, not asserted here). If V8's own object files default
+   to hidden visibility the way `lo`'s already do, the ~28k exported V8
+   symbols shrink to whatever V8's own public embedder API surface marks as
+   default-visibility (V8 does tag its embedder-facing API,
+   e.g. `V8_EXPORT` in the public headers, so this shouldn't require
+   patching V8's source — just adding the flag). At that point the
+   link-time allow-list (`-exported_symbols_list` / `--dynamic-list`,
+   below) stops being *the* mechanism and becomes a second, cheap,
+   belt-and-suspenders layer on top of a much smaller starting set —
+   still worth keeping for the `abi`/`none` modes, since even V8's
+   intentionally-public `V8_EXPORT` surface is far bigger than the handful
+   of `lo_*` ABI functions addons actually need.
+2. **Compile V8 with `-ffunction-sections -fdata-sections`**. This directly
+   supersedes the "expect little from `--gc-sections`/`-dead_strip` on V8's
+   own code" conclusion in
+   [Dead-code stripping](#dead-code-stripping-what-to-actually-expect)
+   below — that conclusion was measured against the *currently downloaded*
+   prebuilt archive specifically, not a fundamental property of V8's source.
+   With function/data sections, the linker can drop genuinely unreferenced
+   V8 internals at function granularity instead of only at whole-object-file
+   granularity, which is a real, first-time-possible size win, not just an
+   export-table cut.
+3. **V8 GN feature flags** — likely the single biggest lever available now,
+   bigger than anything in this proposal's symbol-export mechanism. A
+   locally-built V8 can be configured to not compile in features `lo`
+   doesn't use at all, e.g. (names to confirm against `gn args --list` for
+   this V8 checkout, not guaranteed exact for the version in
+   [`Makefile`](../Makefile#L10) — `V8_VERSION=14.3`):
+   - i18n/ICU support (`v8_enable_i18n_support` or equivalent) — this is
+     also the *direct* source of the `CoreFoundation` link dependency
+     documented in [`BUILD.md`](BUILD.md#macos-why-we-link--framework-corefoundation)
+     (`CFTimeZoneCopyDefault`/`CFTimeZoneGetName` come from V8's ICU-backed
+     timezone lookup in `platform-darwin.cc`). Building V8 without i18n
+     support would remove that dependency too — see the update at the
+     bottom of `BUILD.md`.
+   - WebAssembly support, if `lo` doesn't expose/need `Wasm`.
+   - Inspector/devtools-protocol and debug-only helpers
+     (disassembler, object-print) if `lo` doesn't wire up a debugger.
+   - Any other optional subsystem compiled into the monolith that `lo`'s
+     JS surface never reaches.
+
+   This is genuinely out of scope for *this* proposal (build-mechanics for
+   symbol exports, per the original request) but it's the natural
+   companion piece — worth its own follow-up proposal once the local V8
+   build is further along and the actual GN args are known, since it could
+   plausibly dwarf the ~16% export-table win in absolute MB saved.
+
+The three-mode (`full`/`abi`/`none`) structure and the link-time mechanism
+below remain the right design regardless — they're still needed (a) for
+anyone building against the downloaded prebuilt release rather than the
+local V8 build, and (b) as defense-in-depth even once V8 is compiled
+hidden-by-default, since V8's public `V8_EXPORT` surface is still much
+larger than the ABI. What changes is that once the local build lands, the
+`abi`/`none` modes stop depending entirely on the linker's allow-list being
+correct — a symbol accidentally left off `lo.exports`/`lo.dynsym` would
+already be hidden at the source, rather than silently leaking through.
 
 ## One clarification on "fully static ⇒ no shared libraries"
 
@@ -214,6 +297,10 @@ forgotten, not specified further since it's outside build-mechanics scope.
 
 ## Dead-code stripping: what to actually expect
 
+*(Measured against the currently-downloaded prebuilt `just-js/v8` release —
+see [V8 build control changes the assessment](#v8-build-control-changes-the-assessment)
+above for how this changes once the local V8 build replaces that download.)*
+
 Checked whether `v8/libv8_monolith.a`'s object files were built with
 `-ffunction-sections` (which is what makes `--gc-sections`/`-dead_strip`
 able to drop *individual unused functions* out of an already-linked-in
@@ -295,3 +382,10 @@ macOS).
   none of the other bundled `.a`s (`inflate.a`, per-binding `.a`s) are
   meant to export anything either, but worth confirming nothing currently
   relies on one of those leaking a symbol.
+- **Two V8 sources to keep in sync**: once the local V8 build exists
+  alongside the downloaded-release path, both need to produce archives
+  compatible with whichever `EXPORTS` mode is requested — e.g. `EXPORTS=abi`
+  against a downloaded release (hidden only via the link-time allow-list)
+  should behave identically to `EXPORTS=abi` against a locally-built,
+  hidden-by-default V8. Worth a build-matrix check (mode × V8 source) before
+  making `abi` the default, so the two paths don't silently drift.
