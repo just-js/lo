@@ -95,10 +95,11 @@ v8/include/.stamp: | v8/.stamp ## download the v8 source code for debugging
 	tar -xvf include.tar.gz
 	rm -rf v8/include
 	mv include v8/
-	touch v8/include/.stamp
 ifneq ($(os),win)
 	rm -f include.tar.gz
 endif
+endif
+	touch v8/include/.stamp
 
 v8/src/.stamp: | v8/.stamp ## download the v8 source code for debugging
 	curl -L -O https://github.com/just-js/v8/releases/download/${V8_VERSION}/src.tar.gz
