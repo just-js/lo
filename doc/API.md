@@ -184,36 +184,86 @@ JSC or QuickJS. The parts of today's design that need to change are almost
 entirely about *how each backend implements the same JS-facing contract*,
 not about the model being unsound.
 
-**Where I'd want more certainty before committing to this, and where your
-benchmarks/example code would help**:
+**Update — all three of the open questions below have since been checked
+against real source, not just general knowledge; see the resolved findings
+after each.**
 
 - **`Atomics` completeness on QuickJS.** If JS code on two different
   isolates needs to *coordinate* access to shared memory (not just read/
   write it opportunistically), it needs `Atomics.wait`/`notify` — which
   means a real blocking wait tied to actual OS thread primitives, not
-  something an engine can fake internally. I'm not confident from memory
-  alone how complete `Atomics.wait`/`notify` support is in the specific
-  QuickJS fork/version you'd target (this varies between Bellard's
-  original QuickJS and forks like quickjs-ng). Worth checking directly
-  against whichever one you're building against.
+  something an engine can fake internally.
+
+  **Resolved, verified against quickjs-ng source** (checked out at
+  `scratch/quickjs`): `js_atomics_wait`/`js_atomics_notify`
+  (`quickjs.c`, `Atomics.wait`/`Atomics.notify`) are complete, real
+  implementations — a global waiter list keyed by buffer pointer, real
+  blocking (`pthread_cond_t`/`pthread_mutex_t` on POSIX,
+  `CONDITION_VARIABLE`/`CRITICAL_SECTION` on Windows, both behind a
+  `js_cond_*`/`js_mutex_*` wrapper in `cutils.h` — not something faked
+  internally), correct timeout handling via `js_cond_timedwait`, and
+  correct wake-count-limited `notify`. Nothing to build or work around
+  here.
+
+  One real gate, and it's a clean one: whether the *current thread* is
+  allowed to block on `Atomics.wait` is controlled by a per-`JSRuntime`
+  `can_block` flag (`quickjs.c:404`), off by default, turned on via the
+  public embedder API `JS_SetCanBlock(JSRuntime*, bool)`
+  (`quickjs.h:1183`) — calling it with `true` on any runtime that should
+  support blocking waits is the entire integration cost. `SharedArrayBuffer`
+  itself isn't gated at all (always a global, unlike JSC — see below), and
+  QuickJS additionally exposes `JS_SetSharedArrayBufferFunctions` so an
+  embedder can plug in its own alloc/free/refcount for the buffer's backing
+  store — directly relevant to `lo`'s "wrap externally-owned memory as
+  SharedArrayBuffer" model, worth reusing rather than reimplementing if a
+  QuickJS backend happens.
+
 - **JSC's `SharedArrayBuffer`/`Atomics` gating.** Browsers (including
   Safari/WebKit) restricted `SharedArrayBuffer` post-Spectre, later
   reintroducing it behind cross-origin-isolation requirements — but that
   restriction may live in WebKit's browser-facing policy layer rather than
-  in JavaScriptCore the engine itself. Embedding JSC directly, outside a
-  browser security model, plausibly sidesteps this entirely — worth
-  confirming against the specific JSC build/version rather than assuming
-  either way. Still open — the module-loading experiment below didn't
-  touch `Atomics`/`SharedArrayBuffer`.
-- If you've already got example code or benchmarks probing any of this
-  (spinning up multiple JSC/QuickJS contexts on separate threads, wrapping
-  shared memory, exercising `Atomics`), pointing me at them would let me
-  replace "plausibly" above with a real answer.
+  in JavaScriptCore the engine itself.
 
-**Update — JSC module loading, no longer open:** built and ran a standalone
-proof of concept against a real JSCOnly WebKit build (see the sibling
-`jsc-lo` repo, `doc/MODULES.md`). A custom `JSGlobalObject` subclass
-supplying `moduleLoaderResolve`/`moduleLoaderFetch`/
+  **Resolved, verified against the JSCOnly WebKit source in `jsc-lo`**:
+  confirmed correct — the gating is a single `JSC::Options` boolean,
+  `useSharedArrayBuffer` (`runtime/OptionsList.h:672`, default `false`),
+  checked exactly once in the engine itself, at
+  `JSGlobalObject.cpp:1533`, to decide whether to install the
+  `SharedArrayBuffer` constructor on the global object at all. Its
+  `OptionsList.h` comment says this explicitly: *"Not sourced from
+  UnifiedWebPreferences.yaml: force-enabled via the cross-origin-isolation
+  path and consumed in WebCore"* — i.e. the policy decision lives entirely
+  in WebCore (the browser/DOM layer, never linked into a JSCOnly build like
+  `jsc-lo`'s), and JavaScriptCore itself just exposes the one switch.
+  Directly confirmed by WebKit's own `jsc` command-line shell — a
+  non-browser embedder exactly like `lo` — which unconditionally sets
+  `Options::useSharedArrayBuffer() = true` in its own startup
+  (`jsc.cpp:4132`) with no cross-origin-isolation ceremony anywhere nearby.
+  A `lo` JSC backend can do exactly the same. (Atomics.wait/notify
+  themselves are also real there — `runtime/AtomicsObject.cpp`'s
+  `atomicsFuncWait`/`atomicsFuncNotify`, backed by a real
+  `WaiterListManager` singleton doing genuine cross-thread blocking —
+  confirmed while checking this, not just assumed from the constructor
+  being exposed.)
+
+  One caveat worth carrying forward, found while tracing this: JSC also
+  has `disableAllSignalHandlerBasedOptions()` (`runtime/Options.cpp:757`,
+  Darwin-only), which turns `useSharedArrayBuffer` back off — but only
+  when the process's Mach exception handler sandbox policy blocks
+  installing signal handlers, or JIT is disabled with that policy unknown
+  (`Options.cpp:566-567`, `892`). This is an OS-sandboxing/fast-memory
+  implementation detail (it also disables `useWasmFastMemory`/
+  `useWasmFaultSignalHandler` in the same call), not a security policy
+  gate — and `jsc.cpp`'s own startup sequence explicitly sets
+  `machExceptionHandlerSandboxPolicy = SandboxPolicy::Allow` before
+  setting `useSharedArrayBuffer() = true`, sidestepping it. Worth setting
+  the same way in a `lo` JSC backend rather than leaving the policy
+  `Unknown`.
+
+**Update — JSC module loading, also no longer open:** built and ran a
+standalone proof of concept against a real JSCOnly WebKit build (see the
+sibling `jsc-lo` repo, `doc/MODULES.md`). A custom `JSGlobalObject`
+subclass supplying `moduleLoaderResolve`/`moduleLoaderFetch`/
 `moduleLoaderCreateImportMetaProperties` via `GlobalObjectMethodTable`,
 driving `runtime/Completion.h`'s `loadAndEvaluateModule` +
 `vm.drainMicrotasks()` — the same mechanism WebKit's own `jsc` shell uses
@@ -416,11 +466,19 @@ cross-version API-stability guarantees) rather than a public SDK. That's
 the real remaining tradeoff for a JSC backend: a build-dependency and
 long-term-maintenance cost, not an open feasibility question.
 
-Still open, and still resting on general knowledge rather than something
-verified against this codebase: `Atomics`/`SharedArrayBuffer` completeness
-on QuickJS, and whether JSC's `SharedArrayBuffer` gating (post-Spectre,
-browser-facing in WebKit) actually reaches a directly-embedded JSC outside
-a browser security model. If example code or benchmarks already exist
-probing either engine's threading/`Atomics`/context-group behavior, I'd
-like to see them — that's the one piece of this assessment the JSC module
-experiment didn't touch.
+`Atomics`/`SharedArrayBuffer` completeness on QuickJS and JSC's
+`SharedArrayBuffer` gating have also since been checked directly against
+source (quickjs-ng's `quickjs.c`/`cutils.h`, and the same `jsc-lo` WebKit
+checkout used for the module-loading experiment) rather than left as
+general-knowledge guesses. Both came back clean: QuickJS's `Atomics.wait`/
+`notify` are complete, real, cross-platform blocking implementations
+gated behind one public embedder call (`JS_SetCanBlock`); JSC's
+`SharedArrayBuffer` restriction is confirmed to be a single engine-level
+`Options::useSharedArrayBuffer` boolean with the actual cross-origin-isolation
+policy living entirely in WebCore (never linked into a JSCOnly embedder),
+and WebKit's own `jsc` shell — a non-browser embedder — flips it on
+unconditionally at startup with no browser-security ceremony involved. No
+open feasibility questions remain from this assessment; everything that
+was previously "plausible" or "worth confirming" is now verified against
+the actual engine source `lo` would build against. What's left is
+integration work (per the numbered list above), not further research.
