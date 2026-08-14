@@ -5,16 +5,23 @@
 # `repos/lo` checkout on *this* sandbox buildable with just `make`.
 #
 # CONFIG=core (default) - just the core module, zero external deps.
-# CONFIG=lo - the full set minus python (PLAN.md task 20 Phase 2):
-#   core, boringssl, ada, curl, heap, md4c, luajit. `curl` links against
-#   the system libcurl (lib/curl/api.js's own default when
+# CONFIG=lo - the full set (PLAN.md task 20 Phases 2-3): core,
+#   boringssl, ada, curl, heap, md4c, python, luajit. `curl` links
+#   against the system libcurl (lib/curl/api.js's own default when
 #   CURL_STATIC isn't set to '1' - not a workaround, that's the
-#   existing, current behavior of the checked-in api.js). The other
-#   four get fetched+built from source via their own build.js, run
-#   through /root/lo (needs lib/curl.js-backed fetch(), which plain
-#   `node` doesn't have) - see build-*.js in this directory.
+#   existing, current behavior of the checked-in api.js). `python`
+#   likewise needs no build.js - just the system python3-dev package
+#   (PYTHON_VERSION below, default 3.12) - see check-alpine-pkgs. The
+#   other four (boringssl/ada/md4c/luajit) get fetched+built from
+#   source via their own build.js, run through /root/lo (needs
+#   lib/curl.js-backed fetch(), which plain `node` doesn't have) - see
+#   build-*.js in this directory.
 #
-#   Usage: CONFIG=lo make clean addon test
+#   Usage: make CONFIG=lo clean addon test
+#   (note: `make CONFIG=lo ...`, not `CONFIG=lo make ...` - the latter
+#   is a shell env var that this Makefile's own `CONFIG := core`
+#   assignment silently overrides; only a real `make` command-line
+#   argument wins)
 #
 # Prerequisites this assumes are already on the box (all persistent
 # under /root, see PERSISTENCE.md):
@@ -62,12 +69,18 @@ LO := /root/lo
 CXX := g++
 CONFIG := core
 
+# python's own api.js reads this via lo.getenv('PYTHON_VERSION') too
+# (defaults to 3.12 there as well if unset) - passed through explicitly
+# here so `make PYTHON_VERSION=3.11 CONFIG=lo ...` regenerates python.cc
+# and links consistently against the same version in one go.
+PYTHON_VERSION := 3.12
+
 ifeq ($(CONFIG),lo)
-EXTRA_SRCS := ../lib/heap/heap.cc ../lib/boringssl/boringssl.cc ../lib/ada/ada.cc ../ada_cpp.o ../lib/curl/curl.cc ../lib/md4c/md4c.cc ../lib/luajit/luajit.cc
+EXTRA_SRCS := ../lib/heap/heap.cc ../lib/boringssl/boringssl.cc ../lib/ada/ada.cc ../ada_cpp.o ../lib/curl/curl.cc ../lib/md4c/md4c.cc ../lib/python/python.cc ../lib/luajit/luajit.cc
 EXTRA_INCLUDES := -I../deps/boringssl/include -I../deps/md4c/src -I../deps/luajit
 EXTRA_OBJS := ../deps/boringssl/build/libssl.a ../deps/boringssl/build/libcrypto.a ../deps/md4c/build/src/libmd4c.a ../deps/md4c/build/src/libmd4c-html.a ../deps/luajit/src/libluajit.a
-EXTRA_LIBS := -lcurl -lpthread
-DEPS := deps
+EXTRA_LIBS := -lcurl -lpython$(PYTHON_VERSION) -lpthread
+DEPS := deps ../lib/python/python.cc
 else
 EXTRA_SRCS :=
 EXTRA_INCLUDES :=
@@ -119,6 +132,7 @@ ifeq ($(CONFIG),lo)
 	@test -x $(TC)/usr/bin/python3 || { echo "missing python3 - run: $(ALPINE_PKG) install python3 --reason 'ada build.js amalgamate.py'"; exit 1; }
 	@test -f $(TC)/usr/include/curl/curl.h || { echo "missing curl-dev - run: $(ALPINE_PKG) install curl-dev libcurl --reason 'repos/lo/bindings CONFIG=lo build'"; exit 1; }
 	@test -f $(TC)/usr/include/openssl/ssl.h || { echo "missing openssl-dev - run: $(ALPINE_PKG) install openssl-dev --reason 'lib/curl/build.js --with-openssl configure check'"; exit 1; }
+	@test -f $(TC)/usr/include/python$(PYTHON_VERSION)/Python.h || { echo "missing python$(PYTHON_VERSION)-dev - run: $(ALPINE_PKG) install python3-dev --reason 'lib/python module headers/lib'"; exit 1; }
 endif
 
 v8-fast-api-calls.h:
@@ -146,9 +160,37 @@ generate: $(CONFIG).config.js gen-addon.js
 ../ada_cpp.o: build-ada.js ../lib/ada/build.js ../lib/ada/api.js
 	cd .. && $(LO) bindings/build-ada.js
 
+# Codegen for every non-core module's .cc - none of these are checked
+# in (only lib/core/core.cc and lib/curl/curl.cc are, per .gitignore's
+# `lib/**/*.cc` + explicit exceptions - those two are the cross-platform
+# "bootstrap" copies needed to build the base `lo` binary at all, before
+# any codegen can run; everything else here is addon-only and always
+# regenerated as part of this build, never committed).
+../lib/heap/heap.cc: ../lib/heap/api.js gen-module.js
+	cd .. && GEN_MODULE=heap $(LO) bindings/gen-module.js > lib/heap/heap.cc
+
+../lib/boringssl/boringssl.cc: ../lib/boringssl/api.js gen-module.js
+	cd .. && GEN_MODULE=boringssl $(LO) bindings/gen-module.js > lib/boringssl/boringssl.cc
+
+../lib/ada/ada.cc: ../lib/ada/api.js gen-module.js
+	cd .. && GEN_MODULE=ada $(LO) bindings/gen-module.js > lib/ada/ada.cc
+
+../lib/md4c/md4c.cc: ../lib/md4c/api.js gen-module.js
+	cd .. && GEN_MODULE=md4c $(LO) bindings/gen-module.js > lib/md4c/md4c.cc
+
+../lib/luajit/luajit.cc: ../lib/luajit/api.js gen-module.js
+	cd .. && GEN_MODULE=luajit $(LO) bindings/gen-module.js > lib/luajit/luajit.cc
+
+# python needs no build.js - it's already on the box (python3/python3-dev
+# packages, see ALPINE-PACKAGES.md) - only codegen, same as the above
+../lib/python/python.cc: ../lib/python/api.js gen-module.js
+	cd .. && GEN_MODULE=python PYTHON_VERSION=$(PYTHON_VERSION) $(LO) bindings/gen-module.js > lib/python/python.cc
+
 deps: ../deps/boringssl/build/libssl.a ../deps/md4c/build/src/libmd4c.a ../deps/luajit/src/libluajit.a ../ada_cpp.o
 
-lo.node: check-linux-headers check-alpine-pkgs v8-fast-api-calls.h generate $(DEPS) ../lo.cc ../lo.h ../lib/core/core.cc
+GENERATED_CC := ../lib/heap/heap.cc ../lib/boringssl/boringssl.cc ../lib/ada/ada.cc ../lib/md4c/md4c.cc ../lib/luajit/luajit.cc ../lib/python/python.cc
+
+lo.node: check-linux-headers check-alpine-pkgs v8-fast-api-calls.h generate $(DEPS) $(GENERATED_CC) ../lo.cc ../lo.h ../lib/core/core.cc
 	$(CXX) $(CXXFLAGS) -o $@ $(SRCS) $(EXTRA_OBJS) $(EXTRA_LIBS)
 
 core-test.so: core-test.c

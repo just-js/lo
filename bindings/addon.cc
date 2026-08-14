@@ -26,6 +26,7 @@ extern void* _register_ada();
 extern void* _register_curl();
 extern void* _register_heap();
 extern void* _register_md4c();
+extern void* _register_python();
 extern void* _register_luajit();
 #ifdef __cplusplus
     }
@@ -52,6 +53,7 @@ void Initialize(v8::Local<v8::Object> exports) {
   lo::modules_add("curl", &_register_curl);
   lo::modules_add("heap", &_register_heap);
   lo::modules_add("md4c", &_register_md4c);
+  lo::modules_add("python", &_register_python);
   lo::modules_add("luajit", &_register_luajit);
 
   exports->Set(context, v8::String::NewFromUtf8(isolate, "lo")
