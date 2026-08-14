@@ -2443,14 +2443,14 @@ void syncFast(void* p) {
 void makedevSlow(const FunctionCallbackInfo<Value> &args) {
   uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  uint32_t rc = gnu_dev_makedev(v0, v1);
+  uint32_t rc = makedev(v0, v1);
   args.GetReturnValue().Set(rc);
 }
 
 uint32_t makedevFast(void* p, uint32_t p0, uint32_t p1) {
   uint32_t v0 = p0;
   uint32_t v1 = p1;
-  return gnu_dev_makedev(v0, v1);
+  return makedev(v0, v1);
 }
 void posix_fadviseSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -2524,7 +2524,7 @@ void getdentsSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
-  uint32_t rc = getdents64(v0, v1, v2);
+  uint32_t rc = getdents64(v0, static_cast<struct dirent*>(v1), v2);
   args.GetReturnValue().Set(rc);
 }
 
@@ -2532,7 +2532,7 @@ uint32_t getdentsFast(void* p, int32_t p0, uint64_t* p1, uint32_t p2) {
   int32_t v0 = p0;
   void* v1 = reinterpret_cast<void*>(p1);
   uint32_t v2 = p2;
-  return getdents64(v0, v1, v2);
+  return getdents64(v0, static_cast<struct dirent*>(v1), v2);
 }
 void getaffinitySlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();

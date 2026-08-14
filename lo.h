@@ -6,6 +6,20 @@
 #include <v8-array-buffer.h>
 #include <fcntl.h>
 
+// V8 replaced String::{Utf8Length,WriteOneByte,WriteUtf8} with
+// {Utf8LengthV2,WriteOneByteV2,WriteUtf8V2} - old names are gone entirely
+// in newer V8 (confirmed: present in V8 12.4 (Node 22's bundled V8),
+// absent in V8 14.3 (this repo's own monolith target); V2 names are the
+// reverse - absent in 12.4, only present from 14.3). No known V8 ships
+// both, so a single major-version cutoff is enough; 13 is a guess at the
+// switchover point (untested against anything between the two data
+// points above) - adjust if it turns out to be wrong.
+#if V8_MAJOR_VERSION >= 13
+#define LO_V8_STRING_WRITE_V2 1
+#else
+#define LO_V8_STRING_WRITE_V2 0
+#endif
+
 #ifdef __MACH__
 #include <mach/clock.h>
 #include <mach/mach.h>

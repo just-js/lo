@@ -357,7 +357,7 @@ void lo::PromiseRejectCallback(PromiseRejectMessage data) {
     return;
   }
   Local<Value> argv[1] = { exception };
-  MaybeLocal<Value> result = onUnhandledRejection->Call(isolate, context, 
+  MaybeLocal<Value> result = onUnhandledRejection->Call(context,
     globalInstance, 1, argv);
   if (result.IsEmpty() && try_catch.HasCaught()) {
     fprintf(stderr, "PromiseRejectCallback: Call\n");
@@ -375,7 +375,7 @@ MaybeLocal<Module> lo::OnModuleInstantiate(Local<Context> context,
   Local<Function> callback = 
     context->GetEmbedderData(2).As<Function>();
   Local<Value> argv[1] = { specifier };
-  MaybeLocal<Value> result = callback->Call(isolate, context, 
+  MaybeLocal<Value> result = callback->Call(context,
     context->Global(), 1, argv);
   int identity = result.ToLocalChecked()->Uint32Value(context).ToChecked();
   std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));
@@ -980,7 +980,11 @@ void lo::GetAddress(const FunctionCallbackInfo<Value> &args) {
 
 void lo::Utf8Length(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
+#if LO_V8_STRING_WRITE_V2
   args.GetReturnValue().Set(Integer::New(isolate, args[0].As<String>()->Utf8LengthV2(isolate)));
+#else
+  args.GetReturnValue().Set(Integer::New(isolate, args[0].As<String>()->Utf8Length(isolate)));
+#endif
 }
 
 int32_t lo::fastUtf8Length (void* p, struct FastOneByteString* const p_str) {
@@ -1158,18 +1162,29 @@ void lo::Utf8Encode(const FunctionCallbackInfo<Value> &args) {
   Local<String> str = args[0].As<String>();
   if (str->IsOneByte()) {
     int size = str->Length();
-    std::unique_ptr<BackingStore> backing = 
-      ArrayBuffer::NewBackingStore(isolate, size, v8::BackingStoreInitializationMode::kUninitialized);
+    std::unique_ptr<BackingStore> backing =
+      ArrayBuffer::NewBackingStore(isolate, size);
+#if LO_V8_STRING_WRITE_V2
     str->WriteOneByteV2(isolate, 0, size, static_cast<uint8_t*>(backing->Data()), String::WriteFlags::kNone);
+#else
+    str->WriteOneByte(isolate, static_cast<uint8_t*>(backing->Data()), 0, size, String::NO_NULL_TERMINATION);
+#endif
     Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
     args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
     return;
   }
-  size_t written = 0;
+#if LO_V8_STRING_WRITE_V2
   int size = str->Utf8LengthV2(isolate);
-  std::unique_ptr<BackingStore> backing = 
-    ArrayBuffer::NewBackingStore(isolate, size, v8::BackingStoreInitializationMode::kUninitialized);
+  std::unique_ptr<BackingStore> backing =
+    ArrayBuffer::NewBackingStore(isolate, size);
+  size_t written = 0;
   str->WriteUtf8V2(isolate, static_cast<char*>(backing->Data()), size, String::WriteFlags::kNone, &written);
+#else
+  int size = str->Utf8Length(isolate);
+  std::unique_ptr<BackingStore> backing =
+    ArrayBuffer::NewBackingStore(isolate, size);
+  str->WriteUtf8(isolate, static_cast<char*>(backing->Data()), size, nullptr, String::NO_NULL_TERMINATION);
+#endif
   Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
   args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
 }
@@ -1178,9 +1193,13 @@ void lo::latin1Encode(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<String> str = args[0].As<String>();
   int size = str->Length();
-  std::unique_ptr<BackingStore> backing = 
-    ArrayBuffer::NewBackingStore(isolate, size, v8::BackingStoreInitializationMode::kUninitialized);
+  std::unique_ptr<BackingStore> backing =
+    ArrayBuffer::NewBackingStore(isolate, size);
+#if LO_V8_STRING_WRITE_V2
   str->WriteOneByteV2(isolate, 0, size, static_cast<uint8_t*>(backing->Data()), String::WriteFlags::kNone);
+#else
+  str->WriteOneByte(isolate, static_cast<uint8_t*>(backing->Data()), 0, size, String::NO_NULL_TERMINATION);
+#endif
   Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
   args.GetReturnValue().Set(Uint8Array::New(ab, 0, size));
 }
@@ -1254,14 +1273,22 @@ void lo::Utf8EncodeInto(const FunctionCallbackInfo<Value> &args) {
   Local<String> str = args[0].As<String>();
   if (str->IsOneByte()) {
     uint8_t* dest = reinterpret_cast<uint8_t*>(Local<Integer>::Cast(args[1])->Value());
+#if LO_V8_STRING_WRITE_V2
     size_t written = str->Length();
     str->WriteOneByteV2(isolate, 0, written, dest, String::WriteFlags::kNullTerminate);
+#else
+    int written = str->WriteOneByte(isolate, dest, 0, str->Length());
+#endif
     args.GetReturnValue().Set(Integer::New(isolate, written));
     return;
   }
   char* dest = reinterpret_cast<char*>(Local<Integer>::Cast(args[1])->Value());
+#if LO_V8_STRING_WRITE_V2
   size_t written;
-  str->WriteUtf8V2(isolate, static_cast<char*>(dest), -1, String::WriteFlags::kNullTerminate, &written);
+  str->WriteUtf8V2(isolate, dest, -1, String::WriteFlags::kNullTerminate, &written);
+#else
+  int written = str->WriteUtf8(isolate, dest, -1, nullptr);
+#endif
   args.GetReturnValue().Set(Integer::New(isolate, written));
 }
 
@@ -1279,8 +1306,12 @@ void lo::Utf8EncodeIntoAtOffset(const FunctionCallbackInfo<Value> &args) {
   char* dest = reinterpret_cast<char*>(Local<Integer>::Cast(args[1])->Value()) + off;
 //  Local<Uint8Array> u8 = args[1].As<Uint8Array>();
 //  char* dest = (char*)u8->Buffer()->Data() + off;
+#if LO_V8_STRING_WRITE_V2
   size_t written;
-  str->WriteUtf8V2(isolate, static_cast<char*>(dest), -1, String::WriteFlags::kNone, &written);
+  str->WriteUtf8V2(isolate, dest, -1, String::WriteFlags::kNone, &written);
+#else
+  int written = str->WriteUtf8(isolate, dest, -1, nullptr, String::NO_NULL_TERMINATION);
+#endif
   args.GetReturnValue().Set(Integer::New(isolate, written));
 }
 
@@ -1610,8 +1641,8 @@ void lo_callback (exec_info* info) {
   Isolate* isolate = info->isolate;
   if (isolate == Isolate::GetCurrent()) {
     HandleScope scope(isolate);
-    info->js_fn.Get(isolate)->Call(isolate, isolate->GetCurrentContext(), 
-      v8::Null(isolate), 0, 0).ToLocalChecked();
+    info->js_fn.Get(isolate)->Call(isolate->GetCurrentContext(),
+      v8::Null(isolate), 0, nullptr).ToLocalChecked();
   }
 }
 

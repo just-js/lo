@@ -1,25 +1,11 @@
 import { writeFileSync } from "node:fs"
 
-const libs = [
-  'lib/ffi.js',
-  'lib/proc.js',
-  'lib/bench.js',
-  'lib/asm.js',
-  'lib/asm/x64.js',
-  'lib/asm/compiler.js',
-  'lib/fs.js',
-]
-
-const bindings = [
-  'core',
-  'boringssl',
-  'ada',
-  'curl',
-  'heap',
-  'md4c',
-  'python',
-  'luajit',
-]
+const configName = process.argv[2]
+if (!configName) {
+  console.error('usage: node gen-addon.js <config-name>  (expects ./<config-name>.config.js exporting { libs, bindings })')
+  process.exit(1)
+}
+const { libs, bindings } = await import(`./${configName}.config.js`)
 
 const rx = /[./-]/g
 
