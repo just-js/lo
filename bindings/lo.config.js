@@ -15,7 +15,7 @@ const bindings = [
   'curl',
   'heap',
   'md4c',
-  'python',
+  // 'python' - deliberately excluded for now, see PLAN.md task 20 Phase 2
   'luajit',
 ]
 

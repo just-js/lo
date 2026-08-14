@@ -43,3 +43,5 @@ __pycache__
 build
 .stamp
 *.node
+ada_c.h
+ada.cpp

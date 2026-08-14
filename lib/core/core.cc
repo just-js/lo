@@ -2522,17 +2522,17 @@ int32_t rebootFast(void* p, int32_t p0) {
 }
 void getdentsSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
+  struct dirent* v1 = reinterpret_cast<struct dirent*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   uint32_t v2 = Local<Integer>::Cast(args[2])->Value();
-  uint32_t rc = getdents64(v0, static_cast<struct dirent*>(v1), v2);
+  uint32_t rc = getdents64(v0, v1, v2);
   args.GetReturnValue().Set(rc);
 }
 
 uint32_t getdentsFast(void* p, int32_t p0, uint64_t* p1, uint32_t p2) {
   int32_t v0 = p0;
-  void* v1 = reinterpret_cast<void*>(p1);
+  struct dirent* v1 = reinterpret_cast<struct dirent*>(p1);
   uint32_t v2 = p2;
-  return getdents64(v0, static_cast<struct dirent*>(v1), v2);
+  return getdents64(v0, v1, v2);
 }
 void getaffinitySlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -2913,3 +2913,4 @@ extern "C"  {
     return (void*)lo::core::Init;
   }
 }
+

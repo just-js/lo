@@ -20,6 +20,21 @@
 #define LO_V8_STRING_WRITE_V2 0
 #endif
 
+// V8 12.4 (Node 22's bundled V8) only has the 4-arg
+// Function::Call(context, recv, argc, argv) overload; V8 14.3 (this
+// repo's own monolith target) has both that one and the 5-arg
+// Function::Call(isolate, context, recv, argc, argv) overload lo.cc was
+// originally written against - not deprecated there, just an extra
+// overload. Since the 4-arg form works on both, this isn't strictly
+// required for compilation the way LO_V8_STRING_WRITE_V2 is - it exists
+// so the original isolate-taking call sites stay untouched on newer V8
+// rather than being silently rewritten everywhere.
+#if V8_MAJOR_VERSION >= 13
+#define LO_V8_CALL_HAS_ISOLATE_OVERLOAD 1
+#else
+#define LO_V8_CALL_HAS_ISOLATE_OVERLOAD 0
+#endif
+
 #ifdef __MACH__
 #include <mach/clock.h>
 #include <mach/mach.h>

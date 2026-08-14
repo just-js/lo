@@ -357,8 +357,13 @@ void lo::PromiseRejectCallback(PromiseRejectMessage data) {
     return;
   }
   Local<Value> argv[1] = { exception };
+#if LO_V8_CALL_HAS_ISOLATE_OVERLOAD
+  MaybeLocal<Value> result = onUnhandledRejection->Call(isolate, context,
+    globalInstance, 1, argv);
+#else
   MaybeLocal<Value> result = onUnhandledRejection->Call(context,
     globalInstance, 1, argv);
+#endif
   if (result.IsEmpty() && try_catch.HasCaught()) {
     fprintf(stderr, "PromiseRejectCallback: Call\n");
   }
@@ -375,8 +380,13 @@ MaybeLocal<Module> lo::OnModuleInstantiate(Local<Context> context,
   Local<Function> callback = 
     context->GetEmbedderData(2).As<Function>();
   Local<Value> argv[1] = { specifier };
+#if LO_V8_CALL_HAS_ISOLATE_OVERLOAD
+  MaybeLocal<Value> result = callback->Call(isolate, context,
+    context->Global(), 1, argv);
+#else
   MaybeLocal<Value> result = callback->Call(context,
     context->Global(), 1, argv);
+#endif
   int identity = result.ToLocalChecked()->Uint32Value(context).ToChecked();
   std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));
   Local<Module> module = (*module_map)[identity].Get(isolate);
@@ -1641,8 +1651,13 @@ void lo_callback (exec_info* info) {
   Isolate* isolate = info->isolate;
   if (isolate == Isolate::GetCurrent()) {
     HandleScope scope(isolate);
+#if LO_V8_CALL_HAS_ISOLATE_OVERLOAD
+    info->js_fn.Get(isolate)->Call(isolate, isolate->GetCurrentContext(),
+      v8::Null(isolate), 0, 0).ToLocalChecked();
+#else
     info->js_fn.Get(isolate)->Call(isolate->GetCurrentContext(),
       v8::Null(isolate), 0, nullptr).ToLocalChecked();
+#endif
   }
 }
 
