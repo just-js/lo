@@ -66,6 +66,16 @@ NODE_DIR := /root/demo/node-v22.19.0-linux-x64-musl
 ALPINE_PKG := /root/cloned/claude/alpine-pkg.sh
 LO := /root/lo
 
+# What runs the codegen (gen-module.js/gen-addon.js): `node` or `lo`,
+# both produce byte-identical output (PLAN.md task 26). Default `node`
+# since it's more reliable than the stale prebuilt `lo` binary. `LO`
+# above is separate for now - it's still hardcoded for the build-*.js
+# dependency-fetch drivers, which need `lo`'s native curl/inflate/untar
+# bindings and don't run under `node` yet (PLAN.md task 26, deferred).
+# Once they do, LO goes away and BUILDER covers everything.
+#   make BUILDER=lo CONFIG=lo clean addon test
+BUILDER := node
+
 CXX := g++
 CONFIG := core
 
@@ -142,7 +152,7 @@ v8-fast-api-calls.h:
 # always regenerate rather than trying to make this a real file-target
 # rule (avoids the classic make "multiple outputs from one recipe" trap)
 generate: $(CONFIG).config.js gen-addon.js
-	node gen-addon.js $(CONFIG)
+	$(BUILDER) gen-addon.js $(CONFIG)
 
 ../deps/boringssl/build/libssl.a ../deps/boringssl/build/libcrypto.a: build-boringssl.js ../lib/boringssl/build.js ../lib/boringssl/api.js
 	cd .. && CFLAGS="--sysroot=$(TC)" CXXFLAGS="--sysroot=$(TC)" $(LO) bindings/build-boringssl.js
@@ -166,25 +176,28 @@ generate: $(CONFIG).config.js gen-addon.js
 # "bootstrap" copies needed to build the base `lo` binary at all, before
 # any codegen can run; everything else here is addon-only and always
 # regenerated as part of this build, never committed).
-../lib/heap/heap.cc: ../lib/heap/api.js gen-module.js
-	cd .. && GEN_MODULE=heap $(LO) bindings/gen-module.js > lib/heap/heap.cc
+#
+# Runs under $(BUILDER) (node or lo, see above) - gen-module.js/
+# gen-loader.js produce byte-identical output either way.
+../lib/heap/heap.cc: ../lib/heap/api.js gen-module.js gen-loader.js
+	cd .. && GEN_MODULE=heap $(BUILDER) bindings/gen-module.js > lib/heap/heap.cc
 
-../lib/boringssl/boringssl.cc: ../lib/boringssl/api.js gen-module.js
-	cd .. && GEN_MODULE=boringssl $(LO) bindings/gen-module.js > lib/boringssl/boringssl.cc
+../lib/boringssl/boringssl.cc: ../lib/boringssl/api.js gen-module.js gen-loader.js
+	cd .. && GEN_MODULE=boringssl $(BUILDER) bindings/gen-module.js > lib/boringssl/boringssl.cc
 
-../lib/ada/ada.cc: ../lib/ada/api.js gen-module.js
-	cd .. && GEN_MODULE=ada $(LO) bindings/gen-module.js > lib/ada/ada.cc
+../lib/ada/ada.cc: ../lib/ada/api.js gen-module.js gen-loader.js
+	cd .. && GEN_MODULE=ada $(BUILDER) bindings/gen-module.js > lib/ada/ada.cc
 
-../lib/md4c/md4c.cc: ../lib/md4c/api.js gen-module.js
-	cd .. && GEN_MODULE=md4c $(LO) bindings/gen-module.js > lib/md4c/md4c.cc
+../lib/md4c/md4c.cc: ../lib/md4c/api.js gen-module.js gen-loader.js
+	cd .. && GEN_MODULE=md4c $(BUILDER) bindings/gen-module.js > lib/md4c/md4c.cc
 
-../lib/luajit/luajit.cc: ../lib/luajit/api.js gen-module.js
-	cd .. && GEN_MODULE=luajit $(LO) bindings/gen-module.js > lib/luajit/luajit.cc
+../lib/luajit/luajit.cc: ../lib/luajit/api.js gen-module.js gen-loader.js
+	cd .. && GEN_MODULE=luajit $(BUILDER) bindings/gen-module.js > lib/luajit/luajit.cc
 
 # python needs no build.js - it's already on the box (python3/python3-dev
 # packages, see ALPINE-PACKAGES.md) - only codegen, same as the above
-../lib/python/python.cc: ../lib/python/api.js gen-module.js
-	cd .. && GEN_MODULE=python PYTHON_VERSION=$(PYTHON_VERSION) $(LO) bindings/gen-module.js > lib/python/python.cc
+../lib/python/python.cc: ../lib/python/api.js gen-module.js gen-loader.js
+	cd .. && GEN_MODULE=python PYTHON_VERSION=$(PYTHON_VERSION) $(BUILDER) bindings/gen-module.js > lib/python/python.cc
 
 deps: ../deps/boringssl/build/libssl.a ../deps/md4c/build/src/libmd4c.a ../deps/luajit/src/libluajit.a ../ada_cpp.o
 

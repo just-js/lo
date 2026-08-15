@@ -1,9 +1,12 @@
-import { writeFileSync } from "node:fs"
+const isNode = !!globalThis.process?.versions?.node
+const writeFileSync = isNode
+  ? (await import('node:fs')).writeFileSync
+  : (path, content) => lo.core.writeFile(path, new TextEncoder().encode(content))
 
-const configName = process.argv[2]
+const configName = isNode ? process.argv[2] : lo.args[2]
 if (!configName) {
-  console.error('usage: node gen-addon.js <config-name>  (expects ./<config-name>.config.js exporting { libs, bindings })')
-  process.exit(1)
+  console.error('usage: node|lo gen-addon.js <config-name>  (expects ./<config-name>.config.js exporting { libs, bindings })')
+  isNode ? process.exit(1) : lo.exit(1)
 }
 const { libs, bindings } = await import(`./${configName}.config.js`)
 
