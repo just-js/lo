@@ -27,9 +27,16 @@
 #   docker run --rm -v "$(pwd):/src" -w /src lo-glibc make check
 #   docker run --rm -v "$(pwd):/src" -w /src lo-glibc make check-build
 #
-# Not yet wired into .github/workflows/push.yml - unlike
-# Dockerfile.alpine's build-linux-musl job, that's a separate step, not
-# done here.
+# Wired up for real in .github/workflows/push.yml as the `build-linux`
+# job - replaced what used to be two separate jobs (native LLVM-install-
+# on-the-runner for x64, a disabled native job for arm64) with one
+# Docker-based job matrixed over both platforms (`runs-on` computed per
+# platform via `matrix.include`, same `ubuntu-22.04`/`ubuntu-24.04-arm`
+# runners as before - Docker builds/runs natively on each, no QEMU
+# involved), same artifact names (`lo-linux-x64`/`lo-linux-arm64`) as
+# before. Confirmed working for x64 by hand before being wired in;
+# arm64 inherits the same image/recipe but hasn't been independently
+# checked on that runner.
 
 FROM ubuntu:22.04
 
@@ -49,7 +56,10 @@ RUN wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 22 && rm 
 # compiler - it's what actually pulls in make, binutils, and libc6-dev,
 # the last of which is what provides unistd.h and friends; a bare clang
 # install alone does not) plus this build's own real, direct needs:
-# libcurl4-openssl-dev (curl.o + the final link's -lcurl), curl itself
+# libcurl4-openssl-dev (curl.o + the final link's -lcurl), libssl-dev
+# (the final link's own -lssl/-lcrypto - libcurl4-openssl-dev does not
+# pull this in on its own, same "runtime lib present, dev symlink/header
+# missing" shape as zlib-dev back in the musl bring-up), curl itself
 # (the CLI - the Makefile's own v8/em_inflate download steps use it, and
 # it's not part of the bare base image the way it is on the GH runner),
 # and everything the existing job's own "check" step installs for

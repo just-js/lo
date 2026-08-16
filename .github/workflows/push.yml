@@ -69,38 +69,30 @@ jobs:
   build-linux:
 #    if: ${{ false }}  # disable
     name: linux
-    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        llvm-version: [22]
-        platform: [x64]
-    env:
-      CC: clang-${{ matrix.llvm-version }}
-      CXX: clang++-${{ matrix.llvm-version }}
+        include:
+          - platform: x64
+            runs-on: ubuntu-22.04
+          # arm64 disabled - v8 arm build is currently broken, re-enable
+          # once that's fixed
+          # - platform: arm64
+          #   runs-on: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runs-on }}
     steps:
       - uses: actions/checkout@v3
-      - name: install llvm
+      - name: build glibc toolchain image
         run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh ${{ matrix.llvm-version }}
-          sudo apt-get update
-      - name: install libcurl
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -qy libcurl4-openssl-dev
+          docker build -t lo-glibc -f docker/Dockerfile.ubuntu .
       - name: compile
         run: |
-          make CC=clang-22 CXX=clang++-22 LINK=clang++-22 ARCH=${{ matrix.platform }} lo
+          docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-glibc make ARCH=${{ matrix.platform }} lo
       - name: check
-        env:
-          LO_HOME: ${{ github.workspace }}
         run: |
-          sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
-          make CC=clang-22 CXX=clang++-22 LINK=clang++-22 check
-          make CC=clang-22 CXX=clang++-22 LINK=clang++-22 check-build
-          LINK=clang++-22 ./lo build runtime runtime/lo -v
+          docker run --rm -e LO_HOME=/src -v "${{ github.workspace }}:/src" -w /src lo-glibc make check
+          docker run --rm -e LO_HOME=/src -v "${{ github.workspace }}:/src" -w /src lo-glibc make check-build
+          docker run --rm -e LO_HOME=/src -v "${{ github.workspace }}:/src" -w /src lo-glibc ./lo build runtime runtime/lo -v
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -131,37 +123,6 @@ jobs:
         with:
           path: ${{ github.workspace }}/lo
           name: lo-linux-musl-${{ matrix.platform }}
-
-  build-linux-arm64:
-    if: ${{ false }}  # disable
-    name: linux
-    runs-on: ubuntu-24.04-arm
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [arm64]
-    steps:
-      - uses: actions/checkout@v3
-      - name: install libcurl
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -qy libcurl4-openssl-dev
-      - name: compile
-        run: |
-          make ARCH=${{ matrix.platform }} lo
-      - name: check
-        env:
-          LO_HOME: ${{ github.workspace }}
-        run: |
-          make check
-          sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
-          ./lo test/build.js
-          ./lo build runtime runtime/lo
-      - name: upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          path: ${{ github.workspace }}/lo
-          name: lo-linux-${{ matrix.platform }}
 
   build-windows:
 #    if: ${{ false }}  # disable
