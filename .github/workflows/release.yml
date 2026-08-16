@@ -4,153 +4,46 @@ on:
     types:
       - published
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
+  build:
+    uses: ./.github/workflows/build.yml
 
-  build-mac:
-#    if: ${{ false }}  # disable
-    name: mac
-    runs-on: macos-15
+  publish:
+    needs: build
+    name: publish ${{ matrix.artifact }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        platform: [arm64]
+        include:
+          - artifact: lo-mac-arm64
+            binary: lo
+            asset: lo-mac-arm64.gz
+          - artifact: lo-mac-x64
+            binary: lo
+            asset: lo-mac-x64.gz
+          - artifact: lo-linux-x64
+            binary: lo
+            asset: lo-linux-x64.gz
+          - artifact: lo-linux-musl-x64
+            binary: lo
+            asset: lo-linux-musl-x64.gz
+          - artifact: lo.exe
+            binary: lo.exe
+            asset: lo.exe.gz
     steps:
-      - uses: actions/checkout@v3
-      - name: compile
-        run: |
-          make ARCH=${{ matrix.platform }} lo
-      - name: check
-        env:
-          LO_HOME: ${{ github.workspace }}
-        run: |
-          pip install jsonschema
-          brew install lz4 zstd openssl@3
-          make check
-          make check-build
-          ./lo build runtime runtime/lo
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
       - name: compress runtime
         run: |
-          gzip -9 -c lo > lo-mac-${{ matrix.platform }}.gz
+          gzip -9 -c ${{ matrix.binary }} > ${{ matrix.asset }}
       - name: upload compressed artifact
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: lo-mac-${{ matrix.platform }}.gz
-          asset_name: lo-mac-${{ matrix.platform }}.gz
-          asset_content_type: application/gzip
-
-  build-mac-x64:
-#    if: ${{ false }}  # disable
-    name: mac-x64
-    runs-on: macos-15
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [arm64]
-    steps:
-      - uses: actions/checkout@v3
-      - name: compile
-        run: |
-          make ARCH=x64 lo
-      - name: check
-        env:
-          LO_HOME: ${{ github.workspace }}
-        run: |
-          make ARCH=x64 check
-      - name: compress runtime
-        run: |
-          gzip -9 -c lo > lo-mac-x64.gz
-      - name: upload compressed artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: lo-mac-x64.gz
-          asset_name: lo-mac-x64.gz
-          asset_content_type: application/gzip
-
-  build-linux:
-#    if: ${{ false }}  # disable
-    name: linux
-    runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        llvm-version: [22]
-        platform: [x64]
-    env:
-      CC: clang-${{ matrix.llvm-version }}
-      CXX: clang++-${{ matrix.llvm-version }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: install llvm
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh ${{ matrix.llvm-version }}
-          sudo apt-get update
-      - name: install libcurl
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -qy libcurl4-openssl-dev
-      - name: compile
-        run: |
-          make CC=clang-22 CXX=clang++-22 LINK=clang++-22 ARCH=${{ matrix.platform }} lo
-      - name: check
-        env:
-          LO_HOME: ${{ github.workspace }}
-        run: |
-          sudo apt-get install -qy libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc
-          make CC=clang-22 CXX=clang++-22 LINK=clang++-22 check
-          make CC=clang-22 CXX=clang++-22 LINK=clang++-22 check-build
-          LINK=clang++-22 ./lo build runtime runtime/lo
-      - name: compress runtime
-        run: |
-          gzip -9 -c lo > lo-linux-${{ matrix.platform }}.gz
-      - name: upload compressed artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: lo-linux-${{ matrix.platform }}.gz
-          asset_name: lo-linux-${{ matrix.platform }}.gz
-          asset_content_type: application/gzip
-
-  build-windows:
-    if: ${{ false }}  # disable
-    name: windows
-    runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [x64,arm64]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install MSVC/MCBuild (Windows)
-        uses: microsoft/setup-msbuild@v1.0.2
-      - name: compile
-        run: |
-          make BINDINGS= ARCH=${{ matrix.platform }} lo.exe
-      - name: check
-        run: |
-          make check
-      - name: compress runtime
-        run: |
-          gzip -9 -c lo.exe > lo.exe.gz
-      - name: upload compressed artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: lo.exe.gz
-          asset_name: lo.exe.gz
+          asset_path: ${{ matrix.asset }}
+          asset_name: ${{ matrix.asset }}
           asset_content_type: application/gzip

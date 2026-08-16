@@ -1,0 +1,146 @@
+name: build lo runtime (reusable)
+on:
+  workflow_call:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-mac:
+#    if: ${{ false }}  # disable
+    name: mac
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [arm64]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '^1.22.1'
+      - name: compile runtime
+        run: |
+          make ARCH=${{ matrix.platform }} lo
+      - name: check
+        env:
+          LO_HOME: ${{ github.workspace }}
+          PREFIX: /opt/homebrew/opt
+        run: |
+          pip install jsonschema
+          brew install lz4 zstd openssl@3
+          make check
+          make check-build
+          ./lo build runtime runtime/lo -v
+      - name: upload runtime artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ github.workspace }}/lo
+          name: lo-mac-${{ matrix.platform }}
+
+  build-mac-x64:
+#    if: ${{ false }}  # disable
+    name: mac-x64
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [arm64]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '^1.22.1'
+      - name: compile runtime
+        run: |
+          make ARCH=x64 lo
+      - name: check
+        env:
+          LO_HOME: ${{ github.workspace }}
+          PREFIX: /opt/homebrew/opt
+        run: |
+          make ARCH=x64 check
+      - name: upload runtime artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ github.workspace }}/lo
+          name: lo-mac-x64
+
+  build-linux:
+#    if: ${{ false }}  # disable
+    name: linux
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: x64
+            runs-on: ubuntu-22.04
+          # arm64 disabled - v8 arm build is currently broken, re-enable
+          # once that's fixed
+          # - platform: arm64
+          #   runs-on: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: build glibc toolchain image
+        run: |
+          docker build -t lo-glibc -f docker/Dockerfile.ubuntu .
+      - name: compile
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-glibc make ARCH=${{ matrix.platform }} lo
+      - name: check
+        run: |
+          docker run --rm -e LO_HOME=/src -v "${{ github.workspace }}:/src" -w /src lo-glibc sh -c "make check && make check-build && ./lo build runtime runtime/lo -v"
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ github.workspace }}/lo
+          name: lo-linux-${{ matrix.platform }}
+
+  build-linux-musl:
+#    if: ${{ false }}  # disable
+    name: linux-musl
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [x64]
+    steps:
+      - uses: actions/checkout@v3
+      - name: build musl toolchain image
+        run: |
+          docker build -t lo-musl -f docker/Dockerfile.alpine .
+      - name: compile
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make lo
+      - name: check
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make check
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ github.workspace }}/lo
+          name: lo-linux-musl-${{ matrix.platform }}
+
+  build-windows:
+#    if: ${{ false }}  # disable
+    name: windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [x64]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install MSVC/MCBuild (Windows)
+        uses: microsoft/setup-msbuild@v1.0.2
+      - name: compile
+        shell: cmd
+        run: |
+          call ${{ github.workspace}}\build.cmd
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ github.workspace }}/lo.exe
+          name: lo.exe
