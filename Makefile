@@ -181,7 +181,7 @@ check: ## run the runtime sanity tests
 	./${RUNTIME} test/dump-binding.js curl
 
 check-build: ## test building works
-	./${RUNTIME} test/build.js
+	LO_HOME=${LO_HOME} ./${RUNTIME} test/build.js
 
 docs:
 	rm -fr docs
