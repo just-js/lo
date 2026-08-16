@@ -40,12 +40,22 @@ using v8::HandleScope;
 using v8::BigInt;
 
 
+#ifndef __GLIBC__
+// musl has no epoll_pwait2() libc wrapper at all - call the raw syscall
+// directly, same signature glibc's own wrapper uses. Guarded on
+// __GLIBC__ (which musl never defines) rather than just being present
+// unconditionally, since glibc >= 2.35 (e.g. Ubuntu 22.04's) already
+// declares a real epoll_pwait2() in <sys/epoll.h>, and this file - even
+// though it's normally regenerated per-build by lib/epoll/api.js's
+// MUSL-gated preamble - also ships committed as a static fallback for
+// the top-level Makefile, which compiles it as-is on every platform.
 #include <sys/syscall.h>
 
 static int epoll_pwait2(int epfd, struct epoll_event *events, int maxevents,
     const struct timespec *timeout, const sigset_t *sigmask) {
   return syscall(SYS_epoll_pwait2, epfd, events, maxevents, timeout, sigmask, sizeof(sigset_t));
 }
+#endif
 
 #ifdef __linux__
 
