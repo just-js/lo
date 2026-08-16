@@ -75,7 +75,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libcurl4-openssl-dev \
     libssl-dev \
     libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc \
+    python3 python3-pip \
     && rm -rf /var/lib/apt/lists/*
+
+# mbedtls's vendored build shells out to its own
+# scripts/generate_driver_wrappers.py, which imports jsonschema - not a
+# real V8/lo dependency, just something mbedtls's own build needs. The
+# existing build-mac CI job already has an explicit `pip install
+# jsonschema` step for the exact same reason (found by the same real CI
+# failure this comment is explaining, not reasoned through ahead of
+# time - same pattern as unzip above)
+RUN pip3 install --no-cache-dir jsonschema
 
 # the Makefile hardcodes CC=clang/CXX=clang++/LINK=clang++ as plain (not
 # ?=) assignments, which in GNU Make always wins over an inherited
