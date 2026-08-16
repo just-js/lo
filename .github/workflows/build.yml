@@ -126,12 +126,21 @@ jobs:
   build-windows:
 #    if: ${{ false }}  # disable
     name: windows
-    # pinned, not windows-latest: that label now points at Windows
-    # Server 2025 (VS2026), and build.cmd's vcvars64.bat path is
-    # pinned to VS2022's real, confirmed location - see build.cmd's
-    # own comment for the story (same root cause hit and fixed for
-    # repos/v8's windows job this session).
-    runs-on: windows-2022
+    # trying VS2026 (GA on windows-2025 since 2026-05-07) instead of
+    # the windows-2022/VS2022 pin used elsewhere (repos/v8) - VS2022's
+    # bundled clang-cl is 19.1.5, one version below what the vendored
+    # libc++ headers require ("Libc++ only supports Clang 20 and
+    # later"). Unlike repos/v8's windows-2022 pin (forced by V8's own
+    # vs_toolchain.py not recognizing VS2026 - a V8-specific
+    # constraint, N/A here since build.cmd is a plain script with no
+    # vs_toolchain.py involved), this repo has no reason to avoid a
+    # newer VS. Whether VS2026 actually bundles clang >=20 isn't
+    # confirmed yet - this is the real test. build.cmd's vcvars64.bat
+    # path updated to match (VS2026 installs under ...\18\Enterprise,
+    # not ...\2026\Enterprise - its internal major version number,
+    # following VS2022's own 17.x scheme, confirmed via GitHub's own
+    # actions/runner-images issues).
+    runs-on: windows-2025
     strategy:
       fail-fast: false
       matrix:

@@ -3,7 +3,16 @@ set VERSION=0.0.25-pre
 set V8=14.5
 set RUNTIME=lo
 set V8_OPTS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS
-set OPTS=-std=c++20 -fomit-frame-pointer -fno-rtti -fno-exceptions -O3 -march=native -mtune=native
+rem libc++'s __config_site deliberately doesn't set this - its own
+rem comment says so: "_LIBCPP_HARDENING_MODE_DEFAULT is not defined
+rem here. Instead, we define _LIBCPP_HARDENING_MODE in
+rem build/config/compiler/BUILD.gn" - a plain -D flag Chromium's build
+rem system supplies automatically that this script needs to replicate.
+rem Real CI failure ("_LIBCPP_HARDENING_MODE_DEFAULT is not defined"),
+rem not reasoned through ahead of time. NONE (no extra runtime checks)
+rem rather than Chromium's own gated default, which wasn't pinned down -
+rem matches lo's own close-to-the-metal style anyway.
+set OPTS=-std=c++20 -fomit-frame-pointer -fno-rtti -fno-exceptions -O3 -march=native -mtune=native -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_NONE
 rem -stdlib=libc++ triggers "argument unused during compilation" on
 rem clang-cl's compile-only (-c) invocations once explicit -I paths
 rem already supply the headers (INCS below) - benign (the link step's
@@ -20,13 +29,16 @@ rem silently clobbered it, breaking header resolution even when
 rem vcvars64.bat ran successfully. renamed to avoid the collision.
 set INCS=-I. -I./v8 -I./v8/include -I./v8/third_party/libc++/src/include -I./v8/buildtools/third_party/libc++
 set BUILTINS=lib/inflate.js lib/gen.js lib/path.js lib/proc.js lib/stringify.js lib/binary.js
-rem hardcoded to VS2022 Enterprise's real path (confirmed against
-rem GitHub's own runner-images docs) - windows-latest now points at
-rem Windows Server 2025 (ships VS2026, different path/version entirely),
-rem so this only works pinned to the windows-2022 runner label, see
-rem .github/workflows/build.yml
+rem hardcoded to VS2026 Enterprise's real path - trying VS2026 for its
+rem newer bundled clang-cl (VS2022's 19.1.5 is one version below what
+rem the vendored libc++ headers require). VS2026 installs under
+rem "...\18\Enterprise", not "...\2026\Enterprise" - 18 is its internal
+rem major version number (following VS2022's own 17.x scheme),
+rem confirmed against GitHub's actions/runner-images issues, not
+rem guessed. Only works pinned to the windows-2025 runner label (VS2026
+rem GA there since 2026-05-07) - see .github/workflows/build.yml.
 if "%WindowsSdkDir%"== "" (
-  call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+  call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 )
 if not exist v8 (
   mkdir v8
