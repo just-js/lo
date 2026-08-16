@@ -78,6 +78,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
+# real, confirmed CI failure: linking runtime/base.config.js/lo.config.js
+# (which add -static-libstdc++ on Linux - the plain Makefile above only
+# does -static-libgcc, so this never showed up there) against
+# v8/libv8_monolith.a fails with `undefined symbol:
+# std::__glibcxx_assert_fail` - confirmed via `nm` that this exact x64
+# archive genuinely references that symbol 352 times across its own
+# object files (not a stale/broken archive), so it's real and needs
+# resolving, not something to wait out. Dynamic linking never hits this
+# because it defers symbol resolution to whatever libstdc++.so is
+# present at runtime; static linking needs it in libstdc++.a right now,
+# and it's missing from build-essential's default GCC 11 static archive
+# on a bare ubuntu:22.04 image. g++-12 alongside it - clang
+# automatically prefers the newest GCC installation it finds for
+# header/library resolution, so this should be picked up with no extra
+# flags needed - not independently confirmed to fully fix it yet.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    g++-12 \
+    && rm -rf /var/lib/apt/lists/*
+
 # mbedtls's vendored build shells out to its own
 # scripts/generate_driver_wrappers.py, which imports jsonschema and
 # jinja2 (the driver-wrapper .c/.h files are generated from .jinja
