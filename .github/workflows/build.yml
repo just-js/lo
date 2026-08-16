@@ -126,7 +126,12 @@ jobs:
   build-windows:
 #    if: ${{ false }}  # disable
     name: windows
-    runs-on: windows-latest
+    # pinned, not windows-latest: that label now points at Windows
+    # Server 2025 (VS2026), and build.cmd's vcvars64.bat path is
+    # pinned to VS2022's real, confirmed location - see build.cmd's
+    # own comment for the story (same root cause hit and fixed for
+    # repos/v8's windows job this session).
+    runs-on: windows-2022
     strategy:
       fail-fast: false
       matrix:
@@ -144,3 +149,9 @@ jobs:
         with:
           path: ${{ github.workspace }}/lo.exe
           name: lo.exe
+          # default is 'warn' - a missing lo.exe would otherwise leave
+          # the whole job green even though nothing was actually built
+          # (which is exactly what just happened: build.cmd has no
+          # error propagation between its own internal commands, so an
+          # earlier failure doesn't stop the script or fail the step)
+          if-no-files-found: error
