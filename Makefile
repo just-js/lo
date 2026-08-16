@@ -1,3 +1,11 @@
+# auto-detects musl via the standard musl dynamic-loader path (present on
+# Alpine and this sandbox, absent on glibc systems e.g. Ubuntu) - override
+# either on the command line (`make MUSL=1`) or in the environment.
+# MUSL_SYSROOT only matters when MUSL=1; override it if your musl
+# toolchain lives somewhere other than this sandbox's. See LO-MUSL.md.
+MUSL ?= $(shell test -f /lib/ld-musl-x86_64.so.1 -o -f /lib/ld-musl-aarch64.so.1 && echo 1 || echo 0)
+MUSL_SYSROOT ?= /root/demo/alpine-toolchain/root
+
 CC=clang
 CXX=clang++
 LINK=clang++
@@ -5,6 +13,11 @@ LARGS=-rdynamic -pthread
 CCARGS=-fPIC -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions -fvisibility=hidden
 CARGS=-fPIC -c -fno-omit-frame-pointer -fvisibility=hidden
 WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter -Wno-error=unknown-warning-option
+ifeq ($(MUSL),1)
+	LARGS+=--sysroot=$(MUSL_SYSROOT)
+	CCARGS+=--sysroot=$(MUSL_SYSROOT) -D_LARGEFILE64_SOURCE
+	CARGS+=--sysroot=$(MUSL_SYSROOT) -D_LARGEFILE64_SOURCE
+endif
 OPT=-O3
 VERSION=0.0.24-pre
 V8_VERSION=14.3
@@ -26,6 +39,9 @@ else
 		os=linux
 		LARGS+=-s -static-libgcc -fuse-ld=lld
 		BINDINGS+=epoll.o
+ifeq ($(MUSL),1)
+		BINDINGS+=musl-glibc-compat.o
+endif
 	  OPT+=-march=native -mtune=native
   else ifeq ($(UNAME_S),Darwin)
 		os=mac
@@ -94,7 +110,7 @@ endif
 ${RUNTIME}.o: ## compile runtime into an object file 
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' ${V8_FLAGS} -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
 
-${RUNTIME}: v8/libv8_monolith.a main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
+${RUNTIME}: main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
 	@echo building ${RUNTIME} for ${os} on ${ARCH}
 	$(LINK) $(LARGS) ${OPT} main.o ${RUNTIME}.o builtins.o ${BINDINGS} ${LIBS} -o ${TARGET} -L"./v8" -lv8_monolith ${LIB_DIRS}
 
@@ -120,6 +136,9 @@ epoll.o: lib/epoll/epoll.cc v8 ## build the epoll binding
 
 system.o: lib/system/system.cc v8 ## build the system binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o system.o lib/system/system.cc
+
+musl-glibc-compat.o: musl-glibc-compat.c ## glibc symbol shims v8/libv8_monolith.a needs on musl
+	$(CC) $(CARGS) -U_LARGEFILE64_SOURCE $(OPT) -o musl-glibc-compat.o musl-glibc-compat.c
 
 kevents.o: lib/kevents/kevents.cc v8 ## build the kqueue binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o kevents.o lib/kevents/kevents.cc

@@ -40,6 +40,13 @@ using v8::HandleScope;
 using v8::BigInt;
 
 
+#include <sys/syscall.h>
+
+static int epoll_pwait2(int epfd, struct epoll_event *events, int maxevents,
+    const struct timespec *timeout, const sigset_t *sigmask) {
+  return syscall(SYS_epoll_pwait2, epfd, events, maxevents, timeout, sigmask, sizeof(sigset_t));
+}
+
 #ifdef __linux__
 
 #endif
