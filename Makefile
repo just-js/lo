@@ -113,7 +113,7 @@ endif
 ${RUNTIME}.o: ## compile runtime into an object file 
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' ${V8_FLAGS} -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
 
-${RUNTIME}: main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
+${RUNTIME}: v8/libv8_monolith.a main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
 	@echo building ${RUNTIME} for ${os} on ${ARCH}
 	$(LINK) $(LARGS) ${OPT} main.o ${RUNTIME}.o builtins.o ${BINDINGS} ${LIBS} -o ${TARGET} -L"./v8" -lv8_monolith ${LIB_DIRS}
 
@@ -128,28 +128,28 @@ ${RUNTIME}.exe: v8 v8/v8_monolith.lib main.js ## link the runtime for windows
 #builtins.h: main.js
 #	./lo .\gen.js main.js > builtins.h
 
-mach.o: lib/mach/mach.cc v8 ## build the mach binding
+mach.o: lib/mach/mach.cc v8/include/.stamp ## build the mach binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o mach.o lib/mach/mach.cc
 
-core.o: lib/core/core.cc v8 ## build the core binding
+core.o: lib/core/core.cc v8/include/.stamp ## build the core binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o core.o lib/core/core.cc
 
-epoll.o: lib/epoll/epoll.cc v8 ## build the epoll binding
+epoll.o: lib/epoll/epoll.cc v8/include/.stamp ## build the epoll binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o epoll.o lib/epoll/epoll.cc
 
-system.o: lib/system/system.cc v8 ## build the system binding
+system.o: lib/system/system.cc v8/include/.stamp ## build the system binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o system.o lib/system/system.cc
 
 musl-glibc-compat.o: musl-glibc-compat.c ## glibc symbol shims v8/libv8_monolith.a needs on musl
 	$(CC) $(CARGS) -U_LARGEFILE64_SOURCE $(OPT) -o musl-glibc-compat.o musl-glibc-compat.c
 
-kevents.o: lib/kevents/kevents.cc v8 ## build the kqueue binding
+kevents.o: lib/kevents/kevents.cc v8/include/.stamp ## build the kqueue binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o kevents.o lib/kevents/kevents.cc
 
 core.obj: core.cc v8 
 	cl /EHsc /std:c++20 /I. /I./v8 /I./v8/include /c core.cc
 
-curl.o: lib/curl/curl.cc v8 ## build the curl binding
+curl.o: lib/curl/curl.cc v8/include/.stamp ## build the curl binding
 	$(CXX) -fPIC $(CCARGS) $(OPT) -I. -I./v8 -I./v8/include $(WARN) ${V8_FLAGS} -o curl.o lib/curl/curl.cc
 
 lib/inflate/em_inflate.h:
