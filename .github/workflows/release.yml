@@ -28,12 +28,9 @@ jobs:
           - artifact: lo-linux-musl-x64
             binary: lo
             asset: lo-linux-musl-x64.gz
-          # windows disabled for the 14.4 release along with
-          # build-windows in build.yml - see that file's comment.
-          # Re-add once re-enabled there for 14.5.
-          # - artifact: lo.exe
-          #   binary: lo.exe
-          #   asset: lo.exe.gz
+          - artifact: lo.exe
+            binary: lo.exe
+            asset: lo.exe.gz
     steps:
       - uses: actions/download-artifact@v4
         with:

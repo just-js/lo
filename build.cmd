@@ -1,6 +1,6 @@
 @echo off
-set VERSION=0.0.24-pre
-set V8=14.4
+set VERSION=0.0.25-pre
+set V8=14.5
 set RUNTIME=lo
 set V8_OPTS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS
 set OPTS=-std=c++20 -fomit-frame-pointer -fno-rtti -fno-exceptions -O3 -march=native -mtune=native
