@@ -1,0 +1,79 @@
+# Plain glibc build environment for `lo`, matching the existing
+# `build-linux` CI job's own recipe (.github/workflows/push.yml) as
+# closely as possible - LLVM 22 from apt.llvm.org, same package list.
+# That job runs directly on a GitHub-hosted `ubuntu-22.04` runner, which
+# comes with a large preinstalled toolset (make, curl, build-essential,
+# etc.) for free; this Dockerfile starts from the bare `ubuntu:22.04`
+# image, which has none of that, so it installs it all explicitly below
+# - anything the native job gets "for free" from the runner had to be
+# found and added here by hand, same kind of gap-hunting as
+# `Dockerfile.alpine`'s own bring-up (see ../../LO-MUSL.md for that
+# story; this file's approach mirrors it, not the musl-specific content).
+#
+# Architecture: written to be arch-agnostic on purpose (no hardcoded
+# amd64 paths/package names) - `docker build` on an arm64 host should
+# pull the arm64 variant of `ubuntu:22.04` and produce an arm64 `lo`
+# the same way, matching how `build-linux-arm64` already builds natively
+# on an `ubuntu-24.04-arm` runner. Not independently verified for arm64
+# (this sandbox is x64-only) - apt.llvm.org does publish arm64 packages,
+# but that's reasoned through, not tested here.
+#
+# Same usage pattern as Dockerfile.alpine - environment only, no source
+# COPY, no build baked into `docker build` itself. Mount the checked-out
+# repo in and run make against it:
+#
+#   docker build -t lo-glibc -f docker/Dockerfile.ubuntu .
+#   docker run --rm -v "$(pwd):/src" -w /src lo-glibc make lo
+#   docker run --rm -v "$(pwd):/src" -w /src lo-glibc make check
+#   docker run --rm -v "$(pwd):/src" -w /src lo-glibc make check-build
+#
+# Not yet wired into .github/workflows/push.yml - unlike
+# Dockerfile.alpine's build-linux-musl job, that's a separate step, not
+# done here.
+
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# prerequisites for apt.llvm.org's own install script (llvm.sh) - none
+# of these are in the bare ubuntu:22.04 image, unlike on the GitHub-hosted
+# runner where they're already present
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates wget gnupg lsb-release software-properties-common \
+    && rm -rf /var/lib/apt/lists/*
+
+# same LLVM version + install method as the existing build-linux CI job
+RUN wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 22 && rm -f llvm.sh
+
+# build-essential (not just for gcc/g++, which we don't use as the
+# compiler - it's what actually pulls in make, binutils, and libc6-dev,
+# the last of which is what provides unistd.h and friends; a bare clang
+# install alone does not) plus this build's own real, direct needs:
+# libcurl4-openssl-dev (curl.o + the final link's -lcurl), curl itself
+# (the CLI - the Makefile's own v8/em_inflate download steps use it, and
+# it's not part of the bare base image the way it is on the GH runner),
+# and everything the existing job's own "check" step installs for
+# `make check-build` (./lo test/build.js's wider binding sweep)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# the Makefile hardcodes CC=clang/CXX=clang++/LINK=clang++ as plain (not
+# ?=) assignments, which in GNU Make always wins over an inherited
+# environment variable of the same name - so `ENV CC=clang-22` etc. here
+# would silently do nothing, unlike the existing build-linux CI job,
+# which passes CC/CXX/LINK as actual `make` command-line arguments on
+# every invocation instead. apt.llvm.org only installs versioned binaries
+# (clang-22, no bare `clang`), so the Makefile's hardcoded default
+# doesn't exist in this image at all without one of those two fixes.
+# Symlinking instead, so `make lo`/`make check`/`make check-build` work
+# here with no extra flags, same as the rest of this file's intent.
+RUN ln -sf clang-22 /usr/bin/clang && \
+    ln -sf clang++-22 /usr/bin/clang++ && \
+    ln -sf ld.lld-22 /usr/bin/ld.lld
+
+WORKDIR /src
