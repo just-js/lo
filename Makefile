@@ -1,9 +1,12 @@
-# auto-detects musl via the standard musl dynamic-loader path (present on
-# Alpine and this sandbox, absent on glibc systems e.g. Ubuntu) - override
-# either on the command line (`make MUSL=1`) or in the environment.
-# MUSL_SYSROOT only matters when MUSL=1; override it if your musl
-# toolchain lives somewhere other than this sandbox's. See LO-MUSL.md.
-MUSL ?= $(shell test -f /lib/ld-musl-x86_64.so.1 -o -f /lib/ld-musl-aarch64.so.1 && echo 1 || echo 0)
+# defaults to a plain glibc build - pass MUSL=1 explicitly for a musl
+# build (this sandbox's own alpine-toolchain, or any other). No
+# auto-detection: the standard musl-loader-file check is unreliable
+# whenever musl-tools or similar is installed alongside glibc as a
+# secondary/cross toolchain, which is a normal thing to have on a
+# regular glibc host. MUSL_SYSROOT only matters when MUSL=1; override it
+# if your musl toolchain lives somewhere other than this sandbox's own.
+# See LO-MUSL.md.
+MUSL ?= 0
 MUSL_SYSROOT ?= /root/demo/alpine-toolchain/root
 
 CC=clang
