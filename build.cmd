@@ -1,6 +1,6 @@
 @echo off
 set VERSION=0.0.24-pre
-set V8=14.3
+set V8=14.4
 set RUNTIME=lo
 set V8_OPTS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS
 set OPTS=-std=c++20 -fomit-frame-pointer -fno-rtti -fno-exceptions -O3 -march=native -mtune=native
@@ -12,7 +12,7 @@ rem var vcvars64.bat sets below (MSVC STL + Windows SDK header search
 rem paths, semicolon-separated) - this batch-style "-I ..." string
 rem silently clobbered it, breaking header resolution even when
 rem vcvars64.bat ran successfully. renamed to avoid the collision.
-set INCS=-I. -I./v8 -I./v8/include
+set INCS=-I. -I./v8 -I./v8/include -I./v8/third_party/libc++/src/include -I./v8/buildtools/third_party/libc++
 set BUILTINS=lib/inflate.js lib/gen.js lib/path.js lib/proc.js lib/stringify.js lib/binary.js
 rem hardcoded to VS2022 Enterprise's real path (confirmed against
 rem GitHub's own runner-images docs) - windows-latest now points at
@@ -29,6 +29,15 @@ if not exist v8 (
   tar -xvf include.tar.gz
   curl -L -O https://github.com/just-js/v8/releases/download/%V8%/libv8_monolith-win-x64.zip
   tar -xvf libv8_monolith-win-x64.zip
+  rem headers for the vendored libc++ v8_monolith.lib was actually built
+  rem against (use_custom_libcxx=true, see args.win.x64.gn) - not MSVC's
+  rem own STL. Published by just-js/v8 alongside the monolith/headers,
+  rem same release. Extracts to third_party/libc++/src/include and
+  rem buildtools/third_party/libc++/{__config_site,__assertion_handler} -
+  rem the same relative layout Chromium's own build/config/c++/BUILD.gn
+  rem uses, matched below in INCS. See C++.md entry 2.
+  curl -L -O https://github.com/just-js/v8/releases/download/%V8%/libcxx-headers-win-x64.zip
+  tar -xvf libcxx-headers-win-x64.zip
   del /Q *.zip
   del /Q *.gz
   cd ..
@@ -49,20 +58,16 @@ if not exist lib\inflate\em_inflate.o (
   clang -I. -c -o em_inflate.o -O3 em_inflate.c
   cd ..\..
 )
-rem v8_monolith.lib is now built with use_custom_libcxx=true (see
+rem v8_monolith.lib is built with use_custom_libcxx=true (see
 rem ../v8/args.win.x64.gn - MSVC's own STL is an unsupported config for
 rem building V8 with clang-cl on Windows) - -stdlib=libc++ here to match,
 rem same rule as always: both sides of a link need to agree on which C++
-rem standard library built them, see ../../C++.md. NOT yet wired up:
-rem where the actual libc++-for-Windows headers/import lib come from.
-rem Chromium vendors and builds libc++ from source itself via DEPS as
-rem part of the V8 build - it isn't a system package the way libstdc++
-rem is on Linux - so this flag alone isn't sufficient yet. Once v8's own
-rem windows build actually succeeds, check its build log/output tree for
-rem where its libc++ ends up, then get that packaged somewhere this
-rem script can fetch it from (most likely: just-js/v8's own release
-rem process publishing it as a new asset, matching include.tar.gz/
-rem libv8_monolith-win-x64.zip).
+rem standard library built them, see ../../C++.md. Headers come from the
+rem libcxx-headers-win-x64.zip download above (INCS); no separate
+rem libc++.lib to link against - Chromium builds libc++ as a GN
+rem source_set on Windows (not static_library, unlike Linux/macOS), so
+rem its compiled object code is already folded directly into
+rem v8_monolith.lib itself.
 clang++ %OPTS% %WARN% %INCS% -stdlib=libc++ -c %V8_OPTS% lib/win/win.cc
 clang++ %OPTS% %WARN% %INCS% -stdlib=libc++ -c %V8_OPTS% -Ilib/inflate lib/inflate/inflate.cc
 clang++ %OPTS% %WARN% %INCS% -stdlib=libc++ -c %V8_OPTS% -D_CRT_SECURE_NO_WARNINGS lib/core2/core.cc
