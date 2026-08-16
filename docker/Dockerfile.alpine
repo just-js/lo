@@ -12,25 +12,26 @@
 #   docker run --rm -v "$(pwd):/src" -w /src lo-musl make lo
 #   docker run --rm -v "$(pwd):/src" -w /src lo-musl make check
 #
-# GitHub Actions equivalent - build the image once, reuse it for both
-# the compile and check steps against the checked-out workspace:
+# Wired up for real in .github/workflows/push.yml as the `build-linux-musl`
+# job (same pattern as the local commands above: build the image once,
+# reuse it for both the compile and check steps against the checked-out
+# workspace, upload the resulting `lo` as an artifact). `make check-build`
+# (./lo test/build.js, ~19 more bindings beyond this build's five) isn't
+# run there yet - every per-module build.js touched so far during this
+# musl bring-up needed some sysroot-shaped fix, so more are likely there
+# too; see LO-MUSL.md / PLAN.md task 34.
 #
-#   - uses: actions/checkout@v3
-#   - run: docker build -t lo-musl -f docker/Dockerfile.alpine .
-#   - run: docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make lo
-#   - run: docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make check
-#
-# NOT test-built end to end - this sandbox can't run Docker itself (see
-# DOCKER.md: kernel is missing CONFIG_CGROUPS/namespaces/OVERLAY_FS), so
-# there was no way to `docker build` this here. The package list is
-# grounded in this session's own real, verified musl build (LO-MUSL.md)
-# plus the actual apk dependency metadata for the trickier ones (lld21,
-# libstdc++, libgcc - checked directly against the real APKINDEX, not
-# guessed: none of them need anything beyond what's listed below, real
-# `apk` resolves their transitive deps - lld21-libs/scudo-malloc/
-# llvm21-libs/libcurl/etc. - automatically, unlike this sandbox's own
-# alpine-pkg.sh, which has a documented gap there, see LO-APK.md).
-# Verify it actually builds before relying on it in CI.
+# Confirmed working end to end on a real Ubuntu host (`docker build` +
+# the mounted-volume `make lo`/`make check` pattern above), including a
+# real gap the reasoning below missed on the first pass (`linux-headers`,
+# fixed - see LO-MUSL.md for the story). Package list is grounded in this
+# session's own real, verified musl build (LO-MUSL.md) plus the actual
+# apk dependency metadata for the trickier ones (lld21, libstdc++,
+# libgcc - checked directly against the real APKINDEX, not guessed: none
+# of them need anything beyond what's listed below, real `apk` resolves
+# their transitive deps - lld21-libs/scudo-malloc/llvm21-libs/libcurl/
+# etc. - automatically, unlike this sandbox's own alpine-pkg.sh, which
+# has a documented gap there, see LO-APK.md).
 
 FROM alpine:3.23
 

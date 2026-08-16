@@ -107,6 +107,31 @@ jobs:
           path: ${{ github.workspace }}/lo
           name: lo-linux-${{ matrix.platform }}
 
+  build-linux-musl:
+#    if: ${{ false }}  # disable
+    name: linux-musl
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [x64]
+    steps:
+      - uses: actions/checkout@v3
+      - name: build musl toolchain image
+        run: |
+          docker build -t lo-musl -f docker/Dockerfile.alpine .
+      - name: compile
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make lo
+      - name: check
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make check
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ github.workspace }}/lo
+          name: lo-linux-musl-${{ matrix.platform }}
+
   build-linux-arm64:
     if: ${{ false }}  # disable
     name: linux
