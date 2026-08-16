@@ -62,11 +62,16 @@ RUN wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 22 && rm 
 # missing" shape as zlib-dev back in the musl bring-up), curl itself
 # (the CLI - the Makefile's own v8/em_inflate download steps use it, and
 # it's not part of the bare base image the way it is on the GH runner),
-# and everything the existing job's own "check" step installs for
+# unzip (cfzlib's build.js fetches zlib as a .zip and shells out to the
+# real `unzip` binary - found via a real CI failure, `could not execvp 2`
+# i.e. ENOENT, not reasoned through ahead of time - more per-binding CLI
+# tool gaps like this are plausible as `make check-build`'s wider sweep
+# gets further, same pattern as everywhere else in this bring-up), and
+# everything the existing job's own "check" step installs for
 # `make check-build` (./lo test/build.js's wider binding sweep)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    curl \
+    curl unzip \
     libcurl4-openssl-dev \
     libssl-dev \
     libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc \
