@@ -4,7 +4,13 @@ set V8=14.4
 set RUNTIME=lo
 set V8_OPTS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS
 set OPTS=-std=c++20 -fomit-frame-pointer -fno-rtti -fno-exceptions -O3 -march=native -mtune=native
-set WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter -Wno-error=unknown-warning-option
+rem -stdlib=libc++ triggers "argument unused during compilation" on
+rem clang-cl's compile-only (-c) invocations once explicit -I paths
+rem already supply the headers (INCS below) - benign (the link step's
+rem own -stdlib=libc++ is what actually matters for stdlib selection),
+rem but -Werror turns it fatal without this. Real CI failure, not
+rem reasoned through ahead of time.
+set WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter -Wno-error=unknown-warning-option -Wno-error=unused-command-line-argument
 set OBJS=lo.o main.o win.o core.o inflate.o lib\inflate\em_inflate.o
 set LOPTS=-lwinmm -ldbghelp -lbcrypt
 rem was named INCLUDE, which collided with the real system INCLUDE env

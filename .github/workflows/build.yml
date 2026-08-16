@@ -124,7 +124,15 @@ jobs:
           name: lo-linux-musl-${{ matrix.platform }}
 
   build-windows:
-#    if: ${{ false }}  # disable
+    # disabled for the 14.4 lo release: V8 14.4's own release has no
+    # libcxx-headers-win-x64.zip asset (that packaging step first
+    # shipped for 14.5 - see build.cmd/PLAN.md), and 14.4's
+    # v8_monolith.lib is genuinely compiled against libc++
+    # (use_custom_libcxx=true, confirmed against the real 14.4 tag) so
+    # there's no MSVC-STL fallback to build against instead. Re-enable
+    # (delete this if/comment) once V8_VERSION here and in build.cmd is
+    # bumped to 14.5.
+    if: ${{ false }}  # disable
     name: windows
     # pinned, not windows-latest: that label now points at Windows
     # Server 2025 (VS2026), and build.cmd's vcvars64.bat path is
