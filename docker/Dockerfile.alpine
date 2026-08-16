@@ -1,0 +1,60 @@
+# Alpine/musl build environment for `lo`, matching the toolchain proven
+# out in this sandbox's own musl bring-up - see ../LO-MUSL.md (in the
+# claude-cloned-repo docs, not this repo) for the full story of what
+# each of these packages is for and what broke without them.
+#
+# This image only sets up the *environment* - it does not COPY in
+# source or build `lo` itself. Mount the checked-out repo in and run
+# make against it, so build artifacts land directly in your working
+# tree, not buried inside a container layer:
+#
+#   docker build -t lo-musl -f docker/Dockerfile.alpine .
+#   docker run --rm -v "$(pwd):/src" -w /src lo-musl make lo
+#   docker run --rm -v "$(pwd):/src" -w /src lo-musl make check
+#
+# GitHub Actions equivalent - build the image once, reuse it for both
+# the compile and check steps against the checked-out workspace:
+#
+#   - uses: actions/checkout@v3
+#   - run: docker build -t lo-musl -f docker/Dockerfile.alpine .
+#   - run: docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make lo
+#   - run: docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make check
+#
+# NOT test-built end to end - this sandbox can't run Docker itself (see
+# DOCKER.md: kernel is missing CONFIG_CGROUPS/namespaces/OVERLAY_FS), so
+# there was no way to `docker build` this here. The package list is
+# grounded in this session's own real, verified musl build (LO-MUSL.md)
+# plus the actual apk dependency metadata for the trickier ones (lld21,
+# libstdc++, libgcc - checked directly against the real APKINDEX, not
+# guessed: none of them need anything beyond what's listed below, real
+# `apk` resolves their transitive deps - lld21-libs/scudo-malloc/
+# llvm21-libs/libcurl/etc. - automatically, unlike this sandbox's own
+# alpine-pkg.sh, which has a documented gap there, see LO-APK.md).
+# Verify it actually builds before relying on it in CI.
+
+FROM alpine:3.23
+
+RUN apk add --no-cache \
+    make binutils \
+    musl-dev linux-headers \
+    libstdc++-dev \
+    clang21 \
+    lld21 \
+    curl curl-dev \
+    openssl-dev \
+    zlib-dev
+
+# MUSL=1 and MUSL_SYSROOT=/ so `make`/`make check` work here with no
+# extra flags - see the top-level Makefile and LO-MUSL.md for what these
+# gate. MUSL_SYSROOT points at this sandbox's own nonstandard chroot
+# path by default (/root/demo/alpine-toolchain/root) since the Makefile
+# was written for a toolchain living somewhere other than the real
+# system paths; in a native Alpine container like this one, headers/libs
+# already live at the normal /usr/include, /usr/lib locations, so the
+# real filesystem root is the correct sysroot value - confirmed working
+# end to end (a full `make clean lo` build, --sysroot=/ on every compile
+# and link line, no errors) rather than just reasoned through.
+ENV MUSL=1
+ENV MUSL_SYSROOT=/
+
+WORKDIR /src
