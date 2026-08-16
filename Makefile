@@ -76,6 +76,7 @@ v8/.stamp:
 v8/include/.stamp: v8/.stamp ## download the v8 source code for debugging
 	curl -L -O https://github.com/just-js/v8/releases/download/${V8_VERSION}/include.tar.gz
 	tar -xvf include.tar.gz
+	rm -rf v8/include
 	mv include v8/
 	touch v8/include/.stamp
 ifneq ($(os),win)
@@ -85,6 +86,7 @@ endif
 v8/src/.stamp: v8/.stamp ## download the v8 source code for debugging
 	curl -L -O https://github.com/just-js/v8/releases/download/${V8_VERSION}/src.tar.gz
 	tar -xvf src.tar.gz
+	rm -rf v8/src
 	mv src v8/
 	touch v8/src/.stamp
 ifneq ($(os),win)
@@ -93,12 +95,14 @@ endif
 
 v8/libv8_monolith.a: v8/include/.stamp  ## download the v8 static libary for linux/macos
 	curl -C - -L -o v8/libv8_monolith.a.gz https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.a.gz
-	gzip -d v8/libv8_monolith.a.gz
+	gzip -df v8/libv8_monolith.a.gz
+	touch v8/libv8_monolith.a
 	rm -f v8/libv8_monolith.a.gz
 
 v8/v8_monolith.lib: v8/include/.stamp ## download the v8 static library for windows
 	curl -C - -L -o v8/v8_monolith.lib.zip https://github.com/just-js/v8/releases/download/${V8_VERSION}/libv8_monolith-${os}-${ARCH}.zip
-	unzip v8/v8_monolith.lib.zip
+	unzip -o v8/v8_monolith.lib.zip
+	touch v8/v8_monolith.lib
 
 main.o: ## compile the main.cc object file
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I./v8 -I./v8/include ${WARN} ${V8_FLAGS} main.cc
