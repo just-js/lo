@@ -12,7 +12,20 @@ rem Real CI failure ("_LIBCPP_HARDENING_MODE_DEFAULT is not defined"),
 rem not reasoned through ahead of time. NONE (no extra runtime checks)
 rem rather than Chromium's own gated default, which wasn't pinned down -
 rem matches lo's own close-to-the-metal style anyway.
-set OPTS=-std=c++20 -fomit-frame-pointer -fno-rtti -fno-exceptions -O3 -march=native -mtune=native -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_NONE
+rem Chromium's own runtime_library GN config
+rem (build/config/c++/BUILD.gn): "if (!libcxx_is_shared) { # Don't leak
+rem any symbols on a static build. defines +=
+rem [ '_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS' ] }" - v8_monolith.lib is
+rem a fully static archive (is_component_build=false in args.win.x64.gn,
+rem so libcxx_is_shared is false there too), so its own code was
+rem compiled with this define, expecting plain static symbol linkage.
+rem Without it here too, this file's own .cc compiles instead default
+rem to __declspec(dllimport)-decorated symbol references (assuming a
+rem libc++.dll that doesn't exist), which don't match what's actually in
+rem v8_monolith.lib - real LNK2019 "unresolved external symbol
+rem __declspec(dllimport) ... std::__Cr::basic_string<...>::__init"
+rem errors, not reasoned through ahead of time.
+set OPTS=-std=c++20 -fomit-frame-pointer -fno-rtti -fno-exceptions -O3 -march=native -mtune=native -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_NONE -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS
 rem -stdlib=libc++ triggers "argument unused during compilation" on
 rem clang-cl's compile-only (-c) invocations once explicit -I paths
 rem already supply the headers (INCS below) - benign (the link step's
