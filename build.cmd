@@ -34,7 +34,21 @@ rem but -Werror turns it fatal without this. Real CI failure, not
 rem reasoned through ahead of time.
 set WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter -Wno-error=unknown-warning-option -Wno-error=unused-command-line-argument
 set OBJS=lo.o main.o win.o core.o inflate.o lib\inflate\em_inflate.o
-set LOPTS=-lwinmm -ldbghelp -lbcrypt
+rem libc++'s exception_ptr implementation on Windows calls through to
+rem a handful of MSVC-runtime-provided ABI helpers
+rem (__ExceptionPtrCreate/__ExceptionPtrCopy/etc, in libcpmt.lib for a
+rem static/non-component build) - this is a real, currently open
+rem upstream libc++ gap (llvm/llvm-project#84490, "Static libc++ on
+rem Windows has problems with missing exception related symbols"), not
+rem something specific to this build. Chromium hits the exact same gap
+rem and papers over it with one explicit linker directive - confirmed
+rem directly in build/config/win/BUILD.gn's static_crt config: "On
+rem Windows, including libcpmt[d]/msvcprt[d] explicitly links the C++
+rem standard library, which libc++ needs for exception_ptr internals."
+rem /MT (static CRT, matching is_component_build=false in
+rem args.win.x64.gn) pairs with libcpmt.lib specifically - msvcprt.lib
+rem is the /MD (dynamic CRT / component build) variant, not this one.
+set LOPTS=-lwinmm -ldbghelp -lbcrypt -Xlinker /DEFAULTLIB:libcpmt.lib
 rem was named INCLUDE, which collided with the real system INCLUDE env
 rem var vcvars64.bat sets below (MSVC STL + Windows SDK header search
 rem paths, semicolon-separated) - this batch-style "-I ..." string
