@@ -76,10 +76,8 @@ jobs:
         include:
           - platform: x64
             runs-on: ubuntu-22.04
-          # arm64 disabled - v8 arm build is currently broken, re-enable
-          # once that's fixed
-          # - platform: arm64
-          #   runs-on: ubuntu-24.04-arm
+          - platform: arm64
+            runs-on: ubuntu-24.04-arm
     runs-on: ${{ matrix.runs-on }}
     steps:
       - uses: actions/checkout@v3
@@ -101,11 +99,15 @@ jobs:
   build-linux-musl:
 #    if: ${{ false }}  # disable
     name: linux-musl
-    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        platform: [x64]
+        include:
+          - platform: x64
+            runs-on: ubuntu-22.04
+          - platform: arm64
+            runs-on: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runs-on }}
     steps:
       - uses: actions/checkout@v3
       - name: build musl toolchain image
@@ -113,10 +115,10 @@ jobs:
           docker build -t lo-musl -f docker/Dockerfile.alpine .
       - name: compile
         run: |
-          docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make lo
+          docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make ARCH=${{ matrix.platform }} lo
       - name: check
         run: |
-          docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make check
+          docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make ARCH=${{ matrix.platform }} check
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:

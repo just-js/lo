@@ -25,9 +25,15 @@ jobs:
           - artifact: lo-linux-x64
             binary: lo
             asset: lo-linux-x64.gz
+          - artifact: lo-linux-arm64
+            binary: lo
+            asset: lo-linux-arm64.gz
           - artifact: lo-linux-musl-x64
             binary: lo
             asset: lo-linux-musl-x64.gz
+          - artifact: lo-linux-musl-arm64
+            binary: lo
+            asset: lo-linux-musl-arm64.gz
           - artifact: lo.exe
             binary: lo.exe
             asset: lo.exe.gz
