@@ -833,7 +833,11 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
     Local<Object> meta = args[2].As<Object>();
 //    Local<ArrayBuffer> ab = args[2].As<ArrayBuffer>();
 //    v8::ScriptCompiler::CachedData cached((const uint8_t*)ab->Data(), ab->ByteLength(), v8::ScriptCompiler::CachedData::BufferPolicy::BufferNotOwned);
+#if LO_V8_INTERNAL_FIELD_TAG
+    v8::ScriptCompiler::CachedData* cached = (v8::ScriptCompiler::CachedData*)meta->GetAlignedPointerFromInternalField(1, v8::kEmbedderDataTypeTagDefault);
+#else
     v8::ScriptCompiler::CachedData* cached = (v8::ScriptCompiler::CachedData*)meta->GetAlignedPointerFromInternalField(1);
+#endif
     ScriptCompiler::Source base(source, baseorigin, cached);
     ScriptCompiler::CompileOptions options = ScriptCompiler::kConsumeCodeCache;
     ok = ScriptCompiler::CompileModule(isolate, &base, options).ToLocal(&module);
@@ -861,7 +865,11 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
     tpl->SetInternalFieldCount(2);
     Local<Object> d = tpl->NewInstance(context).ToLocalChecked();
 
+#if LO_V8_INTERNAL_FIELD_TAG
+    d->SetAlignedPointerInInternalField(1, cache, v8::kEmbedderDataTypeTagDefault);
+#else
     d->SetAlignedPointerInInternalField(1, cache);
+#endif
 //    d->Set(context, String::NewFromUtf8(isolate, "buffer")
 //      .ToLocalChecked(), ab).Check();
     data->Set(context, String::NewFromUtf8(isolate, "cache")
@@ -871,8 +879,13 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
   Local<FixedArray> module_requests = module->GetModuleRequests();
   int length = module_requests->Length();
   for (int i = 0; i < length; ++i) {
+#if LO_V8_FIXEDARRAY_GET_NO_CONTEXT
+    Local<ModuleRequest> module_request =
+        module_requests->Get(i).As<ModuleRequest>();
+#else
     Local<ModuleRequest> module_request =
         module_requests->Get(context, i).As<ModuleRequest>();
+#endif
     requests->Set(context, i, module_request->GetSpecifier()).Check();
   }
   std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));

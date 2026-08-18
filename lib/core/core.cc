@@ -146,8 +146,13 @@ void lo_fastcall (struct fastcall* state) {
 void SlowCallback(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
   HandleScope scope(isolate);
+#if LO_V8_INTERNAL_FIELD_TAG
+  struct fastcall* state = (struct fastcall*)args.Data()
+    .As<Object>()->GetAlignedPointerFromInternalField(1, v8::kEmbedderDataTypeTagDefault);
+#else
   struct fastcall* state = (struct fastcall*)args.Data()
     .As<Object>()->GetAlignedPointerFromInternalField(1);
+#endif
   int r = 1;
   int s = 0;
   char* temp_strs[100];
@@ -275,7 +280,11 @@ void bind_fastcallSlow(const FunctionCallbackInfo<Value> &args) {
   Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
   tpl->SetInternalFieldCount(2);
   Local<Object> data = tpl->NewInstance(context).ToLocalChecked();
+#if LO_V8_INTERNAL_FIELD_TAG
+  data->SetAlignedPointerInInternalField(1, state, v8::kEmbedderDataTypeTagDefault);
+#else
   data->SetAlignedPointerInInternalField(1, state);
+#endif
   uint8_t unwrap = needsunwrap((FastTypes)state->result);
   int fastlen = state->nparam + 1 + unwrap;
   CTypeInfo* cargs = (CTypeInfo*)calloc(fastlen, sizeof(CTypeInfo));
@@ -310,7 +319,11 @@ void bind_slowcallSlow(const FunctionCallbackInfo<Value> &args) {
   Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
   tpl->SetInternalFieldCount(2);
   Local<Object> data = tpl->NewInstance(context).ToLocalChecked();
+#if LO_V8_INTERNAL_FIELD_TAG
+  data->SetAlignedPointerInInternalField(1, state, v8::kEmbedderDataTypeTagDefault);
+#else
   data->SetAlignedPointerInInternalField(1, state);
+#endif
   Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(isolate,
     SlowCallback, data, Local<v8::Signature>(), 0, v8::ConstructorBehavior::kThrow,
     v8::SideEffectType::kHasNoSideEffect, 0
@@ -2913,3 +2926,4 @@ extern "C"  {
     return (void*)lo::core::Init;
   }
 }
+

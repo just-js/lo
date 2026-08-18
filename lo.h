@@ -35,6 +35,26 @@
 #define LO_V8_CALL_HAS_ISOLATE_OVERLOAD 0
 #endif
 
+// V8 14.6 requires an explicit EmbedderDataTypeTag argument on
+// Object::{Get,Set}AlignedPointerInInternalField - the old untagged
+// overloads are removed entirely (confirmed: present in 14.5, absent in
+// 14.6 - real compile log, not guessed). v8::kEmbedderDataTypeTagDefault
+// is the correct tag value everywhere lo uses these - none of the call
+// sites have an existing tagging scheme to preserve.
+#if V8_MAJOR_VERSION > 14 || (V8_MAJOR_VERSION == 14 && V8_MINOR_VERSION >= 6)
+#define LO_V8_INTERNAL_FIELD_TAG 1
+#else
+#define LO_V8_INTERNAL_FIELD_TAG 0
+#endif
+
+// V8 14.6 dropped FixedArray::Get's Local<Context> first parameter - now
+// just Get(int) (confirmed: present in 14.5, absent in 14.6).
+#if V8_MAJOR_VERSION > 14 || (V8_MAJOR_VERSION == 14 && V8_MINOR_VERSION >= 6)
+#define LO_V8_FIXEDARRAY_GET_NO_CONTEXT 1
+#else
+#define LO_V8_FIXEDARRAY_GET_NO_CONTEXT 0
+#endif
+
 #ifdef __MACH__
 #include <mach/clock.h>
 #include <mach/mach.h>
