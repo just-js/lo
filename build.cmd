@@ -26,12 +26,16 @@ rem v8_monolith.lib - real LNK2019 "unresolved external symbol
 rem __declspec(dllimport) ... std::__Cr::basic_string<...>::__init"
 rem errors, not reasoned through ahead of time.
 set OPTS=-std=c++20 -fomit-frame-pointer -fno-rtti -fno-exceptions -O3 -march=native -mtune=native -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_NONE -D_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS
-rem -stdlib=libc++ triggers "argument unused during compilation" on
-rem clang-cl's compile-only (-c) invocations once explicit -I paths
-rem already supply the headers (INCS below) - benign (the link step's
-rem own -stdlib=libc++ is what actually matters for stdlib selection),
-rem but -Werror turns it fatal without this. Real CI failure, not
-rem reasoned through ahead of time.
+rem -Wno-error=unused-command-line-argument stays as a safety margin -
+rem originally added because -stdlib=libc++ triggered "argument unused
+rem during compilation" on clang-cl's compile-only (-c) invocations
+rem (explicit -I paths already supply the headers, INCS below, so the
+rem flag had nothing left to do there) - real CI failure under -Werror,
+rem not reasoned through ahead of time. -stdlib=libc++ itself is no
+rem longer passed on the -c lines below (removed - it was a genuine
+rem no-op there, confirmed by the compiler's own warning, not just
+rem cosmetic), only on the link line, where it's not a no-op - see the
+rem comment there.
 set WARN=-Werror -Wpedantic -Wall -Wextra -Wno-unused-parameter -Wno-error=unknown-warning-option -Wno-error=unused-command-line-argument
 set OBJS=lo.o main.o win.o core.o inflate.o lib\inflate\em_inflate.o
 rem libc++'s exception_ptr implementation on Windows calls through to
@@ -113,14 +117,20 @@ rem libc++.lib to link against - Chromium builds libc++ as a GN
 rem source_set on Windows (not static_library, unlike Linux/macOS), so
 rem its compiled object code is already folded directly into
 rem v8_monolith.lib itself.
-clang++ %OPTS% %WARN% %INCS% -stdlib=libc++ -c %V8_OPTS% lib/win/win.cc
-clang++ %OPTS% %WARN% %INCS% -stdlib=libc++ -c %V8_OPTS% -Ilib/inflate lib/inflate/inflate.cc
-clang++ %OPTS% %WARN% %INCS% -stdlib=libc++ -c %V8_OPTS% -D_CRT_SECURE_NO_WARNINGS lib/core2/core.cc
-clang++ %OPTS% %WARN% %INCS% -stdlib=libc++ -c %V8_OPTS% -DVERSION=\"%VERSION%\" -DRUNTIME=\"%RUNTIME%\" lo.cc
-clang++ %OPTS% %WARN% %INCS% -stdlib=libc++ -c %V8_OPTS% -DVERSION=\"%VERSION%\" -DRUNTIME=\"%RUNTIME%\" main.cc
+clang++ %OPTS% %WARN% %INCS% -c %V8_OPTS% lib/win/win.cc
+clang++ %OPTS% %WARN% %INCS% -c %V8_OPTS% -Ilib/inflate lib/inflate/inflate.cc
+clang++ %OPTS% %WARN% %INCS% -c %V8_OPTS% -D_CRT_SECURE_NO_WARNINGS lib/core2/core.cc
+clang++ %OPTS% %WARN% %INCS% -c %V8_OPTS% -DVERSION=\"%VERSION%\" -DRUNTIME=\"%RUNTIME%\" lo.cc
+clang++ %OPTS% %WARN% %INCS% -c %V8_OPTS% -DVERSION=\"%VERSION%\" -DRUNTIME=\"%RUNTIME%\" main.cc
 REM set CURLP=scratch\curl\curl-8.17.0_6-win64-mingw\
-REM clang++ %OPTS% %INCS% -stdlib=libc++ -I%CURLP%include -c %V8_OPTS% -DNOMINMAX lib/curl/curl.cc
+REM clang++ %OPTS% %INCS% -I%CURLP%include -c %V8_OPTS% -DNOMINMAX lib/curl/curl.cc
 REM clang++ v8\v8_monolith.lib %OBJS% curl.o -L %CURLP%lib -l libcurl -l libcurl.dll -l libbrotlicommon -l libbrotlidec -l libcrypto -l libnghttp2 -l libnghttp3 -l libngtcp2 -l libngtcp2_crypto_libressl -l libpsl -l libssh2 -l libz -l libzstd %LOPTS% -o lo.tmp.exe
+rem -stdlib=libc++ stays here (link step only) - this is where it's not
+rem a no-op, unlike the -c lines above: it's what actually selects
+rem libc++'s runtime/ABI over MSVC's own STL when linking against
+rem v8_monolith.lib. Removing it here would very likely reintroduce the
+rem original MSVC-STL-vs-libc++ mismatch this whole file's libc++
+rem workarounds exist to solve.
 clang++ -stdlib=libc++ v8\v8_monolith.lib %OBJS% %LOPTS% -o %RUNTIME%.tmp.exe
 move /Y %RUNTIME%.tmp.exe %RUNTIME%.exe
 del *.lib
