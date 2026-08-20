@@ -60,6 +60,14 @@ RUN apk add --no-cache \
 # venv - fine here, this container's only purpose is this build.
 RUN pip3 install --no-cache-dir --break-system-packages jsonschema jinja2
 
+# Second real check-build gap, same discipline as above: zlib's own
+# build.js fetches and runs its vendored ./configure script, which has a
+# #!/bin/bash shebang - real CI failure, "env: can't execute 'bash': No
+# such file or directory". Alpine only ships busybox ash/sh by default;
+# Dockerfile.ubuntu never hit this because bash is already present on a
+# base Ubuntu image, unlike here.
+RUN apk add --no-cache bash
+
 # MUSL=1 and MUSL_SYSROOT=/ so `make`/`make check` work here with no
 # extra flags - see the top-level Makefile and LO-MUSL.md for what these
 # gate. MUSL_SYSROOT points at this sandbox's own nonstandard chroot
