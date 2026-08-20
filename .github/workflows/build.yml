@@ -60,7 +60,11 @@ jobs:
           LO_HOME: ${{ github.workspace }}
           PREFIX: /opt/homebrew/opt
         run: |
+          pip install jsonschema
+          brew install lz4 zstd openssl@3
           make ARCH=x64 check
+          make ARCH=x64 check-build
+          ./lo build runtime runtime/lo -v
       - name: upload runtime artifact
         uses: actions/upload-artifact@v4
         with:
@@ -116,9 +120,15 @@ jobs:
       - name: compile
         run: |
           docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make ARCH=${{ matrix.platform }} lo
+      # check-build/build runtime added here to match linux (glibc)'s
+      # comprehensive check - real risk, not assumed risk-free: musl's
+      # own bring-up (LO-MUSL.md) already flagged check-build (test/build.js,
+      # ~19 more bindings beyond this build's five) as untested under musl,
+      # since every per-module build.js touched so far needed some
+      # sysroot-shaped fix - more are plausible here too (PLAN.md task 34).
       - name: check
         run: |
-          docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make ARCH=${{ matrix.platform }} check
+          docker run --rm -e LO_HOME=/src -v "${{ github.workspace }}:/src" -w /src lo-musl sh -c "make ARCH=${{ matrix.platform }} check && make ARCH=${{ matrix.platform }} check-build && ./lo build runtime runtime/lo -v"
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
