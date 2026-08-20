@@ -22,7 +22,7 @@ ifeq ($(MUSL),1)
 	CARGS+=--sysroot=$(MUSL_SYSROOT) -D_LARGEFILE64_SOURCE
 endif
 OPT=-O3
-VERSION=0.0.26-pre
+VERSION=0.0.27-pre
 V8_VERSION=14.6
 RUNTIME=lo
 LO_HOME=$(shell pwd)
