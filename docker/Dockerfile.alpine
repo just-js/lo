@@ -16,10 +16,18 @@
 # job (same pattern as the local commands above: build the image once,
 # reuse it for both the compile and check steps against the checked-out
 # workspace, upload the resulting `lo` as an artifact). `make check-build`
-# (./lo test/build.js, ~19 more bindings beyond this build's five) isn't
-# run there yet - every per-module build.js touched so far during this
-# musl bring-up needed some sysroot-shaped fix, so more are likely there
-# too; see LO-MUSL.md / PLAN.md task 34.
+# (./lo test/build.js, ~19 more bindings beyond this build's five) is now
+# enabled here too (was deferred - every per-module build.js touched so
+# far during this musl bring-up needed some sysroot-shaped fix, so more
+# were expected; see LO-MUSL.md / PLAN.md task 34). First real failure
+# hitting this: mbedtls's own vendored build shells out to
+# scripts/generate_driver_wrappers.py, which imports jsonschema and
+# jinja2 - the exact same gap Dockerfile.ubuntu already hit and fixed
+# (see its own comment there) for the identical mbedtls step, just not
+# yet ported to this image. One real CI failure at a time, same
+# discipline as Dockerfile.ubuntu's own history - more gaps of this
+# shape are plausible as the sweep goes further, not something to
+# pre-guess a full list for.
 #
 # Confirmed working end to end on a real Ubuntu host (`docker build` +
 # the mounted-volume `make lo`/`make check` pattern above), including a
@@ -43,7 +51,14 @@ RUN apk add --no-cache \
     lld21 \
     curl curl-dev \
     openssl-dev \
-    zlib-dev
+    zlib-dev \
+    python3 py3-pip
+
+# mbedtls's generate_driver_wrappers.py needs these - see the comment
+# above. --break-system-packages: Alpine's python3 (3.12, PEP 668) marks
+# itself externally-managed, refusing a bare `pip install` outside a
+# venv - fine here, this container's only purpose is this build.
+RUN pip3 install --no-cache-dir --break-system-packages jsonschema jinja2
 
 # MUSL=1 and MUSL_SYSROOT=/ so `make`/`make check` work here with no
 # extra flags - see the top-level Makefile and LO-MUSL.md for what these
