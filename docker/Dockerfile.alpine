@@ -68,6 +68,13 @@ RUN pip3 install --no-cache-dir --break-system-packages jsonschema jinja2
 # base Ubuntu image, unlike here.
 RUN apk add --no-cache bash
 
+# Third real check-build gap, same discipline as above: lib/seccomp's
+# own build compiles seccomp.cc directly against the real libseccomp
+# headers - real CI failure, "seccomp.cc:4:10: fatal error: 'seccomp.h'
+# file not found". Missing dev package, same shape as Dockerfile.ubuntu's
+# own libseccomp-dev entry, just not yet ported to this image.
+RUN apk add --no-cache libseccomp-dev
+
 # MUSL=1 and MUSL_SYSROOT=/ so `make`/`make check` work here with no
 # extra flags - see the top-level Makefile and LO-MUSL.md for what these
 # gate. MUSL_SYSROOT points at this sandbox's own nonstandard chroot
