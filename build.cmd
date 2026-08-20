@@ -1,6 +1,6 @@
 @echo off
-set VERSION=0.0.27-pre
-set V8=14.6
+set VERSION=0.0.28-pre
+set V8=14.7
 set RUNTIME=lo
 set V8_OPTS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS
 rem libc++'s __config_site deliberately doesn't set this - its own
