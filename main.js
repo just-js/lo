@@ -663,7 +663,7 @@ async function global_main () {
     return Promise.resolve()
   }
   if (core.os === 'win') {
-    handleCommand(args).catch(err => handle_error(err))
+    handleCommand(args).catch(err => { handle_error(err); exit(1) })
   } else {
     const { Loop } = await import('lib/loop.js')
     const { Timer } = await import('lib/timer.js')
@@ -687,7 +687,7 @@ async function global_main () {
       .then(() => {
         while (loop.poll() > 0) {}
       })
-      .catch(err => handle_error(err))
+      .catch(err => { handle_error(err); exit(1) })
     while (loop.poll() > 0) {}
   }
 }
