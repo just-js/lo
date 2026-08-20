@@ -39,20 +39,25 @@ if (os === 'linux') {
   bindings.push('mach')
 }
 
+function check (status, name) {
+  if (status[2]) console.error(`${name} killed by signal ${status[2]}`)
+  assert(status[0] === 0)
+}
+
 function build_runtime (target, config_path) {
-  assert(exec_env('./lo', 
-    [ 'build', 'runtime', config_path, '-v' ], 
+  check(exec_env('./lo',
+    [ 'build', 'runtime', config_path, '-v' ],
     [ ['LO_TARGET', target], ['CC', CC], ['CXX', CXX], ['LINK', LINK] ]
-  )[0] === 0)
-  assert(exec(`./${target}`, ['test/dump.js'])[0] === 0)
+  ), './lo build runtime')
+  check(exec(`./${target}`, ['test/dump.js']), target)
 }
 
 function build_binding (name) {
-  assert(exec_env('./lo', 
-    [ 'build', 'binding', name, '-v' ], 
+  check(exec_env('./lo',
+    [ 'build', 'binding', name, '-v' ],
     [ ['CC', CC], ['CXX', CXX], ['LINK', LINK] ]
-  )[0] === 0)
-  assert(exec('./lo', ['test/dump-binding.js', name])[0] === 0)
+  ), './lo build binding')
+  check(exec('./lo', ['test/dump-binding.js', name]), './lo test/dump-binding.js')
 }
 
 console.log(`${AY}building bindings${AD}`)
