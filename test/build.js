@@ -33,7 +33,12 @@ if (os === 'linux') {
   bindings.push('fsmount')
   bindings.push('seccomp')
   bindings.push('wireguard')
-  bindings.push('tcc')
+  // tcc excluded under musl: TinyCC's own vendored ./configure
+  // --config-musl + make build produces a completely empty libtcc.a on
+  // x64 specifically (arm64 musl builds it fine) - real, deterministic,
+  // reproduced across multiple CI runs, root cause not yet found. Not
+  // load-bearing for lo itself (parked, see PLAN.md).
+  if (getenv('MUSL') !== '1') bindings.push('tcc')
 } else if (os === 'mac') {
   bindings.push('kevents')
   bindings.push('mach')
