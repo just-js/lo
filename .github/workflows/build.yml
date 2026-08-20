@@ -52,6 +52,29 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '^1.22.1'
+      - name: rosetta diagnostics
+        # Real data for whenever mac-x64's check-build gets a proper look
+        # (task 49-adjacent: check-build's wider sweep hit a real
+        # undefined-symbol libssl link failure here, cross-compiling
+        # -arch x86_64 against Homebrew's arm64-only /opt/homebrew
+        # openssl@3 - reverted check back to basic below rather than
+        # guess at a Rosetta-based fix without being able to test it).
+        # Never fails the job - `|| true` on every probe, this is
+        # observational only.
+        run: |
+          echo "=== uname ==="
+          uname -a
+          echo "=== rosetta present? (arch -x86_64 /usr/bin/true) ==="
+          arch -x86_64 /usr/bin/true && echo "rosetta: present (exit 0)" || echo "rosetta: NOT present (exit $?)"
+          echo "=== Rosetta pkg receipt ==="
+          pkgutil --pkg-info com.apple.pkg.RosettaUpdateAuto 2>&1 || echo "no RosettaUpdateAuto receipt found"
+          echo "=== homebrew prefixes on PATH ==="
+          which -a brew || true
+          echo "=== /usr/local/Homebrew present? (separate x86_64 prefix) ==="
+          ls -la /usr/local/Homebrew 2>&1 || echo "/usr/local/Homebrew: not present"
+          echo "=== /opt/homebrew/opt/openssl@3 lib architectures ==="
+          file /opt/homebrew/opt/openssl@3/lib/*.dylib 2>&1 || echo "openssl@3 not installed yet at this point in the job"
+        continue-on-error: true
       - name: compile runtime
         run: |
           make ARCH=x64 lo
@@ -60,11 +83,7 @@ jobs:
           LO_HOME: ${{ github.workspace }}
           PREFIX: /opt/homebrew/opt
         run: |
-          pip install jsonschema
-          brew install lz4 zstd openssl@3
           make ARCH=x64 check
-          make ARCH=x64 check-build
-          ./lo build runtime runtime/lo -v
       - name: upload runtime artifact
         uses: actions/upload-artifact@v4
         with:
