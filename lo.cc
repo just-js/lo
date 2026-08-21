@@ -1460,6 +1460,11 @@ void lo::Exit(const FunctionCallbackInfo<Value> &args) {
   exit(status);
 }
 
+void lo::GetLoCallbackAddress(const FunctionCallbackInfo<Value> &args) {
+  Local<ArrayBuffer> ab = args[0].As<Uint32Array>()->Buffer();
+  ((void**)ab->Data())[0] = (void*)&lo_callback;
+}
+
 /**
  * fill the provided buffer with random bytes
  * 

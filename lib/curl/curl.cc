@@ -508,6 +508,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "CURLOPT_USERAGENT", Integer::New(isolate, (int32_t)CURLOPT_USERAGENT));
   SET_VALUE(isolate, module, "CURLOPT_HTTPHEADER", Integer::New(isolate, (int32_t)CURLOPT_HTTPHEADER));
   SET_VALUE(isolate, module, "CURLOPT_REFERER", Integer::New(isolate, (int32_t)CURLOPT_REFERER));
+  SET_VALUE(isolate, module, "CURLOPT_SSL_VERIFYPEER", Integer::New(isolate, (int32_t)CURLOPT_SSL_VERIFYPEER));
+  SET_VALUE(isolate, module, "CURLOPT_SSL_VERIFYHOST", Integer::New(isolate, (int32_t)CURLOPT_SSL_VERIFYHOST));
 
 #ifdef __linux__
 
