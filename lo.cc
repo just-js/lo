@@ -1550,6 +1550,8 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
   SET_METHOD(isolate, target, "isolate_start_address", GetIsolateStartAddress);
 
+  SET_METHOD(isolate, target, "lo_callback_address", GetLoCallbackAddress);
+
   SET_METHOD(isolate, target, "latin1Decode", Latin1Decode);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
   SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
