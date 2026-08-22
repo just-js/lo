@@ -543,6 +543,12 @@ globalThis.performance = {
   now: () => lo.hrtime() / 1e6
 }
 
+const { lo_callback_address } = lo
+lo.lo_callback_address = () => {
+  lo_callback_address(handle)
+  return addr(handle)
+}
+
 // todo: fix this and write up/decide exactly what module resolution does
 // currently we check/open each file twice
 /*
