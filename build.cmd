@@ -73,17 +73,31 @@ rem version, following VS2022's own 17.x scheme, confirmed against
 rem GitHub's actions/runner-images issues, not guessed) rather than
 rem silently falling back to an incompatible VS2022 if that's all a
 rem given machine has - fails loudly instead, see below.
-rem %ProgramFiles(x86)% has to be captured into a plain-named variable
-rem *outside* any parenthesized block first - a real, reproduced CI
-rem failure otherwise ("'C:\Program' is not recognized..."): the literal
-rem "(x86)" in the variable's own name confuses cmd.exe's paren-matching
-rem for the `for /f (...)` block's own syntax, which also uses
-rem parentheses - classic Windows batch gotcha, not obscure.
+rem Two real, reproduced CI failures already came out of the
+rem `for /f "usebackq" %%i in (`vswhere ...`)` backtick-execution form -
+rem first from %ProgramFiles(x86)%'s own literal "(x86)" confusing the
+rem for-loop's paren matching, then the *same* error again even after
+rem moving that into its own plain `set` first (real evidence the
+rem backtick-execution form itself is the fragile part here, not just
+rem that one variable - not fully root-caused without a real Windows box
+rem to test against, so replaced with a fundamentally simpler mechanism
+rem instead of a third guess at the same construct). Redirecting
+rem vswhere's own stdout to a plain temp file and reading that back with
+rem `set /p` avoids backticks, nested quoting, and parenthesized-block
+rem expansion entirely - each line here is a single flat command, no
+rem structural parens involved at all.
 set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
 if "%WindowsSdkDir%"== "" (
-  for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -latest -prerelease -products * -version "[18.0,19.0)" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set VSINSTALLPATH=%%i
+  "%VSWHERE%" -latest -prerelease -products * -version "[18.0,19.0)" -property installationPath > "%TEMP%\vswhere-out.txt"
+  set /p VSINSTALLPATH=<"%TEMP%\vswhere-out.txt"
+  del "%TEMP%\vswhere-out.txt" >nul 2>&1
   if "%VSINSTALLPATH%"=="" (
-    echo No Visual Studio 18.x ^(2026^) install with the C++ toolset found - see LO-WINDOWS-LOCAL-BUILD.md
+    echo No Visual Studio 18.x ^(2026^) install found via vswhere - full listing follows for diagnosis:
+    "%VSWHERE%" -prerelease -products *
+    exit /b 1
+  )
+  if not exist "%VSINSTALLPATH%\VC\Auxiliary\Build\vcvars64.bat" (
+    echo Found "%VSINSTALLPATH%" via vswhere but it has no VC\Auxiliary\Build\vcvars64.bat - C++ tools component missing?
     exit /b 1
   )
   call "%VSINSTALLPATH%\VC\Auxiliary\Build\vcvars64.bat"
