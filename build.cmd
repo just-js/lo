@@ -87,7 +87,8 @@ rem `set /p` avoids backticks, nested quoting, and parenthesized-block
 rem expansion entirely - each line here is a single flat command, no
 rem structural parens involved at all.
 if "%WindowsSdkDir%"== "" (
-  call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+  call "C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+rem  call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 )
 rem set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
 rem if "%WindowsSdkDir%"== "" (

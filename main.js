@@ -543,9 +543,15 @@ globalThis.performance = {
   now: () => lo.hrtime() / 1e6
 }
 
-const { lo_callback_address } = lo
+const { lo_callback_address, isolate_start_address } = lo
+
 lo.lo_callback_address = () => {
   lo_callback_address(handle)
+  return addr(handle)
+}
+
+lo.isolate_start_address = () => {
+  isolate_start_address(handle)
   return addr(handle)
 }
 
