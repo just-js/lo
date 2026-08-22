@@ -60,17 +60,28 @@ rem silently clobbered it, breaking header resolution even when
 rem vcvars64.bat ran successfully. renamed to avoid the collision.
 set INCS=-I. -I./v8 -I./v8/include -I./v8/third_party/libc++/src/include -I./v8/buildtools/third_party/libc++
 set BUILTINS=lib/inflate.js lib/gen.js lib/path.js lib/proc.js lib/stringify.js lib/binary.js
-rem hardcoded to VS2026 Enterprise's real path - trying VS2026 for its
-rem newer bundled clang-cl (VS2022's 19.1.5 is one version below what
-rem the vendored libc++ headers require). VS2026 installs under
-rem "...\18\Enterprise", not "...\2026\Enterprise" - 18 is its internal
-rem major version number (following VS2022's own 17.x scheme),
-rem confirmed against GitHub's actions/runner-images issues, not
-rem guessed. Only works pinned to the windows-2025 runner label (VS2026
-rem GA there since 2026-05-07) - see .github/workflows/build.yml.
-
+rem Auto-detect the VS install via vswhere.exe (bundled with every VS
+rem installer since 2017, always at this fixed path) rather than
+rem hardcoding one edition/drive - was hardcoded to VS2026 Enterprise's
+rem literal path here before, which broke for anyone on a different
+rem edition (Community, Professional, BuildTools) or a different Program
+rem Files root (BuildTools/Community sometimes land under the (x86) one).
+rem -version "[18.0,19.0)" keeps the pin to VS2026 specifically (its
+rem newer bundled clang-cl - VS2022's 19.1.5 is one version below what
+rem the vendored libc++ headers require; 18 is VS2026's internal major
+rem version, following VS2022's own 17.x scheme, confirmed against
+rem GitHub's actions/runner-images issues, not guessed) rather than
+rem silently falling back to an incompatible VS2022 if that's all a
+rem given machine has - fails loudly instead, see below.
+rem %ProgramFiles(x86)% has to be captured into a plain-named variable
+rem *outside* any parenthesized block first - a real, reproduced CI
+rem failure otherwise ("'C:\Program' is not recognized..."): the literal
+rem "(x86)" in the variable's own name confuses cmd.exe's paren-matching
+rem for the `for /f (...)` block's own syntax, which also uses
+rem parentheses - classic Windows batch gotcha, not obscure.
+set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
 if "%WindowsSdkDir%"== "" (
-  for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -prerelease -products * -version "[18.0,19.0)" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set VSINSTALLPATH=%%i
+  for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -latest -prerelease -products * -version "[18.0,19.0)" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set VSINSTALLPATH=%%i
   if "%VSINSTALLPATH%"=="" (
     echo No Visual Studio 18.x ^(2026^) install with the C++ toolset found - see LO-WINDOWS-LOCAL-BUILD.md
     exit /b 1
