@@ -45,3 +45,5 @@ build
 *.node
 ada_c.h
 ada.cpp
+.build-tools
+!build-musl.sh

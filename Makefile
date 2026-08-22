@@ -22,8 +22,8 @@ ifeq ($(MUSL),1)
 	CARGS+=--sysroot=$(MUSL_SYSROOT) -D_LARGEFILE64_SOURCE
 endif
 OPT=-O3
-VERSION=0.0.28-pre
-V8_VERSION=14.7
+VERSION=0.0.29-pre
+V8_VERSION=14.8
 RUNTIME=lo
 LO_HOME=$(shell pwd)
 BINDINGS=core.o inflate.a curl.o system.o
@@ -64,7 +64,19 @@ endif
 	endif
 endif
 
-.PHONY: help clean cleanall check install builtins.h check-build
+.PHONY: help clean cleanall check install builtins.h check-build reset
+
+# clean's own recipe (rm -f *.o/*.a/${RUNTIME}) has no dependency edge to
+# anything else in this file, so under -j a combined invocation like
+# `make -j4 clean lo` can run clean's deletes concurrently with lo's own
+# build steps - a real race (a compile job's freshly-written .o can get
+# rm -f'd out from under it, or deleted after make already considers that
+# target built this run, breaking the final link). Force this one
+# invocation serial whenever clean is one of the requested goals; normal
+# `make -j4 lo` (no clean) is unaffected and stays fully parallel.
+ifneq ($(filter clean,$(MAKECMDGOALS)),)
+.NOTPARALLEL:
+endif
 
 help:
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9\/_\.-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -104,7 +116,7 @@ v8/v8_monolith.lib: | v8/include/.stamp ## download the v8 static library for wi
 	unzip -o v8/v8_monolith.lib.zip
 	touch v8/v8_monolith.lib
 
-main.o: ## compile the main.cc object file
+main.o: | v8/include/.stamp ## compile the main.cc object file
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' -I./v8 -I./v8/include ${WARN} ${V8_FLAGS} main.cc
 
 builtins.o: ## link all source files and assets into an object file
@@ -114,7 +126,7 @@ else
 	$(CC) ${CARGS} builtins.S -o builtins.o
 endif
 
-${RUNTIME}.o: ## compile runtime into an object file 
+${RUNTIME}.o: | v8/include/.stamp ## compile runtime into an object file
 	$(CXX) ${CCARGS} ${OPT} -DRUNTIME='"${RUNTIME}"' -DVERSION='"${VERSION}"' ${V8_FLAGS} -I./v8 -I./v8/include ${WARN} ${RUNTIME}.cc
 
 ${RUNTIME}: v8/libv8_monolith.a main.js ${BINDINGS} builtins.o main.o ${RUNTIME}.o ## link the runtime for linux/macos
@@ -209,6 +221,9 @@ else
 	rm -f lib/**/*.so
 	rm -f ${RUNTIME}
 endif
+
+reset:
+	git checkout builtins_linux.S builtins.S main.h
 
 cleanall:
 	$(MAKE) clean
