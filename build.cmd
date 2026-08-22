@@ -1,6 +1,6 @@
 @echo off
-set VERSION=0.0.28-pre
-set V8=14.7
+set VERSION=0.0.29-pre
+set V8=14.8
 set RUNTIME=lo
 set V8_OPTS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS
 rem libc++'s __config_site deliberately doesn't set this - its own
@@ -68,8 +68,14 @@ rem major version number (following VS2022's own 17.x scheme),
 rem confirmed against GitHub's actions/runner-images issues, not
 rem guessed. Only works pinned to the windows-2025 runner label (VS2026
 rem GA there since 2026-05-07) - see .github/workflows/build.yml.
+
 if "%WindowsSdkDir%"== "" (
-  call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+  for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -prerelease -products * -version "[18.0,19.0)" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set VSINSTALLPATH=%%i
+  if "%VSINSTALLPATH%"=="" (
+    echo No Visual Studio 18.x ^(2026^) install with the C++ toolset found - see LO-WINDOWS-LOCAL-BUILD.md
+    exit /b 1
+  )
+  call "%VSINSTALLPATH%\VC\Auxiliary\Build\vcvars64.bat"
 )
 if not exist v8 (
   mkdir v8
@@ -131,7 +137,7 @@ rem libc++'s runtime/ABI over MSVC's own STL when linking against
 rem v8_monolith.lib. Removing it here would very likely reintroduce the
 rem original MSVC-STL-vs-libc++ mismatch this whole file's libc++
 rem workarounds exist to solve.
-clang++ -stdlib=libc++ v8\v8_monolith.lib %OBJS% %LOPTS% -o %RUNTIME%.tmp.exe
+clang++ v8\v8_monolith.lib %OBJS% %LOPTS% -o %RUNTIME%.tmp.exe
 move /Y %RUNTIME%.tmp.exe %RUNTIME%.exe
 del *.lib
 del *.exp
