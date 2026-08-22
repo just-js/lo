@@ -86,22 +86,25 @@ rem vswhere's own stdout to a plain temp file and reading that back with
 rem `set /p` avoids backticks, nested quoting, and parenthesized-block
 rem expansion entirely - each line here is a single flat command, no
 rem structural parens involved at all.
-set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
 if "%WindowsSdkDir%"== "" (
-  "%VSWHERE%" -latest -prerelease -products * -version "[18.0,19.0)" -property installationPath > "%TEMP%\vswhere-out.txt"
-  set /p VSINSTALLPATH=<"%TEMP%\vswhere-out.txt"
-  del "%TEMP%\vswhere-out.txt" >nul 2>&1
-  if "%VSINSTALLPATH%"=="" (
-    echo No Visual Studio 18.x ^(2026^) install found via vswhere - full listing follows for diagnosis:
-    "%VSWHERE%" -prerelease -products *
-    exit /b 1
-  )
-  if not exist "%VSINSTALLPATH%\VC\Auxiliary\Build\vcvars64.bat" (
-    echo Found "%VSINSTALLPATH%" via vswhere but it has no VC\Auxiliary\Build\vcvars64.bat - C++ tools component missing?
-    exit /b 1
-  )
-  call "%VSINSTALLPATH%\VC\Auxiliary\Build\vcvars64.bat"
+  call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 )
+rem set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
+rem if "%WindowsSdkDir%"== "" (
+rem   "%VSWHERE%" -latest -prerelease -products * -version "[18.0,19.0)" -property installationPath > "%TEMP%\vswhere-out.txt"
+rem   set /p VSINSTALLPATH=<"%TEMP%\vswhere-out.txt"
+rem   del "%TEMP%\vswhere-out.txt" >nul 2>&1
+rem   if "%VSINSTALLPATH%"=="" (
+rem     echo No Visual Studio 18.x ^(2026^) install found via vswhere - full listing follows for diagnosis:
+rem     "%VSWHERE%" -prerelease -products *
+rem     exit /b 1
+rem   )
+rem   if not exist "%VSINSTALLPATH%\VC\Auxiliary\Build\vcvars64.bat" (
+rem     echo Found "%VSINSTALLPATH%" via vswhere but it has no VC\Auxiliary\Build\vcvars64.bat - C++ tools component missing?
+rem     exit /b 1
+rem   )
+rem   call "%VSINSTALLPATH%\VC\Auxiliary\Build\vcvars64.bat"
+rem )
 if not exist v8 (
   mkdir v8
   cd v8
