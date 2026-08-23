@@ -157,8 +157,101 @@ CTypeInfo cargserrnoget[1] = {
 CTypeInfo rcerrnoget = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infoerrnoget = CFunctionInfo(rcerrnoget, 1, 
   cargserrnoget);
-CFunction pFerrnoget = CFunction((const void*)&lo::fastGetErrno, 
+CFunction pFerrnoget = CFunction((const void*)&lo::fastGetErrno,
   &infoerrnoget);
+
+// not declared in lo.h - a lo.cc-local, non-lo::-namespaced callback
+void EnvironSlow(const FunctionCallbackInfo<Value> &args);
+
+// Every native callback lo::Init() registers - both the ~40 plain
+// FunctionCallback slow paths (SET_METHOD) and, for each of the 8
+// SET_FAST_METHOD/SET_FAST_PROP fast-call sites, all three addresses
+// V8 needs (the CFunction object itself, its raw function pointer via
+// GetAddress(), and its CFunctionInfo via GetTypeInfo()) - a V8 startup
+// snapshot fails otherwise. Confirmed directly, in this order:
+// (1) with no external_references at all, CheckGlobalAndEternalHandles
+// fails with exactly 8 unserialized <Foreign> handles (matching the 8
+// fast-call sites); (2) registering only the 8 raw fast function
+// pointers left that error completely unchanged - wrong guess; (3)
+// disabling the fast sites entirely (proving lo::Init() as the cause)
+// surfaced a *different* crash, "Unknown external reference", pointing
+// at a plain slow callback instead - confirmed the ~40 SET_METHOD-only
+// callbacks need registering too; (4) checking Node.js's own real
+// solution to the identical problem (src/node_external_reference.h,
+// ExternalReferenceRegistry::Register(const v8::CFunction&)) confirmed
+// the missing piece: a CFunction site needs all three of &c_func,
+// c_func.GetAddress(), and c_func.GetTypeInfo() registered, not just
+// the raw function address. Given both v8::FunctionCallback and these
+// raw C function pointers/CFunctionInfo* all reduce to distinct address
+// values, listing them as one array here is fine - V8 only needs an
+// exact address match, not distinct C++ types. PLAN.md task 64 - this
+// fixed set covers lo::Init() itself; real lib/<binding> bindings each
+// add their own callbacks/fast-call sites here too, not yet
+// automated/generated (Node's own answer to that, confirmed above, is
+// a mandatory per-binding registration convention, not full inference).
+static const intptr_t lo_external_references[] = {
+  // plain FunctionCallback slow paths
+  (intptr_t)&lo::Print,
+  (intptr_t)&lo::HRTime,
+  (intptr_t)&lo::NextTick,
+  (intptr_t)&lo::RunMicroTasks,
+  (intptr_t)&lo::PumpMessageLoop,
+  (intptr_t)&lo::Arch,
+  (intptr_t)&lo::Os,
+  (intptr_t)&lo::Exit,
+  (intptr_t)&lo::GetErrno,
+  (intptr_t)&lo::SetErrno,
+  (intptr_t)&lo::Builtins,
+  (intptr_t)&lo::Builtin,
+  (intptr_t)&lo::Libraries,
+  (intptr_t)&lo::Library,
+  (intptr_t)&lo::SetModuleCallbacks,
+  (intptr_t)&lo::LoadModule,
+  (intptr_t)&lo::UnloadModule,
+  (intptr_t)&lo::EvaluateModule,
+  (intptr_t)&lo::GetIsolateStartAddress,
+  (intptr_t)&lo::GetLoCallbackAddress,
+  (intptr_t)&lo::Latin1Decode,
+  (intptr_t)&lo::Utf8Decode,
+  (intptr_t)&lo::Utf8Encode,
+  (intptr_t)&lo::latin1Encode,
+  (intptr_t)&lo::Utf8Length,
+  (intptr_t)&lo::Utf8EncodeInto,
+  (intptr_t)&lo::Utf8EncodeIntoAtOffset,
+  (intptr_t)&lo::WrapMemory,
+  (intptr_t)&lo::WrapMemoryShared,
+  (intptr_t)&lo::UnWrapMemory,
+  (intptr_t)&lo::GetAddress,
+  (intptr_t)&lo::ReadMemory,
+  (intptr_t)&lo::ReadMemoryAtOffset,
+  (intptr_t)&lo::SetFlags,
+  (intptr_t)&lo::GetMeta,
+  (intptr_t)&lo::HeapUsage,
+  (intptr_t)&lo::SharedMemoryUsage,
+  (intptr_t)&EnvironSlow,
+  (intptr_t)&lo::RunScript,
+  (intptr_t)&lo::RegisterCallback,
+  // fast-call sites: CFunction object, GetAddress(), GetTypeInfo() each
+  (intptr_t)&pFhrtime, (intptr_t)pFhrtime.GetAddress(),
+    (intptr_t)pFhrtime.GetTypeInfo(),
+  (intptr_t)&pFerrnoget, (intptr_t)pFerrnoget.GetAddress(),
+    (intptr_t)pFerrnoget.GetTypeInfo(),
+  (intptr_t)&pFerrnoset, (intptr_t)pFerrnoset.GetAddress(),
+    (intptr_t)pFerrnoset.GetTypeInfo(),
+  (intptr_t)&pFutf8length, (intptr_t)pFutf8length.GetAddress(),
+    (intptr_t)pFutf8length.GetTypeInfo(),
+  (intptr_t)&pFutf8encodeinto, (intptr_t)pFutf8encodeinto.GetAddress(),
+    (intptr_t)pFutf8encodeinto.GetTypeInfo(),
+  (intptr_t)&pFutf8encodeintoatoffset,
+    (intptr_t)pFutf8encodeintoatoffset.GetAddress(),
+    (intptr_t)pFutf8encodeintoatoffset.GetTypeInfo(),
+  (intptr_t)&pFreadmemory, (intptr_t)pFreadmemory.GetAddress(),
+    (intptr_t)pFreadmemory.GetTypeInfo(),
+  (intptr_t)&pFreadmemoryatoffset,
+    (intptr_t)pFreadmemoryatoffset.GetAddress(),
+    (intptr_t)pFreadmemoryatoffset.GetTypeInfo(),
+  0
+};
 
 // v8 isolate callbacks
 size_t lo::nearHeapLimitCallback(void* data, size_t current_heap_limit,
@@ -458,11 +551,15 @@ int lo::CreateIsolate(int argc, char** argv,
   int onexit, void* startup_data) {
   Isolate::CreateParams create_params;
   int statusCode = 0;
-  create_params.array_buffer_allocator = 
+  create_params.array_buffer_allocator =
     ArrayBuffer::Allocator::NewDefaultAllocator();
 //  create_params.array_buffer_allocator = new lo::SpecialArrayBufferAllocator();
   //create_params.embedder_wrapper_type_index = 0;
   //create_params.embedder_wrapper_object_index = 1;
+  // must match CreateSnapshot's SnapshotCreator external_references
+  // exactly (same array, same order) whenever startup_data is a real
+  // snapshot built with any set - harmless to always set.
+  create_params.external_references = lo_external_references;
   if (startup_data != NULL) {
     create_params.snapshot_blob = (const v8::StartupData*)startup_data;
   }
@@ -567,76 +664,72 @@ int lo::CreateIsolate(int argc, char** argv,
       NewStringType::kInternalized, strnlen(globalobj, 256)).ToLocalChecked(), 
       runtimeInstance).Check();
     TryCatch try_catch(isolate);
-    Local<PrimitiveArray> opts =
-        PrimitiveArray::New(isolate, lo::HostDefinedOptions::kLength);
-    opts->Set(isolate, lo::HostDefinedOptions::kType, 
-      Number::New(isolate, lo::ScriptType::kModule));
-    ScriptOrigin baseorigin(
-      String::NewFromUtf8(isolate, scriptname, NewStringType::kInternalized, strnlen(scriptname, 1024)).ToLocalChecked(),
-      0, // line offset
-      0,  // column offset
-      false, // is shared cross-origin
-      -1,  // script id
-      Local<Value>(), // source map url
-      false, // is opaque
-      false, // is wasm
-      true,  // is module
-      opts
-    );
-    Local<String> base;
-    if (main_len > 0) {
-      base = String::NewFromUtf8(isolate, main_src, NewStringType::kNormal, 
-        main_len).ToLocalChecked();
-    } else {
-      base = String::NewFromUtf8(isolate, js, NewStringType::kNormal, 
-        js_len).ToLocalChecked();
-    }
-    ScriptCompiler::Source basescript(base, baseorigin);
-    Local<Module> module;
-    if (!ScriptCompiler::CompileModule(isolate, &basescript).ToLocal(&module)) {
-      PrintStackTrace(isolate, try_catch);
-      return 1;
-    }
-/*
-    if (!ScriptCompiler::CompileModule(isolate, &basescript, ScriptCompiler::kConsumeCodeCache).ToLocal(&module)) {
-      PrintStackTrace(isolate, try_catch);
-      return 1;
-    }
-*/
-//    if (!ScriptCompiler::CompileModule(isolate, &basescript, v8::ScriptCompiler::CompileOptions::kConsumeCodeCache).ToLocal(&module)) {
-//      PrintStackTrace(isolate, try_catch);
-//      return 1;
-//    }
-//  v8::ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
-//  v8::ScriptCompiler::CachedData* cache = v8::ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
-//  fprintf(stderr, "source: %i path: %s cache: %i\n", base->Length(), "main", cache->length);
-
-
-    Maybe<bool> ok2 = module->InstantiateModule(context, 
-      lo::OnModuleInstantiate);
-    if (ok2.IsNothing()) {
+    if (startup_data == NULL) {
+      Local<PrimitiveArray> opts =
+          PrimitiveArray::New(isolate, lo::HostDefinedOptions::kLength);
+      opts->Set(isolate, lo::HostDefinedOptions::kType,
+        Number::New(isolate, lo::ScriptType::kModule));
+      ScriptOrigin baseorigin(
+        String::NewFromUtf8(isolate, scriptname, NewStringType::kInternalized, strnlen(scriptname, 1024)).ToLocalChecked(),
+        0, // line offset
+        0,  // column offset
+        false, // is shared cross-origin
+        -1,  // script id
+        Local<Value>(), // source map url
+        false, // is opaque
+        false, // is wasm
+        true,  // is module
+        opts
+      );
+      Local<String> base;
+      if (main_len > 0) {
+        base = String::NewFromUtf8(isolate, main_src, NewStringType::kNormal,
+          main_len).ToLocalChecked();
+      } else {
+        base = String::NewFromUtf8(isolate, js, NewStringType::kNormal,
+          js_len).ToLocalChecked();
+      }
+      ScriptCompiler::Source basescript(base, baseorigin);
+      Local<Module> module;
+      if (!ScriptCompiler::CompileModule(isolate, &basescript).ToLocal(&module)) {
+        PrintStackTrace(isolate, try_catch);
+        return 1;
+      }
+      Maybe<bool> ok2 = module->InstantiateModule(context,
+        lo::OnModuleInstantiate);
+      if (ok2.IsNothing()) {
+        if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
+          try_catch.ReThrow();
+        }
+        // TODO: cleanup before return
+        return 1;
+      }
+      errno = 0;
+      module->Evaluate(context).ToLocalChecked();
       if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
         try_catch.ReThrow();
+        return 1;
       }
-      // TODO: cleanup before return
-      return 1;
-    }
-/*
-    ScriptCompiler::CachedData* cache = ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
-    fprintf(stderr, "%i\n", cache->length);
-    int fd = open("script.data", O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-    int bytes = write(fd, cache->data, cache->length);
-    if (bytes < cache->length) {
-      fprintf(stderr, "error\n");
-    }
-    close(fd);
-*/
-
-    errno = 0;
-    module->Evaluate(context).ToLocalChecked();
-    if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
-      try_catch.ReThrow();
-      return 1;
+    } else {
+      // loaded from a snapshot - the default context already has
+      // main_src's module fully evaluated (definitions only, see
+      // CreateSnapshot). What's left is calling whatever per-invocation
+      // entry point that module exposed - globalThis.snapshotEntry, by
+      // convention, for this first pass (PLAN.md task 64).
+      Local<Value> entryVal;
+      if (globalInstance->Get(context, String::NewFromUtf8Literal(isolate,
+          "snapshotEntry", NewStringType::kInternalized)).ToLocal(&entryVal) &&
+          entryVal->IsFunction()) {
+        Local<Function> entry = Local<Function>::Cast(entryVal);
+        MaybeLocal<Value> result = entry->Call(context, globalInstance, 0,
+          nullptr);
+        if (result.IsEmpty()) {
+          if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
+            try_catch.ReThrow();
+          }
+          return 1;
+        }
+      }
     }
     if (onexit == 1) {
       Local<Value> func = globalInstance->Get(context, 
@@ -675,11 +768,113 @@ int lo::CreateIsolate(int argc, char** argv,
   return statusCode;
 }
 
-int lo::CreateIsolate(int argc, char** argv, const char* main_src, 
+int lo::CreateIsolate(int argc, char** argv, const char* main_src,
   unsigned int main_len, uint64_t start, const char* globalobj, int cleanup,
   int onexit, void* startup_data) {
-  return CreateIsolate(argc, argv, main_src, main_len, NULL, 0, NULL, 0, 0, 
+  return CreateIsolate(argc, argv, main_src, main_len, NULL, 0, NULL, 0, 0,
     start, globalobj, "main.js", cleanup, onexit, startup_data);
+}
+
+// builds a V8 startup snapshot: runs main_src (definitions only - no
+// per-invocation args/workerSource/addresses/timing) to completion in a
+// dedicated isolate that SnapshotCreator owns outright, then serializes
+// the resulting heap/context to out_path. See PLAN.md task 64.
+//
+// Deliberately does NOT call lo::Init()/attach the RUNTIME (lo.*)
+// object here - confirmed directly against real V8 source
+// (src/api/api.cc:1344-1361) that any FunctionTemplate with a
+// SET_FAST_METHOD/SET_FAST_PROP-style CFunction overload gets wrapped
+// in i::Managed<i::CFunctionWithSignature>, V8's mechanism for an
+// embedder-owned shared_ptr kept alive via a global handle - which has
+// no serialization support at all (confirmed empirically first: a
+// snapshot including lo::Init()'s runtime object fails
+// CheckGlobalAndEternalHandles with exactly as many unserialized
+// <Foreign> handles as lo::Init() has fast-call sites, completely
+// unaffected by any external_references fix, since that check is a
+// different V8 mechanism entirely - global handles vs. resolving
+// pointers referenced from serialized objects). Not fixable from the
+// embedder side. Since main_src only *references* lo.* lazily inside
+// function bodies (never at top-level, so nothing needs it to exist
+// yet at snapshot-build time) and CreateIsolate already
+// unconditionally rebuilds+attaches the real runtime object before
+// ever reaching the snapshot-vs-fresh branch below, omitting it here
+// is correct, not a workaround - matches Node.js's own snapshot
+// support, which requires the same explicit external-reference
+// registration for every native binding (src/node_external_reference.h,
+// src/node_snapshotable.cc's ValidateBindings), and could only work
+// for CFunction-fast-call-shaped bindings at all with a per-binding
+// registration convention already in the same category as this one.
+int lo::CreateSnapshot(const char* main_src, unsigned int main_len,
+  const char* out_path) {
+  Isolate::CreateParams create_params;
+  create_params.array_buffer_allocator =
+    ArrayBuffer::Allocator::NewDefaultAllocator();
+  v8::SnapshotCreator creator(create_params);
+  Isolate *isolate = creator.GetIsolate();
+  {
+    Isolate::Scope isolate_scope(isolate);
+    HandleScope handle_scope(isolate);
+    Local<ObjectTemplate> global = ObjectTemplate::New(isolate);
+    Local<Context> context = Context::New(isolate, NULL, global);
+    Context::Scope context_scope(context);
+    Local<Object> globalInstance = context->Global();
+    globalInstance->Set(context, String::NewFromUtf8Literal(isolate,
+      "global", NewStringType::kInternalized), globalInstance).Check();
+    TryCatch try_catch(isolate);
+    Local<PrimitiveArray> opts =
+        PrimitiveArray::New(isolate, lo::HostDefinedOptions::kLength);
+    opts->Set(isolate, lo::HostDefinedOptions::kType,
+      Number::New(isolate, lo::ScriptType::kModule));
+    ScriptOrigin baseorigin(
+      String::NewFromUtf8Literal(isolate, "snapshot"),
+      0, 0, false, -1, Local<Value>(), false, false, true, opts);
+    Local<String> src = String::NewFromUtf8(isolate, main_src,
+      NewStringType::kNormal, main_len).ToLocalChecked();
+    ScriptCompiler::Source basescript(src, baseorigin);
+    Local<Module> module;
+    if (!ScriptCompiler::CompileModule(isolate, &basescript).ToLocal(&module)) {
+      lo::PrintStackTrace(isolate, try_catch);
+      return 1;
+    }
+    Maybe<bool> ok = module->InstantiateModule(context,
+      lo::OnModuleInstantiate);
+    if (ok.IsNothing()) {
+      if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
+        lo::PrintStackTrace(isolate, try_catch);
+      }
+      return 1;
+    }
+    if (module->Evaluate(context).IsEmpty()) {
+      if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
+        lo::PrintStackTrace(isolate, try_catch);
+      }
+      return 1;
+    }
+    creator.SetDefaultContext(context);
+  }
+  // CreateBlob() must not be called from within a handle scope - the
+  // block above has already closed.
+  v8::StartupData blob = creator.CreateBlob(
+    v8::SnapshotCreator::FunctionCodeHandling::kClear);
+  if (blob.data == nullptr) {
+    fprintf(stderr, "lo: snapshot creation failed\n");
+    return 1;
+  }
+  int fd = open(out_path, O_WRONLY | O_CREAT | O_TRUNC,
+    S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+  if (fd < 0) {
+    fprintf(stderr, "lo: unable to open %s for writing\n", out_path);
+    delete[] blob.data;
+    return 1;
+  }
+  long written = write(fd, blob.data, blob.raw_size);
+  close(fd);
+  delete[] blob.data;
+  if (written < blob.raw_size) {
+    fprintf(stderr, "lo: short write to %s\n", out_path);
+    return 1;
+  }
+  return 0;
 }
 
 // TODO: in libraries, the init code is very slow and it never frees the
@@ -1563,14 +1758,13 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "print", Print);
   // OK
   SET_FAST_METHOD(isolate, target, "hrtime", &pFhrtime, HRTime);
-  //SET_METHOD(isolate, target, "hrtime", HRTime);
   SET_METHOD(isolate, target, "nextTick", NextTick);
   SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);
   SET_METHOD(isolate, target, "pumpMessageLoop", PumpMessageLoop);
   SET_METHOD(isolate, target, "arch", Arch);
   SET_METHOD(isolate, target, "os", Os);
   SET_METHOD(isolate, target, "exit", Exit);
-  SET_FAST_PROP(isolate, target, "errno", &pFerrnoget, GetErrno, &pFerrnoset, 
+  SET_FAST_PROP(isolate, target, "errno", &pFerrnoget, GetErrno, &pFerrnoset,
     SetErrno);
 
   SET_METHOD(isolate, target, "builtins", Builtins);
@@ -1593,10 +1787,10 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
 
   // OK
   SET_FAST_METHOD(isolate, target, "utf8Length", &pFutf8length, Utf8Length);
-  SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto, 
+  SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto,
     Utf8EncodeInto);
   // OK
-  SET_FAST_METHOD(isolate, target, "utf8EncodeIntoAtOffset", 
+  SET_FAST_METHOD(isolate, target, "utf8EncodeIntoAtOffset",
     &pFutf8encodeintoatoffset, Utf8EncodeIntoAtOffset);
 
   SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
@@ -1608,7 +1802,7 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   // OK
   SET_FAST_METHOD(isolate, target, "readMemory", &pFreadmemory, ReadMemory);
   // OK
-  SET_FAST_METHOD(isolate, target, "readMemoryAtOffset", &pFreadmemoryatoffset, 
+  SET_FAST_METHOD(isolate, target, "readMemoryAtOffset", &pFreadmemoryatoffset,
     ReadMemoryAtOffset);
 
   SET_METHOD(isolate, target, "setFlags", SetFlags);

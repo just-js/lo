@@ -200,6 +200,11 @@ DLL_PUBLIC int CreateIsolate(int argc, char** argv,
 DLL_PUBLIC int CreateIsolate(int argc, char** argv,
   const char* main, unsigned int main_len, uint64_t start,
   const char* globalobj, int cleanup, int onexit, void* startup_data);
+// builds a V8 startup snapshot by running main_src (definitions only -
+// no per-invocation state) in a dedicated, throwaway isolate, then
+// writes the resulting blob to out_path. see PLAN.md task 64.
+DLL_PUBLIC int CreateSnapshot(const char* main_src, unsigned int main_len,
+  const char* out_path);
 void PrintStackTrace(v8::Isolate* isolate, const v8::TryCatch& try_catch);
 void PromiseRejectCallback(v8::PromiseRejectMessage message);
 void FreeMemory(void* buf, size_t length, void* data);

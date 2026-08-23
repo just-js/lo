@@ -12,6 +12,16 @@ int main(int argc, char** argv) {
     fprintf(stdout, "%s\n", VERSION);
     return 0;
   }
+  // build-time only: produce a V8 startup snapshot of this binary's own
+  // main_js (definitions only - see lo::CreateSnapshot/PLAN.md task 64)
+  // instead of running normally. build_runtime() invokes this on the
+  // freshly-linked binary, then re-links a second time embedding the
+  // resulting blob - never reached by a real deployed run.
+  if (argc == 3 && strncmp(argv[1], "--build-snapshot", 16) == 0) {
+    lo::Setup(&argc, argv, v8flags, _v8_threads, _v8flags_from_commandline);
+    register_builtins();
+    return lo::CreateSnapshot(main_js, main_js_len, argv[2]);
+  }
   // record the start time - this will be made available to JS so we can 
   // measure time to bootstrap the runtime
   uint64_t starttime = lo::hrtime();
