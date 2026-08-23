@@ -710,12 +710,18 @@ int lo::CreateIsolate(int argc, char** argv,
         try_catch.ReThrow();
         return 1;
       }
-    } else {
-      // loaded from a snapshot - the default context already has
-      // main_src's module fully evaluated (definitions only, see
-      // CreateSnapshot). What's left is calling whatever per-invocation
-      // entry point that module exposed - globalThis.snapshotEntry, by
-      // convention, for this first pass (PLAN.md task 64).
+    }
+    // Call the same well-known entry point either way - whether the
+    // module was just freshly compiled/evaluated above, or (startup_data
+    // != NULL) already sat fully evaluated in a restored snapshot
+    // context. globalThis.snapshotEntry, by convention, for this first
+    // pass (PLAN.md task 64). Deliberately unconditional: a script using
+    // this convention must behave identically whether or not it was
+    // actually loaded from a snapshot - the alternative (only calling it
+    // in the snapshot branch) means the exact same source silently does
+    // nothing when built without a snapshot, which is surprising rather
+    // than a real design choice.
+    {
       Local<Value> entryVal;
       if (globalInstance->Get(context, String::NewFromUtf8Literal(isolate,
           "snapshotEntry", NewStringType::kInternalized)).ToLocal(&entryVal) &&
@@ -805,7 +811,7 @@ int lo::CreateIsolate(int argc, char** argv, const char* main_src,
 // for CFunction-fast-call-shaped bindings at all with a per-binding
 // registration convention already in the same category as this one.
 int lo::CreateSnapshot(const char* main_src, unsigned int main_len,
-  const char* out_path) {
+  const char* out_path, int keep_code) {
   Isolate::CreateParams create_params;
   create_params.array_buffer_allocator =
     ArrayBuffer::Allocator::NewDefaultAllocator();
@@ -855,7 +861,8 @@ int lo::CreateSnapshot(const char* main_src, unsigned int main_len,
   // CreateBlob() must not be called from within a handle scope - the
   // block above has already closed.
   v8::StartupData blob = creator.CreateBlob(
-    v8::SnapshotCreator::FunctionCodeHandling::kClear);
+    keep_code ? v8::SnapshotCreator::FunctionCodeHandling::kKeep
+              : v8::SnapshotCreator::FunctionCodeHandling::kClear);
   if (blob.data == nullptr) {
     fprintf(stderr, "lo: snapshot creation failed\n");
     return 1;

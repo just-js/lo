@@ -202,9 +202,12 @@ DLL_PUBLIC int CreateIsolate(int argc, char** argv,
   const char* globalobj, int cleanup, int onexit, void* startup_data);
 // builds a V8 startup snapshot by running main_src (definitions only -
 // no per-invocation state) in a dedicated, throwaway isolate, then
-// writes the resulting blob to out_path. see PLAN.md task 64.
+// writes the resulting blob to out_path. keep_code selects
+// FunctionCodeHandling::kKeep (retain already-compiled bytecode/code)
+// over the default kClear (discard it, recompile lazily on first real
+// call after loading) - see PLAN.md task 64.
 DLL_PUBLIC int CreateSnapshot(const char* main_src, unsigned int main_len,
-  const char* out_path);
+  const char* out_path, int keep_code);
 void PrintStackTrace(v8::Isolate* isolate, const v8::TryCatch& try_catch);
 void PromiseRejectCallback(v8::PromiseRejectMessage message);
 void FreeMemory(void* buf, size_t length, void* data);

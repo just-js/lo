@@ -17,10 +17,12 @@ int main(int argc, char** argv) {
   // instead of running normally. build_runtime() invokes this on the
   // freshly-linked binary, then re-links a second time embedding the
   // resulting blob - never reached by a real deployed run.
-  if (argc == 3 && strncmp(argv[1], "--build-snapshot", 16) == 0) {
+  if ((argc == 3 || argc == 4) &&
+      strncmp(argv[1], "--build-snapshot", 16) == 0) {
+    int keep_code = (argc == 4 && strncmp(argv[3], "--keep", 6) == 0) ? 1 : 0;
     lo::Setup(&argc, argv, v8flags, _v8_threads, _v8flags_from_commandline);
     register_builtins();
-    return lo::CreateSnapshot(main_js, main_js_len, argv[2]);
+    return lo::CreateSnapshot(main_js, main_js_len, argv[2], keep_code);
   }
   // record the start time - this will be made available to JS so we can 
   // measure time to bootstrap the runtime
