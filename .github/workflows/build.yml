@@ -195,3 +195,32 @@ jobs:
           # error propagation between its own internal commands, so an
           # earlier failure doesn't stop the script or fail the step)
           if-no-files-found: error
+
+  # Verification-only, not wired into build-windows above yet. Confirms
+  # install-llvm.cmd's mechanism actually works on a real windows-2025
+  # runner before it replaces build-windows's current implicit reliance
+  # on whatever clang-cl VS2026 happens to bundle (which is what's
+  # failing against V8 14.9 - see V8-LIBCXX-CLANG-FLOOR.md in the claude
+  # sandbox repo for the full writeup). Deliberately isolated from
+  # build-windows so this job's own pass/fail is never masked by, or
+  # blamed on, anything else in the real build. Two separate things being
+  # checked, not just "does the installer run": (1) does the LLVM GitHub
+  # Release installer's /S /D= silent install actually work here, (2)
+  # does GITHUB_PATH genuinely carry the new clang forward into a later,
+  # separate step - each CI step is its own fresh process, so this is
+  # not the same question as "did the install step itself see clang."
+  # Safe to delete once confirmed and folded into build-windows for real.
+  check-windows-llvm-install:
+    name: check windows llvm install
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v3
+      - name: install llvm
+        shell: cmd
+        run: |
+          call install-llvm.cmd
+      - name: confirm clang is on PATH in a later, separate step
+        shell: cmd
+        run: |
+          clang --version
+          clang++ --version
