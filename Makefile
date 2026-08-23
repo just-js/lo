@@ -31,7 +31,12 @@ ARCH=x64
 os=linux
 TARGET=${RUNTIME}
 LIBS=-ldl -lcurl -lssl -lz
-V8_FLAGS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS
+# V8_COMPRESS_POINTERS must match repos/v8's own v8_enable_pointer_compression
+# (all 6 args.*.gn platform files) or V8::Initialize() hard-aborts with
+# "Embedder-vs-V8 build configuration mismatch" (real CI failure, run
+# 32610257944) - api.cc's build_config compatibility check compares this
+# embedder-side define against what libv8_monolith.a was actually built with.
+V8_FLAGS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS -DV8_COMPRESS_POINTERS
 LIB_DIRS=
 
 ifeq ($(OS),Windows_NT)
