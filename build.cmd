@@ -94,6 +94,15 @@ if "%WindowsSdkDir%"== "" (
   call "C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
 rem  call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 )
+rem vcvars64.bat above puts VS's own bundled clang-cl on PATH - not new
+rem enough for whatever Clang-version floor V8's vendored libc++
+rem currently requires (real, recurring: forced the VS2022->VS2026 CI
+rem switch once already for the same reason, then broke again against
+rem V8 14.9's "Libc++ only supports Clang 21 and later"). Must run AFTER
+rem vcvars64.bat, not before - it prepends to PATH, so this needs to
+rem come second to actually win. See V8-LIBCXX-CLANG-FLOOR.md in the
+rem claude sandbox repo for the full writeup.
+call install-llvm.cmd
 rem set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
 rem if "%WindowsSdkDir%"== "" (
 rem   "%VSWHERE%" -latest -prerelease -products * -version "[18.0,19.0)" -property installationPath > "%TEMP%\vswhere-out.txt"
