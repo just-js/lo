@@ -26,10 +26,17 @@ rem reference rather than guessed: Microsoft's own Open Enclave SDK CI
 rem (openenclave/openenclave/scripts/install-windows-prereqs.ps1,
 rem Install-LLVM) uses this exact combination. Note /D= must be the last
 rem argument and unquoted - NSIS convention, not a typo.
+rem Installs to a version-qualified directory, not the generic
+rem "%ProgramFiles%\LLVM" - confirmed via a real CI run that GitHub's own
+rem windows-2025 image already ships an LLVM there (20.1.8, below the
+rem floor we need), and an earlier version of this script's plain
+rem existence check treated that as "already installed" and silently
+rem skipped installing anything new. A version-qualified path can never
+rem collide with whatever a runner image happens to pre-ship.
 set LLVM_VERSION=22.1.8
 set LLVM_INSTALLER=LLVM-%LLVM_VERSION%-win64.exe
 set LLVM_URL=https://github.com/llvm/llvm-project/releases/download/llvmorg-%LLVM_VERSION%/%LLVM_INSTALLER%
-set LLVM_DIR=%ProgramFiles%\LLVM
+set LLVM_DIR=%ProgramFiles%\LLVM-%LLVM_VERSION%
 
 if exist "%LLVM_DIR%\bin\clang.exe" (
   echo LLVM already installed at %LLVM_DIR%
