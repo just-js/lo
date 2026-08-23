@@ -1,3 +1,10 @@
+# any extensionless file in the repo root (build binaries like lo/zero/big)
+/*
+!/*.*
+!/*/
+!LICENSE
+!Makefile
+
 v8
 *.o
 *.a
