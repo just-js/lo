@@ -62,6 +62,7 @@ extern char _binary_runtime_base_config_js_end[];
 extern char _binary_runtime_lo_config_js_end[];
 extern char _binary_globals_d_ts_end[];
 
+
 #endif
 
 extern "C" {
@@ -144,6 +145,7 @@ static unsigned int _v8flags_from_commandline = 1;
 static unsigned int _v8_threads = 2;
 static unsigned int _v8_cleanup = 0;
 static unsigned int _on_exit = 0;
+static const v8::StartupData* lo_snapshot_data = nullptr;
 #ifdef __linux__
 
 #endif

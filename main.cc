@@ -37,7 +37,8 @@ int main(int argc, char** argv) {
   // create a new isolate on the main thread. this will block until the 
   // isolate exits
   lo::CreateIsolate(argc, argv, main_js, main_js_len, index_js, index_js_len, 0,
-    0, 0, starttime, RUNTIME, "main.js", _v8_cleanup, _on_exit, nullptr);
+    0, 0, starttime, RUNTIME, "main.js", _v8_cleanup, _on_exit,
+    (void*)lo_snapshot_data);
 
   lo_shutdown(_v8_cleanup);
   return 0;
