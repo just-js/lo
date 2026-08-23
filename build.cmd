@@ -1,6 +1,6 @@
 @echo off
-set VERSION=0.0.29-pre
-set V8=14.8
+set VERSION=0.0.30-pre
+set V8=14.9
 set RUNTIME=lo
 rem V8_COMPRESS_POINTERS must match repos/v8's own v8_enable_pointer_compression
 rem (all 6 args.*.gn platform files) or V8::Initialize() hard-aborts with
