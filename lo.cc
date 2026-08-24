@@ -51,8 +51,13 @@ using v8::ModuleRequest;
 using v8::CFunctionInfo;
 using v8::OOMDetails;
 using v8::V8;
+#if LO_V8_PROMISE_REJECT_EVENT_RENAMED
+using v8::kDeprecatedPromiseRejectAfterResolved;
+using v8::kDeprecatedPromiseResolveAfterResolved;
+#else
 using v8::kPromiseRejectAfterResolved;
 using v8::kPromiseResolveAfterResolved;
+#endif
 using v8::kPromiseHandlerAddedAfterReject;
 using v8::Script;
 using v8::HeapStatistics;
@@ -323,8 +328,13 @@ void lo::PrintStackTrace(Isolate* isolate, const TryCatch& try_catch) {
 }
 
 void lo::PromiseRejectCallback(PromiseRejectMessage data) {
+#if LO_V8_PROMISE_REJECT_EVENT_RENAMED
+  if (data.GetEvent() == kDeprecatedPromiseRejectAfterResolved ||
+      data.GetEvent() == kDeprecatedPromiseResolveAfterResolved) {
+#else
   if (data.GetEvent() == kPromiseRejectAfterResolved ||
       data.GetEvent() == kPromiseResolveAfterResolved) {
+#endif
     return;
   }
   Isolate* isolate = v8::Isolate::GetCurrent();

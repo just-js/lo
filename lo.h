@@ -55,6 +55,17 @@
 #define LO_V8_FIXEDARRAY_GET_NO_CONTEXT 0
 #endif
 
+// V8 15.1 renamed the (already-deprecated, presumably headed for actual
+// removal) PromiseRejectEvent::kPromise{Reject,Resolve}AfterResolved to
+// kDeprecatedPromise{Reject,Resolve}AfterResolved - same enum values (2/3),
+// name only. Confirmed via include/v8-promise.h: present under the old
+// names through 15.0, renamed at 15.1.
+#if V8_MAJOR_VERSION > 15 || (V8_MAJOR_VERSION == 15 && V8_MINOR_VERSION >= 1)
+#define LO_V8_PROMISE_REJECT_EVENT_RENAMED 1
+#else
+#define LO_V8_PROMISE_REJECT_EVENT_RENAMED 0
+#endif
+
 #ifdef __MACH__
 #include <mach/clock.h>
 #include <mach/mach.h>
