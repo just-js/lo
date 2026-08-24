@@ -297,11 +297,53 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 #endif
   SET_MODULE(isolate, target, "epoll", module);
 }
+
+// Every native callback this binding registers, both plain (SET_METHOD)
+// and fast-call (SET_FAST_METHOD/SET_FAST_PROP), needed in
+// SnapshotCreator's external_references before this binding's own
+// Init() can safely run inside lo::CreateSnapshot's isolate - PLAN.md
+// task 66. Null-terminated, same convention as lo.cc's own
+// lo_external_references[].
+static const intptr_t epoll_external_references[] = {
+  (intptr_t)&createSlow,
+  (intptr_t)&pFcreate, (intptr_t)pFcreate.GetAddress(),
+    (intptr_t)pFcreate.GetTypeInfo(),
+  (intptr_t)&modifySlow,
+  (intptr_t)&pFmodify, (intptr_t)pFmodify.GetAddress(),
+    (intptr_t)pFmodify.GetTypeInfo(),
+  (intptr_t)&waitSlow,
+  (intptr_t)&pFwait, (intptr_t)pFwait.GetAddress(),
+    (intptr_t)pFwait.GetTypeInfo(),
+  (intptr_t)&pwaitSlow,
+  (intptr_t)&pFpwait, (intptr_t)pFpwait.GetAddress(),
+    (intptr_t)pFpwait.GetTypeInfo(),
+  (intptr_t)&pwait2Slow,
+  (intptr_t)&pFpwait2, (intptr_t)pFpwait2.GetAddress(),
+    (intptr_t)pFpwait2.GetTypeInfo(),
+  (intptr_t)&closeSlow,
+  (intptr_t)&pFclose, (intptr_t)pFclose.GetAddress(),
+    (intptr_t)pFclose.GetTypeInfo(),
+  (intptr_t)&prctlSlow,
+  (intptr_t)&pFprctl, (intptr_t)pFprctl.GetAddress(),
+    (intptr_t)pFprctl.GetTypeInfo(),
+
+#ifdef __linux__
+
+#endif
+#ifdef __MACH__
+
+#endif
+  0
+};
+
 } // namespace epoll
 } // namespace lo
 
 extern "C"  {
   DLL_PUBLIC void* _register_epoll() {
     return (void*)lo::epoll::Init;
+  }
+  DLL_PUBLIC const intptr_t* _external_references_epoll() {
+    return lo::epoll::epoll_external_references;
   }
 }

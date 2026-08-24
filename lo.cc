@@ -1,4 +1,5 @@
 #include <map>
+#include <vector>
 #include "lo.h"
 
 using v8::String;
@@ -544,8 +545,10 @@ void onJitEvent (const v8::JitCodeEvent* ev) {
   fprintf(stderr, "onJitEvent %i\n", ev->type);
 }
 
-int lo::CreateIsolate(int argc, char** argv, 
-  const char* main_src, unsigned int main_len, 
+extern "C" const intptr_t* _external_references_core();
+
+int lo::CreateIsolate(int argc, char** argv,
+  const char* main_src, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
   uint64_t start, const char* globalobj, const char* scriptname, int cleanup,
   int onexit, void* startup_data) {
@@ -558,8 +561,26 @@ int lo::CreateIsolate(int argc, char** argv,
   //create_params.embedder_wrapper_object_index = 1;
   // must match CreateSnapshot's SnapshotCreator external_references
   // exactly (same array, same order) whenever startup_data is a real
-  // snapshot built with any set - harmless to always set.
-  create_params.external_references = lo_external_references;
+  // snapshot built with any set - harmless to always set. The blob
+  // doesn't store raw pointers (meaningless across separate process
+  // runs) - it stores indices into this array, resolved back to real
+  // addresses at deserialize time using *this* array. A mismatch here
+  // isn't a crash-on-load - it silently resolves later indices (here:
+  // core's) to garbage, only surfacing the moment that restored object
+  // actually gets touched. Real bug hit and fixed live, not guessed -
+  // this only had lo_external_references, core's own combined array
+  // (added to CreateSnapshot) was never mirrored here. Duplicated
+  // rather than shared for now, same as args/isolate-callbacks above -
+  // refactor later.
+  std::vector<intptr_t> combined_refs;
+  for (const intptr_t* p = lo_external_references; *p; p++) {
+    combined_refs.push_back(*p);
+  }
+  for (const intptr_t* p = _external_references_core(); *p; p++) {
+    combined_refs.push_back(*p);
+  }
+  combined_refs.push_back(0);
+  create_params.external_references = combined_refs.data();
   if (startup_data != NULL) {
     create_params.snapshot_blob = (const v8::StartupData*)startup_data;
   }
@@ -810,22 +831,105 @@ int lo::CreateIsolate(int argc, char** argv, const char* main_src,
 // src/node_snapshotable.cc's ValidateBindings), and could only work
 // for CFunction-fast-call-shaped bindings at all with a per-binding
 // registration convention already in the same category as this one.
+// PLAN.md task 66 - hardcoded to `core` specifically for this
+// experiment, same as the hardcoded lo::Init(isolate, runtime) call
+// below it. A real multi-binding-aware CreateSnapshot would look this
+// up per binding the runtime actually declares, not name a single one
+// here - not built yet, this is validating the mechanism first.
+extern "C" const intptr_t* _external_references_core();
+
 int lo::CreateSnapshot(const char* main_src, unsigned int main_len,
-  const char* out_path, int keep_code) {
+  const char* out_path, int keep_code, int argc, char** argv) {
+  // lo_external_references[] alone isn't enough once any linked-in
+  // binding (here: core) also has its own callbacks that might end up
+  // in the frozen graph - concatenate every binding's external
+  // references into one combined, null-terminated array. Must outlive
+  // the SnapshotCreator construction below, hence a function-local
+  // std::vector rather than a temporary.
+  std::vector<intptr_t> combined_refs;
+  for (const intptr_t* p = lo_external_references; *p; p++) {
+    combined_refs.push_back(*p);
+  }
+  for (const intptr_t* p = _external_references_core(); *p; p++) {
+    combined_refs.push_back(*p);
+  }
+  combined_refs.push_back(0);
+
   Isolate::CreateParams create_params;
   create_params.array_buffer_allocator =
     ArrayBuffer::Allocator::NewDefaultAllocator();
+  create_params.external_references = combined_refs.data();
   v8::SnapshotCreator creator(create_params);
   Isolate *isolate = creator.GetIsolate();
   {
     Isolate::Scope isolate_scope(isolate);
     HandleScope handle_scope(isolate);
+
+    // Same isolate-level callbacks CreateIsolate always sets - missing
+    // SetHostImportModuleDynamicallyCallback in particular is a likely
+    // cause of a bare "Not supported" from V8 itself the moment
+    // anything hits a dynamic import() with no callback registered to
+    // handle it. Duplicated rather than shared, same as the args/argv
+    // block below - refactor later.
+    isolate->SetCaptureStackTraceForUncaughtExceptions(true, 1000,
+      StackTrace::kDetailed);
+    isolate->SetPromiseRejectCallback(PromiseRejectCallback);
+    isolate->SetHostImportModuleDynamicallyCallback(OnDynamicImport);
+
+    std::map<int, Global<Module>> module_map;
+    isolate->SetData(0, &module_map);
+
     Local<ObjectTemplate> global = ObjectTemplate::New(isolate);
+    Local<ObjectTemplate> runtime = ObjectTemplate::New(isolate);
+    lo::Init(isolate, runtime);
+
     Local<Context> context = Context::New(isolate, NULL, global);
     Context::Scope context_scope(context);
     Local<Object> globalInstance = context->Global();
     globalInstance->Set(context, String::NewFromUtf8Literal(isolate,
       "global", NewStringType::kInternalized), globalInstance).Check();
+
+    Local<Object> runtimeInstance = runtime->NewInstance(context).ToLocalChecked();
+
+    // Only ever true here - lo::Init()/runtimeInstance get rebuilt fresh
+    // on every real invocation via CreateIsolate regardless of snapshot
+    // use (PLAN.md task 64/66), and that path never sets this, so it's
+    // undefined (falsy) at real runtime automatically, no explicit reset
+    // needed. Lets main.js (or any loaded module) detect "am I running
+    // during the snapshot build pass" and skip real dispatch/side effects
+    // - same convention as Node's own v8.startupSnapshot.isBuildingSnapshot().
+    runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate,
+      "isBuildingSnapshot", NewStringType::kInternalized),
+      Boolean::New(isolate, true)).Check();
+
+    // Same fields CreateIsolate always sets fresh, from real argc/argv,
+    // on every real invocation regardless of snapshot use - duplicated
+    // here rather than shared, since this build-time argv/argc (whatever
+    // main.cc's own --build-snapshot invocation happened to be called
+    // with) is only ever used to get main.js's bootstrap dispatch logic
+    // (args.length checks etc.) past a crash during this one-off build
+    // pass. CreateIsolate's own unconditional re-set of these same
+    // fields on every real invocation - snapshot-loaded or not - means
+    // this build-time value never leaks into real usage; refactor to
+    // share this with CreateIsolate later instead of duplicating.
+    Local<Array> arguments = Array::New(isolate);
+    for (int i = 0; i < argc; i++) {
+      arguments->Set(context, i, String::NewFromUtf8(isolate, argv[i],
+        NewStringType::kNormal, strlen(argv[i])).ToLocalChecked()).Check();
+    }
+    runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, "args",
+      NewStringType::kInternalized), arguments).Check();
+    runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, "argv",
+      NewStringType::kInternalized),
+      Number::New(isolate, (uint64_t)argv)).Check();
+    runtimeInstance->Set(context, String::NewFromUtf8Literal(isolate, "argc",
+      NewStringType::kInternalized),
+      Number::New(isolate, argc)).Check();
+
+    globalInstance->Set(context, String::NewFromUtf8(isolate, "lo",
+      NewStringType::kInternalized, 2).ToLocalChecked(),
+      runtimeInstance).Check();
+
     TryCatch try_catch(isolate);
     Local<PrimitiveArray> opts =
         PrimitiveArray::New(isolate, lo::HostDefinedOptions::kLength);
@@ -1088,14 +1192,11 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
 
   Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
   Local<Object> data = tpl->NewInstance(context).ToLocalChecked();
+
+/*
   if (args.Length() == 2) {
     v8::ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
     v8::ScriptCompiler::CachedData* cache = v8::ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
-/*
-    std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
-        (void*)cache->data, cache->length, v8::BackingStore::EmptyDeleter, nullptr);
-    Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-*/
     Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
     tpl->SetInternalFieldCount(2);
     Local<Object> d = tpl->NewInstance(context).ToLocalChecked();
@@ -1105,11 +1206,11 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
 #else
     d->SetAlignedPointerInInternalField(1, cache);
 #endif
-//    d->Set(context, String::NewFromUtf8(isolate, "buffer")
-//      .ToLocalChecked(), ab).Check();
     data->Set(context, String::NewFromUtf8(isolate, "cache")
       .ToLocalChecked(), d).Check();
   }
+*/
+
   Local<Array> requests = Array::New(isolate);
   Local<FixedArray> module_requests = module->GetModuleRequests();
   int length = module_requests->Length();
@@ -1763,17 +1864,12 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
     V8::GetVersion()).ToLocalChecked());
   SET_MODULE(isolate, target, "version", version);
   SET_METHOD(isolate, target, "print", Print);
-  // OK
-  SET_FAST_METHOD(isolate, target, "hrtime", &pFhrtime, HRTime);
   SET_METHOD(isolate, target, "nextTick", NextTick);
   SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);
   SET_METHOD(isolate, target, "pumpMessageLoop", PumpMessageLoop);
   SET_METHOD(isolate, target, "arch", Arch);
   SET_METHOD(isolate, target, "os", Os);
   SET_METHOD(isolate, target, "exit", Exit);
-  SET_FAST_PROP(isolate, target, "errno", &pFerrnoget, GetErrno, &pFerrnoset,
-    SetErrno);
-
   SET_METHOD(isolate, target, "builtins", Builtins);
   SET_METHOD(isolate, target, "builtin", Builtin);
   SET_METHOD(isolate, target, "libraries", Libraries);
@@ -1783,44 +1879,37 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "unloadModule", UnloadModule);
   SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
   SET_METHOD(isolate, target, "isolate_start_address", GetIsolateStartAddress);
-
   SET_METHOD(isolate, target, "lo_callback_address", GetLoCallbackAddress);
-
   SET_METHOD(isolate, target, "latin1Decode", Latin1Decode);
   SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
   SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
   SET_METHOD(isolate, target, "latin1Encode", latin1Encode);
-  //SET_METHOD(isolate, target, "utf8EncodeInto", Utf8EncodeInto);
-
-  // OK
-  SET_FAST_METHOD(isolate, target, "utf8Length", &pFutf8length, Utf8Length);
-  SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto,
-    Utf8EncodeInto);
-  // OK
-  SET_FAST_METHOD(isolate, target, "utf8EncodeIntoAtOffset",
-    &pFutf8encodeintoatoffset, Utf8EncodeIntoAtOffset);
-
   SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
   SET_METHOD(isolate, target, "wrapMemoryShared", WrapMemoryShared);
   SET_METHOD(isolate, target, "unwrapMemory", UnWrapMemory);
-
-  // 50% throughput
   SET_METHOD(isolate, target, "getAddress", GetAddress);
-  // OK
-  SET_FAST_METHOD(isolate, target, "readMemory", &pFreadmemory, ReadMemory);
-  // OK
-  SET_FAST_METHOD(isolate, target, "readMemoryAtOffset", &pFreadmemoryatoffset,
-    ReadMemoryAtOffset);
-
   SET_METHOD(isolate, target, "setFlags", SetFlags);
   SET_METHOD(isolate, target, "get_meta", GetMeta);
   SET_METHOD(isolate, target, "heap_usage", HeapUsage);
   SET_METHOD(isolate, target, "shm_usage", SharedMemoryUsage);
-
   SET_METHOD(isolate, target, "environ", EnvironSlow);
-
   SET_METHOD(isolate, target, "runScript", RunScript);
   SET_METHOD(isolate, target, "registerCallback", RegisterCallback);
+  SET_METHOD(isolate, target, "hrtime", HRTime);
+/*
+  SET_FAST_METHOD(isolate, target, "utf8EncodeIntoAtOffset",
+    &pFutf8encodeintoatoffset, Utf8EncodeIntoAtOffset);
+  SET_FAST_METHOD(isolate, target, "hrtime", &pFhrtime, HRTime);
+  SET_FAST_METHOD(isolate, target, "utf8Length", &pFutf8length, Utf8Length);
+  SET_FAST_METHOD(isolate, target, "utf8EncodeInto", &pFutf8encodeinto,
+    Utf8EncodeInto);
+  SET_FAST_METHOD(isolate, target, "readMemory", &pFreadmemory, ReadMemory);
+  // OK
+  SET_FAST_METHOD(isolate, target, "readMemoryAtOffset", &pFreadmemoryatoffset,
+    ReadMemoryAtOffset);
+  SET_FAST_PROP(isolate, target, "errno", &pFerrnoget, GetErrno, &pFerrnoset,
+    SetErrno);
+*/
 }
 
 // C/FFI api for managing isolates

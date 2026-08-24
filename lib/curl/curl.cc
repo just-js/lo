@@ -528,11 +528,86 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 #endif
   SET_MODULE(isolate, target, "curl", module);
 }
+
+// Every native callback this binding registers, both plain (SET_METHOD)
+// and fast-call (SET_FAST_METHOD/SET_FAST_PROP), needed in
+// SnapshotCreator's external_references before this binding's own
+// Init() can safely run inside lo::CreateSnapshot's isolate - PLAN.md
+// task 66. Null-terminated, same convention as lo.cc's own
+// lo_external_references[].
+static const intptr_t curl_external_references[] = {
+  (intptr_t)&fopenSlow,
+  (intptr_t)&pFfopen, (intptr_t)pFfopen.GetAddress(),
+    (intptr_t)pFfopen.GetTypeInfo(),
+  (intptr_t)&fdopenSlow,
+  (intptr_t)&pFfdopen, (intptr_t)pFfdopen.GetAddress(),
+    (intptr_t)pFfdopen.GetTypeInfo(),
+  (intptr_t)&fcloseSlow,
+  (intptr_t)&pFfclose, (intptr_t)pFfclose.GetAddress(),
+    (intptr_t)pFfclose.GetTypeInfo(),
+  (intptr_t)&fflushSlow,
+  (intptr_t)&pFfflush, (intptr_t)pFfflush.GetAddress(),
+    (intptr_t)pFfflush.GetTypeInfo(),
+  (intptr_t)&global_initSlow,
+  (intptr_t)&pFglobal_init, (intptr_t)pFglobal_init.GetAddress(),
+    (intptr_t)pFglobal_init.GetTypeInfo(),
+  (intptr_t)&easy_initSlow,
+  (intptr_t)&pFeasy_init, (intptr_t)pFeasy_init.GetAddress(),
+    (intptr_t)pFeasy_init.GetTypeInfo(),
+  (intptr_t)&versionSlow,
+  (intptr_t)&pFversion, (intptr_t)pFversion.GetAddress(),
+    (intptr_t)pFversion.GetTypeInfo(),
+  (intptr_t)&easy_setoptSlow,
+  (intptr_t)&pFeasy_setopt, (intptr_t)pFeasy_setopt.GetAddress(),
+    (intptr_t)pFeasy_setopt.GetTypeInfo(),
+  (intptr_t)&easy_setopt_2Slow,
+  (intptr_t)&pFeasy_setopt_2, (intptr_t)pFeasy_setopt_2.GetAddress(),
+    (intptr_t)pFeasy_setopt_2.GetTypeInfo(),
+  (intptr_t)&easy_setopt_3Slow,
+  (intptr_t)&pFeasy_setopt_3, (intptr_t)pFeasy_setopt_3.GetAddress(),
+    (intptr_t)pFeasy_setopt_3.GetTypeInfo(),
+  (intptr_t)&easy_setopt_4Slow,
+  (intptr_t)&pFeasy_setopt_4, (intptr_t)pFeasy_setopt_4.GetAddress(),
+    (intptr_t)pFeasy_setopt_4.GetTypeInfo(),
+  (intptr_t)&easy_setopt_5Slow,
+  (intptr_t)&pFeasy_setopt_5, (intptr_t)pFeasy_setopt_5.GetAddress(),
+    (intptr_t)pFeasy_setopt_5.GetTypeInfo(),
+  (intptr_t)&easy_performSlow,
+  (intptr_t)&pFeasy_perform, (intptr_t)pFeasy_perform.GetAddress(),
+    (intptr_t)pFeasy_perform.GetTypeInfo(),
+  (intptr_t)&easy_cleanupSlow,
+  (intptr_t)&pFeasy_cleanup, (intptr_t)pFeasy_cleanup.GetAddress(),
+    (intptr_t)pFeasy_cleanup.GetTypeInfo(),
+  (intptr_t)&global_cleanupSlow,
+  (intptr_t)&pFglobal_cleanup, (intptr_t)pFglobal_cleanup.GetAddress(),
+    (intptr_t)pFglobal_cleanup.GetTypeInfo(),
+  (intptr_t)&easy_getinfoSlow,
+  (intptr_t)&pFeasy_getinfo, (intptr_t)pFeasy_getinfo.GetAddress(),
+    (intptr_t)pFeasy_getinfo.GetTypeInfo(),
+  (intptr_t)&slist_appendSlow,
+  (intptr_t)&pFslist_append, (intptr_t)pFslist_append.GetAddress(),
+    (intptr_t)pFslist_append.GetTypeInfo(),
+  (intptr_t)&slist_free_allSlow,
+  (intptr_t)&pFslist_free_all, (intptr_t)pFslist_free_all.GetAddress(),
+    (intptr_t)pFslist_free_all.GetTypeInfo(),
+
+#ifdef __linux__
+
+#endif
+#ifdef __MACH__
+
+#endif
+  0
+};
+
 } // namespace curl
 } // namespace lo
 
 extern "C"  {
   DLL_PUBLIC void* _register_curl() {
     return (void*)lo::curl::Init;
+  }
+  DLL_PUBLIC const intptr_t* _external_references_curl() {
+    return lo::curl::curl_external_references;
   }
 }

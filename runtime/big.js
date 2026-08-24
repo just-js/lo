@@ -17235,7 +17235,11 @@ const handle = new Uint32Array(2)
 // just assigns `_` and calls nothing lo-specific) - safe to freeze into
 // a snapshot. Per-invocation entry point deferred the same way as
 // runtime/zero-snap.js.
-globalThis.snapshotEntry = function () {
-  handle.ptr = get_address(handle)
-  lo.print(`${_.VERSION} ${hrtime() - lo.start}\n`)
+
+globalThis.snapshotEntry = async function () {
+  const specifier = 'main.js'
+  const src = lo.builtin(specifier)
+  const mod = lo.loadModule(src, specifier)
+  mod.namespace = await lo.evaluateModule(mod.identity)
+  mod.evaluted = true
 }

@@ -669,6 +669,11 @@ async function handleCommand (args) {
 }
 
 async function global_main () {
+  // Re-read lo.args fresh rather than closing over the outer args const -
+  // this function may now be called long after bootstrap_runtime() first
+  // ran (post-snapshot-restore, from snapshotEntry, with real args CreateIsolate
+  // set fresh for *this* invocation - PLAN.md task 66), not just inline here.
+  const args = lo.args
   // todo: upgrade, install etc. maybe install these as command scripts, but that would not be very secure
   if (args.length === 1) {
     show_usage()
@@ -677,6 +682,8 @@ async function global_main () {
   if (core.os === 'win') {
     handleCommand(args).catch(err => { handle_error(err); exit(1) })
   } else {
+    handleCommand(args).catch(err => { handle_error(err); exit(1) })
+/*
     const { Loop } = await import('lib/loop.js')
     const { Timer } = await import('lib/timer.js')
 
@@ -694,19 +701,28 @@ async function global_main () {
     globalThis.setInterval = (fn, ms) => new Timer(loop, ms, fn)
     globalThis.clearInterval = globalThis.clearTimeout
     globalThis.setImmediate = fn => loop.setImmediate(fn)
-    
     handleCommand(args)
       .then(() => {
         while (loop.poll() > 0) {}
       })
       .catch(err => { handle_error(err); exit(1) })
     while (loop.poll() > 0) {}
+*/    
   }
 }
 
 const AsyncFunction = async function () {}.constructor
 
-if (workerSource) {
+// During the snapshot build pass, skip real dispatch entirely - no real
+// command to run yet, no real args (build-time argv is a placeholder,
+// see main.cc's own comment on the CreateSnapshot call site). Everything
+// above (classes, handleCommand, global_main, etc.) is still defined and
+// gets captured either way; only the *running* of a command is deferred.
+// global_main is returned below so snapshotEntry can call it later, with
+// real args, after restore.
+if (lo.isBuildingSnapshot) {
+  // definitions only - real dispatch happens post-restore
+} else if (workerSource) {
   import('worker_source.js').catch(die)
 } else if (args.length === 1) {
   show_usage()
@@ -714,12 +730,15 @@ if (workerSource) {
   global_main().catch(die)
 }
 
+return { global_main }
+
 } // end bootstrap_runtime
 
+let bootstrap_exports
 try {
-  bootstrap_runtime()
+  bootstrap_exports = bootstrap_runtime()
 } catch (err) {
   lo.print(`${err.stack}\n`)
 }
 
-export {}
+export const global_main = bootstrap_exports && bootstrap_exports.global_main

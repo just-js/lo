@@ -374,999 +374,7 @@ pid_t vfexecve (int fd, char* const argv[], char* const envp[]) {
 
 #endif
 
-void dlopenFast(void* p, struct FastOneByteString* const p0, int32_t p1, uint64_t* p_ret);
-CTypeInfo cargsdlopen[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcdlopen = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infodlopen = CFunctionInfo(rcdlopen, 4, cargsdlopen);
-CFunction pFdlopen = CFunction((const void*)&dlopenFast, &infodlopen);
-
-void dlsymFast(void* p, uint64_t* p0, struct FastOneByteString* const p1, uint64_t* p_ret);
-CTypeInfo cargsdlsym[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcdlsym = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infodlsym = CFunctionInfo(rcdlsym, 4, cargsdlsym);
-CFunction pFdlsym = CFunction((const void*)&dlsymFast, &infodlsym);
-
-int32_t dlcloseFast(void* p, uint64_t* p0);
-CTypeInfo cargsdlclose[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcdlclose = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infodlclose = CFunctionInfo(rcdlclose, 2, cargsdlclose);
-CFunction pFdlclose = CFunction((const void*)&dlcloseFast, &infodlclose);
-
-void dlerrorFast(void* p, uint64_t* p_ret);
-CTypeInfo cargsdlerror[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcdlerror = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infodlerror = CFunctionInfo(rcdlerror, 2, cargsdlerror);
-CFunction pFdlerror = CFunction((const void*)&dlerrorFast, &infodlerror);
-
-int32_t readFast(void* p, int32_t p0, uint64_t* p1, int32_t p2);
-CTypeInfo cargsread[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcread = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo inforead = CFunctionInfo(rcread, 4, cargsread);
-CFunction pFread = CFunction((const void*)&readFast, &inforead);
-
-int32_t read2Fast(void* p, int32_t p0, uint64_t* p1, int32_t p2);
-CTypeInfo cargsread2[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcread2 = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo inforead2 = CFunctionInfo(rcread2, 4, cargsread2);
-CFunction pFread2 = CFunction((const void*)&read2Fast, &inforead2);
-
-int32_t writeFast(void* p, int32_t p0, uint64_t* p1, int32_t p2);
-CTypeInfo cargswrite[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcwrite = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infowrite = CFunctionInfo(rcwrite, 4, cargswrite);
-CFunction pFwrite = CFunction((const void*)&writeFast, &infowrite);
-
-int32_t write2Fast(void* p, int32_t p0, uint64_t* p1, int32_t p2);
-CTypeInfo cargswrite2[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcwrite2 = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infowrite2 = CFunctionInfo(rcwrite2, 4, cargswrite2);
-CFunction pFwrite2 = CFunction((const void*)&write2Fast, &infowrite2);
-
-int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1);
-CTypeInfo cargswrite_string[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-};
-CTypeInfo rcwrite_string = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infowrite_string = CFunctionInfo(rcwrite_string, 3, cargswrite_string);
-CFunction pFwrite_string = CFunction((const void*)&write_stringFast, &infowrite_string);
-
-int32_t putcharFast(void* p, int32_t p0);
-CTypeInfo cargsputchar[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcputchar = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoputchar = CFunctionInfo(rcputchar, 2, cargsputchar);
-CFunction pFputchar = CFunction((const void*)&putcharFast, &infoputchar);
-
-int32_t getcharFast(void* p);
-CTypeInfo cargsgetchar[1] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-
-};
-CTypeInfo rcgetchar = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infogetchar = CFunctionInfo(rcgetchar, 1, cargsgetchar);
-CFunction pFgetchar = CFunction((const void*)&getcharFast, &infogetchar);
-
-int32_t closeFast(void* p, int32_t p0);
-CTypeInfo cargsclose[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcclose = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoclose = CFunctionInfo(rcclose, 2, cargsclose);
-CFunction pFclose = CFunction((const void*)&closeFast, &infoclose);
-
-int32_t preadFast(void* p, int32_t p0, uint64_t* p1, int32_t p2, uint32_t p3);
-CTypeInfo cargspread[5] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-};
-CTypeInfo rcpread = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infopread = CFunctionInfo(rcpread, 5, cargspread);
-CFunction pFpread = CFunction((const void*)&preadFast, &infopread);
-
-uint32_t lseekFast(void* p, int32_t p0, uint32_t p1, int32_t p2);
-CTypeInfo cargslseek[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rclseek = CTypeInfo(CTypeInfo::Type::kUint32);
-CFunctionInfo infolseek = CFunctionInfo(rclseek, 4, cargslseek);
-CFunction pFlseek = CFunction((const void*)&lseekFast, &infolseek);
-
-int32_t fstatFast(void* p, int32_t p0, uint64_t* p1);
-CTypeInfo cargsfstat[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcfstat = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infofstat = CFunctionInfo(rcfstat, 3, cargsfstat);
-CFunction pFfstat = CFunction((const void*)&fstatFast, &infofstat);
-
-int32_t fcntlFast(void* p, int32_t p0, int32_t p1, int32_t p2);
-CTypeInfo cargsfcntl[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcfcntl = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infofcntl = CFunctionInfo(rcfcntl, 4, cargsfcntl);
-CFunction pFfcntl = CFunction((const void*)&fcntlFast, &infofcntl);
-
-int32_t ftruncateFast(void* p, int32_t p0, uint32_t p1);
-CTypeInfo cargsftruncate[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-};
-CTypeInfo rcftruncate = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoftruncate = CFunctionInfo(rcftruncate, 3, cargsftruncate);
-CFunction pFftruncate = CFunction((const void*)&ftruncateFast, &infoftruncate);
-
-int32_t mknodFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2);
-CTypeInfo cargsmknod[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcmknod = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infomknod = CFunctionInfo(rcmknod, 4, cargsmknod);
-CFunction pFmknod = CFunction((const void*)&mknodFast, &infomknod);
-
-int32_t statFast(void* p, struct FastOneByteString* const p0, uint64_t* p1);
-CTypeInfo cargsstat[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcstat = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infostat = CFunctionInfo(rcstat, 3, cargsstat);
-CFunction pFstat = CFunction((const void*)&statFast, &infostat);
-
-int32_t lstatFast(void* p, struct FastOneByteString* const p0, uint64_t* p1);
-CTypeInfo cargslstat[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rclstat = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infolstat = CFunctionInfo(rclstat, 3, cargslstat);
-CFunction pFlstat = CFunction((const void*)&lstatFast, &infolstat);
-
-int32_t renameFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1);
-CTypeInfo cargsrename[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-};
-CTypeInfo rcrename = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo inforename = CFunctionInfo(rcrename, 3, cargsrename);
-CFunction pFrename = CFunction((const void*)&renameFast, &inforename);
-
-int32_t accessFast(void* p, struct FastOneByteString* const p0, int32_t p1);
-CTypeInfo cargsaccess[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcaccess = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoaccess = CFunctionInfo(rcaccess, 3, cargsaccess);
-CFunction pFaccess = CFunction((const void*)&accessFast, &infoaccess);
-
-int32_t openFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2);
-CTypeInfo cargsopen[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcopen = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoopen = CFunctionInfo(rcopen, 4, cargsopen);
-CFunction pFopen = CFunction((const void*)&openFast, &infoopen);
-
-int32_t unlinkFast(void* p, struct FastOneByteString* const p0);
-CTypeInfo cargsunlink[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-};
-CTypeInfo rcunlink = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infounlink = CFunctionInfo(rcunlink, 2, cargsunlink);
-CFunction pFunlink = CFunction((const void*)&unlinkFast, &infounlink);
-
-void readdirFast(void* p, uint64_t* p0, uint64_t* p_ret);
-CTypeInfo cargsreaddir[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcreaddir = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo inforeaddir = CFunctionInfo(rcreaddir, 3, cargsreaddir);
-CFunction pFreaddir = CFunction((const void*)&readdirFast, &inforeaddir);
-
-uint32_t readlinkFast(void* p, struct FastOneByteString* const p0, uint64_t* p1, uint32_t p2);
-CTypeInfo cargsreadlink[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-};
-CTypeInfo rcreadlink = CTypeInfo(CTypeInfo::Type::kUint32);
-CFunctionInfo inforeadlink = CFunctionInfo(rcreadlink, 4, cargsreadlink);
-CFunction pFreadlink = CFunction((const void*)&readlinkFast, &inforeadlink);
-
-void opendirFast(void* p, struct FastOneByteString* const p0, uint64_t* p_ret);
-CTypeInfo cargsopendir[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcopendir = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infoopendir = CFunctionInfo(rcopendir, 3, cargsopendir);
-CFunction pFopendir = CFunction((const void*)&opendirFast, &infoopendir);
-
-int32_t fstatatFast(void* p, int32_t p0, struct FastOneByteString* const p1, uint64_t* p2, int32_t p3);
-CTypeInfo cargsfstatat[5] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcfstatat = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infofstatat = CFunctionInfo(rcfstatat, 5, cargsfstatat);
-CFunction pFfstatat = CFunction((const void*)&fstatatFast, &infofstatat);
-
-int32_t mkdirFast(void* p, struct FastOneByteString* const p0, uint32_t p1);
-CTypeInfo cargsmkdir[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-};
-CTypeInfo rcmkdir = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infomkdir = CFunctionInfo(rcmkdir, 3, cargsmkdir);
-CFunction pFmkdir = CFunction((const void*)&mkdirFast, &infomkdir);
-
-int32_t rmdirFast(void* p, struct FastOneByteString* const p0);
-CTypeInfo cargsrmdir[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-};
-CTypeInfo rcrmdir = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo informdir = CFunctionInfo(rcrmdir, 2, cargsrmdir);
-CFunction pFrmdir = CFunction((const void*)&rmdirFast, &informdir);
-
-int32_t closedirFast(void* p, uint64_t* p0);
-CTypeInfo cargsclosedir[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcclosedir = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoclosedir = CFunctionInfo(rcclosedir, 2, cargsclosedir);
-CFunction pFclosedir = CFunction((const void*)&closedirFast, &infoclosedir);
-
-int32_t chdirFast(void* p, struct FastOneByteString* const p0);
-CTypeInfo cargschdir[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-};
-CTypeInfo rcchdir = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infochdir = CFunctionInfo(rcchdir, 2, cargschdir);
-CFunction pFchdir = CFunction((const void*)&chdirFast, &infochdir);
-
-int32_t fchdirFast(void* p, int32_t p0);
-CTypeInfo cargsfchdir[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcfchdir = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infofchdir = CFunctionInfo(rcfchdir, 2, cargsfchdir);
-CFunction pFfchdir = CFunction((const void*)&fchdirFast, &infofchdir);
-
-int32_t mprotectFast(void* p, uint64_t* p0, uint32_t p1, int32_t p2);
-CTypeInfo cargsmprotect[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcmprotect = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infomprotect = CFunctionInfo(rcmprotect, 4, cargsmprotect);
-CFunction pFmprotect = CFunction((const void*)&mprotectFast, &infomprotect);
-
-void memcpyFast(void* p, uint64_t* p0, uint64_t* p1, uint32_t p2, uint64_t* p_ret);
-CTypeInfo cargsmemcpy[5] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcmemcpy = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infomemcpy = CFunctionInfo(rcmemcpy, 5, cargsmemcpy);
-CFunction pFmemcpy = CFunction((const void*)&memcpyFast, &infomemcpy);
-
-void memsetFast(void* p, uint64_t* p0, int32_t p1, uint32_t p2, uint64_t* p_ret);
-CTypeInfo cargsmemset[5] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcmemset = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infomemset = CFunctionInfo(rcmemset, 5, cargsmemset);
-CFunction pFmemset = CFunction((const void*)&memsetFast, &infomemset);
-
-void memmoveFast(void* p, uint64_t* p0, uint64_t* p1, uint32_t p2, uint64_t* p_ret);
-CTypeInfo cargsmemmove[5] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcmemmove = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infomemmove = CFunctionInfo(rcmemmove, 5, cargsmemmove);
-CFunction pFmemmove = CFunction((const void*)&memmoveFast, &infomemmove);
-
-int32_t shm_openFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2);
-CTypeInfo cargsshm_open[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcshm_open = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoshm_open = CFunctionInfo(rcshm_open, 4, cargsshm_open);
-CFunction pFshm_open = CFunction((const void*)&shm_openFast, &infoshm_open);
-
-int32_t shm_unlinkFast(void* p, struct FastOneByteString* const p0);
-CTypeInfo cargsshm_unlink[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-};
-CTypeInfo rcshm_unlink = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoshm_unlink = CFunctionInfo(rcshm_unlink, 2, cargsshm_unlink);
-CFunction pFshm_unlink = CFunction((const void*)&shm_unlinkFast, &infoshm_unlink);
-
-void mmapFast(void* p, uint64_t* p0, uint32_t p1, int32_t p2, int32_t p3, int32_t p4, uint32_t p5, uint64_t* p_ret);
-CTypeInfo cargsmmap[8] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcmmap = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infommap = CFunctionInfo(rcmmap, 8, cargsmmap);
-CFunction pFmmap = CFunction((const void*)&mmapFast, &infommap);
-
-int32_t munmapFast(void* p, uint64_t* p0, uint32_t p1);
-CTypeInfo cargsmunmap[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-};
-CTypeInfo rcmunmap = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infomunmap = CFunctionInfo(rcmunmap, 3, cargsmunmap);
-CFunction pFmunmap = CFunction((const void*)&munmapFast, &infomunmap);
-
-int32_t msyncFast(void* p, uint64_t* p0, uint32_t p1, int32_t p2);
-CTypeInfo cargsmsync[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcmsync = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infomsync = CFunctionInfo(rcmsync, 4, cargsmsync);
-CFunction pFmsync = CFunction((const void*)&msyncFast, &infomsync);
-
-void mallocFast(void* p, uint32_t p0, uint64_t* p_ret);
-CTypeInfo cargsmalloc[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcmalloc = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infomalloc = CFunctionInfo(rcmalloc, 3, cargsmalloc);
-CFunction pFmalloc = CFunction((const void*)&mallocFast, &infomalloc);
-
-void callocFast(void* p, uint32_t p0, uint32_t p1, uint64_t* p_ret);
-CTypeInfo cargscalloc[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rccalloc = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infocalloc = CFunctionInfo(rccalloc, 4, cargscalloc);
-CFunction pFcalloc = CFunction((const void*)&callocFast, &infocalloc);
-
-void reallocFast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p_ret);
-CTypeInfo cargsrealloc[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcrealloc = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo inforealloc = CFunctionInfo(rcrealloc, 4, cargsrealloc);
-CFunction pFrealloc = CFunction((const void*)&reallocFast, &inforealloc);
-
-void aligned_allocFast(void* p, uint32_t p0, uint32_t p1, uint64_t* p_ret);
-CTypeInfo cargsaligned_alloc[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcaligned_alloc = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infoaligned_alloc = CFunctionInfo(rcaligned_alloc, 4, cargsaligned_alloc);
-CFunction pFaligned_alloc = CFunction((const void*)&aligned_allocFast, &infoaligned_alloc);
-
-void freeFast(void* p, uint64_t* p0);
-CTypeInfo cargsfree[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcfree = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infofree = CFunctionInfo(rcfree, 2, cargsfree);
-CFunction pFfree = CFunction((const void*)&freeFast, &infofree);
-
-void fastcallFast(void* p, uint64_t* p0);
-CTypeInfo cargsfastcall[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcfastcall = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infofastcall = CFunctionInfo(rcfastcall, 2, cargsfastcall);
-CFunction pFfastcall = CFunction((const void*)&fastcallFast, &infofastcall);
-
-void getenvFast(void* p, struct FastOneByteString* const p0, uint64_t* p_ret);
-CTypeInfo cargsgetenv[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcgetenv = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infogetenv = CFunctionInfo(rcgetenv, 3, cargsgetenv);
-CFunction pFgetenv = CFunction((const void*)&getenvFast, &infogetenv);
-
-int32_t setenvFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1, int32_t p2);
-CTypeInfo cargssetenv[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcsetenv = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infosetenv = CFunctionInfo(rcsetenv, 4, cargssetenv);
-CFunction pFsetenv = CFunction((const void*)&setenvFast, &infosetenv);
-
-int32_t unsetenvFast(void* p, struct FastOneByteString* const p0);
-CTypeInfo cargsunsetenv[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-};
-CTypeInfo rcunsetenv = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infounsetenv = CFunctionInfo(rcunsetenv, 2, cargsunsetenv);
-CFunction pFunsetenv = CFunction((const void*)&unsetenvFast, &infounsetenv);
-
-void sleepFast(void* p, int32_t p0);
-CTypeInfo cargssleep[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcsleep = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infosleep = CFunctionInfo(rcsleep, 2, cargssleep);
-CFunction pFsleep = CFunction((const void*)&sleepFast, &infosleep);
-
-int32_t usleepFast(void* p, uint32_t p0);
-CTypeInfo cargsusleep[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-};
-CTypeInfo rcusleep = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infousleep = CFunctionInfo(rcusleep, 2, cargsusleep);
-CFunction pFusleep = CFunction((const void*)&usleepFast, &infousleep);
-
-int32_t dupFast(void* p, int32_t p0);
-CTypeInfo cargsdup[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcdup = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infodup = CFunctionInfo(rcdup, 2, cargsdup);
-CFunction pFdup = CFunction((const void*)&dupFast, &infodup);
-
-int32_t dup2Fast(void* p, int32_t p0, int32_t p1);
-CTypeInfo cargsdup2[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcdup2 = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infodup2 = CFunctionInfo(rcdup2, 3, cargsdup2);
-CFunction pFdup2 = CFunction((const void*)&dup2Fast, &infodup2);
-
-void getcwdFast(void* p, uint64_t* p0, int32_t p1, uint64_t* p_ret);
-CTypeInfo cargsgetcwd[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcgetcwd = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infogetcwd = CFunctionInfo(rcgetcwd, 4, cargsgetcwd);
-CFunction pFgetcwd = CFunction((const void*)&getcwdFast, &infogetcwd);
-
-int32_t getpidFast(void* p);
-CTypeInfo cargsgetpid[1] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-
-};
-CTypeInfo rcgetpid = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infogetpid = CFunctionInfo(rcgetpid, 1, cargsgetpid);
-CFunction pFgetpid = CFunction((const void*)&getpidFast, &infogetpid);
-
-int32_t getsidFast(void* p, int32_t p0);
-CTypeInfo cargsgetsid[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcgetsid = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infogetsid = CFunctionInfo(rcgetsid, 2, cargsgetsid);
-CFunction pFgetsid = CFunction((const void*)&getsidFast, &infogetsid);
-
-int32_t setsidFast(void* p);
-CTypeInfo cargssetsid[1] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-
-};
-CTypeInfo rcsetsid = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infosetsid = CFunctionInfo(rcsetsid, 1, cargssetsid);
-CFunction pFsetsid = CFunction((const void*)&setsidFast, &infosetsid);
-
-int32_t getpgrpFast(void* p);
-CTypeInfo cargsgetpgrp[1] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-
-};
-CTypeInfo rcgetpgrp = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infogetpgrp = CFunctionInfo(rcgetpgrp, 1, cargsgetpgrp);
-CFunction pFgetpgrp = CFunction((const void*)&getpgrpFast, &infogetpgrp);
-
-int32_t setpgidFast(void* p, int32_t p0, int32_t p1);
-CTypeInfo cargssetpgid[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcsetpgid = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infosetpgid = CFunctionInfo(rcsetpgid, 3, cargssetpgid);
-CFunction pFsetpgid = CFunction((const void*)&setpgidFast, &infosetpgid);
-
-int32_t forkFast(void* p);
-CTypeInfo cargsfork[1] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-
-};
-CTypeInfo rcfork = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infofork = CFunctionInfo(rcfork, 1, cargsfork);
-CFunction pFfork = CFunction((const void*)&forkFast, &infofork);
-
-int32_t killFast(void* p, int32_t p0, int32_t p1);
-CTypeInfo cargskill[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rckill = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infokill = CFunctionInfo(rckill, 3, cargskill);
-CFunction pFkill = CFunction((const void*)&killFast, &infokill);
-
-int32_t waitpidFast(void* p, int32_t p0, uint64_t* p1, int32_t p2);
-CTypeInfo cargswaitpid[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcwaitpid = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infowaitpid = CFunctionInfo(rcwaitpid, 4, cargswaitpid);
-CFunction pFwaitpid = CFunction((const void*)&waitpidFast, &infowaitpid);
-
-int32_t execvpFast(void* p, struct FastOneByteString* const p0, uint64_t* p1);
-CTypeInfo cargsexecvp[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcexecvp = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoexecvp = CFunctionInfo(rcexecvp, 3, cargsexecvp);
-CFunction pFexecvp = CFunction((const void*)&execvpFast, &infoexecvp);
-
-int32_t execveFast(void* p, struct FastOneByteString* const p0, uint64_t* p1, uint64_t* p2);
-CTypeInfo cargsexecve[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcexecve = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoexecve = CFunctionInfo(rcexecve, 4, cargsexecve);
-CFunction pFexecve = CFunction((const void*)&execveFast, &infoexecve);
-
-int32_t isattyFast(void* p, int32_t p0);
-CTypeInfo cargsisatty[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcisatty = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoisatty = CFunctionInfo(rcisatty, 2, cargsisatty);
-CFunction pFisatty = CFunction((const void*)&isattyFast, &infoisatty);
-
-int32_t tcgetattrFast(void* p, int32_t p0, uint64_t* p1);
-CTypeInfo cargstcgetattr[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rctcgetattr = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infotcgetattr = CFunctionInfo(rctcgetattr, 3, cargstcgetattr);
-CFunction pFtcgetattr = CFunction((const void*)&tcgetattrFast, &infotcgetattr);
-
-int32_t tcsetattrFast(void* p, int32_t p0, int32_t p1, uint64_t* p2);
-CTypeInfo cargstcsetattr[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rctcsetattr = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infotcsetattr = CFunctionInfo(rctcsetattr, 4, cargstcsetattr);
-CFunction pFtcsetattr = CFunction((const void*)&tcsetattrFast, &infotcsetattr);
-
-void exitFast(void* p, int32_t p0);
-CTypeInfo cargsexit[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcexit = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infoexit = CFunctionInfo(rcexit, 2, cargsexit);
-CFunction pFexit = CFunction((const void*)&exitFast, &infoexit);
-
-void _exitFast(void* p, int32_t p0);
-CTypeInfo cargs_exit[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rc_exit = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo info_exit = CFunctionInfo(rc_exit, 2, cargs_exit);
-CFunction pF_exit = CFunction((const void*)&_exitFast, &info_exit);
-
-uint32_t sysconfFast(void* p, int32_t p0);
-CTypeInfo cargssysconf[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcsysconf = CTypeInfo(CTypeInfo::Type::kUint32);
-CFunctionInfo infosysconf = CFunctionInfo(rcsysconf, 2, cargssysconf);
-CFunction pFsysconf = CFunction((const void*)&sysconfFast, &infosysconf);
-
-int32_t getrusageFast(void* p, int32_t p0, uint64_t* p1);
-CTypeInfo cargsgetrusage[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcgetrusage = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infogetrusage = CFunctionInfo(rcgetrusage, 3, cargsgetrusage);
-CFunction pFgetrusage = CFunction((const void*)&getrusageFast, &infogetrusage);
-
-uint32_t timesFast(void* p, uint64_t* p0);
-CTypeInfo cargstimes[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rctimes = CTypeInfo(CTypeInfo::Type::kUint32);
-CFunctionInfo infotimes = CFunctionInfo(rctimes, 2, cargstimes);
-CFunction pFtimes = CFunction((const void*)&timesFast, &infotimes);
-
-void isolate_context_destroyFast(void* p, uint64_t* p0);
-CTypeInfo cargsisolate_context_destroy[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcisolate_context_destroy = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infoisolate_context_destroy = CFunctionInfo(rcisolate_context_destroy, 2, cargsisolate_context_destroy);
-CFunction pFisolate_context_destroy = CFunction((const void*)&isolate_context_destroyFast, &infoisolate_context_destroy);
-
-int32_t isolate_context_sizeFast(void* p);
-CTypeInfo cargsisolate_context_size[1] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-
-};
-CTypeInfo rcisolate_context_size = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoisolate_context_size = CFunctionInfo(rcisolate_context_size, 1, cargsisolate_context_size);
-CFunction pFisolate_context_size = CFunction((const void*)&isolate_context_sizeFast, &infoisolate_context_size);
-
-void memmemFast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t p3, uint64_t* p_ret);
-CTypeInfo cargsmemmem[6] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64)
-};
-CTypeInfo rcmemmem = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infomemmem = CFunctionInfo(rcmemmem, 6, cargsmemmem);
-CFunction pFmemmem = CFunction((const void*)&memmemFast, &infomemmem);
-
-uint32_t strnlenFast(void* p, uint64_t* p0, uint32_t p1);
-CTypeInfo cargsstrnlen[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-};
-CTypeInfo rcstrnlen = CTypeInfo(CTypeInfo::Type::kUint32);
-CFunctionInfo infostrnlen = CFunctionInfo(rcstrnlen, 3, cargsstrnlen);
-CFunction pFstrnlen = CFunction((const void*)&strnlenFast, &infostrnlen);
-
-int32_t symlinkFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1);
-CTypeInfo cargssymlink[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-};
-CTypeInfo rcsymlink = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infosymlink = CFunctionInfo(rcsymlink, 3, cargssymlink);
-CFunction pFsymlink = CFunction((const void*)&symlinkFast, &infosymlink);
-
-uint32_t strnlen_strFast(void* p, struct FastOneByteString* const p0);
-CTypeInfo cargsstrnlen_str[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-};
-CTypeInfo rcstrnlen_str = CTypeInfo(CTypeInfo::Type::kUint32);
-CFunctionInfo infostrnlen_str = CFunctionInfo(rcstrnlen_str, 2, cargsstrnlen_str);
-CFunction pFstrnlen_str = CFunction((const void*)&strnlen_strFast, &infostrnlen_str);
-
-void syncFast(void* p);
-CTypeInfo cargssync[1] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-
-};
-CTypeInfo rcsync = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infosync = CFunctionInfo(rcsync, 1, cargssync);
-CFunction pFsync = CFunction((const void*)&syncFast, &infosync);
-
 #ifdef __linux__
-
-uint32_t makedevFast(void* p, uint32_t p0, uint32_t p1);
-CTypeInfo cargsmakedev[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-};
-CTypeInfo rcmakedev = CTypeInfo(CTypeInfo::Type::kUint32);
-CFunctionInfo infomakedev = CFunctionInfo(rcmakedev, 3, cargsmakedev);
-CFunction pFmakedev = CFunction((const void*)&makedevFast, &infomakedev);
-
-int32_t posix_fadviseFast(void* p, int32_t p0, uint32_t p1, uint32_t p2, int32_t p3);
-CTypeInfo cargsposix_fadvise[5] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcposix_fadvise = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoposix_fadvise = CFunctionInfo(rcposix_fadvise, 5, cargsposix_fadvise);
-CFunction pFposix_fadvise = CFunction((const void*)&posix_fadviseFast, &infoposix_fadvise);
-
-int32_t ioctlFast(void* p, int32_t p0, uint32_t p1, uint64_t* p2);
-CTypeInfo cargsioctl[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcioctl = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoioctl = CFunctionInfo(rcioctl, 4, cargsioctl);
-CFunction pFioctl = CFunction((const void*)&ioctlFast, &infoioctl);
-
-int32_t ioctl2Fast(void* p, int32_t p0, uint32_t p1, int32_t p2);
-CTypeInfo cargsioctl2[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcioctl2 = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoioctl2 = CFunctionInfo(rcioctl2, 4, cargsioctl2);
-CFunction pFioctl2 = CFunction((const void*)&ioctl2Fast, &infoioctl2);
-
-int32_t ioctl3Fast(void* p, int32_t p0, uint32_t p1, uint64_t* p2);
-CTypeInfo cargsioctl3[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcioctl3 = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoioctl3 = CFunctionInfo(rcioctl3, 4, cargsioctl3);
-CFunction pFioctl3 = CFunction((const void*)&ioctl3Fast, &infoioctl3);
-
-int32_t rebootFast(void* p, int32_t p0);
-CTypeInfo cargsreboot[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcreboot = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo inforeboot = CFunctionInfo(rcreboot, 2, cargsreboot);
-CFunction pFreboot = CFunction((const void*)&rebootFast, &inforeboot);
-
-uint32_t getdentsFast(void* p, int32_t p0, uint64_t* p1, uint32_t p2);
-CTypeInfo cargsgetdents[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-};
-CTypeInfo rcgetdents = CTypeInfo(CTypeInfo::Type::kUint32);
-CFunctionInfo infogetdents = CFunctionInfo(rcgetdents, 4, cargsgetdents);
-CFunction pFgetdents = CFunction((const void*)&getdentsFast, &infogetdents);
-
-int32_t getaffinityFast(void* p, int32_t p0, uint32_t p1, uint64_t* p2);
-CTypeInfo cargsgetaffinity[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcgetaffinity = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infogetaffinity = CFunctionInfo(rcgetaffinity, 4, cargsgetaffinity);
-CFunction pFgetaffinity = CFunction((const void*)&getaffinityFast, &infogetaffinity);
-
-uint32_t copy_file_rangeFast(void* p, int32_t p0, uint64_t* p1, int32_t p2, uint64_t* p3, uint32_t p4, uint32_t p5);
-CTypeInfo cargscopy_file_range[7] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-};
-CTypeInfo rccopy_file_range = CTypeInfo(CTypeInfo::Type::kUint32);
-CFunctionInfo infocopy_file_range = CFunctionInfo(rccopy_file_range, 7, cargscopy_file_range);
-CFunction pFcopy_file_range = CFunction((const void*)&copy_file_rangeFast, &infocopy_file_range);
-
-int32_t memfd_createFast(void* p, struct FastOneByteString* const p0, uint32_t p1);
-CTypeInfo cargsmemfd_create[3] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-};
-CTypeInfo rcmemfd_create = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infomemfd_create = CFunctionInfo(rcmemfd_create, 3, cargsmemfd_create);
-CFunction pFmemfd_create = CFunction((const void*)&memfd_createFast, &infomemfd_create);
-
-int32_t setaffinityFast(void* p, int32_t p0, uint32_t p1, uint64_t* p2);
-CTypeInfo cargssetaffinity[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcsetaffinity = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infosetaffinity = CFunctionInfo(rcsetaffinity, 4, cargssetaffinity);
-CFunction pFsetaffinity = CFunction((const void*)&setaffinityFast, &infosetaffinity);
-
-int32_t vforkFast(void* p);
-CTypeInfo cargsvfork[1] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-
-};
-CTypeInfo rcvfork = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infovfork = CFunctionInfo(rcvfork, 1, cargsvfork);
-CFunction pFvfork = CFunction((const void*)&vforkFast, &infovfork);
-
-int32_t vexecveFast(void* p, struct FastOneByteString* const p0, uint64_t* p1, uint64_t* p2);
-CTypeInfo cargsvexecve[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcvexecve = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infovexecve = CFunctionInfo(rcvexecve, 4, cargsvexecve);
-CFunction pFvexecve = CFunction((const void*)&vexecveFast, &infovexecve);
-
-int32_t vfexecveFast(void* p, int32_t p0, uint64_t* p1, uint64_t* p2);
-CTypeInfo cargsvfexecve[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcvfexecve = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infovfexecve = CFunctionInfo(rcvfexecve, 4, cargsvfexecve);
-CFunction pFvfexecve = CFunction((const void*)&vfexecveFast, &infovfexecve);
-
-int32_t getpagesizeFast(void* p);
-CTypeInfo cargsgetpagesize[1] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-
-};
-CTypeInfo rcgetpagesize = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infogetpagesize = CFunctionInfo(rcgetpagesize, 1, cargsgetpagesize);
-CFunction pFgetpagesize = CFunction((const void*)&getpagesizeFast, &infogetpagesize);
-
-int32_t madviseFast(void* p, uint64_t* p0, uint32_t p1, int32_t p2);
-CTypeInfo cargsmadvise[4] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-  CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kInt32),
-};
-CTypeInfo rcmadvise = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infomadvise = CFunctionInfo(rcmadvise, 4, cargsmadvise);
-CFunction pFmadvise = CFunction((const void*)&madviseFast, &infomadvise);
 
 #endif
 #ifdef __MACH__
@@ -1381,13 +389,6 @@ void dlopenSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void dlopenFast(void* p, struct FastOneByteString* const p0, int32_t p1, uint64_t* p_ret) {
-  struct FastOneByteString* const v0 = p0;
-  int32_t v1 = p1;
-  void* r = dlopen(v0->data, v1);
-
-  p_ret[0] = (uint64_t)r;
-}
 void dlsymSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -1396,23 +397,12 @@ void dlsymSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void dlsymFast(void* p, uint64_t* p0, struct FastOneByteString* const p1, uint64_t* p_ret) {
-  void* v0 = reinterpret_cast<void*>(p0);
-  struct FastOneByteString* const v1 = p1;
-  void* r = dlsym(v0, v1->data);
-
-  p_ret[0] = (uint64_t)r;
-}
 void dlcloseSlow(const FunctionCallbackInfo<Value> &args) {
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = dlclose(v0);
   args.GetReturnValue().Set(rc);
 }
 
-int32_t dlcloseFast(void* p, uint64_t* p0) {
-  void* v0 = reinterpret_cast<void*>(p0);
-  return dlclose(v0);
-}
 void dlerrorSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
 
@@ -1420,12 +410,6 @@ void dlerrorSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void dlerrorFast(void* p, uint64_t* p_ret) {
-
-  char* r = dlerror();
-
-  p_ret[0] = (uint64_t)r;
-}
 void readSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -1434,12 +418,6 @@ void readSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t readFast(void* p, int32_t p0, uint64_t* p1, int32_t p2) {
-  int32_t v0 = p0;
-  void* v1 = reinterpret_cast<void*>(p1);
-  int32_t v2 = p2;
-  return read(v0, v1, v2);
-}
 void read2Slow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -1448,12 +426,6 @@ void read2Slow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t read2Fast(void* p, int32_t p0, uint64_t* p1, int32_t p2) {
-  int32_t v0 = p0;
-  void* v1 = reinterpret_cast<void*>(p1);
-  int32_t v2 = p2;
-  return read(v0, v1, v2);
-}
 void writeSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -1462,12 +434,6 @@ void writeSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t writeFast(void* p, int32_t p0, uint64_t* p1, int32_t p2) {
-  int32_t v0 = p0;
-  void* v1 = reinterpret_cast<void*>(p1);
-  int32_t v2 = p2;
-  return write(v0, v1, v2);
-}
 void write2Slow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -1476,12 +442,6 @@ void write2Slow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t write2Fast(void* p, int32_t p0, uint64_t* p1, int32_t p2) {
-  int32_t v0 = p0;
-  void* v1 = reinterpret_cast<void*>(p1);
-  int32_t v2 = p2;
-  return write(v0, v1, v2);
-}
 void write_stringSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -1491,42 +451,24 @@ void write_stringSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t write_stringFast(void* p, int32_t p0, struct FastOneByteString* const p1) {
-  int32_t v0 = p0;
-  struct FastOneByteString* const v1 = p1;
-  int32_t v2 = p1->length;
-  return write(v0, v1->data, v2);
-}
 void putcharSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = putchar(v0);
   args.GetReturnValue().Set(rc);
 }
 
-int32_t putcharFast(void* p, int32_t p0) {
-  int32_t v0 = p0;
-  return putchar(v0);
-}
 void getcharSlow(const FunctionCallbackInfo<Value> &args) {
 
   int32_t rc = getchar();
   args.GetReturnValue().Set(rc);
 }
 
-int32_t getcharFast(void* p) {
-
-  return getchar();
-}
 void closeSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = close(v0);
   args.GetReturnValue().Set(rc);
 }
 
-int32_t closeFast(void* p, int32_t p0) {
-  int32_t v0 = p0;
-  return close(v0);
-}
 void preadSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -1536,13 +478,6 @@ void preadSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t preadFast(void* p, int32_t p0, uint64_t* p1, int32_t p2, uint32_t p3) {
-  int32_t v0 = p0;
-  void* v1 = reinterpret_cast<void*>(p1);
-  int32_t v2 = p2;
-  uint32_t v3 = p3;
-  return pread(v0, v1, v2, v3);
-}
 void lseekSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -1551,12 +486,6 @@ void lseekSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-uint32_t lseekFast(void* p, int32_t p0, uint32_t p1, int32_t p2) {
-  int32_t v0 = p0;
-  uint32_t v1 = p1;
-  int32_t v2 = p2;
-  return lseek(v0, v1, v2);
-}
 void fstatSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   struct stat * v1 = reinterpret_cast<struct stat *>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -1564,11 +493,6 @@ void fstatSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t fstatFast(void* p, int32_t p0, uint64_t* p1) {
-  int32_t v0 = p0;
-  struct stat * v1 = reinterpret_cast<struct stat *>(p1);
-  return fstat(v0, v1);
-}
 void fcntlSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -1577,12 +501,6 @@ void fcntlSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t fcntlFast(void* p, int32_t p0, int32_t p1, int32_t p2) {
-  int32_t v0 = p0;
-  int32_t v1 = p1;
-  int32_t v2 = p2;
-  return fcntl(v0, v1, v2);
-}
 void ftruncateSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -1590,11 +508,6 @@ void ftruncateSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t ftruncateFast(void* p, int32_t p0, uint32_t p1) {
-  int32_t v0 = p0;
-  uint32_t v1 = p1;
-  return ftruncate(v0, v1);
-}
 void mknodSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -1604,12 +517,6 @@ void mknodSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t mknodFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2) {
-  struct FastOneByteString* const v0 = p0;
-  int32_t v1 = p1;
-  int32_t v2 = p2;
-  return mknod(v0->data, v1, v2);
-}
 void statSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -1618,11 +525,6 @@ void statSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t statFast(void* p, struct FastOneByteString* const p0, uint64_t* p1) {
-  struct FastOneByteString* const v0 = p0;
-  struct stat * v1 = reinterpret_cast<struct stat *>(p1);
-  return stat(v0->data, v1);
-}
 void lstatSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -1631,11 +533,6 @@ void lstatSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t lstatFast(void* p, struct FastOneByteString* const p0, uint64_t* p1) {
-  struct FastOneByteString* const v0 = p0;
-  struct stat * v1 = reinterpret_cast<struct stat *>(p1);
-  return lstat(v0->data, v1);
-}
 void renameSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -1644,11 +541,6 @@ void renameSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t renameFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1) {
-  struct FastOneByteString* const v0 = p0;
-  struct FastOneByteString* const v1 = p1;
-  return rename(v0->data, v1->data);
-}
 void accessSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -1657,11 +549,6 @@ void accessSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t accessFast(void* p, struct FastOneByteString* const p0, int32_t p1) {
-  struct FastOneByteString* const v0 = p0;
-  int32_t v1 = p1;
-  return access(v0->data, v1);
-}
 void openSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -1671,12 +558,6 @@ void openSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t openFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2) {
-  struct FastOneByteString* const v0 = p0;
-  int32_t v1 = p1;
-  int32_t v2 = p2;
-  return open(v0->data, v1, v2);
-}
 void unlinkSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -1684,10 +565,6 @@ void unlinkSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t unlinkFast(void* p, struct FastOneByteString* const p0) {
-  struct FastOneByteString* const v0 = p0;
-  return unlink(v0->data);
-}
 void readdirSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   DIR* v0 = reinterpret_cast<DIR*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -1695,12 +572,6 @@ void readdirSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void readdirFast(void* p, uint64_t* p0, uint64_t* p_ret) {
-  DIR* v0 = reinterpret_cast<DIR*>(p0);
-  dirent* r = readdir(v0);
-
-  p_ret[0] = (uint64_t)r;
-}
 void readlinkSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -1710,12 +581,6 @@ void readlinkSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-uint32_t readlinkFast(void* p, struct FastOneByteString* const p0, uint64_t* p1, uint32_t p2) {
-  struct FastOneByteString* const v0 = p0;
-  char* v1 = reinterpret_cast<char*>(p1);
-  uint32_t v2 = p2;
-  return readlink(v0->data, v1, v2);
-}
 void opendirSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -1723,12 +588,6 @@ void opendirSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void opendirFast(void* p, struct FastOneByteString* const p0, uint64_t* p_ret) {
-  struct FastOneByteString* const v0 = p0;
-  DIR* r = opendir(v0->data);
-
-  p_ret[0] = (uint64_t)r;
-}
 void fstatatSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -1739,13 +598,6 @@ void fstatatSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t fstatatFast(void* p, int32_t p0, struct FastOneByteString* const p1, uint64_t* p2, int32_t p3) {
-  int32_t v0 = p0;
-  struct FastOneByteString* const v1 = p1;
-  struct stat * v2 = reinterpret_cast<struct stat *>(p2);
-  int32_t v3 = p3;
-  return fstatat(v0, v1->data, v2, v3);
-}
 void mkdirSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -1754,11 +606,6 @@ void mkdirSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t mkdirFast(void* p, struct FastOneByteString* const p0, uint32_t p1) {
-  struct FastOneByteString* const v0 = p0;
-  uint32_t v1 = p1;
-  return mkdir(v0->data, v1);
-}
 void rmdirSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -1766,20 +613,12 @@ void rmdirSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t rmdirFast(void* p, struct FastOneByteString* const p0) {
-  struct FastOneByteString* const v0 = p0;
-  return rmdir(v0->data);
-}
 void closedirSlow(const FunctionCallbackInfo<Value> &args) {
   DIR* v0 = reinterpret_cast<DIR*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   int32_t rc = closedir(v0);
   args.GetReturnValue().Set(rc);
 }
 
-int32_t closedirFast(void* p, uint64_t* p0) {
-  DIR* v0 = reinterpret_cast<DIR*>(p0);
-  return closedir(v0);
-}
 void chdirSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -1787,20 +626,12 @@ void chdirSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t chdirFast(void* p, struct FastOneByteString* const p0) {
-  struct FastOneByteString* const v0 = p0;
-  return chdir(v0->data);
-}
 void fchdirSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = fchdir(v0);
   args.GetReturnValue().Set(rc);
 }
 
-int32_t fchdirFast(void* p, int32_t p0) {
-  int32_t v0 = p0;
-  return fchdir(v0);
-}
 void mprotectSlow(const FunctionCallbackInfo<Value> &args) {
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -1809,12 +640,6 @@ void mprotectSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t mprotectFast(void* p, uint64_t* p0, uint32_t p1, int32_t p2) {
-  void* v0 = reinterpret_cast<void*>(p0);
-  uint32_t v1 = p1;
-  int32_t v2 = p2;
-  return mprotect(v0, v1, v2);
-}
 void memcpySlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -1824,14 +649,6 @@ void memcpySlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void memcpyFast(void* p, uint64_t* p0, uint64_t* p1, uint32_t p2, uint64_t* p_ret) {
-  void* v0 = reinterpret_cast<void*>(p0);
-  void* v1 = reinterpret_cast<void*>(p1);
-  uint32_t v2 = p2;
-  void* r = memcpy(v0, v1, v2);
-
-  p_ret[0] = (uint64_t)r;
-}
 void memsetSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -1841,14 +658,6 @@ void memsetSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void memsetFast(void* p, uint64_t* p0, int32_t p1, uint32_t p2, uint64_t* p_ret) {
-  void* v0 = reinterpret_cast<void*>(p0);
-  int32_t v1 = p1;
-  uint32_t v2 = p2;
-  void* r = memset(v0, v1, v2);
-
-  p_ret[0] = (uint64_t)r;
-}
 void memmoveSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -1858,14 +667,6 @@ void memmoveSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void memmoveFast(void* p, uint64_t* p0, uint64_t* p1, uint32_t p2, uint64_t* p_ret) {
-  void* v0 = reinterpret_cast<void*>(p0);
-  void* v1 = reinterpret_cast<void*>(p1);
-  uint32_t v2 = p2;
-  void* r = memmove(v0, v1, v2);
-
-  p_ret[0] = (uint64_t)r;
-}
 void shm_openSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -1875,12 +676,6 @@ void shm_openSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t shm_openFast(void* p, struct FastOneByteString* const p0, int32_t p1, int32_t p2) {
-  struct FastOneByteString* const v0 = p0;
-  int32_t v1 = p1;
-  int32_t v2 = p2;
-  return shm_open(v0->data, v1, v2);
-}
 void shm_unlinkSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -1888,10 +683,6 @@ void shm_unlinkSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t shm_unlinkFast(void* p, struct FastOneByteString* const p0) {
-  struct FastOneByteString* const v0 = p0;
-  return shm_unlink(v0->data);
-}
 void mmapSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -1904,17 +695,6 @@ void mmapSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void mmapFast(void* p, uint64_t* p0, uint32_t p1, int32_t p2, int32_t p3, int32_t p4, uint32_t p5, uint64_t* p_ret) {
-  void* v0 = reinterpret_cast<void*>(p0);
-  uint32_t v1 = p1;
-  int32_t v2 = p2;
-  int32_t v3 = p3;
-  int32_t v4 = p4;
-  uint32_t v5 = p5;
-  void* r = mmap(v0, v1, v2, v3, v4, v5);
-
-  p_ret[0] = (uint64_t)r;
-}
 void munmapSlow(const FunctionCallbackInfo<Value> &args) {
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -1922,11 +702,6 @@ void munmapSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t munmapFast(void* p, uint64_t* p0, uint32_t p1) {
-  void* v0 = reinterpret_cast<void*>(p0);
-  uint32_t v1 = p1;
-  return munmap(v0, v1);
-}
 void msyncSlow(const FunctionCallbackInfo<Value> &args) {
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -1935,12 +710,6 @@ void msyncSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t msyncFast(void* p, uint64_t* p0, uint32_t p1, int32_t p2) {
-  void* v0 = reinterpret_cast<void*>(p0);
-  uint32_t v1 = p1;
-  int32_t v2 = p2;
-  return msync(v0, v1, v2);
-}
 void mallocSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -1948,12 +717,6 @@ void mallocSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void mallocFast(void* p, uint32_t p0, uint64_t* p_ret) {
-  uint32_t v0 = p0;
-  void* r = malloc(v0);
-
-  p_ret[0] = (uint64_t)r;
-}
 void callocSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -1962,13 +725,6 @@ void callocSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void callocFast(void* p, uint32_t p0, uint32_t p1, uint64_t* p_ret) {
-  uint32_t v0 = p0;
-  uint32_t v1 = p1;
-  void* r = calloc(v0, v1);
-
-  p_ret[0] = (uint64_t)r;
-}
 void reallocSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -1977,13 +733,6 @@ void reallocSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void reallocFast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p_ret) {
-  void* v0 = reinterpret_cast<void*>(p0);
-  uint32_t v1 = p1;
-  void* r = realloc(v0, v1);
-
-  p_ret[0] = (uint64_t)r;
-}
 void aligned_allocSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -1992,31 +741,16 @@ void aligned_allocSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void aligned_allocFast(void* p, uint32_t p0, uint32_t p1, uint64_t* p_ret) {
-  uint32_t v0 = p0;
-  uint32_t v1 = p1;
-  void* r = aligned_alloc(v0, v1);
-
-  p_ret[0] = (uint64_t)r;
-}
 void freeSlow(const FunctionCallbackInfo<Value> &args) {
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   free(v0);
 }
 
-void freeFast(void* p, uint64_t* p0) {
-  void* v0 = reinterpret_cast<void*>(p0);
-  free(v0);
-}
 void fastcallSlow(const FunctionCallbackInfo<Value> &args) {
   struct fastcall* v0 = reinterpret_cast<struct fastcall*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   lo_fastcall(v0);
 }
 
-void fastcallFast(void* p, uint64_t* p0) {
-  struct fastcall* v0 = reinterpret_cast<struct fastcall*>(p0);
-  lo_fastcall(v0);
-}
 void getenvSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -2024,12 +758,6 @@ void getenvSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void getenvFast(void* p, struct FastOneByteString* const p0, uint64_t* p_ret) {
-  struct FastOneByteString* const v0 = p0;
-  char* r = getenv(v0->data);
-
-  p_ret[0] = (uint64_t)r;
-}
 void setenvSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -2039,12 +767,6 @@ void setenvSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t setenvFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1, int32_t p2) {
-  struct FastOneByteString* const v0 = p0;
-  struct FastOneByteString* const v1 = p1;
-  int32_t v2 = p2;
-  return setenv(v0->data, v1->data, v2);
-}
 void unsetenvSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -2052,39 +774,23 @@ void unsetenvSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t unsetenvFast(void* p, struct FastOneByteString* const p0) {
-  struct FastOneByteString* const v0 = p0;
-  return unsetenv(v0->data);
-}
 void sleepSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   sleep(v0);
 }
 
-void sleepFast(void* p, int32_t p0) {
-  int32_t v0 = p0;
-  sleep(v0);
-}
 void usleepSlow(const FunctionCallbackInfo<Value> &args) {
   uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = usleep(v0);
   args.GetReturnValue().Set(rc);
 }
 
-int32_t usleepFast(void* p, uint32_t p0) {
-  uint32_t v0 = p0;
-  return usleep(v0);
-}
 void dupSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = dup(v0);
   args.GetReturnValue().Set(rc);
 }
 
-int32_t dupFast(void* p, int32_t p0) {
-  int32_t v0 = p0;
-  return dup(v0);
-}
 void dup2Slow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2092,11 +798,6 @@ void dup2Slow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t dup2Fast(void* p, int32_t p0, int32_t p1) {
-  int32_t v0 = p0;
-  int32_t v1 = p1;
-  return dup2(v0, v1);
-}
 void getcwdSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   char* v0 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
@@ -2105,53 +806,30 @@ void getcwdSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void getcwdFast(void* p, uint64_t* p0, int32_t p1, uint64_t* p_ret) {
-  char* v0 = reinterpret_cast<char*>(p0);
-  int32_t v1 = p1;
-  void* r = getcwd(v0, v1);
-
-  p_ret[0] = (uint64_t)r;
-}
 void getpidSlow(const FunctionCallbackInfo<Value> &args) {
 
   int32_t rc = getpid();
   args.GetReturnValue().Set(rc);
 }
 
-int32_t getpidFast(void* p) {
-
-  return getpid();
-}
 void getsidSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = getsid(v0);
   args.GetReturnValue().Set(rc);
 }
 
-int32_t getsidFast(void* p, int32_t p0) {
-  int32_t v0 = p0;
-  return getsid(v0);
-}
 void setsidSlow(const FunctionCallbackInfo<Value> &args) {
 
   int32_t rc = setsid();
   args.GetReturnValue().Set(rc);
 }
 
-int32_t setsidFast(void* p) {
-
-  return setsid();
-}
 void getpgrpSlow(const FunctionCallbackInfo<Value> &args) {
 
   int32_t rc = getpgrp();
   args.GetReturnValue().Set(rc);
 }
 
-int32_t getpgrpFast(void* p) {
-
-  return getpgrp();
-}
 void setpgidSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2159,21 +837,12 @@ void setpgidSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t setpgidFast(void* p, int32_t p0, int32_t p1) {
-  int32_t v0 = p0;
-  int32_t v1 = p1;
-  return setpgid(v0, v1);
-}
 void forkSlow(const FunctionCallbackInfo<Value> &args) {
 
   int32_t rc = fork();
   args.GetReturnValue().Set(rc);
 }
 
-int32_t forkFast(void* p) {
-
-  return fork();
-}
 void killSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2181,11 +850,6 @@ void killSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t killFast(void* p, int32_t p0, int32_t p1) {
-  int32_t v0 = p0;
-  int32_t v1 = p1;
-  return kill(v0, v1);
-}
 void waitpidSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int* v1 = reinterpret_cast<int*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -2194,12 +858,6 @@ void waitpidSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t waitpidFast(void* p, int32_t p0, uint64_t* p1, int32_t p2) {
-  int32_t v0 = p0;
-  int* v1 = reinterpret_cast<int*>(p1);
-  int32_t v2 = p2;
-  return waitpid(v0, v1, v2);
-}
 void execvpSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -2208,11 +866,6 @@ void execvpSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t execvpFast(void* p, struct FastOneByteString* const p0, uint64_t* p1) {
-  struct FastOneByteString* const v0 = p0;
-  char* const* v1 = reinterpret_cast<char* const*>(p1);
-  return execvp(v0->data, v1);
-}
 void execveSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -2222,22 +875,12 @@ void execveSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t execveFast(void* p, struct FastOneByteString* const p0, uint64_t* p1, uint64_t* p2) {
-  struct FastOneByteString* const v0 = p0;
-  char* const* v1 = reinterpret_cast<char* const*>(p1);
-  char* const* v2 = reinterpret_cast<char* const*>(p2);
-  return execve(v0->data, v1, v2);
-}
 void isattySlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = isatty(v0);
   args.GetReturnValue().Set(rc);
 }
 
-int32_t isattyFast(void* p, int32_t p0) {
-  int32_t v0 = p0;
-  return isatty(v0);
-}
 void tcgetattrSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   struct termios * v1 = reinterpret_cast<struct termios *>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -2245,11 +888,6 @@ void tcgetattrSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t tcgetattrFast(void* p, int32_t p0, uint64_t* p1) {
-  int32_t v0 = p0;
-  struct termios * v1 = reinterpret_cast<struct termios *>(p1);
-  return tcgetattr(v0, v1);
-}
 void tcsetattrSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2258,40 +896,22 @@ void tcsetattrSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t tcsetattrFast(void* p, int32_t p0, int32_t p1, uint64_t* p2) {
-  int32_t v0 = p0;
-  int32_t v1 = p1;
-  struct termios * v2 = reinterpret_cast<struct termios *>(p2);
-  return tcsetattr(v0, v1, v2);
-}
 void exitSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   exit(v0);
 }
 
-void exitFast(void* p, int32_t p0) {
-  int32_t v0 = p0;
-  exit(v0);
-}
 void _exitSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   _exit(v0);
 }
 
-void _exitFast(void* p, int32_t p0) {
-  int32_t v0 = p0;
-  _exit(v0);
-}
 void sysconfSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t rc = sysconf(v0);
   args.GetReturnValue().Set(rc);
 }
 
-uint32_t sysconfFast(void* p, int32_t p0) {
-  int32_t v0 = p0;
-  return sysconf(v0);
-}
 void getrusageSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   struct rusage* v1 = reinterpret_cast<struct rusage*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -2299,21 +919,12 @@ void getrusageSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t getrusageFast(void* p, int32_t p0, uint64_t* p1) {
-  int32_t v0 = p0;
-  struct rusage* v1 = reinterpret_cast<struct rusage*>(p1);
-  return getrusage(v0, v1);
-}
 void timesSlow(const FunctionCallbackInfo<Value> &args) {
   struct tms* v0 = reinterpret_cast<struct tms*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t rc = times(v0);
   args.GetReturnValue().Set(rc);
 }
 
-uint32_t timesFast(void* p, uint64_t* p0) {
-  struct tms* v0 = reinterpret_cast<struct tms*>(p0);
-  return times(v0);
-}
 void isolate_createSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -2361,20 +972,12 @@ void isolate_context_destroySlow(const FunctionCallbackInfo<Value> &args) {
   lo_destroy_isolate_context(v0);
 }
 
-void isolate_context_destroyFast(void* p, uint64_t* p0) {
-  struct isolate_context* v0 = reinterpret_cast<struct isolate_context*>(p0);
-  lo_destroy_isolate_context(v0);
-}
 void isolate_context_sizeSlow(const FunctionCallbackInfo<Value> &args) {
 
   int32_t rc = lo_context_size();
   args.GetReturnValue().Set(rc);
 }
 
-int32_t isolate_context_sizeFast(void* p) {
-
-  return lo_context_size();
-}
 void isolate_startSlow(const FunctionCallbackInfo<Value> &args) {
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   lo_start_isolate(v0);
@@ -2395,15 +998,6 @@ void memmemSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
 }
 
-void memmemFast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t p3, uint64_t* p_ret) {
-  void* v0 = reinterpret_cast<void*>(p0);
-  uint32_t v1 = p1;
-  void* v2 = reinterpret_cast<void*>(p2);
-  uint32_t v3 = p3;
-  void* r = memmem(v0, v1, v2, v3);
-
-  p_ret[0] = (uint64_t)r;
-}
 void strnlenSlow(const FunctionCallbackInfo<Value> &args) {
   const char* v0 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2411,11 +1005,6 @@ void strnlenSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-uint32_t strnlenFast(void* p, uint64_t* p0, uint32_t p1) {
-  const char* v0 = reinterpret_cast<const char*>(p0);
-  uint32_t v1 = p1;
-  return strnlen(v0, v1);
-}
 void symlinkSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -2424,11 +1013,6 @@ void symlinkSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t symlinkFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1) {
-  struct FastOneByteString* const v0 = p0;
-  struct FastOneByteString* const v1 = p1;
-  return symlink(v0->data, v1->data);
-}
 void strnlen_strSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -2437,20 +1021,11 @@ void strnlen_strSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-uint32_t strnlen_strFast(void* p, struct FastOneByteString* const p0) {
-  struct FastOneByteString* const v0 = p0;
-  uint32_t v1 = p0->length;
-  return strnlen(v0->data, v1);
-}
 void syncSlow(const FunctionCallbackInfo<Value> &args) {
 
   sync();
 }
 
-void syncFast(void* p) {
-
-  sync();
-}
 #ifdef __linux__
 
 void makedevSlow(const FunctionCallbackInfo<Value> &args) {
@@ -2460,11 +1035,6 @@ void makedevSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-uint32_t makedevFast(void* p, uint32_t p0, uint32_t p1) {
-  uint32_t v0 = p0;
-  uint32_t v1 = p1;
-  return makedev(v0, v1);
-}
 void posix_fadviseSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2474,13 +1044,6 @@ void posix_fadviseSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t posix_fadviseFast(void* p, int32_t p0, uint32_t p1, uint32_t p2, int32_t p3) {
-  int32_t v0 = p0;
-  uint32_t v1 = p1;
-  uint32_t v2 = p2;
-  int32_t v3 = p3;
-  return posix_fadvise(v0, v1, v2, v3);
-}
 void ioctlSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2489,12 +1052,6 @@ void ioctlSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t ioctlFast(void* p, int32_t p0, uint32_t p1, uint64_t* p2) {
-  int32_t v0 = p0;
-  uint32_t v1 = p1;
-  void* v2 = reinterpret_cast<void*>(p2);
-  return ioctl(v0, v1, v2);
-}
 void ioctl2Slow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2503,12 +1060,6 @@ void ioctl2Slow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t ioctl2Fast(void* p, int32_t p0, uint32_t p1, int32_t p2) {
-  int32_t v0 = p0;
-  uint32_t v1 = p1;
-  int32_t v2 = p2;
-  return ioctl(v0, v1, v2);
-}
 void ioctl3Slow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2517,22 +1068,12 @@ void ioctl3Slow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t ioctl3Fast(void* p, int32_t p0, uint32_t p1, uint64_t* p2) {
-  int32_t v0 = p0;
-  uint32_t v1 = p1;
-  void* v2 = reinterpret_cast<void*>(p2);
-  return ioctl(v0, v1, v2);
-}
 void rebootSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   int32_t rc = reboot(v0);
   args.GetReturnValue().Set(rc);
 }
 
-int32_t rebootFast(void* p, int32_t p0) {
-  int32_t v0 = p0;
-  return reboot(v0);
-}
 void getdentsSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   struct dirent* v1 = reinterpret_cast<struct dirent*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -2541,12 +1082,6 @@ void getdentsSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-uint32_t getdentsFast(void* p, int32_t p0, uint64_t* p1, uint32_t p2) {
-  int32_t v0 = p0;
-  struct dirent* v1 = reinterpret_cast<struct dirent*>(p1);
-  uint32_t v2 = p2;
-  return getdents64(v0, v1, v2);
-}
 void getaffinitySlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2555,12 +1090,6 @@ void getaffinitySlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t getaffinityFast(void* p, int32_t p0, uint32_t p1, uint64_t* p2) {
-  int32_t v0 = p0;
-  uint32_t v1 = p1;
-  cpu_set_t* v2 = reinterpret_cast<cpu_set_t*>(p2);
-  return sched_getaffinity(v0, v1, v2);
-}
 void copy_file_rangeSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   loff_t* v1 = reinterpret_cast<loff_t*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -2572,15 +1101,6 @@ void copy_file_rangeSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-uint32_t copy_file_rangeFast(void* p, int32_t p0, uint64_t* p1, int32_t p2, uint64_t* p3, uint32_t p4, uint32_t p5) {
-  int32_t v0 = p0;
-  loff_t* v1 = reinterpret_cast<loff_t*>(p1);
-  int32_t v2 = p2;
-  loff_t* v3 = reinterpret_cast<loff_t*>(p3);
-  uint32_t v4 = p4;
-  uint32_t v5 = p5;
-  return copy_file_range(v0, v1, v2, v3, v4, v5);
-}
 void memfd_createSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -2589,11 +1109,6 @@ void memfd_createSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t memfd_createFast(void* p, struct FastOneByteString* const p0, uint32_t p1) {
-  struct FastOneByteString* const v0 = p0;
-  uint32_t v1 = p1;
-  return memfd_create(v0->data, v1);
-}
 void setaffinitySlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2602,22 +1117,12 @@ void setaffinitySlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t setaffinityFast(void* p, int32_t p0, uint32_t p1, uint64_t* p2) {
-  int32_t v0 = p0;
-  uint32_t v1 = p1;
-  cpu_set_t* v2 = reinterpret_cast<cpu_set_t*>(p2);
-  return sched_setaffinity(v0, v1, v2);
-}
 void vforkSlow(const FunctionCallbackInfo<Value> &args) {
 
   int32_t rc = vfork();
   args.GetReturnValue().Set(rc);
 }
 
-int32_t vforkFast(void* p) {
-
-  return vfork();
-}
 void vexecveSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -2627,12 +1132,6 @@ void vexecveSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t vexecveFast(void* p, struct FastOneByteString* const p0, uint64_t* p1, uint64_t* p2) {
-  struct FastOneByteString* const v0 = p0;
-  char* const* v1 = reinterpret_cast<char* const*>(p1);
-  char* const* v2 = reinterpret_cast<char* const*>(p2);
-  return vexecve(v0->data, v1, v2);
-}
 void vfexecveSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   char* const* v1 = reinterpret_cast<char* const*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
@@ -2641,22 +1140,12 @@ void vfexecveSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t vfexecveFast(void* p, int32_t p0, uint64_t* p1, uint64_t* p2) {
-  int32_t v0 = p0;
-  char* const* v1 = reinterpret_cast<char* const*>(p1);
-  char* const* v2 = reinterpret_cast<char* const*>(p2);
-  return vfexecve(v0, v1, v2);
-}
 void getpagesizeSlow(const FunctionCallbackInfo<Value> &args) {
 
   int32_t rc = getpagesize();
   args.GetReturnValue().Set(rc);
 }
 
-int32_t getpagesizeFast(void* p) {
-
-  return getpagesize();
-}
 void madviseSlow(const FunctionCallbackInfo<Value> &args) {
   void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -2665,123 +1154,117 @@ void madviseSlow(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(rc);
 }
 
-int32_t madviseFast(void* p, uint64_t* p0, uint32_t p1, int32_t p2) {
-  void* v0 = reinterpret_cast<void*>(p0);
-  uint32_t v1 = p1;
-  int32_t v2 = p2;
-  return madvise(v0, v1, v2);
-}
 #endif
 #ifdef __MACH__
 
 #endif
 void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   Local<ObjectTemplate> module = ObjectTemplate::New(isolate);
-  SET_FAST_METHOD(isolate, module, "dlopen", &pFdlopen, dlopenSlow);
-  SET_FAST_METHOD(isolate, module, "dlsym", &pFdlsym, dlsymSlow);
-  SET_FAST_METHOD(isolate, module, "dlclose", &pFdlclose, dlcloseSlow);
-  SET_FAST_METHOD(isolate, module, "dlerror", &pFdlerror, dlerrorSlow);
-  SET_FAST_METHOD(isolate, module, "read", &pFread, readSlow);
-  SET_FAST_METHOD(isolate, module, "read2", &pFread2, read2Slow);
-  SET_FAST_METHOD(isolate, module, "write", &pFwrite, writeSlow);
-  SET_FAST_METHOD(isolate, module, "write2", &pFwrite2, write2Slow);
-  SET_FAST_METHOD(isolate, module, "write_string", &pFwrite_string, write_stringSlow);
-  SET_FAST_METHOD(isolate, module, "putchar", &pFputchar, putcharSlow);
-  SET_FAST_METHOD(isolate, module, "getchar", &pFgetchar, getcharSlow);
-  SET_FAST_METHOD(isolate, module, "close", &pFclose, closeSlow);
-  SET_FAST_METHOD(isolate, module, "pread", &pFpread, preadSlow);
-  SET_FAST_METHOD(isolate, module, "lseek", &pFlseek, lseekSlow);
-  SET_FAST_METHOD(isolate, module, "fstat", &pFfstat, fstatSlow);
-  SET_FAST_METHOD(isolate, module, "fcntl", &pFfcntl, fcntlSlow);
-  SET_FAST_METHOD(isolate, module, "ftruncate", &pFftruncate, ftruncateSlow);
-  SET_FAST_METHOD(isolate, module, "mknod", &pFmknod, mknodSlow);
-  SET_FAST_METHOD(isolate, module, "stat", &pFstat, statSlow);
-  SET_FAST_METHOD(isolate, module, "lstat", &pFlstat, lstatSlow);
-  SET_FAST_METHOD(isolate, module, "rename", &pFrename, renameSlow);
-  SET_FAST_METHOD(isolate, module, "access", &pFaccess, accessSlow);
-  SET_FAST_METHOD(isolate, module, "open", &pFopen, openSlow);
-  SET_FAST_METHOD(isolate, module, "unlink", &pFunlink, unlinkSlow);
-  SET_FAST_METHOD(isolate, module, "readdir", &pFreaddir, readdirSlow);
-  SET_FAST_METHOD(isolate, module, "readlink", &pFreadlink, readlinkSlow);
-  SET_FAST_METHOD(isolate, module, "opendir", &pFopendir, opendirSlow);
-  SET_FAST_METHOD(isolate, module, "fstatat", &pFfstatat, fstatatSlow);
-  SET_FAST_METHOD(isolate, module, "mkdir", &pFmkdir, mkdirSlow);
-  SET_FAST_METHOD(isolate, module, "rmdir", &pFrmdir, rmdirSlow);
-  SET_FAST_METHOD(isolate, module, "closedir", &pFclosedir, closedirSlow);
-  SET_FAST_METHOD(isolate, module, "chdir", &pFchdir, chdirSlow);
-  SET_FAST_METHOD(isolate, module, "fchdir", &pFfchdir, fchdirSlow);
-  SET_FAST_METHOD(isolate, module, "mprotect", &pFmprotect, mprotectSlow);
-  SET_FAST_METHOD(isolate, module, "memcpy", &pFmemcpy, memcpySlow);
-  SET_FAST_METHOD(isolate, module, "memset", &pFmemset, memsetSlow);
-  SET_FAST_METHOD(isolate, module, "memmove", &pFmemmove, memmoveSlow);
-  SET_FAST_METHOD(isolate, module, "shm_open", &pFshm_open, shm_openSlow);
-  SET_FAST_METHOD(isolate, module, "shm_unlink", &pFshm_unlink, shm_unlinkSlow);
-  SET_FAST_METHOD(isolate, module, "mmap", &pFmmap, mmapSlow);
-  SET_FAST_METHOD(isolate, module, "munmap", &pFmunmap, munmapSlow);
-  SET_FAST_METHOD(isolate, module, "msync", &pFmsync, msyncSlow);
-  SET_FAST_METHOD(isolate, module, "malloc", &pFmalloc, mallocSlow);
-  SET_FAST_METHOD(isolate, module, "calloc", &pFcalloc, callocSlow);
-  SET_FAST_METHOD(isolate, module, "realloc", &pFrealloc, reallocSlow);
-  SET_FAST_METHOD(isolate, module, "aligned_alloc", &pFaligned_alloc, aligned_allocSlow);
-  SET_FAST_METHOD(isolate, module, "free", &pFfree, freeSlow);
+  SET_METHOD(isolate, module, "dlopen", dlopenSlow);
+  SET_METHOD(isolate, module, "dlsym", dlsymSlow);
+  SET_METHOD(isolate, module, "dlclose", dlcloseSlow);
+  SET_METHOD(isolate, module, "dlerror", dlerrorSlow);
+  SET_METHOD(isolate, module, "read", readSlow);
+  SET_METHOD(isolate, module, "read2", read2Slow);
+  SET_METHOD(isolate, module, "write", writeSlow);
+  SET_METHOD(isolate, module, "write2", write2Slow);
+  SET_METHOD(isolate, module, "write_string", write_stringSlow);
+  SET_METHOD(isolate, module, "putchar", putcharSlow);
+  SET_METHOD(isolate, module, "getchar", getcharSlow);
+  SET_METHOD(isolate, module, "close", closeSlow);
+  SET_METHOD(isolate, module, "pread", preadSlow);
+  SET_METHOD(isolate, module, "lseek", lseekSlow);
+  SET_METHOD(isolate, module, "fstat", fstatSlow);
+  SET_METHOD(isolate, module, "fcntl", fcntlSlow);
+  SET_METHOD(isolate, module, "ftruncate", ftruncateSlow);
+  SET_METHOD(isolate, module, "mknod", mknodSlow);
+  SET_METHOD(isolate, module, "stat", statSlow);
+  SET_METHOD(isolate, module, "lstat", lstatSlow);
+  SET_METHOD(isolate, module, "rename", renameSlow);
+  SET_METHOD(isolate, module, "access", accessSlow);
+  SET_METHOD(isolate, module, "open", openSlow);
+  SET_METHOD(isolate, module, "unlink", unlinkSlow);
+  SET_METHOD(isolate, module, "readdir", readdirSlow);
+  SET_METHOD(isolate, module, "readlink", readlinkSlow);
+  SET_METHOD(isolate, module, "opendir", opendirSlow);
+  SET_METHOD(isolate, module, "fstatat", fstatatSlow);
+  SET_METHOD(isolate, module, "mkdir", mkdirSlow);
+  SET_METHOD(isolate, module, "rmdir", rmdirSlow);
+  SET_METHOD(isolate, module, "closedir", closedirSlow);
+  SET_METHOD(isolate, module, "chdir", chdirSlow);
+  SET_METHOD(isolate, module, "fchdir", fchdirSlow);
+  SET_METHOD(isolate, module, "mprotect", mprotectSlow);
+  SET_METHOD(isolate, module, "memcpy", memcpySlow);
+  SET_METHOD(isolate, module, "memset", memsetSlow);
+  SET_METHOD(isolate, module, "memmove", memmoveSlow);
+  SET_METHOD(isolate, module, "shm_open", shm_openSlow);
+  SET_METHOD(isolate, module, "shm_unlink", shm_unlinkSlow);
+  SET_METHOD(isolate, module, "mmap", mmapSlow);
+  SET_METHOD(isolate, module, "munmap", munmapSlow);
+  SET_METHOD(isolate, module, "msync", msyncSlow);
+  SET_METHOD(isolate, module, "malloc", mallocSlow);
+  SET_METHOD(isolate, module, "calloc", callocSlow);
+  SET_METHOD(isolate, module, "realloc", reallocSlow);
+  SET_METHOD(isolate, module, "aligned_alloc", aligned_allocSlow);
+  SET_METHOD(isolate, module, "free", freeSlow);
   SET_METHOD(isolate, module, "bind_fastcall", bind_fastcallSlow);
   SET_METHOD(isolate, module, "bind_slowcall", bind_slowcallSlow);
-  SET_FAST_METHOD(isolate, module, "fastcall", &pFfastcall, fastcallSlow);
-  SET_FAST_METHOD(isolate, module, "getenv", &pFgetenv, getenvSlow);
-  SET_FAST_METHOD(isolate, module, "setenv", &pFsetenv, setenvSlow);
-  SET_FAST_METHOD(isolate, module, "unsetenv", &pFunsetenv, unsetenvSlow);
-  SET_FAST_METHOD(isolate, module, "sleep", &pFsleep, sleepSlow);
-  SET_FAST_METHOD(isolate, module, "usleep", &pFusleep, usleepSlow);
-  SET_FAST_METHOD(isolate, module, "dup", &pFdup, dupSlow);
-  SET_FAST_METHOD(isolate, module, "dup2", &pFdup2, dup2Slow);
-  SET_FAST_METHOD(isolate, module, "getcwd", &pFgetcwd, getcwdSlow);
-  SET_FAST_METHOD(isolate, module, "getpid", &pFgetpid, getpidSlow);
-  SET_FAST_METHOD(isolate, module, "getsid", &pFgetsid, getsidSlow);
-  SET_FAST_METHOD(isolate, module, "setsid", &pFsetsid, setsidSlow);
-  SET_FAST_METHOD(isolate, module, "getpgrp", &pFgetpgrp, getpgrpSlow);
-  SET_FAST_METHOD(isolate, module, "setpgid", &pFsetpgid, setpgidSlow);
-  SET_FAST_METHOD(isolate, module, "fork", &pFfork, forkSlow);
-  SET_FAST_METHOD(isolate, module, "kill", &pFkill, killSlow);
-  SET_FAST_METHOD(isolate, module, "waitpid", &pFwaitpid, waitpidSlow);
-  SET_FAST_METHOD(isolate, module, "execvp", &pFexecvp, execvpSlow);
-  SET_FAST_METHOD(isolate, module, "execve", &pFexecve, execveSlow);
-  SET_FAST_METHOD(isolate, module, "isatty", &pFisatty, isattySlow);
-  SET_FAST_METHOD(isolate, module, "tcgetattr", &pFtcgetattr, tcgetattrSlow);
-  SET_FAST_METHOD(isolate, module, "tcsetattr", &pFtcsetattr, tcsetattrSlow);
-  SET_FAST_METHOD(isolate, module, "exit", &pFexit, exitSlow);
-  SET_FAST_METHOD(isolate, module, "_exit", &pF_exit, _exitSlow);
-  SET_FAST_METHOD(isolate, module, "sysconf", &pFsysconf, sysconfSlow);
-  SET_FAST_METHOD(isolate, module, "getrusage", &pFgetrusage, getrusageSlow);
-  SET_FAST_METHOD(isolate, module, "times", &pFtimes, timesSlow);
+  SET_METHOD(isolate, module, "fastcall", fastcallSlow);
+  SET_METHOD(isolate, module, "getenv", getenvSlow);
+  SET_METHOD(isolate, module, "setenv", setenvSlow);
+  SET_METHOD(isolate, module, "unsetenv", unsetenvSlow);
+  SET_METHOD(isolate, module, "sleep", sleepSlow);
+  SET_METHOD(isolate, module, "usleep", usleepSlow);
+  SET_METHOD(isolate, module, "dup", dupSlow);
+  SET_METHOD(isolate, module, "dup2", dup2Slow);
+  SET_METHOD(isolate, module, "getcwd", getcwdSlow);
+  SET_METHOD(isolate, module, "getpid", getpidSlow);
+  SET_METHOD(isolate, module, "getsid", getsidSlow);
+  SET_METHOD(isolate, module, "setsid", setsidSlow);
+  SET_METHOD(isolate, module, "getpgrp", getpgrpSlow);
+  SET_METHOD(isolate, module, "setpgid", setpgidSlow);
+  SET_METHOD(isolate, module, "fork", forkSlow);
+  SET_METHOD(isolate, module, "kill", killSlow);
+  SET_METHOD(isolate, module, "waitpid", waitpidSlow);
+  SET_METHOD(isolate, module, "execvp", execvpSlow);
+  SET_METHOD(isolate, module, "execve", execveSlow);
+  SET_METHOD(isolate, module, "isatty", isattySlow);
+  SET_METHOD(isolate, module, "tcgetattr", tcgetattrSlow);
+  SET_METHOD(isolate, module, "tcsetattr", tcsetattrSlow);
+  SET_METHOD(isolate, module, "exit", exitSlow);
+  SET_METHOD(isolate, module, "_exit", _exitSlow);
+  SET_METHOD(isolate, module, "sysconf", sysconfSlow);
+  SET_METHOD(isolate, module, "getrusage", getrusageSlow);
+  SET_METHOD(isolate, module, "times", timesSlow);
   SET_METHOD(isolate, module, "isolate_create", isolate_createSlow);
   SET_METHOD(isolate, module, "isolate_context_create", isolate_context_createSlow);
-  SET_FAST_METHOD(isolate, module, "isolate_context_destroy", &pFisolate_context_destroy, isolate_context_destroySlow);
-  SET_FAST_METHOD(isolate, module, "isolate_context_size", &pFisolate_context_size, isolate_context_sizeSlow);
+  SET_METHOD(isolate, module, "isolate_context_destroy", isolate_context_destroySlow);
+  SET_METHOD(isolate, module, "isolate_context_size", isolate_context_sizeSlow);
   SET_METHOD(isolate, module, "isolate_start", isolate_startSlow);
   SET_METHOD(isolate, module, "callback", callbackSlow);
-  SET_FAST_METHOD(isolate, module, "memmem", &pFmemmem, memmemSlow);
-  SET_FAST_METHOD(isolate, module, "strnlen", &pFstrnlen, strnlenSlow);
-  SET_FAST_METHOD(isolate, module, "symlink", &pFsymlink, symlinkSlow);
-  SET_FAST_METHOD(isolate, module, "strnlen_str", &pFstrnlen_str, strnlen_strSlow);
-  SET_FAST_METHOD(isolate, module, "sync", &pFsync, syncSlow);
+  SET_METHOD(isolate, module, "memmem", memmemSlow);
+  SET_METHOD(isolate, module, "strnlen", strnlenSlow);
+  SET_METHOD(isolate, module, "symlink", symlinkSlow);
+  SET_METHOD(isolate, module, "strnlen_str", strnlen_strSlow);
+  SET_METHOD(isolate, module, "sync", syncSlow);
 
 #ifdef __linux__
-  SET_FAST_METHOD(isolate, module, "makedev", &pFmakedev, makedevSlow);
-  SET_FAST_METHOD(isolate, module, "posix_fadvise", &pFposix_fadvise, posix_fadviseSlow);
-  SET_FAST_METHOD(isolate, module, "ioctl", &pFioctl, ioctlSlow);
-  SET_FAST_METHOD(isolate, module, "ioctl2", &pFioctl2, ioctl2Slow);
-  SET_FAST_METHOD(isolate, module, "ioctl3", &pFioctl3, ioctl3Slow);
-  SET_FAST_METHOD(isolate, module, "reboot", &pFreboot, rebootSlow);
-  SET_FAST_METHOD(isolate, module, "getdents", &pFgetdents, getdentsSlow);
-  SET_FAST_METHOD(isolate, module, "getaffinity", &pFgetaffinity, getaffinitySlow);
-  SET_FAST_METHOD(isolate, module, "copy_file_range", &pFcopy_file_range, copy_file_rangeSlow);
-  SET_FAST_METHOD(isolate, module, "memfd_create", &pFmemfd_create, memfd_createSlow);
-  SET_FAST_METHOD(isolate, module, "setaffinity", &pFsetaffinity, setaffinitySlow);
-  SET_FAST_METHOD(isolate, module, "vfork", &pFvfork, vforkSlow);
-  SET_FAST_METHOD(isolate, module, "vexecve", &pFvexecve, vexecveSlow);
-  SET_FAST_METHOD(isolate, module, "vfexecve", &pFvfexecve, vfexecveSlow);
-  SET_FAST_METHOD(isolate, module, "getpagesize", &pFgetpagesize, getpagesizeSlow);
-  SET_FAST_METHOD(isolate, module, "madvise", &pFmadvise, madviseSlow);
+  SET_METHOD(isolate, module, "makedev", makedevSlow);
+  SET_METHOD(isolate, module, "posix_fadvise", posix_fadviseSlow);
+  SET_METHOD(isolate, module, "ioctl", ioctlSlow);
+  SET_METHOD(isolate, module, "ioctl2", ioctl2Slow);
+  SET_METHOD(isolate, module, "ioctl3", ioctl3Slow);
+  SET_METHOD(isolate, module, "reboot", rebootSlow);
+  SET_METHOD(isolate, module, "getdents", getdentsSlow);
+  SET_METHOD(isolate, module, "getaffinity", getaffinitySlow);
+  SET_METHOD(isolate, module, "copy_file_range", copy_file_rangeSlow);
+  SET_METHOD(isolate, module, "memfd_create", memfd_createSlow);
+  SET_METHOD(isolate, module, "setaffinity", setaffinitySlow);
+  SET_METHOD(isolate, module, "vfork", vforkSlow);
+  SET_METHOD(isolate, module, "vexecve", vexecveSlow);
+  SET_METHOD(isolate, module, "vfexecve", vfexecveSlow);
+  SET_METHOD(isolate, module, "getpagesize", getpagesizeSlow);
+  SET_METHOD(isolate, module, "madvise", madviseSlow);
 
 #endif
 #ifdef __MACH__
@@ -2918,11 +1401,135 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 #endif
   SET_MODULE(isolate, target, "core", module);
 }
+
+// Every native callback this binding registers, both plain (SET_METHOD)
+// and fast-call (SET_FAST_METHOD/SET_FAST_PROP), needed in
+// SnapshotCreator's external_references before this binding's own
+// Init() can safely run inside lo::CreateSnapshot's isolate - PLAN.md
+// task 66. Null-terminated, same convention as lo.cc's own
+// lo_external_references[].
+static const intptr_t core_external_references[] = {
+  (intptr_t)&dlopenSlow,
+  (intptr_t)&dlsymSlow,
+  (intptr_t)&dlcloseSlow,
+  (intptr_t)&dlerrorSlow,
+  (intptr_t)&readSlow,
+  (intptr_t)&read2Slow,
+  (intptr_t)&writeSlow,
+  (intptr_t)&write2Slow,
+  (intptr_t)&write_stringSlow,
+  (intptr_t)&putcharSlow,
+  (intptr_t)&getcharSlow,
+  (intptr_t)&closeSlow,
+  (intptr_t)&preadSlow,
+  (intptr_t)&lseekSlow,
+  (intptr_t)&fstatSlow,
+  (intptr_t)&fcntlSlow,
+  (intptr_t)&ftruncateSlow,
+  (intptr_t)&mknodSlow,
+  (intptr_t)&statSlow,
+  (intptr_t)&lstatSlow,
+  (intptr_t)&renameSlow,
+  (intptr_t)&accessSlow,
+  (intptr_t)&openSlow,
+  (intptr_t)&unlinkSlow,
+  (intptr_t)&readdirSlow,
+  (intptr_t)&readlinkSlow,
+  (intptr_t)&opendirSlow,
+  (intptr_t)&fstatatSlow,
+  (intptr_t)&mkdirSlow,
+  (intptr_t)&rmdirSlow,
+  (intptr_t)&closedirSlow,
+  (intptr_t)&chdirSlow,
+  (intptr_t)&fchdirSlow,
+  (intptr_t)&mprotectSlow,
+  (intptr_t)&memcpySlow,
+  (intptr_t)&memsetSlow,
+  (intptr_t)&memmoveSlow,
+  (intptr_t)&shm_openSlow,
+  (intptr_t)&shm_unlinkSlow,
+  (intptr_t)&mmapSlow,
+  (intptr_t)&munmapSlow,
+  (intptr_t)&msyncSlow,
+  (intptr_t)&mallocSlow,
+  (intptr_t)&callocSlow,
+  (intptr_t)&reallocSlow,
+  (intptr_t)&aligned_allocSlow,
+  (intptr_t)&freeSlow,
+  (intptr_t)&bind_fastcallSlow,
+  (intptr_t)&bind_slowcallSlow,
+  (intptr_t)&fastcallSlow,
+  (intptr_t)&getenvSlow,
+  (intptr_t)&setenvSlow,
+  (intptr_t)&unsetenvSlow,
+  (intptr_t)&sleepSlow,
+  (intptr_t)&usleepSlow,
+  (intptr_t)&dupSlow,
+  (intptr_t)&dup2Slow,
+  (intptr_t)&getcwdSlow,
+  (intptr_t)&getpidSlow,
+  (intptr_t)&getsidSlow,
+  (intptr_t)&setsidSlow,
+  (intptr_t)&getpgrpSlow,
+  (intptr_t)&setpgidSlow,
+  (intptr_t)&forkSlow,
+  (intptr_t)&killSlow,
+  (intptr_t)&waitpidSlow,
+  (intptr_t)&execvpSlow,
+  (intptr_t)&execveSlow,
+  (intptr_t)&isattySlow,
+  (intptr_t)&tcgetattrSlow,
+  (intptr_t)&tcsetattrSlow,
+  (intptr_t)&exitSlow,
+  (intptr_t)&_exitSlow,
+  (intptr_t)&sysconfSlow,
+  (intptr_t)&getrusageSlow,
+  (intptr_t)&timesSlow,
+  (intptr_t)&isolate_createSlow,
+  (intptr_t)&isolate_context_createSlow,
+  (intptr_t)&isolate_context_destroySlow,
+  (intptr_t)&isolate_context_sizeSlow,
+  (intptr_t)&isolate_startSlow,
+  (intptr_t)&callbackSlow,
+  (intptr_t)&memmemSlow,
+  (intptr_t)&strnlenSlow,
+  (intptr_t)&symlinkSlow,
+  (intptr_t)&strnlen_strSlow,
+  (intptr_t)&syncSlow,
+
+#ifdef __linux__
+  (intptr_t)&makedevSlow,
+  (intptr_t)&posix_fadviseSlow,
+  (intptr_t)&ioctlSlow,
+  (intptr_t)&ioctl2Slow,
+  (intptr_t)&ioctl3Slow,
+  (intptr_t)&rebootSlow,
+  (intptr_t)&getdentsSlow,
+  (intptr_t)&getaffinitySlow,
+  (intptr_t)&copy_file_rangeSlow,
+  (intptr_t)&memfd_createSlow,
+  (intptr_t)&setaffinitySlow,
+  (intptr_t)&vforkSlow,
+  (intptr_t)&vexecveSlow,
+  (intptr_t)&vfexecveSlow,
+  (intptr_t)&getpagesizeSlow,
+  (intptr_t)&madviseSlow,
+
+#endif
+#ifdef __MACH__
+
+#endif
+  0
+};
+
 } // namespace core
 } // namespace lo
 
 extern "C"  {
   DLL_PUBLIC void* _register_core() {
     return (void*)lo::core::Init;
+  }
+  DLL_PUBLIC const intptr_t* _external_references_core() {
+    return lo::core::core_external_references;
   }
 }

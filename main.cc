@@ -22,7 +22,18 @@ int main(int argc, char** argv) {
     int keep_code = (argc == 4 && strncmp(argv[3], "--keep", 6) == 0) ? 1 : 0;
     lo::Setup(&argc, argv, v8flags, _v8_threads, _v8flags_from_commandline);
     register_builtins();
-    return lo::CreateSnapshot(main_js, main_js_len, argv[2], keep_code);
+    // main.js's own dispatch reads args.length to decide whether to run
+    // a real command - the real --build-snapshot/out-path argv means
+    // nothing to it and was making it try to actually execute
+    // "--build-snapshot" as a user command during the build pass
+    // (chasing unrelated bindings like epoll/system as a result, a real
+    // symptom hit and root-caused live, not guessed). Pass a single,
+    // benign argv[0] instead, so args.length === 1 takes the harmless
+    // show_usage() branch.
+    int snapshot_argc = 1;
+    char* snapshot_argv[1] = { argv[0] };
+    return lo::CreateSnapshot(main_js, main_js_len, argv[2], keep_code,
+      snapshot_argc, snapshot_argv);
   }
   // record the start time - this will be made available to JS so we can 
   // measure time to bootstrap the runtime

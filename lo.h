@@ -207,7 +207,7 @@ DLL_PUBLIC int CreateIsolate(int argc, char** argv,
 // over the default kClear (discard it, recompile lazily on first real
 // call after loading) - see PLAN.md task 64.
 DLL_PUBLIC int CreateSnapshot(const char* main_src, unsigned int main_len,
-  const char* out_path, int keep_code);
+  const char* out_path, int keep_code, int argc, char** argv);
 void PrintStackTrace(v8::Isolate* isolate, const v8::TryCatch& try_catch);
 void PromiseRejectCallback(v8::PromiseRejectMessage message);
 void FreeMemory(void* buf, size_t length, void* data);
