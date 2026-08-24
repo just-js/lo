@@ -22,8 +22,8 @@ ifeq ($(MUSL),1)
 	CARGS+=--sysroot=$(MUSL_SYSROOT) -D_LARGEFILE64_SOURCE
 endif
 OPT=-O3
-VERSION=0.0.31-pre
-V8_VERSION=15.0
+VERSION=0.0.32-pre
+V8_VERSION=15.1
 RUNTIME=lo
 LO_HOME=$(shell pwd)
 BINDINGS=core.o inflate.a curl.o system.o
