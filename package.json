@@ -1,0 +1,29 @@
+{
+  "name": "y",
+  "version": "1.0.0",
+  "description": "- gcc/g++ or clang/clang++ - make - curl - gunzip",
+  "main": "main.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/just-js/lo.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/just-js/lo/issues"
+  },
+  "homepage": "https://github.com/just-js/lo#readme",
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "@typescript/native-preview": "^7.0.0-dev.20260707.2",
+    "typescript": "^7.0.2",
+    "typescript-6": "npm:typescript@^6.0.3"
+  }
+}

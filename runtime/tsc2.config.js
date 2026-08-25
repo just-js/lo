@@ -18,7 +18,7 @@ const libFiles = [
 // of 2.66MB. See PLAN.md task 68. `one.ts` itself is embedded too, so the
 // CompilerHost never needs real fs access.
 const embeds = [...libFiles.map(f => `runtime/lib/${f}`), 'small.ts', 'big.ts', 'runtime/console.d.ts']
-const target = 'tsc'
+const target = 'tsc2'
 let link_type = '-static'
 if (lo.core.os === 'linux') link_type += ' -fuse-ld=lld'
 if (lo.core.os === 'mac') link_type = '-static-libstdc++ -w -framework CoreFoundation'
@@ -29,6 +29,6 @@ const v8_opts = {
   v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init',
   snapshot: true
 }
-const main = 'runtime/tsc.js'
+const main = 'runtime/tsc2.js'
 
 export default { bindings, libs, embeds, target, link_type, opt, v8_opts, main }
