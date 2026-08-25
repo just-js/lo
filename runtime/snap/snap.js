@@ -5,7 +5,7 @@ async function loadTestModule () {
   export { foo }
   `, 'main.js')
   mod.namespace = await lo.evaluateModule(mod.identity)
-  mod.evaluted = true
+  mod.evaluated = true
   globalThis.foo = mod
 }
 
@@ -15,7 +15,7 @@ async function loadMain () {
   const mod = lo.loadModule(src, specifier)
   try {
     mod.namespace = await lo.evaluateModule(mod.identity)
-    mod.evaluted = true
+    mod.evaluated = true
   } catch (err) {
     lo.print(`loadMain failed: ${err && err.stack || err}\n`)
   }

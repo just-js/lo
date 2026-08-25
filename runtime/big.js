@@ -17241,5 +17241,5 @@ globalThis.snapshotEntry = async function () {
   const src = lo.builtin(specifier)
   const mod = lo.loadModule(src, specifier)
   mod.namespace = await lo.evaluateModule(mod.identity)
-  mod.evaluted = true
+  mod.evaluated = true
 }
