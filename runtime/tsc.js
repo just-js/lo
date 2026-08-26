@@ -124,8 +124,22 @@ function createCompilerHost(rootFile) {
   }
 }
 
+// oldProgram reuse (PLAN.md task 68 / LO-TYPESCRIPT.md section 21):
+// ts.createProgram's real, public 4th argument. libSourceFiles/CONSOLE_FILE
+// are the exact same cached SourceFile objects on every call (never
+// recreated), so passing the previous Program back in lets TypeScript's own
+// structural-reuse logic recognize those files as unchanged and skip
+// re-binding/re-checking them - only the root file (a fresh SourceFile
+// every call, by design, since it represents "what actually changed") gets
+// redone. Without this, every single call was fully rebinding and
+// rechecking the cached libs from scratch too, not just re-parsing the
+// root file as earlier notes in this codebase incorrectly assumed.
+let previousProgram
+
 function compile(rootFile) {
-  return ts.createProgram([rootFile, CONSOLE_FILE], compilerOptions, createCompilerHost(rootFile))
+  const program = ts.createProgram([rootFile, CONSOLE_FILE], compilerOptions, createCompilerHost(rootFile), previousProgram)
+  previousProgram = program
+  return program
 }
 
 globalThis.tsc = {

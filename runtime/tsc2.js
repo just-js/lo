@@ -102,6 +102,15 @@ const libSourceFiles = new Map([
 
 const defaultLibFileName = ts.getDefaultLibFileName(compilerOptions)
 
+// Mutable - set fresh before each compile() call in the loop below, so
+// the root file's *content* genuinely changes pass to pass (a real edit,
+// not the same static text recompiled pointlessly), the same real-edit
+// discipline bench-tsgo-api-edit.mjs uses. This is also what makes
+// oldProgram reuse (below) verifiable: if reuse incorrectly treated an
+// actually-changed root file as unchanged, the alternating-error check
+// in snapshotEntry would catch it immediately.
+let currentRootText
+
 function createCompilerHost(rootFile) {
   return {
     getSourceFile,
@@ -122,18 +131,33 @@ function createCompilerHost(rootFile) {
 
   function readFile(fileName) {
     if (libSourceFiles.has(fileName)) return libSourceFiles.get(fileName).text
-    if (fileName === rootFile) return TARGET_FILES[rootFile]
+    if (fileName === rootFile) return currentRootText
   }
 
   function getSourceFile(fileName) {
     const cached = libSourceFiles.get(fileName)
     if (cached) return cached
-    if (fileName === rootFile) return ts.createSourceFile(fileName, TARGET_FILES[rootFile], compilerOptions.target)
+    if (fileName === rootFile) return ts.createSourceFile(fileName, currentRootText, compilerOptions.target)
   }
 }
 
+// oldProgram reuse - see runtime/tsc.js for the full explanation
+// (LO-TYPESCRIPT.md section 21). Matters most here: this is the
+// repeated-pass loop, so from the second pass onward the cached lib
+// files' bind/check state is now reused instead of redone every time.
+// Toggled off entirely by mode==='full' below - a warm-process, no-reuse
+// control, for comparing against mode==='incremental'. Not directly
+// comparable to a cold process-spawn "full" measurement (./tsc, or a
+// fresh tsgo CLI invocation per call) - this one keeps the V8
+// isolate/JIT warm and skips process-spawn cost entirely, same as
+// incremental mode does. See LO-TYPESCRIPT.md section 22.
+let reuseEnabled = true
+let previousProgram
+
 function compile(rootFile) {
-  return ts.createProgram([rootFile, CONSOLE_FILE], compilerOptions, createCompilerHost(rootFile))
+  const program = ts.createProgram([rootFile, CONSOLE_FILE], compilerOptions, createCompilerHost(rootFile), reuseEnabled ? previousProgram : undefined)
+  previousProgram = program
+  return program
 }
 
 globalThis.tsc = {
@@ -198,24 +222,61 @@ globalThis.snapshotEntry = function () {
     const arg = lo.args[1]
     const rootFile = Object.prototype.hasOwnProperty.call(TARGET_FILES, arg) ? arg : DEFAULT_TARGET
     const spec = parseIterationsArg(lo.args[2])
+    // 4th arg: "incremental" (default) or "full" - see the reuseEnabled
+    // comment above for what "full" here does and doesn't mean.
+    reuseEnabled = lo.args[3] !== 'full'
+    const baseText = TARGET_FILES[rootFile]
     handle.ptr = get_address(handle)
     let diagnosticsCount = 0
     if (spec.mode === 'count' && spec.count === 1) {
+      currentRootText = baseText
       const program = compile(rootFile)
       diagnosticsCount = ts.getPreEmitDiagnostics(program).length
     } else {
+      // Same real-edit discipline as bench-tsgo-api-edit.mjs: alternate a
+      // genuine type error in and out every pass, so oldProgram reuse
+      // (which reports structureIsReused === Completely once the libs are
+      // cached - see LO-TYPESCRIPT.md section 21) can be verified rather
+      // than trusted. If reuse incorrectly treated the changed root file
+      // as unchanged, gotError would stop tracking shouldError.
       const timesMs = []
+      const reuseCounts = { Not: 0, SafeModules: 0, Completely: 0 }
+      let mismatches = 0
+      let i = 0
       const loopStart = hrtime()
-      while (spec.mode === 'duration' ? (hrtime() - loopStart) / 1e6 < spec.durationMs : timesMs.length < spec.count) {
+      while (spec.mode === 'duration' ? (hrtime() - loopStart) / 1e6 < spec.durationMs : i < spec.count) {
+        const shouldError = i % 2 === 1
+        currentRootText = baseText + (shouldError
+          ? `\nconst __bench_check_${i}: number = 'not a number' // edit ${i}\n`
+          : `\nconst __bench_check_${i}: number = ${i} // edit ${i}\n`)
+
         const start = hrtime()
         const program = compile(rootFile)
-        diagnosticsCount = ts.getPreEmitDiagnostics(program).length
+        const diagnostics = ts.getPreEmitDiagnostics(program)
+        diagnosticsCount = diagnostics.length
         timesMs.push((hrtime() - start) / 1e6)
+
+        reuseCounts[ts.StructureIsReused[program.structureIsReused]]++
+        const gotError = diagnostics.length > 0
+        if (gotError !== shouldError) {
+          mismatches++
+          lo.print(`MISMATCH at i=${i}: expected error=${shouldError}, got ${diagnostics.length} diagnostics, structureIsReused=${ts.StructureIsReused[program.structureIsReused]}\n`)
+          lo.print(`  trailer used: ${JSON.stringify(currentRootText.slice(baseText.length))}\n`)
+          diagnostics.forEach(d => lo.print(`  diag: ${d.file ? d.file.fileName : '?'}:${d.file ? d.start : '?'} code=${d.code} ${ts.flattenDiagnosticMessageText(d.messageText, ' ')}\n`))
+        }
+        i++
       }
-      lo.print(`iterations: ${timesMs.length}\n`)
+      lo.print(`mode: ${reuseEnabled ? 'incremental' : 'full'}\n`)
+      lo.print(`iterations: ${timesMs.length}, mismatches: ${mismatches} (0 expected - proves genuine per-pass rechecking, not stale/cached results)\n`)
+      lo.print(`structureIsReused counts: Not=${reuseCounts.Not} SafeModules=${reuseCounts.SafeModules} Completely=${reuseCounts.Completely}\n`)
       lo.print(`${summarize(timesMs)}\n`)
       lo.print(`first 10 (raw temporal order): ${timesMs.slice(0, 10).map(t => t.toFixed(3)).join(', ')}\n`)
       lo.print(`last 10 (raw temporal order, drift check): ${timesMs.slice(-10).map(t => t.toFixed(3)).join(', ')}\n`)
+      if (mismatches > 0) {
+        lo.print(`FAILED: ${mismatches} mismatches - diagnostics did not reflect the actual edit, do not trust the timing numbers above\n`)
+        lo.exit(1)
+        return
+      }
     }
     lo.exit(diagnosticsCount ? 1 : 0)
   } catch (err) {

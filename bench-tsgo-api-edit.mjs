@@ -39,32 +39,26 @@
 // reports zero when the edit is valid. This is the load-bearing check -
 // if it doesn't pass, the timing numbers below it are meaningless.
 //
-// Two measurement modes (3rd arg):
+// Two measurement modes (3rd arg) - both stay in the *same* warm process/
+// server the whole run; neither respawns anything or tears down the
+// project, so neither one measures process-spawn/setup/teardown cost -
+// that's the whole point (see LO-TYPESCRIPT.md section 23):
 //   incremental (default) - api.updateSnapshot({fileChanges: {changed}}),
 //     timing just the notify+diagnostics-fetch. Whatever per-file
 //     incremental reuse the server does internally is included for free -
 //     this is what a real editor would call.
-//   full - closes and reopens the *whole project* every iteration before
-//     fetching diagnostics, forcing no project-level incremental reuse at
-//     all, timing the entire close+reopen+diagnostics cycle. Directly
-//     tests whether "incremental" mode is doing meaningfully less work.
-//     Caveat, not fully equivalent to lo/tsc2.js's own "full recompile":
-//     this also re-parses lib.es5.d.ts/decorators fresh every time (lo
-//     caches those once, only reparses the target file) - so "full" mode
-//     here does strictly *more* work than lo's comparison point, not an
-//     exact match. Treat it as an upper bound / "no reuse at all"
-//     reference, not a precisely fair like-for-like number.
-//
-//     UNSTABLE - use with real caution, small N, short durations only.
-//     Confirmed twice: rapid repeated close+reopen eventually produces a
-//     multi-second pathological call (one observed at ~19.5s) followed by
-//     the server process crashing ("Unexpected EOF"/"context canceled"),
-//     even taskset-pinned to 2 cores - and that multi-second call alone
-//     was enough to make the whole sandbox feel locked up. Not used by
-//     bench-warm-compare.mjs's default comparison for this reason - only
-//     `incremental` mode is (verified stable across a full 20s/324-
-//     iteration run with zero issues). Run `full` manually, pinned, small
-//     N/duration, if you specifically want to poke at it.
+//   full - api.updateSnapshot({fileChanges: {invalidateAll: true}}) on the
+//     *same still-open* project (no close/reopen), forcing the checker to
+//     discard cached per-file diagnostic state and recheck everything,
+//     while tsconfig/lib resolution is never touched again - this is the
+//     "no incremental reuse of check state, but no project-teardown
+//     either" measurement. Superseded a first attempt at this
+//     (closeProjects+openProjects every iteration) that was real but
+//     provably unstable - confirmed twice to eventually produce a multi-
+//     second pathological call followed by the server crashing, and
+//     confirmed via `htop` to be disk-thrashing (the close+reopen cycle
+//     re-reads tsconfig/lib files from real disk every time) - not used
+//     any more, this mode never closes anything.
 //
 // Usage: node bench-tsgo-api-edit.mjs [small|big] [iterations|Ns] [incremental|full]
 import { API } from '@typescript/native-preview/unstable/sync'
@@ -80,6 +74,28 @@ const spec = durationMatch
   ? { mode: 'duration', durationMs: parseInt(durationMatch[1], 10) * 1000 }
   : { mode: 'count', count: parseInt(rawSpec, 10) || 20 }
 const original = readFileSync(targetFile, 'utf8')
+
+// Hardening after a real incident: a `timeout N ...` wrapper around this
+// script sent SIGTERM mid-run (the requested duration plus startup/
+// cleanup overhead exceeded the wrapper's own timeout), which killed the
+// process before the try/finally below could restore targetFile, leaving
+// a real edit trailer committed to disk until the next session noticed
+// via `diff`. `process.on('exit', ...)` fires for normal completion,
+// uncaught exceptions, and explicit process.exit() alike; registering a
+// SIGTERM/SIGINT handler that calls process.exit() routes an external
+// kill (like timeout's default SIGTERM) through the same 'exit' handler
+// instead of terminating before cleanup runs. Doesn't help against
+// SIGKILL, which is uncatchable by design - avoid `timeout -s KILL`
+// around this script.
+let restored = false
+function restoreFile () {
+  if (restored) return
+  restored = true
+  writeFileSync(targetFile, original)
+}
+process.on('exit', restoreFile)
+process.on('SIGTERM', () => process.exit(143))
+process.on('SIGINT', () => process.exit(130))
 
 const api = new API({ collectTiming: true })
 let snapshot = api.updateSnapshot({ openProjects: [configFile] })
@@ -107,15 +123,11 @@ try {
 
     // See bug 1 above: must re-fetch the project from the *new* snapshot,
     // not reuse the old handle, or diagnostics silently never update.
-    if (mode === 'full') {
-      const closed = api.updateSnapshot({ closeProjects: [configFile] })
-      closed.dispose()
-      snapshot = api.updateSnapshot({ openProjects: [configFile], fileChanges: { changed: [targetFile] } })
-    } else {
-      const previous = snapshot
-      snapshot = api.updateSnapshot({ fileChanges: { changed: [targetFile] } })
-      previous.dispose()
-    }
+    const previous = snapshot
+    snapshot = api.updateSnapshot({
+      fileChanges: mode === 'full' ? { invalidateAll: true } : { changed: [targetFile] }
+    })
+    previous.dispose()
     project = snapshot.getProject(configFile)
     const diagnostics = project.program.getSemanticDiagnostics()
 
@@ -130,7 +142,7 @@ try {
     i++
   }
 } finally {
-  writeFileSync(targetFile, original)
+  restoreFile()
 }
 
 const sorted = times.slice().sort((a, b) => a - b)
