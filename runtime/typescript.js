@@ -126968,6 +126968,7 @@ function getPreEmitDiagnostics(program, sourceFile, cancellationToken) {
   if (getEmitDeclarations(program.getCompilerOptions())) {
     diagnostics = addRange(diagnostics, program.getDeclarationDiagnostics(sourceFile, cancellationToken));
   }
+  return diagnostics
   return sortAndDeduplicateDiagnostics(diagnostics || emptyArray);
 }
 function formatDiagnostics(diagnostics, host) {

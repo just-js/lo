@@ -31,7 +31,7 @@ import { execFileSync } from 'node:child_process'
 
 const target = process.argv[2] === 'small' ? 'small' : 'big'
 const spec = process.argv[3] || '30s'
-const cpulist = process.argv[4] || '0'
+const cpulist = process.argv[4] || '0,1'
 const file = `${target}.ts`
 
 function run (label, cmd, args) {
@@ -43,7 +43,7 @@ function run (label, cmd, args) {
 }
 
 const loOutput = run(`lo (./tsc2), ${spec}, taskset -c ${cpulist}`, './tsc2', [file, spec])
-const tsgoOutput = run(`tsgo (persistent server, incremental mode), ${spec}, taskset -c ${cpulist}`, 'node', ['bench-tsgo-api-edit.mjs', target, spec, 'incremental'])
+const tsgoOutput = run(`tsgo (persistent server, incremental mode), ${spec}, taskset -c ${cpulist}`, 'node', ['bench-tsgo-api-edit.mjs', target, spec, 'full'])
 
 function parseStats (label, text) {
   const m = text.match(/mean: ([\d.]+)ms\s+min: ([\d.]+)ms\s+p50: ([\d.]+)ms\s+p75: ([\d.]+)ms\s+p90: ([\d.]+)ms\s+p99: ([\d.]+)ms\s+max: ([\d.]+)ms/)

@@ -545,7 +545,12 @@ void onJitEvent (const v8::JitCodeEvent* ev) {
   fprintf(stderr, "onJitEvent %i\n", ev->type);
 }
 
-extern "C" const intptr_t* _external_references_core();
+// Generated in main.h, combines whatever bindings this specific build
+// actually configured - not hardcoded to core, see lib/build.js's own
+// comment on combined_binding_external_references() for the real bug
+// this replaced (undefined symbol on any core-less build, e.g.
+// runtime/zero-snap.config.js).
+extern "C" const intptr_t* combined_binding_external_references();
 
 int lo::CreateIsolate(int argc, char** argv,
   const char* main_src, unsigned int main_len,
@@ -565,18 +570,18 @@ int lo::CreateIsolate(int argc, char** argv,
   // doesn't store raw pointers (meaningless across separate process
   // runs) - it stores indices into this array, resolved back to real
   // addresses at deserialize time using *this* array. A mismatch here
-  // isn't a crash-on-load - it silently resolves later indices (here:
-  // core's) to garbage, only surfacing the moment that restored object
-  // actually gets touched. Real bug hit and fixed live, not guessed -
-  // this only had lo_external_references, core's own combined array
-  // (added to CreateSnapshot) was never mirrored here. Duplicated
+  // isn't a crash-on-load - it silently resolves later indices to
+  // garbage, only surfacing the moment that restored object actually
+  // gets touched. Real bug hit and fixed live, not guessed - this only
+  // had lo_external_references, the per-build bindings' own combined
+  // array (added to CreateSnapshot) was never mirrored here. Duplicated
   // rather than shared for now, same as args/isolate-callbacks above -
   // refactor later.
   std::vector<intptr_t> combined_refs;
   for (const intptr_t* p = lo_external_references; *p; p++) {
     combined_refs.push_back(*p);
   }
-  for (const intptr_t* p = _external_references_core(); *p; p++) {
+  for (const intptr_t* p = combined_binding_external_references(); *p; p++) {
     combined_refs.push_back(*p);
   }
   combined_refs.push_back(0);
@@ -831,26 +836,29 @@ int lo::CreateIsolate(int argc, char** argv, const char* main_src,
 // src/node_snapshotable.cc's ValidateBindings), and could only work
 // for CFunction-fast-call-shaped bindings at all with a per-binding
 // registration convention already in the same category as this one.
-// PLAN.md task 66 - hardcoded to `core` specifically for this
+// PLAN.md task 66 - was hardcoded to `core` specifically for this
 // experiment, same as the hardcoded lo::Init(isolate, runtime) call
-// below it. A real multi-binding-aware CreateSnapshot would look this
-// up per binding the runtime actually declares, not name a single one
-// here - not built yet, this is validating the mechanism first.
-extern "C" const intptr_t* _external_references_core();
+// below it. Fixed 2026-08-27 (PLAN.md task 72): real bug, not
+// hypothetical - runtime/zero-snap.config.js's bindings=[] hit an
+// undefined-symbol link failure on this exact hardcoding, reproduced
+// directly. combined_binding_external_references() (generated in
+// main.h, lib/build.js) now looks this up per binding the runtime
+// actually declares, same list register_builtins() already uses.
+extern "C" const intptr_t* combined_binding_external_references();
 
 int lo::CreateSnapshot(const char* main_src, unsigned int main_len,
   const char* out_path, int keep_code, int argc, char** argv) {
   // lo_external_references[] alone isn't enough once any linked-in
-  // binding (here: core) also has its own callbacks that might end up
-  // in the frozen graph - concatenate every binding's external
-  // references into one combined, null-terminated array. Must outlive
-  // the SnapshotCreator construction below, hence a function-local
-  // std::vector rather than a temporary.
+  // binding also has its own callbacks that might end up in the frozen
+  // graph - concatenate every binding's external references into one
+  // combined, null-terminated array. Must outlive the SnapshotCreator
+  // construction below, hence a function-local std::vector rather than
+  // a temporary.
   std::vector<intptr_t> combined_refs;
   for (const intptr_t* p = lo_external_references; *p; p++) {
     combined_refs.push_back(*p);
   }
-  for (const intptr_t* p = _external_references_core(); *p; p++) {
+  for (const intptr_t* p = combined_binding_external_references(); *p; p++) {
     combined_refs.push_back(*p);
   }
   combined_refs.push_back(0);
@@ -959,6 +967,35 @@ int lo::CreateSnapshot(const char* main_src, unsigned int main_len,
         lo::PrintStackTrace(isolate, try_catch);
       }
       return 1;
+    }
+    // Module::Evaluate() returns a completion *promise*, not a settled
+    // value (true since top-level await landed in V8) - the code above
+    // only checked whether the call itself threw synchronously, never
+    // whether that promise (or any promise from a dynamic import() this
+    // pass triggered via lo::OnDynamicImport) actually resolved. Without
+    // draining the microtask queue here, anything not already
+    // synchronously settled gets frozen mid-flight into the blob - a
+    // pending promise and an unfired .then() continuation, not the
+    // value real code would expect post-restore. v8-isolate.h's own doc
+    // comment for PerformMicrotaskCheckpoint() says it "[r]uns the
+    // default MicrotaskQueue until it gets empty" - one call already
+    // accounts for microtasks enqueued while draining, so this loop is
+    // defensive (harmless no-op once the queue is empty) rather than
+    // strictly required for the common case, but guards against any
+    // multi-round resolution chain (e.g. a resolved dynamic import's
+    // continuation itself issuing another import) without needing an
+    // API to query "is the queue really empty" first.
+    // Real, known limitation, not fixed here: PerformMicrotaskCheckpoint()'s
+    // own doc comment says "[a]ny exceptions thrown by microtask callbacks
+    // are swallowed" - a rejected promise with no .catch() during this pass
+    // (e.g. a dynamic import() of a nonexistent file) fails silently, not
+    // via try_catch the way every other error path in this function does.
+    // A follow-up isolate->HasPendingException()-style check right after
+    // this loop would be needed to surface that case loudly instead of
+    // producing a blob with a quietly-broken module - not added here since
+    // it wasn't asked for and needs its own verification.
+    for (int i = 0; i < 10; i++) {
+      isolate->PerformMicrotaskCheckpoint();
     }
     creator.SetDefaultContext(context);
   }

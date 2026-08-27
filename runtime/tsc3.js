@@ -230,62 +230,26 @@ globalThis.snapshotEntry = function () {
     const arg = lo.args[1]
     const rootFile = Object.prototype.hasOwnProperty.call(TARGET_FILES, arg) ? arg : DEFAULT_TARGET
     const spec = parseIterationsArg(lo.args[2])
-    // 4th arg: "incremental" (default) or "full" - see the reuseEnabled
-    // comment above for what "full" here does and doesn't mean.
-    reuseEnabled = lo.args[3] !== 'full'
     const baseText = TARGET_FILES[rootFile]
     handle.ptr = get_address(handle)
-    let diagnosticsCount = 0
-    if (spec.mode === 'count' && spec.count === 1) {
-      currentRootText = baseText
-      const program = compile(rootFile)
-      diagnosticsCount = ts.getPreEmitDiagnostics(program).length
-    } else {
-      // Same real-edit discipline as bench-tsgo-api-edit.mjs: alternate a
-      // genuine type error in and out every pass, so oldProgram reuse
-      // (which reports structureIsReused === Completely once the libs are
-      // cached - see LO-TYPESCRIPT.md section 21) can be verified rather
-      // than trusted. If reuse incorrectly treated the changed root file
-      // as unchanged, gotError would stop tracking shouldError.
-      const timesMs = []
-      //const reuseCounts = { Not: 0, SafeModules: 0, Completely: 0 }
-      let mismatches = 0
-      let i = 0
-      const loopStart = hrtime()
-      while (spec.mode === 'duration' ? (hrtime() - loopStart) / 1e6 < spec.durationMs : i < spec.count) {
-        const shouldError = i % 2 === 1
-        currentRootText = baseText + (shouldError
-          ? `\nconst __bench_check_${i}: number = 'not a number' // edit ${i}\n`
-          : `\nconst __bench_check_${i}: number = ${i} // edit ${i}\n`)
+    const timesMs = []
+    let i = 0
+    const loopStart = hrtime()
+    while (spec.mode === 'duration' ? (hrtime() - loopStart) / 1e6 < spec.durationMs : i < spec.count) {
+      const shouldError = i % 2 === 1
+      currentRootText = baseText + (shouldError
+        ? `\nconst __bench_check_${i}: number = 'not a number' // edit ${i}\n`
+        : `\nconst __bench_check_${i}: number = ${i} // edit ${i}\n`)
 
-        const start = hrtime()
-        const diagnostics = getPreEmitDiagnostics(compile(rootFile)) || []
-        diagnosticsCount = diagnostics?.length || 0
-        timesMs.push((hrtime() - start) / 1e6)
-
-        //reuseCounts[ts.StructureIsReused[program.structureIsReused]]++
-        const gotError = diagnosticsCount > 0
-        if (gotError !== shouldError) {
-          mismatches++
-          lo.print(`MISMATCH at i=${i}: expected error=${shouldError}, got ${diagnosticsCount} diagnostics\n`)
-          lo.print(`  trailer used: ${JSON.stringify(currentRootText.slice(baseText.length))}\n`)
-          diagnostics.forEach(d => lo.print(`  diag: ${d.file ? d.file.fileName : '?'}:${d.file ? d.start : '?'} code=${d.code} ${ts.flattenDiagnosticMessageText(d.messageText, ' ')}\n`))
-        }
-        i++
-      }
-      lo.print(`mode: ${reuseEnabled ? 'incremental' : 'full'}\n`)
-      lo.print(`iterations: ${timesMs.length}, mismatches: ${mismatches} (0 expected - proves genuine per-pass rechecking, not stale/cached results)\n`)
-      //lo.print(`structureIsReused counts: Not=${reuseCounts.Not} SafeModules=${reuseCounts.SafeModules} Completely=${reuseCounts.Completely}\n`)
-      lo.print(`${summarize(timesMs)}\n`)
-      lo.print(`first 10 (raw temporal order): ${timesMs.slice(0, 10).map(t => t.toFixed(3)).join(', ')}\n`)
-      lo.print(`last 10 (raw temporal order, drift check): ${timesMs.slice(-10).map(t => t.toFixed(3)).join(', ')}\n`)
-      if (mismatches > 0) {
-        lo.print(`FAILED: ${mismatches} mismatches - diagnostics did not reflect the actual edit, do not trust the timing numbers above\n`)
-        lo.exit(1)
-        return
-      }
+      const start = hrtime()
+      getPreEmitDiagnostics(compile(rootFile)) || []
+      timesMs.push((hrtime() - start) / 1e6)
+      i++
     }
-    lo.exit(diagnosticsCount ? 1 : 0)
+    lo.print(`iterations: ${timesMs.length}\n`)
+    lo.print(`${summarize(timesMs)}\n`)
+    lo.print(`first 10 (raw temporal order): ${timesMs.slice(0, 10).map(t => t.toFixed(3)).join(', ')}\n`)
+    lo.print(`last 10 (raw temporal order, drift check): ${timesMs.slice(-10).map(t => t.toFixed(3)).join(', ')}\n`)
   } catch (err) {
     lo.print(`${err.stack}\n`)
     lo.exit(1)

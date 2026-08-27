@@ -36,6 +36,7 @@
 #include <dirent.h>
 #include <sched.h>
 #include <sys/sysmacros.h>
+#include <sys/mount.h>
 #endif
 
 
@@ -1028,6 +1029,32 @@ void syncSlow(const FunctionCallbackInfo<Value> &args) {
 
 #ifdef __linux__
 
+void mountSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  String::Utf8Value v1(isolate, args[1]);
+  String::Utf8Value v2(isolate, args[2]);
+  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  void* v4 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[4])->Value());
+  int32_t rc = mount(*v0, *v1, *v2, v3, v4);
+  args.GetReturnValue().Set(rc);
+}
+
+void umountSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  int32_t rc = umount(*v0);
+  args.GetReturnValue().Set(rc);
+}
+
+void umount2Slow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t rc = umount2(*v0, v1);
+  args.GetReturnValue().Set(rc);
+}
+
 void makedevSlow(const FunctionCallbackInfo<Value> &args) {
   uint32_t v0 = Local<Integer>::Cast(args[0])->Value();
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
@@ -1249,6 +1276,9 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, module, "sync", syncSlow);
 
 #ifdef __linux__
+  SET_METHOD(isolate, module, "mount", mountSlow);
+  SET_METHOD(isolate, module, "umount", umountSlow);
+  SET_METHOD(isolate, module, "umount2", umount2Slow);
   SET_METHOD(isolate, module, "makedev", makedevSlow);
   SET_METHOD(isolate, module, "posix_fadvise", posix_fadviseSlow);
   SET_METHOD(isolate, module, "ioctl", ioctlSlow);
@@ -1356,6 +1386,25 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "POSIX_FADV_RANDOM", Integer::New(isolate, (int32_t)POSIX_FADV_RANDOM));
   SET_VALUE(isolate, module, "POSIX_FADV_DONTNEED", Integer::New(isolate, (int32_t)POSIX_FADV_DONTNEED));
   SET_VALUE(isolate, module, "S_IFLNK", Integer::New(isolate, (int32_t)S_IFLNK));
+  SET_VALUE(isolate, module, "MNT_FORCE", Integer::New(isolate, (int32_t)MNT_FORCE));
+  SET_VALUE(isolate, module, "MNT_DETACH", Integer::New(isolate, (int32_t)MNT_DETACH));
+  SET_VALUE(isolate, module, "MNT_EXPIRE", Integer::New(isolate, (int32_t)MNT_EXPIRE));
+  SET_VALUE(isolate, module, "UMOUNT_NOFOLLOW", Integer::New(isolate, (int32_t)UMOUNT_NOFOLLOW));
+  SET_VALUE(isolate, module, "MS_DIRSYNC", Integer::New(isolate, (uint32_t)MS_DIRSYNC));
+  SET_VALUE(isolate, module, "MS_LAZYTIME", Integer::New(isolate, (uint32_t)MS_LAZYTIME));
+  SET_VALUE(isolate, module, "MS_MANDLOCK", Integer::New(isolate, (uint32_t)MS_MANDLOCK));
+  SET_VALUE(isolate, module, "MS_NOATIME", Integer::New(isolate, (uint32_t)MS_NOATIME));
+  SET_VALUE(isolate, module, "MS_NODEV", Integer::New(isolate, (uint32_t)MS_NODEV));
+  SET_VALUE(isolate, module, "MS_NODIRATIME", Integer::New(isolate, (uint32_t)MS_NODIRATIME));
+  SET_VALUE(isolate, module, "MS_NOEXEC", Integer::New(isolate, (uint32_t)MS_NOEXEC));
+  SET_VALUE(isolate, module, "MS_NOSUID", Integer::New(isolate, (uint32_t)MS_NOSUID));
+  SET_VALUE(isolate, module, "MS_RDONLY", Integer::New(isolate, (uint32_t)MS_RDONLY));
+  SET_VALUE(isolate, module, "MS_REC", Integer::New(isolate, (uint32_t)MS_REC));
+  SET_VALUE(isolate, module, "MS_RELATIME", Integer::New(isolate, (uint32_t)MS_RELATIME));
+  SET_VALUE(isolate, module, "MS_SILENT", Integer::New(isolate, (uint32_t)MS_SILENT));
+  SET_VALUE(isolate, module, "MS_STRICTATIME", Integer::New(isolate, (uint32_t)MS_STRICTATIME));
+  SET_VALUE(isolate, module, "MS_SYNCHRONOUS", Integer::New(isolate, (uint32_t)MS_SYNCHRONOUS));
+  SET_VALUE(isolate, module, "MS_NOSYMFOLLOW", Integer::New(isolate, (uint32_t)MS_NOSYMFOLLOW));
 
 #endif
 #ifdef __MACH__
@@ -1498,6 +1547,9 @@ static const intptr_t core_external_references[] = {
   (intptr_t)&syncSlow,
 
 #ifdef __linux__
+  (intptr_t)&mountSlow,
+  (intptr_t)&umountSlow,
+  (intptr_t)&umount2Slow,
   (intptr_t)&makedevSlow,
   (intptr_t)&posix_fadviseSlow,
   (intptr_t)&ioctlSlow,

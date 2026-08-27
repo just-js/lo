@@ -1,7 +1,7 @@
-const bindings = []
-const libs = []
+const bindings = ['core']
+const libs = ['lib/binary.js']
 const embeds = []
-const target = 'zero-snap'
+const target = 'snappy'
 let link_type = '-static -Wl,--gc-sections -Wl,--icf=all'
 if (lo.core.os === 'linux') link_type += ' -fuse-ld=lld'
 if (lo.core.os === 'mac') link_type = '-static-libstdc++ -w -framework CoreFoundation'
@@ -12,6 +12,7 @@ const v8_opts = {
   v8flags: '--lite-mode --jitless --single-threaded --disable-write-barriers --max-heap-size=16 --no-verify-heap --memory-reducer --optimize-for-size --stack-trace-limit=10 --use-strict --turbo-fast-api-calls',
   snapshot: true
 }
-const main = 'runtime/zero-snap.js'
+const main = 'runtime/snappy.js'
+const post_snapshot_embeds = []
 
-export default { bindings, libs, embeds, target, link_type, opt, v8_opts, main }
+export default { bindings, libs, embeds, target, link_type, opt, v8_opts, main, post_snapshot_embeds }

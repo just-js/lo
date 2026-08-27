@@ -244,7 +244,13 @@ async function on_module_load (specifier, resource) {
   }
   // todo: allow overriding loadSource - return a promise
   // todo: this should be async
-  const src = await load_source(specifier, resource)
+  let src = ''
+  if (specifier === 'worker_source.js') {
+    builtin_cache.set(specifier, workerSource)
+    src = workerSource
+  } else {
+    src = await load_source(specifier, resource)
+  }
   const mod = loadModule(src, specifier)
   mod.resource = resource
   moduleCache.set(specifier, mod)
@@ -291,7 +297,7 @@ function require (file_path) {
   const f = new Function('exports', 'module', 'require', src)
   const mod = { exports: {} }
   f.call(globalThis, mod.exports, mod, require)
-  moduleCache.set(file_path, mod)
+  requireCache.set(file_path, mod)
   return mod.exports
 }
 
@@ -707,7 +713,7 @@ async function global_main () {
       })
       .catch(err => { handle_error(err); exit(1) })
     while (loop.poll() > 0) {}
-*/    
+*/
   }
 }
 

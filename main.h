@@ -3,6 +3,7 @@
 // This file has been automatically generated, please do not change unless you disable auto-generation in the Makefile
 
 #include "lo.h"
+#include <vector>
 
 #ifdef _WIN64
 #include "builtins.h"
@@ -67,24 +68,69 @@ extern char _binary_globals_d_ts_end[];
 
 extern "C" {
   extern void* _register_core();
+extern const intptr_t* _external_references_core();
   extern void* _register_inflate();
+extern const intptr_t* _external_references_inflate();
   extern void* _register_curl();
+extern const intptr_t* _external_references_curl();
   extern void* _register_system();
+extern const intptr_t* _external_references_system();
   
 #ifdef __MACH__
   extern void* _register_mach();
+  extern const intptr_t* _external_references_mach();
 #endif
 
   
 #ifdef __MACH__
   extern void* _register_kevents();
+  extern const intptr_t* _external_references_kevents();
 #endif
 
   
 #ifdef __linux__
   extern void* _register_epoll();
+  extern const intptr_t* _external_references_epoll();
 #endif
 
+}
+
+// Generated so lo.cc never has to hardcode which bindings a given build
+// actually includes (it used to hardcode _external_references_core()
+// specifically, unconditionally - broke any build without the core
+// binding, e.g. runtime/zero-snap.config.js's bindings=[], real link
+// failure: "undefined symbol: _external_references_core", reproduced
+// and fixed 2026-08-27). Combines every actually-configured binding's
+// own _external_references_<name>() (lib/gen.js always emits one per
+// binding, even an empty {0}-only array) into a single null-terminated
+// list - lo.cc's lo_external_references[] (its own base handles, no
+// binding involved) is concatenated separately, in lo.cc itself, same
+// as before.
+extern "C" const intptr_t* combined_binding_external_references() {
+  static std::vector<intptr_t> combined;
+  if (combined.empty()) {
+    for (const intptr_t* p = _external_references_core(); *p; p++) combined.push_back(*p);
+    for (const intptr_t* p = _external_references_inflate(); *p; p++) combined.push_back(*p);
+    for (const intptr_t* p = _external_references_curl(); *p; p++) combined.push_back(*p);
+    for (const intptr_t* p = _external_references_system(); *p; p++) combined.push_back(*p);
+    
+#ifdef __MACH__
+    for (const intptr_t* p = _external_references_mach(); *p; p++) combined.push_back(*p);
+#endif
+
+    
+#ifdef __MACH__
+    for (const intptr_t* p = _external_references_kevents(); *p; p++) combined.push_back(*p);
+#endif
+
+    
+#ifdef __linux__
+    for (const intptr_t* p = _external_references_epoll(); *p; p++) combined.push_back(*p);
+#endif
+
+    combined.push_back(0);
+  }
+  return combined.data();
 }
 
 void register_builtins() {

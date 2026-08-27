@@ -1,25 +1,3 @@
-function read_file (path, flags = defaultReadFlags, size = 0) {
-  const fd = open(path, flags)
-  assert(fd > 0, `failed to open ${path} with flags ${flags}`)
-  if (size === 0) {
-    assert(fstat(fd, stat.ptr) === 0)
-    if (core.os === 'mac') {
-      size = Number(st[12])
-    } else if (core.os === 'win') {
-      size = stat32[5]
-    } else {
-      size = Number(st[6])
-    }
-  }
-  let off = 0
-  let len = 0
-  // todo - check for max size
-  const u8 = ptr(new Uint8Array(size))
-  while ((len = read(fd, u8.ptr, size - off)) > 0) off += len
-  close(fd)
-  return u8
-}
-
 function require (file_path) {
   if (requireCache.has(file_path)) {
     return requireCache.get(file_path).exports
