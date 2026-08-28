@@ -75,6 +75,13 @@ extern char **environ;
 std::map<std::string, lo::builtin*> builtins;
 std::map<std::string, lo::register_plugin> modules;
 std::unique_ptr<v8::Platform> platform;
+// Generated in main.h, combines whatever bindings this specific build
+// actually configured - not hardcoded to core, see lib/build.js's own
+// comment on combined_binding_external_references() for the real bug
+// this replaced (undefined symbol on any core-less build, e.g.
+// runtime/zero-snap.config.js).
+extern "C" const intptr_t* combined_binding_external_references();
+
 
 CTypeInfo cargshrtime[2] = { 
   CTypeInfo(CTypeInfo::Type::kV8Value), 
@@ -545,13 +552,6 @@ void onJitEvent (const v8::JitCodeEvent* ev) {
   fprintf(stderr, "onJitEvent %i\n", ev->type);
 }
 
-// Generated in main.h, combines whatever bindings this specific build
-// actually configured - not hardcoded to core, see lib/build.js's own
-// comment on combined_binding_external_references() for the real bug
-// this replaced (undefined symbol on any core-less build, e.g.
-// runtime/zero-snap.config.js).
-extern "C" const intptr_t* combined_binding_external_references();
-
 int lo::CreateIsolate(int argc, char** argv,
   const char* main_src, unsigned int main_len,
   const char* js, unsigned int js_len, char* buf, int buflen, int fd,
@@ -844,7 +844,6 @@ int lo::CreateIsolate(int argc, char** argv, const char* main_src,
 // directly. combined_binding_external_references() (generated in
 // main.h, lib/build.js) now looks this up per binding the runtime
 // actually declares, same list register_builtins() already uses.
-extern "C" const intptr_t* combined_binding_external_references();
 
 int lo::CreateSnapshot(const char* main_src, unsigned int main_len,
   const char* out_path, int keep_code, int argc, char** argv) {
