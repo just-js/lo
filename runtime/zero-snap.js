@@ -24,24 +24,8 @@ function next_tick (fn) {
   return new Promise(ok => lo.nextTick(ok))
 }
 
-next_tick().then(() => {
-  lo.print('snapshotting\n')
-})
-
 globalThis.snapshotEntry = async function () {
   handle.ptr = get_address(handle)
-  await next_tick()
-  lo.print(`${hrtime() - lo.start}\n`)
-  await next_tick()
-  lo.print(`${hrtime() - lo.start}\n`)
-  await next_tick()
-  lo.print(`${hrtime() - lo.start}\n`)
-  await next_tick()
-  lo.print(`${hrtime() - lo.start}\n`)
-  await next_tick()
-  lo.print(`${hrtime() - lo.start}\n`)
-  await next_tick()
-  lo.print(`${hrtime() - lo.start}\n`)
   await next_tick()
   lo.print(`${hrtime() - lo.start}\n`)
 }

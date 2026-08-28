@@ -1,9 +1,15 @@
 const bindings = ['core']
-const libs = ['lib/binary.js']
+const libs = [
+  'lib/binary.js',
+  'lib/path.js',
+  'lib/stringify.js',
+  'lib/proc.js',
+  'lib/ansi.js',
+]
 const embeds = []
 const target = 'snappy'
-let link_type = '-static -Wl,--gc-sections -Wl,--icf=all'
-if (lo.core.os === 'linux') link_type += ' -fuse-ld=lld'
+let link_type = '-rdynamic -Wl,--gc-sections -Wl,--icf=all'
+if (lo.core.os === 'linux') link_type += ' -fuse-ld=lld -static-libstdc++ -static-libgcc'
 if (lo.core.os === 'mac') link_type = '-static-libstdc++ -w -framework CoreFoundation'
 
 const opt = '-O3 -ffunction-sections -fdata-sections -march=native -mtune=native -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions -fvisibility=hidden'
