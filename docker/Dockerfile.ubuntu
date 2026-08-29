@@ -38,19 +38,55 @@
 # arm64 inherits the same image/recipe but hasn't been independently
 # checked on that runner.
 
-FROM ubuntu:22.04
+# Pinned to a digest, not the floating `22.04` tag - that tag gets
+# silently repointed at newer point releases over time (Canonical ships
+# maintenance updates under the same tag), which is real, moving upstream
+# drift outside this repo's control. Re-resolve with
+# `docker manifest inspect ubuntu:22.04` if this ever needs a deliberate
+# bump (e.g. for a security update).
+FROM ubuntu:22.04@sha256:2edbbc5dc405e9612ba3584ce95480277e3eb374407b5505fe26f17df77c7dbc
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# prerequisites for apt.llvm.org's own install script (llvm.sh) - none
-# of these are in the bare ubuntu:22.04 image, unlike on the GitHub-hosted
-# runner where they're already present
+# prerequisites for the (now-hardcoded, see below) LLVM apt repo setup -
+# none of these are in the bare ubuntu:22.04 image, unlike on the
+# GitHub-hosted runner where they're already present
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates wget gnupg lsb-release software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-# same LLVM version + install method as the existing build-linux CI job
-RUN wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 22 && rm -f llvm.sh
+# Real, repeatedly-confirmed CI failure (4/4 attempts across 18+ hours on
+# just-js/v8 run 33136205378, linux/arm64 specifically - same commit's
+# linux/x64 leg succeeded every time): apt.llvm.org's own official
+# llvm.sh install script does a `wget --timeout=15` HEAD-request probe
+# against https://apt.llvm.org/jammy/ before installing anything, and
+# reports *any* failure of that probe (timeout, DNS, anything) as
+# "Distribution 'ubuntu' in version '...' is not supported by this
+# script." - a genuinely misleading message that hid the real cause.
+# Ruled out via direct verification, not assumed: apt.llvm.org's arm64
+# packages for LLVM 22/jammy do exist (checked the actual dists listing
+# directly); the identical Docker build succeeds consistently both from
+# a plain curl and from a real, native arm64 Mac (`docker build
+# --platform linux/arm64 ...`) - only GitHub's own ARM64-hosted Actions
+# runner pool (still in public preview) failed, repeatedly, consistent
+# with that runner class's documented network-latency issues
+# (actions/actions-runner-controller#4365) tripping llvm.sh's tight
+# 15-second timeout. Fix: skip llvm.sh's live check entirely - hardcode
+# the exact apt source line, GPG key, and package list it would have
+# used anyway (confirmed against its own verbose trace output in a real
+# successful build log: `PKG='clang-22 lldb-22 lld-22 clangd-22'`,
+# `REPO_NAME='deb https://apt.llvm.org/jammy/ llvm-toolchain-jammy-22
+# main'`), removing the fragile short-timeout network probe from the
+# critical path. `retry()` wraps what network calls remain (the GPG key
+# fetch, `apt-get update`/`install`) with real backoff, since `wget`'s
+# own `--tries=3` has no delay between attempts and may not ride out a
+# multi-second hiccup.
+RUN retry() { for i in 1 2 3; do "$@" && return 0; echo "retry $i/3 failed: $*" >&2; sleep 5; done; return 1; }; \
+    retry wget -qO /etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key && \
+    echo "deb https://apt.llvm.org/jammy/ llvm-toolchain-jammy-22 main" > /etc/apt/sources.list.d/llvm-22.list && \
+    retry apt-get update && \
+    retry apt-get install -y --no-install-recommends clang-22 lldb-22 lld-22 clangd-22 && \
+    rm -rf /var/lib/apt/lists/*
 
 # build-essential (not just for gcc/g++, which we don't use as the
 # compiler - it's what actually pulls in make, binutils, and libc6-dev,
