@@ -888,7 +888,7 @@ int lo::CreateSnapshot(const char* main_src, unsigned int main_len,
 
     Local<ObjectTemplate> global = ObjectTemplate::New(isolate);
     Local<ObjectTemplate> runtime = ObjectTemplate::New(isolate);
-    lo::Init(isolate, runtime);
+    lo::InitSnapshot(isolate, runtime);
 
     Local<Context> context = Context::New(isolate, NULL, global);
     Context::Scope context_scope(context);
@@ -1931,8 +1931,6 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "environ", EnvironSlow);
   SET_METHOD(isolate, target, "runScript", RunScript);
   SET_METHOD(isolate, target, "registerCallback", RegisterCallback);
-  SET_METHOD(isolate, target, "hrtime", HRTime);
-/*
   SET_FAST_METHOD(isolate, target, "utf8EncodeIntoAtOffset",
     &pFutf8encodeintoatoffset, Utf8EncodeIntoAtOffset);
   SET_FAST_METHOD(isolate, target, "hrtime", &pFhrtime, HRTime);
@@ -1945,7 +1943,54 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
     ReadMemoryAtOffset);
   SET_FAST_PROP(isolate, target, "errno", &pFerrnoget, GetErrno, &pFerrnoset,
     SetErrno);
-*/
+}
+
+void lo::InitSnapshot(Isolate* isolate, Local<ObjectTemplate> target) {
+  Local<ObjectTemplate> version = ObjectTemplate::New(isolate);
+  SET_VALUE(isolate, version, RUNTIME, String::NewFromUtf8Literal(isolate, 
+    VERSION));
+  SET_VALUE(isolate, version, "v8", String::NewFromUtf8(isolate, 
+    V8::GetVersion()).ToLocalChecked());
+  SET_MODULE(isolate, target, "version", version);
+  SET_METHOD(isolate, target, "print", Print);
+  SET_METHOD(isolate, target, "nextTick", NextTick);
+  SET_METHOD(isolate, target, "runMicroTasks", RunMicroTasks);
+  SET_METHOD(isolate, target, "pumpMessageLoop", PumpMessageLoop);
+  SET_METHOD(isolate, target, "arch", Arch);
+  SET_METHOD(isolate, target, "os", Os);
+  SET_METHOD(isolate, target, "exit", Exit);
+  SET_METHOD(isolate, target, "builtins", Builtins);
+  SET_METHOD(isolate, target, "builtin", Builtin);
+  SET_METHOD(isolate, target, "libraries", Libraries);
+  SET_METHOD(isolate, target, "library", Library);
+  SET_METHOD(isolate, target, "setModuleCallbacks", SetModuleCallbacks);
+  SET_METHOD(isolate, target, "loadModule", LoadModule);
+  SET_METHOD(isolate, target, "unloadModule", UnloadModule);
+  SET_METHOD(isolate, target, "evaluateModule", EvaluateModule);
+  SET_METHOD(isolate, target, "isolate_start_address", GetIsolateStartAddress);
+  SET_METHOD(isolate, target, "lo_callback_address", GetLoCallbackAddress);
+  SET_METHOD(isolate, target, "latin1Decode", Latin1Decode);
+  SET_METHOD(isolate, target, "utf8Decode", Utf8Decode);
+  SET_METHOD(isolate, target, "utf8Encode", Utf8Encode);
+  SET_METHOD(isolate, target, "latin1Encode", latin1Encode);
+  SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
+  SET_METHOD(isolate, target, "wrapMemoryShared", WrapMemoryShared);
+  SET_METHOD(isolate, target, "unwrapMemory", UnWrapMemory);
+  SET_METHOD(isolate, target, "getAddress", GetAddress);
+  SET_METHOD(isolate, target, "setFlags", SetFlags);
+  SET_METHOD(isolate, target, "get_meta", GetMeta);
+  SET_METHOD(isolate, target, "heap_usage", HeapUsage);
+  SET_METHOD(isolate, target, "shm_usage", SharedMemoryUsage);
+  SET_METHOD(isolate, target, "environ", EnvironSlow);
+  SET_METHOD(isolate, target, "runScript", RunScript);
+  SET_METHOD(isolate, target, "registerCallback", RegisterCallback);
+  SET_METHOD(isolate, target, "hrtime", HRTime);
+  SET_METHOD(isolate, target, "utf8EncodeIntoAtOffset", Utf8EncodeIntoAtOffset);
+  SET_METHOD(isolate, target, "utf8Length", Utf8Length);
+  SET_METHOD(isolate, target, "utf8EncodeInto", Utf8EncodeInto);
+  SET_METHOD(isolate, target, "readMemory", ReadMemory);
+  SET_METHOD(isolate, target, "readMemoryAtOffset", ReadMemoryAtOffset);
+  SET_PROP(isolate, target, "errno", GetErrno, SetErrno);
 }
 
 // C/FFI api for managing isolates

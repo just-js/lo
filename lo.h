@@ -275,6 +275,7 @@ void GetLoCallbackAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
 
 // Module Initialization
 void Init(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> target);
+void InitSnapshot(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> target);
 }
 
 #ifdef __cplusplus
