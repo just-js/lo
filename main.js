@@ -680,6 +680,7 @@ async function global_main () {
   // ran (post-snapshot-restore, from snapshotEntry, with real args CreateIsolate
   // set fresh for *this* invocation - PLAN.md task 66), not just inline here.
   const args = lo.args
+  globalThis.boot_time = Math.floor(((lo.hrtime() - lo.start) / 1000000) * 100) / 100
   // todo: upgrade, install etc. maybe install these as command scripts, but that would not be very secure
   if (args.length === 1) {
     show_usage()
