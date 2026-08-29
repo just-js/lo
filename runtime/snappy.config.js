@@ -1,4 +1,4 @@
-const bindings = ['core']
+const bindings = ['core', 'bestlines']
 const libs = [
   'lib/binary.js',
   'lib/path.js',
@@ -6,6 +6,7 @@ const libs = [
   'lib/proc.js',
   'lib/ansi.js',
   'lib/bench.js',
+  'lib/repl.js',
 ]
 
 const is_debug_build = lo.getenv('DEBUG_BUILD') === '1'
@@ -28,10 +29,10 @@ const v8_opts = {
   snapshot: true
 }
 const main = 'runtime/snappy.js'
-const post_snapshot_embeds = []
+//const post_snapshot_embeds = []
 let link_args = undefined
 if (is_debug_build) {
   link_args = ['-fno-exceptions']
 }
 
-export default { bindings, libs, embeds, target, link_type, opt, v8_opts, main, post_snapshot_embeds, link_args }
+export default { bindings, libs, embeds, target, link_type, opt, v8_opts, main, link_args }

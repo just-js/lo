@@ -85,6 +85,18 @@ function read_file (path, flags = defaultReadFlags, size = 0) {
   return u8
 }
 
+function load_source_sync (specifier, resource) {
+  let src = ''
+  if (core.sync_loader) {
+    src = core.sync_loader(specifier, resource)
+    if (src) return src
+  }
+  src = lo.builtin(specifier)
+  if (src) return src
+  src = decoder.decode(read_file(specifier))
+  return src
+}
+
 async function load_source (specifier, resource) {
   let src = ''
   if (core.loader) {
@@ -93,32 +105,23 @@ async function load_source (specifier, resource) {
   }
   src = lo.builtin(specifier)
   if (src) return src
-  if (LO_CACHE === 1) {
-    try {
-      src = decoder.decode(read_file(specifier))
-    } catch (err) {
-      src = decoder.decode(read_file(`${LO_HOME}/${specifier}`))
-    }
-  }
+  src = decoder.decode(read_file(specifier))
   return src
 }
 
 function wrap_getenv () {
   const { getenv, strnlen } = core
-//  const getenv = wrap(handle, core.getenv, 1)
   return str => {
     const ptr = getenv(str)
     if (!ptr) return ''
-//    console.error(ptr)
     const len = strnlen(ptr, MAX_ENV)
-//    console.error(len === 0)
     if (len === 0) return ''
     return lo.utf8Decode(ptr, len)
   }
 }
 
 async function on_module_load (specifier, resource) {
-  console.log(`on_module_load ${specifier} ${resource}`)
+//  console.log(`on_module_load ${specifier} ${resource}`)
   if (!specifier) return
   if (moduleCache.has(specifier)) {
     const mod = moduleCache.get(specifier)
@@ -149,21 +152,16 @@ async function on_module_load (specifier, resource) {
     mod.evaluated = true
   }
   return mod.namespace
-/*
-  const src = builtin(specifier)
-  const mod = loadModule(src, specifier)
-  if (!mod.evaluated) {
-    mod.namespace = await evaluateModule(mod.identity)
-    mod.evaluated = true
-  }
-  return mod.namespace
-*/
 }
 
 function on_module_instantiate (specifier) {
-  console.log(`on_module_instantiate ${specifier}`)
-  const src = builtin(specifier)
+//  console.log(`on_module_instantiate ${specifier}`)
+  if (moduleCache.has(specifier)) {
+    return moduleCache.get(specifier).identity
+  }
+  const src = load_source_sync(specifier)
   const mod = loadModule(src, specifier)
+  moduleCache.set(specifier, mod)
   return mod.identity
 }
 
@@ -192,7 +190,6 @@ function on_load_builtin (identifier) {
 }
 
 function get_lines_for_error (file_name, line_num, col_num) {
-//  console.log(`get_lines_for_error ${file_name}`)
   if (lo.builtins().includes(file_name)) {
     return builtin(file_name)
       .split('\n')
@@ -207,7 +204,6 @@ function get_lines_for_error (file_name, line_num, col_num) {
       .map((l, i) => `${AY}${(i + line_num - 4).toString().padStart(4, ' ')}${AD}: ${i === 4 ? AM : ''}${l}${AD}`)
       .join('\n')
   }
-  // we might have failed importing the module, which means it won't be in the cache, so try to read it from the path
   try {
     const src = decoder.decode(read_file(file_name))
     return src
@@ -216,11 +212,7 @@ function get_lines_for_error (file_name, line_num, col_num) {
       .map((l, i) => `${AY}${(i + line_num - 4).toString().padStart(4, ' ')}${AD}: ${i === 4 ? AM : ''}${l}${AD}`)
       .join('\n')
 
-  } catch (err) {
-    // eat the exception
-//    console.log(`error loading ${file_name}`)
-//    console.log(err.stack)
-  }
+  } catch (err) {}
   return ''
 }
 
@@ -250,17 +242,10 @@ class TextEncoder {
   encoding = 'utf-8'
 
   encode (input = '') {
-    // todo: empty string
-    // todo: result cache
     return utf8Encode(input)
   }
 
-  /**
-  * @param {string} src
-  * @param {TypedArray} dest
-  */
   encodeInto (src, dest) {
-    // todo: pass a u32array(2) handle in here so we can return read, written
     if (!dest.ptr) ptr(dest)
     return { written: utf8EncodeInto(src, dest.ptr) }
   }
@@ -269,11 +254,7 @@ class TextEncoder {
 class TextDecoder {
   encoding = 'utf-8'
 
-  /**
-  * @param {TypedArray} u8
-  */
   decode (u8) {
-    // todo: result cache
     if (!u8.ptr) ptr(u8)
     return utf8Decode(u8.ptr, u8.length)
   }
@@ -293,9 +274,7 @@ function load (name) {
     libCache.set(name, lib)
     return lib
   }
-  // todo: we leak this handle - need to be able to unload
   if (core.os === 'win') {
-    // TODO
     return
   } else {
     const handle = core.dlopen(`lib/${name}/${name}.so`, RTLD_LAZY) ||
@@ -334,9 +313,6 @@ lo.load = load
 
 globalThis.onUnhandledRejection = on_unhandled_rejection
 setModuleCallbacks(on_module_load, on_module_instantiate)
-
-lo.getenv = wrap_getenv()
-
 const AsyncFunction = async function () {}.constructor
 const builtin_cache = new Map()
 const handle = new Uint32Array(2)
@@ -376,59 +352,26 @@ globalThis.TextEncoder = TextEncoder
 globalThis.TextDecoder = TextDecoder
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
-//const LO_HOME = lo.getenv('LO_HOME')
-//const LO_CACHE = parseInt(lo.getenv('LO_CACHE') || '0', 10)
-//const { hrtime } = lo
-//lo.hrtime = function() {
-//  hrtime(handle.ptr)
-//  return addr(handle)
-//}
-//const { dump } = await import('lib/binary.js')
-//const { stringify } = await import('lib/stringify.js')
-//const bb = read_file('./main.cc')
-//const { join } = await import('lib/path.js')
-//const { control } = await import('lib/ansi.js')
-//const proc = await import('lib/proc.js')
-//  const { Bench } = await import('lib/bench.js')
-//console.log(lo.getenv('HOME'))
-
 globalThis.snapshotEntry = async function () {
+  const { hrtime } = lo
+  handle.ptr = get_address(handle)
+  hrtime(handle.ptr)
+  globalThis.boot_time = Math.floor(((addr(handle) - lo.start) / 1000000) * 100) / 100
+  lo.getenv = wrap_getenv()
+  const LO_HOME = lo.getenv('LO_HOME')
+  core.homedir = LO_HOME
   lo.core = core
   lo.colors = colors
   lo.assert = assert
   lo.ptr = ptr
   lo.load = load
-  const { hrtime } = lo
-  handle.ptr = get_address(handle)
   lo.hrtime = function() {
     hrtime(handle.ptr)
     return addr(handle)
   }
-  console.log(`${lo.hrtime() - lo.start}`)
-/*
-  console.log(dump(bb))
-  const binary = await import('lib/binary.js')
-  console.log(stringify(binary))
-  console.log(lo.builtins())
-  console.log(lo.builtin('lib/binary.js'))
-  const { Bench } = await import('lib/bench.js')
-  await next_tick()
-  console.log(`${lo.hrtime() - lo.start}`)
-  console.log(stringify(lo))
-  console.log(lo.utf8Length("hello"))
-  await (new AsyncFunction(lo.args[1]))()
-  console.log(lo.core.getpid())
-  const bench = new Bench()
-  const pid = lo.core.getpid()
-  const runs = 10000000
-  console.log(lo.hrtime())
-  for (let i = 0; i < 10; i++) {
-    bench.start('getpid')
-    for (let j = 0; j < runs; j++) {
-      assert(lo.core.getpid() === pid)
-    }
-    bench.end(runs)
+  const { args } = lo
+  if (args[1] === 'repl') {
+    const { repl } = await import('lib/repl.js')
+    repl()
   }
-  throw new Error('Fuck')
-*/
 }
