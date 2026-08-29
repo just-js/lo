@@ -813,6 +813,29 @@ void lo::UnloadModule(const FunctionCallbackInfo<Value> &args) {
 void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
+  // Real, confirmed crash (not hypothetical): args[0].As<String>() below is
+  // an unchecked cast - V8's ::As<T>() never validates, it just
+  // reinterprets the handle. builtin() returns Null for a specifier that
+  // isn't embedded in this binary, and on_module_load() (main.js/runtime
+  // JS) passes that straight through with no null-check of its own - the
+  // resulting type-confused "string" handle doesn't fail here, it crashes
+  // much later and much less legibly, deep inside V8's own scanner
+  // (ScannerStream::For -> V8_Fatal), once ScriptCompiler::CompileModule
+  // actually tries to read it as a string. See LO.md's crash-reporting
+  // section for the debugging session that found this.
+  //
+  // This check must run before the TryCatch below is constructed: a
+  // ThrowException() while a local TryCatch is active gets captured by
+  // it, not propagated to the JS caller - confirmed directly (the
+  // exception was silently swallowed, `mod` ended up `undefined` instead
+  // of the caller ever seeing a catchable error, until this was moved
+  // above the TryCatch's declaration).
+  if (!args[0]->IsString()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8Literal(
+      isolate, "loadModule: source must be a string (got null/non-string - "
+        "the module was likely not found/embedded)")));
+    return;
+  }
   TryCatch try_catch(isolate);
   Local<String> source = args[0].As<String>();
   Local<String> path = args[1].As<String>();
