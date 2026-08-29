@@ -7,6 +7,7 @@
 #include <fcntl.h>
 
 int main(int argc, char** argv) {
+  uint64_t starttime = lo::hrtime();
   // if we are called with no arguments, just dump the version and exit
   if (argc == 2 && strncmp(argv[1], "--version", 9) == 0) {
     fprintf(stdout, "%s\n", VERSION);
@@ -37,7 +38,6 @@ int main(int argc, char** argv) {
   }
   // record the start time - this will be made available to JS so we can 
   // measure time to bootstrap the runtime
-  uint64_t starttime = lo::hrtime();
   // turn off buffering of stdout and stderr - this is required by V8
   // https://en.cppreference.com/w/c/io/setvbuf
   setvbuf(stdout, nullptr, _IONBF, 0);
