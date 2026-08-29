@@ -83,20 +83,30 @@ const embeds = [
   'globals.d.ts',
 ]
 
-
-const target = 'lo'
-const opt = '-O3 -ffunction-sections -fdata-sections -march=native -mtune=native -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions -fvisibility=hidden'
+const is_debug_build = lo.getenv('DEBUG_BUILD') === '1'
+const target = is_debug_build ? 'lo-debug' : 'lo'
+let opt = '-ffunction-sections -fdata-sections -march=native -mtune=native -std=c++20 -c -fno-omit-frame-pointer -fno-rtti -fno-exceptions -fvisibility=hidden'
+if (is_debug_build) {
+  opt += ' -g -O0'
+} else {
+  opt += ' -O3'
+}
 
 const v8_opts = {
   v8_cleanup: 0, v8_threads: 2, on_exit: 0,
   v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init'
 }
 
-let link_type = '-rdynamic'
-if (lo.core.os === 'linux') link_type += ' -fuse-ld=lld -static-libgcc -static-libstdc++ -Wl,--gc-sections -Wl,--icf=all'
+let link_type = '-rdynamic -Wl,--gc-sections'
+if (!is_debug_build) link_type += ' -Wl,--icf=all'
+if (lo.core.os === 'linux') link_type += ' -fuse-ld=lld -static-libgcc -static-libstdc++'
 if (lo.core.os === 'mac') link_type += ' -w -framework CoreFoundation'
+let link_args = undefined
+if (is_debug_build) {
+  link_args = ['-fno-exceptions']
+}
 
-export default { bindings, libs, embeds, target, opt, v8_opts, link_type }
+export default { bindings, libs, embeds, target, opt, v8_opts, link_type, link_args }
 
 /*
 1996  CXX="ccache g++" CC="ccache gcc" LINK="mold -run g++" LO_CACHE=1 lo build runtime runtime/lo -v
