@@ -13,8 +13,6 @@
 #include "lo.h"
 #include "lo_abi.h"
 
-#include <memory>
-
 using namespace v8;
 
 namespace {
@@ -48,78 +46,105 @@ inline ExportsImpl* AsExports(lo_exports_t* exports) {
 // at V8's zero-copy FastOneByteString path here, see doc/WORK.E.1.md's
 // "Open question" section).
 constexpr int kMaxArgs = 6;
+static lo_fn_desc_t tt;
+
 
 void GenericDispatch(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = args.GetIsolate();
-  // v8::External::Value()/::New() require an explicit ExternalPointerTypeTag
-  // as of this v8/ checkout (V8 15.2) -- same sandboxing-hardening pattern as
-  // lo.h's LO_V8_INTERNAL_FIELD_TAG for internal fields, just not yet hit by
-  // any other lo binding since this prototype is the first user of
-  // v8::External here. kExternalPointerTypeTagDefault is the untagged
-  // default, same reasoning as kEmbedderDataTypeTagDefault elsewhere.
-  const lo_fn_desc_t* desc = reinterpret_cast<const lo_fn_desc_t*>(
-    Local<External>::Cast(args.Data())->Value(kExternalPointerTypeTagDefault));
+  Isolate* isolate = nullptr;
+//  HandleScope scope(isolate);
+  // Descriptor travels via an internal field on an Object in Data(), not
+  // v8::External -- benchmarked (bench-abi.js, foo vs foo_abi with
+  // lib/foo's nofast:true for a fair slow-path-only comparison): a 0-arg
+  // noop() was ~8ns generated vs ~20ns through External-based
+  // GenericDispatch. External::New/::Value are real out-of-line V8_EXPORT
+  // calls into libv8_monolith.a (v8-external.h); GetAlignedPointerFromInternalField
+  // is V8_INLINE (v8-object.h) -- a direct field read, no library call.
+  // Matches lib/core/api.js's own SlowCallback/struct fastcall precedent,
+  // which already uses internal fields for exactly this. Confirmed this
+  // build has v8_enable_sandbox=false (args.linux.x64.gn) so this isn't
+  // about the external-pointer-table indirection, just which of V8's two
+  // Data()-smuggling mechanisms happens to be inlined.
+#if LO_V8_INTERNAL_FIELD_TAG
+//  const lo_fn_desc_t* desc = reinterpret_cast<const lo_fn_desc_t*>(
+//    args.Data().As<Object>()->GetAlignedPointerFromInternalField(1, v8::kEmbedderDataTypeTagDefault));
+#else
+//  const lo_fn_desc_t* desc = reinterpret_cast<const lo_fn_desc_t*>(
+//    args.Data().As<Object>()->GetAlignedPointerFromInternalField(1));
+#endif
 
-  if (desc->nparams > kMaxArgs) {
-    isolate->ThrowError("lo_abi: too many parameters for generic dispatch");
-    return;
-  }
+  const lo_fn_desc_t* desc = &tt;
 
-  uint64_t argv[kMaxArgs] = {0};
-  // Keeps any LO_STRING-extracted UTF-8 buffers alive until after the
-  // native call below. String::Utf8Value is neither copyable nor movable,
-  // so it can't live in a std::vector (fails Cpp17MoveInsertable) -- a
-  // fixed array of unique_ptr<Utf8Value> sidesteps that; only the
-  // unique_ptr itself needs to be movable/default-constructible, not the
-  // Utf8Value it owns.
-  std::unique_ptr<String::Utf8Value> strings[kMaxArgs];
+  // strdup'd UTF-8 buffers, freed after the native call below -- bounded
+  // by nstrdup (how many LO_STRING args this call actually had), not
+  // kMaxArgs. Profiled (perf record -e cpu-clock -g --call-graph=dwarf,
+  // see doc/PROFILING.md): a fixed std::unique_ptr<String::Utf8Value>
+  // strings[kMaxArgs] here previously cost ~14-16% of GenericDispatch's
+  // own self time on a 0-arg call -- six unconditional destructor checks
+  // every call regardless of nparams, since the array's size is fixed at
+  // compile time, not desc->nparams. Matches lib/core/api.js's
+  // SlowCallback (its temp_strs[]/s pattern) exactly instead.
 
-  for (uint8_t i = 0; i < desc->nparams; i++) {
-    switch (desc->params[i]) {
-      case LO_STRING: {
-        strings[i] = std::make_unique<String::Utf8Value>(isolate, args[i]);
-        argv[i] = reinterpret_cast<uint64_t>(**strings[i]);
-        break;
-      }
-      case LO_POINTER:
-      case LO_BUFFER:
-        argv[i] = (uint64_t)Local<Integer>::Cast(args[i])->Value();
-        break;
-      case LO_BOOL:
-      case LO_I8: case LO_U8: case LO_I16: case LO_U16:
-      case LO_I32: case LO_U32:
-        argv[i] = (uint64_t)(int64_t)Local<Integer>::Cast(args[i])->Value();
-        break;
-      case LO_I64: case LO_U64: case LO_ISIZE: case LO_USIZE:
-        argv[i] = (uint64_t)Local<BigInt>::Cast(args[i])->Int64Value();
-        break;
-      default:
-        isolate->ThrowError("lo_abi: unsupported argument type in generic dispatch");
-        return;
-    }
-  }
-
-  // Dispatch through a canonical wide-integer function pointer type sized
-  // to the descriptor's arity. Relies on x64 SysV/ARM64 AAPCS64 both
-  // passing narrower integers/pointers in the low bits of the same
-  // argument registers a 64-bit value would occupy -- calling through a
-  // function pointer typed differently than desc->fn's real declaration is
-  // technically UB by the C++ standard, but this is the same risk
-  // tolerance lib/asm/*'s hand-rolled JIT trampolines already take
-  // (raw machine code assuming exact ABI register conventions). The
-  // by-the-book alternative (libffi's ffi_prep_cif/ffi_call) isn't
-  // currently linked into this build -- see doc/WORK.E.1.md.
   uint64_t rv = 0;
-  switch (desc->nparams) {
-    case 0: { typedef uint64_t (*F)(); rv = ((F)desc->fn)(); break; }
-    case 1: { typedef uint64_t (*F)(uint64_t); rv = ((F)desc->fn)(argv[0]); break; }
-    case 2: { typedef uint64_t (*F)(uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1]); break; }
-    case 3: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2]); break; }
-    case 4: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3]); break; }
-    case 5: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4]); break; }
-    case 6: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]); break; }
-  }
+  if (desc->nparams > 0) {
+    if (desc->nparams > kMaxArgs) {
+      if (isolate == nullptr) isolate = args.GetIsolate();
+      isolate->ThrowError("lo_abi: too many parameters for generic dispatch");
+      return;
+    }
+    uint64_t argv[kMaxArgs] = {0};
+    int nstrdup = 0;
+    char* strdup_strs[kMaxArgs];
 
+    for (uint8_t i = 0; i < desc->nparams; i++) {
+      switch (desc->params[i]) {
+        case LO_STRING: {
+          if (isolate == nullptr) isolate = args.GetIsolate();
+          String::Utf8Value str(isolate, args[i]);
+          strdup_strs[nstrdup] = strdup(*str);
+          argv[i] = reinterpret_cast<uint64_t>(strdup_strs[nstrdup]);
+          nstrdup++;
+          break;
+        }
+        case LO_POINTER:
+        case LO_BUFFER:
+          argv[i] = (uint64_t)Local<Integer>::Cast(args[i])->Value();
+          break;
+        case LO_BOOL:
+        case LO_I8: case LO_U8: case LO_I16: case LO_U16:
+        case LO_I32: case LO_U32:
+          argv[i] = (uint64_t)(int64_t)Local<Integer>::Cast(args[i])->Value();
+          break;
+        case LO_I64: case LO_U64: case LO_ISIZE: case LO_USIZE:
+          argv[i] = (uint64_t)Local<BigInt>::Cast(args[i])->Int64Value();
+          break;
+        default:
+          isolate->ThrowError("lo_abi: unsupported argument type in generic dispatch");
+          return;
+      }
+    }
+    // Dispatch through a canonical wide-integer function pointer type sized
+    // to the descriptor's arity. Relies on x64 SysV/ARM64 AAPCS64 both
+    // passing narrower integers/pointers in the low bits of the same
+    // argument registers a 64-bit value would occupy -- calling through a
+    // function pointer typed differently than desc->fn's real declaration is
+    // technically UB by the C++ standard, but this is the same risk
+    // tolerance lib/asm/*'s hand-rolled JIT trampolines already take
+    // (raw machine code assuming exact ABI register conventions). The
+    // by-the-book alternative (libffi's ffi_prep_cif/ffi_call) isn't
+    // currently linked into this build -- see doc/WORK.E.1.md.
+    switch (desc->nparams) {
+      case 0: { typedef uint64_t (*F)(); rv = ((F)desc->fn)(); break; }
+      case 1: { typedef uint64_t (*F)(uint64_t); rv = ((F)desc->fn)(argv[0]); break; }
+      case 2: { typedef uint64_t (*F)(uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1]); break; }
+      case 3: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2]); break; }
+      case 4: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3]); break; }
+      case 5: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4]); break; }
+      case 6: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]); break; }
+    }
+    for (int i = 0; i < nstrdup; i++) free(strdup_strs[i]);
+  } else {
+    typedef uint64_t (*F)(); rv = ((F)desc->fn)();
+  }
   switch (desc->result) {
     case LO_VOID:
       return;
@@ -138,9 +163,11 @@ void GenericDispatch(const FunctionCallbackInfo<Value>& args) {
       args.GetReturnValue().Set((double)rv);
       return;
     case LO_I64: case LO_U64: case LO_ISIZE: case LO_USIZE:
+      if (isolate == nullptr) isolate = args.GetIsolate();
       args.GetReturnValue().Set(BigInt::NewFromUnsigned(isolate, rv));
       return;
     default:
+      if (isolate == nullptr) isolate = args.GetIsolate();
       isolate->ThrowError("lo_abi: unsupported result type in generic dispatch");
       return;
   }
@@ -165,11 +192,24 @@ int lo_engine_has_exception(lo_engine_t*) {
 lo_status_t lo_register_functions(lo_engine_t* engine, lo_exports_t* exports,
     const lo_fn_desc_t* fns, uint32_t count) {
   Isolate* isolate = AsIsolate(engine);
+  Local<Context> context = isolate->GetCurrentContext();
   ExportsImpl* impl = AsExports(exports);
 
   for (uint32_t i = 0; i < count; i++) {
     const lo_fn_desc_t* desc = &fns[i];
-    Local<External> data = External::New(isolate, (void*)desc, kExternalPointerTypeTagDefault);
+    memcpy(&tt, desc, sizeof(lo_fn_desc_t));
+    // Same internal-field-on-an-Object mechanism as lib/core/api.js's
+    // bind_fastcallSlow (index 1, count 2 -- matching that existing
+    // convention rather than inventing a new one) instead of v8::External
+    // -- see GenericDispatch's comment for why.
+    Local<ObjectTemplate> data_tpl = ObjectTemplate::New(isolate);
+    data_tpl->SetInternalFieldCount(2);
+    Local<Object> data = data_tpl->NewInstance(context).ToLocalChecked();
+#if LO_V8_INTERNAL_FIELD_TAG
+//    data->SetAlignedPointerInInternalField(1, (void*)desc, v8::kEmbedderDataTypeTagDefault);
+#else
+//    data->SetAlignedPointerInInternalField(1, (void*)desc);
+#endif
     Local<FunctionTemplate> ft = FunctionTemplate::New(isolate, GenericDispatch, data);
     impl->tmpl->Set(isolate, desc->name, ft);
   }

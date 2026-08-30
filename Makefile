@@ -98,7 +98,6 @@ v8/include/.stamp: | v8/.stamp ## download the v8 source code for debugging
 ifneq ($(os),win)
 	rm -f include.tar.gz
 endif
-endif
 	touch v8/include/.stamp
 
 v8/src/.stamp: | v8/.stamp ## download the v8 source code for debugging
