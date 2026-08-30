@@ -260,6 +260,46 @@ constexpr auto kNoArgsTable = MakeNoArgsTable(std::make_integer_sequence<int, kM
 constexpr auto kPrimitiveTable = MakePrimitiveTable(std::make_integer_sequence<int, kMaxSlots>{});
 constexpr auto kGeneralTable = MakeGeneralTable(std::make_integer_sequence<int, kMaxSlots>{});
 
+// ---------------------------------------------------------------------
+// V8 Fast API Call smoke test (WORK.E.1.md's deliberately-deferred "Open
+// question"). Scoped as narrow as possible on purpose -- only the
+// 0-arg/LO_VOID-result shape (exactly noop()'s shape) -- to prove the
+// mechanism works at all before generalizing to every arity/register
+// class. Not new invention: lib/core/api.js's bind_fastcallSlow already
+// builds CTypeInfo/CFunctionInfo/CFunction dynamically from a runtime
+// type-tag array for dlopen'd FFI calls; this is the same trick applied
+// to lo_fn_desc_t, at registration time, once per binding rather than
+// once per dlopen'd call.
+//
+// The fast callback still needs to know which descriptor it's for --
+// Fast API Calls have no Data()-equivalent at all, so this reuses the
+// exact same per-slot template mechanism as the slow tiers above rather
+// than inventing a second way to smuggle state in.
+template<int Slot>
+void DispatchNoArgsFast(void* receiver) {
+  const lo_fn_desc_t* desc = g_descriptors[Slot];
+  typedef void (*F)();
+  ((F)desc->fn)();
+}
+
+// One shared CTypeInfo/CFunctionInfo for every slot -- valid because
+// this smoke test only ever targets one shape (0 real params + the
+// receiver V8 always prepends, void return), so every slot's fast
+// signature is identical; only which compiled DispatchNoArgsFast<Slot>
+// a given CFunction points at differs per slot.
+CTypeInfo kNoArgsFastCArgs[1] = { CTypeInfo(CTypeInfo::Type::kV8Value) };
+CTypeInfo kVoidFastReturn = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo kNoArgsFastInfo(kVoidFastReturn, 1, kNoArgsFastCArgs);
+
+template<int... Is>
+std::array<CFunction, sizeof...(Is)> MakeNoArgsFastTable(std::integer_sequence<int, Is...>) {
+  return { CFunction((const void*)&DispatchNoArgsFast<Is>, &kNoArgsFastInfo)... };
+}
+// Not constexpr -- CFunction's constructor isn't usable in a constant
+// expression the way a plain function pointer is -- but this still only
+// runs once, at static-init time, never per call.
+const std::array<CFunction, kMaxSlots> kNoArgsFastTable = MakeNoArgsFastTable(std::make_integer_sequence<int, kMaxSlots>{});
+
 } // namespace
 
 extern "C" {
@@ -305,7 +345,18 @@ lo_status_t lo_register_functions(lo_engine_t* engine, lo_exports_t* exports,
 
     // No `data` argument at all -- see the tier-0/tier-1/tier-2 comment
     // above for why avoiding Data() entirely is the point of this table.
-    Local<FunctionTemplate> ft = FunctionTemplate::New(isolate, cb);
+    Local<FunctionTemplate> ft;
+    if (desc->nparams == 0 && desc->result == LO_VOID) {
+      // Fast API Call smoke test -- see its comment above for scope.
+      // The slow callback (cb, already built above) still gets passed
+      // through as the required fallback -- V8 only takes the fast path
+      // once Turbofan/Maglev has actually optimized the call site.
+      ft = FunctionTemplate::New(isolate, cb, Local<Value>(), Local<Signature>(),
+        0, ConstructorBehavior::kThrow, SideEffectType::kHasNoSideEffect,
+        const_cast<CFunction*>(&kNoArgsFastTable[slot]));
+    } else {
+      ft = FunctionTemplate::New(isolate, cb);
+    }
     impl->tmpl->Set(isolate, desc->name, ft);
   }
   return LO_OK;
