@@ -13,6 +13,10 @@
 #include "lo.h"
 #include "lo_abi.h"
 
+#include <array>
+#include <atomic>
+#include <utility>
+
 using namespace v8;
 
 namespace {
@@ -34,11 +38,32 @@ inline ExportsImpl* AsExports(lo_exports_t* exports) {
   return reinterpret_cast<ExportsImpl*>(exports);
 }
 
-// Generic dispatch: one shared V8 callback for every lo_fn_desc_t this
-// backend registers. Which descriptor a given call is for travels via
-// FunctionTemplate's Data() (the standard V8 mechanism for exactly this).
+// Three-tier dispatch, chosen per descriptor at *registration* time, not
+// branched on per call. Two real, measured costs drove this (see
+// doc/PROFILING.md):
 //
-// Known limitations of this first pass (fine for lib/encode_abi, not a
+// 1. args.Data() itself -- via v8::External or an internal field, doesn't
+//    matter which -- costs ~9ns/call (V8's own GetFunctionTemplateData
+//    mints a fresh Handle every call). Avoided entirely below: each
+//    registered function gets a fixed "slot" at registration time, and a
+//    compile-time-generated table of function-pointer-per-slot dispatch
+//    bodies (the index_sequence machinery further down) lets
+//    FunctionTemplate::New install a distinct compiled function per slot
+//    -- which slot a call belongs to is baked into *which compiled
+//    function got installed*, not looked up via any V8 mechanism at call
+//    time.
+// 2. A single monolithic dispatcher makes even a 0-arg call pay for the
+//    worst case's register pressure: `objdump`'ing the compiled code
+//    (doc/PROFILING.md's "reading generated code directly" section)
+//    showed a single do-everything dispatcher unconditionally pushing 6
+//    callee-saved registers and reserving a 136-byte stack frame on
+//    *every* call, because the compiler sizes a function's prologue for
+//    its whole body (the multi-arg/string-handling branch needs several
+//    live registers and local arrays) -- not the branch actually taken.
+//    Splitting by shape means the 0-arg tier's compiled body has nothing
+//    forcing that register pressure in the first place.
+//
+// Known limitations of this first pass (fine for lib/foo_abi, not a
 // complete implementation): no LO_F32/LO_F64 (float register class needs
 // separate handling on both x64 SysV and ARM64 AAPCS64 -- real work, not
 // needed by any binding yet), max 6 params, LO_STRING extraction always
@@ -46,106 +71,27 @@ inline ExportsImpl* AsExports(lo_exports_t* exports) {
 // at V8's zero-copy FastOneByteString path here, see doc/WORK.E.1.md's
 // "Open question" section).
 constexpr int kMaxArgs = 6;
-static lo_fn_desc_t tt;
 
+// Bump if a real binding ever needs more than this many total registered
+// ABI functions across the process -- each slot costs one entry in each
+// of the three dispatch tables below, so this is a compile-time/binary-
+// size tradeoff, not a design limit.
+constexpr int kMaxSlots = 256;
 
-void GenericDispatch(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = nullptr;
-//  HandleScope scope(isolate);
-  // Descriptor travels via an internal field on an Object in Data(), not
-  // v8::External -- benchmarked (bench-abi.js, foo vs foo_abi with
-  // lib/foo's nofast:true for a fair slow-path-only comparison): a 0-arg
-  // noop() was ~8ns generated vs ~20ns through External-based
-  // GenericDispatch. External::New/::Value are real out-of-line V8_EXPORT
-  // calls into libv8_monolith.a (v8-external.h); GetAlignedPointerFromInternalField
-  // is V8_INLINE (v8-object.h) -- a direct field read, no library call.
-  // Matches lib/core/api.js's own SlowCallback/struct fastcall precedent,
-  // which already uses internal fields for exactly this. Confirmed this
-  // build has v8_enable_sandbox=false (args.linux.x64.gn) so this isn't
-  // about the external-pointer-table indirection, just which of V8's two
-  // Data()-smuggling mechanisms happens to be inlined.
-#if LO_V8_INTERNAL_FIELD_TAG
-//  const lo_fn_desc_t* desc = reinterpret_cast<const lo_fn_desc_t*>(
-//    args.Data().As<Object>()->GetAlignedPointerFromInternalField(1, v8::kEmbedderDataTypeTagDefault));
-#else
-//  const lo_fn_desc_t* desc = reinterpret_cast<const lo_fn_desc_t*>(
-//    args.Data().As<Object>()->GetAlignedPointerFromInternalField(1));
-#endif
+const lo_fn_desc_t* g_descriptors[kMaxSlots] = {};
+// Registration happens once per isolate setup, but lo can run one
+// isolate per OS thread (lo_abi.h's own doc comment on lo_engine_t) --
+// std::atomic here costs nothing on the call hot path (only touched at
+// registration) and avoids a real race if two isolates ever register
+// concurrently, since g_descriptors/g_next_slot are process-wide, not
+// per-isolate.
+std::atomic<int> g_next_slot{0};
 
-  const lo_fn_desc_t* desc = &tt;
-
-  // strdup'd UTF-8 buffers, freed after the native call below -- bounded
-  // by nstrdup (how many LO_STRING args this call actually had), not
-  // kMaxArgs. Profiled (perf record -e cpu-clock -g --call-graph=dwarf,
-  // see doc/PROFILING.md): a fixed std::unique_ptr<String::Utf8Value>
-  // strings[kMaxArgs] here previously cost ~14-16% of GenericDispatch's
-  // own self time on a 0-arg call -- six unconditional destructor checks
-  // every call regardless of nparams, since the array's size is fixed at
-  // compile time, not desc->nparams. Matches lib/core/api.js's
-  // SlowCallback (its temp_strs[]/s pattern) exactly instead.
-
-  uint64_t rv = 0;
-  if (desc->nparams > 0) {
-    if (desc->nparams > kMaxArgs) {
-      if (isolate == nullptr) isolate = args.GetIsolate();
-      isolate->ThrowError("lo_abi: too many parameters for generic dispatch");
-      return;
-    }
-    uint64_t argv[kMaxArgs] = {0};
-    int nstrdup = 0;
-    char* strdup_strs[kMaxArgs];
-
-    for (uint8_t i = 0; i < desc->nparams; i++) {
-      switch (desc->params[i]) {
-        case LO_STRING: {
-          if (isolate == nullptr) isolate = args.GetIsolate();
-          String::Utf8Value str(isolate, args[i]);
-          strdup_strs[nstrdup] = strdup(*str);
-          argv[i] = reinterpret_cast<uint64_t>(strdup_strs[nstrdup]);
-          nstrdup++;
-          break;
-        }
-        case LO_POINTER:
-        case LO_BUFFER:
-          argv[i] = (uint64_t)Local<Integer>::Cast(args[i])->Value();
-          break;
-        case LO_BOOL:
-        case LO_I8: case LO_U8: case LO_I16: case LO_U16:
-        case LO_I32: case LO_U32:
-          argv[i] = (uint64_t)(int64_t)Local<Integer>::Cast(args[i])->Value();
-          break;
-        case LO_I64: case LO_U64: case LO_ISIZE: case LO_USIZE:
-          argv[i] = (uint64_t)Local<BigInt>::Cast(args[i])->Int64Value();
-          break;
-        default:
-          isolate->ThrowError("lo_abi: unsupported argument type in generic dispatch");
-          return;
-      }
-    }
-    // Dispatch through a canonical wide-integer function pointer type sized
-    // to the descriptor's arity. Relies on x64 SysV/ARM64 AAPCS64 both
-    // passing narrower integers/pointers in the low bits of the same
-    // argument registers a 64-bit value would occupy -- calling through a
-    // function pointer typed differently than desc->fn's real declaration is
-    // technically UB by the C++ standard, but this is the same risk
-    // tolerance lib/asm/*'s hand-rolled JIT trampolines already take
-    // (raw machine code assuming exact ABI register conventions). The
-    // by-the-book alternative (libffi's ffi_prep_cif/ffi_call) isn't
-    // currently linked into this build -- see doc/WORK.E.1.md.
-    switch (desc->nparams) {
-      case 0: { typedef uint64_t (*F)(); rv = ((F)desc->fn)(); break; }
-      case 1: { typedef uint64_t (*F)(uint64_t); rv = ((F)desc->fn)(argv[0]); break; }
-      case 2: { typedef uint64_t (*F)(uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1]); break; }
-      case 3: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2]); break; }
-      case 4: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3]); break; }
-      case 5: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4]); break; }
-      case 6: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]); break; }
-    }
-    for (int i = 0; i < nstrdup; i++) free(strdup_strs[i]);
-  } else {
-    typedef uint64_t (*F)(); rv = ((F)desc->fn)();
-  }
-  switch (desc->result) {
+// Shared by all three tiers -- setting the JS return value from the raw
+// uint64_t every native call produces. Isolate is only fetched (by the
+// two branches that need it) lazily, not by every caller up front.
+inline void SetResult(const FunctionCallbackInfo<Value>& args, lo_type_t result, uint64_t rv) {
+  switch (result) {
     case LO_VOID:
       return;
     case LO_BOOL:
@@ -163,15 +109,156 @@ void GenericDispatch(const FunctionCallbackInfo<Value>& args) {
       args.GetReturnValue().Set((double)rv);
       return;
     case LO_I64: case LO_U64: case LO_ISIZE: case LO_USIZE:
-      if (isolate == nullptr) isolate = args.GetIsolate();
-      args.GetReturnValue().Set(BigInt::NewFromUnsigned(isolate, rv));
+      args.GetReturnValue().Set(BigInt::NewFromUnsigned(args.GetIsolate(), rv));
       return;
     default:
-      if (isolate == nullptr) isolate = args.GetIsolate();
-      isolate->ThrowError("lo_abi: unsupported result type in generic dispatch");
+      args.GetIsolate()->ThrowError("lo_abi: unsupported result type in generic dispatch");
       return;
   }
 }
+
+// Tier 0: zero-argument functions. No argv array, no marshaling loop, no
+// locals to speak of -- as close to a hand-generated wrapper's own
+// compiled shape as this generic mechanism can get.
+template<int Slot>
+void DispatchNoArgs(const FunctionCallbackInfo<Value>& args) {
+  const lo_fn_desc_t* desc = g_descriptors[Slot];
+  typedef uint64_t (*F)();
+  uint64_t rv = ((F)desc->fn)();
+  SetResult(args, desc->result, rv);
+}
+
+// Tier 1: 1-6 scalar/pointer arguments, no strings. Needs argv[] and the
+// marshaling loop, but deliberately has no LO_STRING case at all -- kept
+// out of this tier's compiled body entirely so functions that never take
+// a string don't pay for the extra register pressure/stack-protector
+// trigger that strdup/free-based string handling brings with it (see
+// tier 2). desc->nparams is validated against kMaxArgs once, at
+// registration (lo_register_functions below) -- not re-checked per call.
+template<int Slot>
+void DispatchPrimitiveArgs(const FunctionCallbackInfo<Value>& args) {
+  const lo_fn_desc_t* desc = g_descriptors[Slot];
+  uint64_t argv[kMaxArgs] = {0};
+
+  for (uint8_t i = 0; i < desc->nparams; i++) {
+    switch (desc->params[i]) {
+      case LO_POINTER:
+      case LO_BUFFER:
+        argv[i] = (uint64_t)Local<Integer>::Cast(args[i])->Value();
+        break;
+      case LO_BOOL:
+      case LO_I8: case LO_U8: case LO_I16: case LO_U16:
+      case LO_I32: case LO_U32:
+        argv[i] = (uint64_t)(int64_t)Local<Integer>::Cast(args[i])->Value();
+        break;
+      case LO_I64: case LO_U64: case LO_ISIZE: case LO_USIZE:
+        argv[i] = (uint64_t)Local<BigInt>::Cast(args[i])->Int64Value();
+        break;
+      default:
+        args.GetIsolate()->ThrowError("lo_abi: unsupported argument type in generic dispatch");
+        return;
+    }
+  }
+
+  // Dispatch through a canonical wide-integer function pointer type sized
+  // to the descriptor's arity. Relies on x64 SysV/ARM64 AAPCS64 both
+  // passing narrower integers/pointers in the low bits of the same
+  // argument registers a 64-bit value would occupy -- calling through a
+  // function pointer typed differently than desc->fn's real declaration is
+  // technically UB by the C++ standard, but this is the same risk
+  // tolerance lib/asm/*'s hand-rolled JIT trampolines already take
+  // (raw machine code assuming exact ABI register conventions). The
+  // by-the-book alternative (libffi's ffi_prep_cif/ffi_call) isn't
+  // currently linked into this build -- see doc/WORK.E.1.md.
+  uint64_t rv = 0;
+  switch (desc->nparams) {
+    case 1: { typedef uint64_t (*F)(uint64_t); rv = ((F)desc->fn)(argv[0]); break; }
+    case 2: { typedef uint64_t (*F)(uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1]); break; }
+    case 3: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2]); break; }
+    case 4: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3]); break; }
+    case 5: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4]); break; }
+    case 6: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]); break; }
+  }
+  SetResult(args, desc->result, rv);
+}
+
+// Tier 2: has at least one LO_STRING argument -- the full machinery
+// (String::Utf8Value extraction, strdup'd buffers freed after the call,
+// bounded by nstrdup -- how many string args this call actually had, not
+// kMaxArgs -- matching lib/core/api.js's SlowCallback temp_strs[]/s
+// pattern). Only functions that actually take a string pay for this
+// tier's larger register footprint.
+template<int Slot>
+void DispatchGeneral(const FunctionCallbackInfo<Value>& args) {
+  const lo_fn_desc_t* desc = g_descriptors[Slot];
+  Isolate* isolate = args.GetIsolate();
+  uint64_t argv[kMaxArgs] = {0};
+  char* strdup_strs[kMaxArgs];
+  int nstrdup = 0;
+
+  for (uint8_t i = 0; i < desc->nparams; i++) {
+    switch (desc->params[i]) {
+      case LO_STRING: {
+        String::Utf8Value str(isolate, args[i]);
+        strdup_strs[nstrdup] = strdup(*str);
+        argv[i] = reinterpret_cast<uint64_t>(strdup_strs[nstrdup]);
+        nstrdup++;
+        break;
+      }
+      case LO_POINTER:
+      case LO_BUFFER:
+        argv[i] = (uint64_t)Local<Integer>::Cast(args[i])->Value();
+        break;
+      case LO_BOOL:
+      case LO_I8: case LO_U8: case LO_I16: case LO_U16:
+      case LO_I32: case LO_U32:
+        argv[i] = (uint64_t)(int64_t)Local<Integer>::Cast(args[i])->Value();
+        break;
+      case LO_I64: case LO_U64: case LO_ISIZE: case LO_USIZE:
+        argv[i] = (uint64_t)Local<BigInt>::Cast(args[i])->Int64Value();
+        break;
+      default:
+        isolate->ThrowError("lo_abi: unsupported argument type in generic dispatch");
+        return;
+    }
+  }
+
+  uint64_t rv = 0;
+  switch (desc->nparams) {
+    case 0: { typedef uint64_t (*F)(); rv = ((F)desc->fn)(); break; }
+    case 1: { typedef uint64_t (*F)(uint64_t); rv = ((F)desc->fn)(argv[0]); break; }
+    case 2: { typedef uint64_t (*F)(uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1]); break; }
+    case 3: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2]); break; }
+    case 4: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3]); break; }
+    case 5: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4]); break; }
+    case 6: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]); break; }
+  }
+  for (int i = 0; i < nstrdup; i++) free(strdup_strs[i]);
+  SetResult(args, desc->result, rv);
+}
+
+// Builds a kMaxSlots-entry table of &Dispatch<0>, &Dispatch<1>, ... at
+// compile time -- one table per tier, so lo_register_functions just
+// indexes by slot rather than generating anything itself. Three near-
+// identical builders, not one generic over Dispatch -- a template
+// template parameter can only bind a class template, never a function
+// template like DispatchNoArgs/DispatchPrimitiveArgs/DispatchGeneral.
+template<int... Is>
+constexpr std::array<FunctionCallback, sizeof...(Is)> MakeNoArgsTable(std::integer_sequence<int, Is...>) {
+  return { &DispatchNoArgs<Is>... };
+}
+template<int... Is>
+constexpr std::array<FunctionCallback, sizeof...(Is)> MakePrimitiveTable(std::integer_sequence<int, Is...>) {
+  return { &DispatchPrimitiveArgs<Is>... };
+}
+template<int... Is>
+constexpr std::array<FunctionCallback, sizeof...(Is)> MakeGeneralTable(std::integer_sequence<int, Is...>) {
+  return { &DispatchGeneral<Is>... };
+}
+
+constexpr auto kNoArgsTable = MakeNoArgsTable(std::make_integer_sequence<int, kMaxSlots>{});
+constexpr auto kPrimitiveTable = MakePrimitiveTable(std::make_integer_sequence<int, kMaxSlots>{});
+constexpr auto kGeneralTable = MakeGeneralTable(std::make_integer_sequence<int, kMaxSlots>{});
 
 } // namespace
 
@@ -192,25 +279,33 @@ int lo_engine_has_exception(lo_engine_t*) {
 lo_status_t lo_register_functions(lo_engine_t* engine, lo_exports_t* exports,
     const lo_fn_desc_t* fns, uint32_t count) {
   Isolate* isolate = AsIsolate(engine);
-  Local<Context> context = isolate->GetCurrentContext();
   ExportsImpl* impl = AsExports(exports);
 
   for (uint32_t i = 0; i < count; i++) {
     const lo_fn_desc_t* desc = &fns[i];
-    memcpy(&tt, desc, sizeof(lo_fn_desc_t));
-    // Same internal-field-on-an-Object mechanism as lib/core/api.js's
-    // bind_fastcallSlow (index 1, count 2 -- matching that existing
-    // convention rather than inventing a new one) instead of v8::External
-    // -- see GenericDispatch's comment for why.
-    Local<ObjectTemplate> data_tpl = ObjectTemplate::New(isolate);
-    data_tpl->SetInternalFieldCount(2);
-    Local<Object> data = data_tpl->NewInstance(context).ToLocalChecked();
-#if LO_V8_INTERNAL_FIELD_TAG
-//    data->SetAlignedPointerInInternalField(1, (void*)desc, v8::kEmbedderDataTypeTagDefault);
-#else
-//    data->SetAlignedPointerInInternalField(1, (void*)desc);
-#endif
-    Local<FunctionTemplate> ft = FunctionTemplate::New(isolate, GenericDispatch, data);
+    if (desc->nparams > kMaxArgs) return LO_INVALID_ARG;
+
+    int slot = g_next_slot.fetch_add(1);
+    if (slot >= kMaxSlots) return LO_OUT_OF_MEMORY;
+    // fns[] is the binding's own `static const lo_fn_desc_t[]` (see
+    // lib/foo_abi/foo_abi.cc) -- static storage duration, so the pointer
+    // stays valid for the process lifetime and can be stored directly,
+    // no copy needed.
+    g_descriptors[slot] = desc;
+
+    bool has_string = false;
+    for (uint8_t p = 0; p < desc->nparams; p++) {
+      if (desc->params[p] == LO_STRING) { has_string = true; break; }
+    }
+
+    FunctionCallback cb;
+    if (desc->nparams == 0) cb = kNoArgsTable[slot];
+    else if (has_string) cb = kGeneralTable[slot];
+    else cb = kPrimitiveTable[slot];
+
+    // No `data` argument at all -- see the tier-0/tier-1/tier-2 comment
+    // above for why avoiding Data() entirely is the point of this table.
+    Local<FunctionTemplate> ft = FunctionTemplate::New(isolate, cb);
     impl->tmpl->Set(isolate, desc->name, ft);
   }
   return LO_OK;
