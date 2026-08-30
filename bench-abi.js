@@ -1,0 +1,29 @@
+import { Bench } from 'lib/bench.js'
+
+const { assert, load } = lo
+const { foo } = load('foo')
+const { foo_abi } = load('foo_abi')
+const bench = new Bench()
+const iter = 5
+
+while (1) {
+  {
+    const runs = 200000000
+
+    for (let i = 0; i < iter; i++) {
+      bench.start('foo.noop')
+      for (let j = 0; j < runs; j++) assert(foo.noop() === undefined)
+      bench.end(runs)
+    }
+  }
+
+  {
+    const runs = 200000000
+
+    for (let i = 0; i < iter; i++) {
+      bench.start('foo_abi.noop')
+      for (let j = 0; j < runs; j++) assert(foo_abi.noop() === undefined)
+      bench.end(runs)
+    }
+  }
+}

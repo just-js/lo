@@ -1,5 +1,5 @@
 // lo_abi_v8.cc — minimal V8 backend for lo_abi.h (WORK.E.1 prototype, see
-// doc/WORK.E.1.md). Implements only what lib/encode_abi/encode_abi.cc
+// doc/WORK.E.1.md). Implements only what an lo_abi.h-targeted binding
 // actually calls: lo_register_functions, plus lo_engine_throw/
 // lo_engine_has_exception for completeness (cheap, and the closest thing
 // this ABI has to a universal error primitive). Everything else lo_abi.h
@@ -8,7 +8,7 @@
 // here — not needed by this prototype, not claimed to work.
 //
 // This file is the only place in this prototype that's allowed to touch
-// v8:: directly — lib/encode_abi/encode_abi.cc never does.
+// v8:: directly — an lo_abi.h-targeted binding's own .cc never does.
 
 #include "lo.h"
 #include "lo_abi.h"
@@ -51,8 +51,14 @@ constexpr int kMaxArgs = 6;
 
 void GenericDispatch(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
+  // v8::External::Value()/::New() require an explicit ExternalPointerTypeTag
+  // as of this v8/ checkout (V8 15.2) -- same sandboxing-hardening pattern as
+  // lo.h's LO_V8_INTERNAL_FIELD_TAG for internal fields, just not yet hit by
+  // any other lo binding since this prototype is the first user of
+  // v8::External here. kExternalPointerTypeTagDefault is the untagged
+  // default, same reasoning as kEmbedderDataTypeTagDefault elsewhere.
   const lo_fn_desc_t* desc = reinterpret_cast<const lo_fn_desc_t*>(
-    Local<External>::Cast(args.Data())->Value());
+    Local<External>::Cast(args.Data())->Value(kExternalPointerTypeTagDefault));
 
   if (desc->nparams > kMaxArgs) {
     isolate->ThrowError("lo_abi: too many parameters for generic dispatch");
@@ -163,7 +169,7 @@ lo_status_t lo_register_functions(lo_engine_t* engine, lo_exports_t* exports,
 
   for (uint32_t i = 0; i < count; i++) {
     const lo_fn_desc_t* desc = &fns[i];
-    Local<External> data = External::New(isolate, (void*)desc);
+    Local<External> data = External::New(isolate, (void*)desc, kExternalPointerTypeTagDefault);
     Local<FunctionTemplate> ft = FunctionTemplate::New(isolate, GenericDispatch, data);
     impl->tmpl->Set(isolate, desc->name, ft);
   }
@@ -176,32 +182,37 @@ lo_status_t lo_register_functions(lo_engine_t* engine, lo_exports_t* exports,
 // Registration shim: adapts today's `_register_<name>() -> void*` /
 // InitializerCallback convention (see lo.h, main.h) to the portable
 // `lo_register_<name>(engine, realm, exports, abi_version)` entry point a
-// lo_abi.h-targeted binding actually exports. Hand-written for this one
-// prototype -- see doc/WORK.E.1.md's non-goals (lib/gen.js codegen
-// integration is separate, later work).
+// lo_abi.h-targeted binding actually exports.
+//
+// Generalized as a macro (not hand-written per binding) once a second
+// binding target (foo_abi) showed the encode_abi-only prototype's Init
+// body was pure boilerplate -- every ABI-targeted binding needs the exact
+// same three lines (build an ExportsImpl, call lo_register_<name>, SET_MODULE
+// the result), just with <name> substituted throughout. One
+// LO_ABI_V8_BINDING(name) line per binding still needs to live here --
+// lib/gen.js codegen integration to emit this automatically is separate,
+// later work (doc/WORK.E.1.md's non-goals).
 // ---------------------------------------------------------------------
 
-extern "C" lo_status_t lo_register_encode_abi(lo_engine_t*, lo_realm_t*, lo_exports_t*, uint32_t);
-
-namespace lo {
-namespace encode_abi_shim {
-
-void Init(Isolate* isolate, Local<ObjectTemplate> target) {
-  ExportsImpl impl{isolate, ObjectTemplate::New(isolate)};
-  lo_status_t rc = lo_register_encode_abi(
-    reinterpret_cast<lo_engine_t*>(isolate),
-    nullptr, // realm -- unused by this binding
-    reinterpret_cast<lo_exports_t*>(&impl),
-    lo_abi_version());
-  if (rc != LO_OK) return;
-  SET_MODULE(isolate, target, "encode_abi", impl.tmpl);
-}
-
-} // namespace encode_abi_shim
-} // namespace lo
-
-extern "C" {
-  DLL_PUBLIC void* _register_encode_abi() {
-    return (void*)lo::encode_abi_shim::Init;
+#define LO_ABI_V8_BINDING(name) \
+  extern "C" lo_status_t lo_register_##name( \
+    lo_engine_t*, lo_realm_t*, lo_exports_t*, uint32_t); \
+  namespace lo { namespace name##_abi_shim { \
+    void Init(Isolate* isolate, Local<ObjectTemplate> target) { \
+      ExportsImpl impl{isolate, ObjectTemplate::New(isolate)}; \
+      lo_status_t rc = lo_register_##name( \
+        reinterpret_cast<lo_engine_t*>(isolate), \
+        nullptr, /* realm -- unused by this binding */ \
+        reinterpret_cast<lo_exports_t*>(&impl), \
+        lo_abi_version()); \
+      if (rc != LO_OK) return; \
+      SET_MODULE(isolate, target, #name, impl.tmpl); \
+    } \
+  } } \
+  extern "C" { \
+    DLL_PUBLIC void* _register_##name() { \
+      return (void*)lo::name##_abi_shim::Init; \
+    } \
   }
-}
+
+LO_ABI_V8_BINDING(foo_abi)
