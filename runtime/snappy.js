@@ -373,5 +373,7 @@ globalThis.snapshotEntry = async function () {
   if (args[1] === 'repl') {
     const { repl } = await import('lib/repl.js')
     repl()
+  } else if (args.length > 1) {
+    await import(args[1])
   }
 }
