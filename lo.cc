@@ -1871,12 +1871,27 @@ void lo::Setup(
     const char* v8flags,
     int v8_threads,
     int v8flags_from_commandline) {
-  // create the v8 platform
-  platform = 
-    v8::platform::NewDefaultPlatform(v8_threads, 
-      v8::platform::IdleTaskSupport::kDisabled, 
-      v8::platform::InProcessStackDumping::kDisabled, nullptr);
-  V8::InitializePlatform(platform.get());
+  // create the v8 platform. v8_threads == 0 means "no worker thread pool at
+  // all" - a distinct platform impl (NewDefaultPlatform(0, ...) still spins
+  // up one worker thread, it doesn't mean zero) that avoids the
+  // clone()+futex handshake with a worker thread that a short-lived script
+  // never ends up handing work to. V8 requires --single-threaded whenever
+  // this platform is used, or background task posting fails - so force it
+  // in ahead of the caller's own v8flags.
+  if (v8_threads == 0) {
+    platform =
+      v8::platform::NewSingleThreadedDefaultPlatform(
+        v8::platform::IdleTaskSupport::kDisabled,
+        v8::platform::InProcessStackDumping::kDisabled, nullptr);
+    V8::InitializePlatform(platform.get());
+    V8::SetFlagsFromString("--single-threaded");
+  } else {
+    platform =
+      v8::platform::NewDefaultPlatform(v8_threads,
+        v8::platform::IdleTaskSupport::kDisabled,
+        v8::platform::InProcessStackDumping::kDisabled, nullptr);
+    V8::InitializePlatform(platform.get());
+  }
   // set the v8 flags from the internally defined ones
   V8::SetFlagsFromString(v8flags);
   // then any flags specified on command line will override these, if we 
