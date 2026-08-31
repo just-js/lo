@@ -221,6 +221,17 @@ typedef struct {
   const lo_type_t* params;  // NULL/unused if flags & LO_FN_RAW
   uint8_t nparams;          // 0 if flags & LO_FN_RAW
   void* fn;                 // ordinary C fn ptr (e.g. int32_t(*)(int32_t,int32_t)), or lo_raw_fn_t if LO_FN_RAW
+  // Optional V8 Fast API Call entry point -- NULL if this function has no
+  // fast path (a string/f32/f64/i64/u64 param or result, currently; see
+  // lo_abi_v8.cc's ToFastCType). When set, a real, concretely-typed
+  // wrapper matching `result`/`params` exactly (codegen'd per function by
+  // lib/gen.js's bindingsAbi(), not a generic dispatcher -- V8 calls this
+  // directly with real native argument types in real ABI registers, so
+  // it can't be one shared function the way `fn`'s slow-path caller is).
+  // No receiver parameter -- this repo's own V8 patch
+  // (patches/15.3-cfunctioninfo-has-receiver-kno.patch) removed the need
+  // for one; see doc/WORK.E.1.md.
+  void* fast_fn;
   uint32_t flags;
 } lo_fn_desc_t;
 

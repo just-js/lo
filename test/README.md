@@ -56,3 +56,18 @@ renamed/refactored as the ABI work generalizes.
 ```shell
 lo test/abi.js
 ```
+
+## lib/\<binding\>/test.js
+
+Per-binding correctness tests live next to the binding itself, not here
+-- `export { test }` (an `async function test()`, same shape as
+`lib/asm/test.js`), run directly:
+
+```shell
+lo lib/fsmount/test.js
+lo lib/epoll/test.js
+lo lib/core_abi/test.js
+```
+
+These three are the abi-target real-binding proofs from `doc/WORK.E.1.md`
+(E.9) -- real syscalls/constants, not just "does it compile."

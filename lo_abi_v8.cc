@@ -16,7 +16,9 @@
 
 #include <array>
 #include <atomic>
+#include <optional>
 #include <utility>
+#include <vector>
 
 using namespace v8;
 
@@ -59,8 +61,14 @@ constexpr int kMaxArgs = 6;
 // Bump if a real binding ever needs more than this many total registered
 // ABI functions across the process -- each slot costs one entry in each
 // of the three dispatch tables below, so this is a compile-time/binary-
-// size tradeoff, not a design limit.
-constexpr int kMaxSlots = 256;
+// size tradeoff, not a design limit. Genuinely process-wide, not per-
+// binding, now that lo_abi_v8.cc compiles once into the runtime itself
+// rather than once per binding's own .so (see lib/build.js's
+// compile_bindings) -- every ABI-targeted binding loaded in one process
+// shares this same pool. 256 was already tight against just lib/core_abi
+// alone (~66 functions); 1024 leaves real headroom for several bindings
+// loaded together.
+constexpr int kMaxSlots = 1024;
 
 const lo_fn_desc_t* g_descriptors[kMaxSlots] = {};
 // Registration happens once per isolate setup, but lo can run one
@@ -276,71 +284,81 @@ constexpr auto kPrimitiveTable = MakePrimitiveTable(std::make_integer_sequence<i
 constexpr auto kGeneralTable = MakeGeneralTable(std::make_integer_sequence<int, kMaxSlots>{});
 
 // ---------------------------------------------------------------------
-// V8 Fast API Call smoke test (WORK.E.1.md's deliberately-deferred "Open
-// question"). Scoped as narrow as possible on purpose -- only the
-// 0-arg/LO_VOID-result shape (exactly noop()'s shape) -- to prove the
-// mechanism works at all before generalizing to every arity/register
-// class. Not new invention: lib/core/api.js's bind_fastcallSlow already
-// builds CTypeInfo/CFunctionInfo/CFunction dynamically from a runtime
-// type-tag array for dlopen'd FFI calls; this is the same trick applied
-// to lo_fn_desc_t, at registration time, once per binding rather than
-// once per dlopen'd call.
+// V8 Fast API Calls, generalized past the original 0-arg/int32-arg
+// proofs of concept (doc/WORK.E.1.md's "Update, third follow-on
+// session"): any shape built entirely from integer/bool/pointer-class
+// types (no LO_STRING, no LO_F32/LO_F64, no LO_I64/LO_U64 -- those stay
+// slow-only; the first two need real float register-class handling, the
+// last two need Int64Representation::kBigInt threaded through, neither
+// done yet), up to kMaxArgs params.
 //
-// The fast callback still needs to know which descriptor it's for --
-// Fast API Calls have no Data()-equivalent at all, so this reuses the
-// exact same per-slot template mechanism as the slow tiers above rather
-// than inventing a second way to smuggle state in.
-template<int Slot>
-void DispatchNoArgsFast(void* receiver) {
-  const lo_fn_desc_t* desc = g_descriptors[Slot];
-  typedef void (*F)();
-  ((F)desc->fn)();
-}
-
-// One shared CTypeInfo/CFunctionInfo for every slot -- valid because
-// this smoke test only ever targets one shape (0 real params + the
-// receiver V8 always prepends, void return), so every slot's fast
-// signature is identical; only which compiled DispatchNoArgsFast<Slot>
-// a given CFunction points at differs per slot.
-CTypeInfo kNoArgsFastCArgs[1] = { CTypeInfo(CTypeInfo::Type::kV8Value) };
-CTypeInfo kVoidFastReturn = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo kNoArgsFastInfo(kVoidFastReturn, 1, kNoArgsFastCArgs);
-
-template<int... Is>
-std::array<CFunction, sizeof...(Is)> MakeNoArgsFastTable(std::integer_sequence<int, Is...>) {
-  return { CFunction((const void*)&DispatchNoArgsFast<Is>, &kNoArgsFastInfo)... };
-}
-// Not constexpr -- CFunction's constructor isn't usable in a constant
-// expression the way a plain function pointer is -- but this still only
-// runs once, at static-init time, never per call.
-const std::array<CFunction, kMaxSlots> kNoArgsFastTable = MakeNoArgsFastTable(std::make_integer_sequence<int, kMaxSlots>{});
-
-// ---------------------------------------------------------------------
-// Tier 1 proof-of-concept: a single concrete shape (1 arg, both int32),
-// not the full arity/register-class generalization scoped separately --
-// proves the "direct-install, no wrapper needed" design. No receiver
-// parameter -- argument positions line up exactly with desc->fn's own
-// real C signature, via this repo's own V8 patch
+// Unlike the slow tiers above, this can't be one shared per-slot
+// template: V8 calls the Fast API entry point directly, with real native
+// argument types in real ABI registers matching CFunctionInfo's
+// declaration exactly -- there is no generic "cast everything to
+// uint64_t" trick available at this boundary the way there is for the
+// slow path's FunctionCallbackInfo-based args. So the wrapper itself
+// (desc->fast_fn) has to be a real, concretely-typed function -- one per
+// distinct shape, codegen'd directly into the binding's own generated
+// .cc by lib/gen.js's bindingsAbi() (see its getAbiFastCType/
+// genAbiFastWrapper), not built here. What *is* generic here, and does
+// live in this shared file: mapping lo_type_t to the right
+// CTypeInfo::Type/CFunctionInfo, and deciding per descriptor whether its
+// (already-generated, already-typed) fast_fn is actually usable.
+//
+// No receiver parameter on any of these -- this repo's own V8 patch
 // (patches/15.3-cfunctioninfo-has-receiver-kno.patch, upstreaming
-// CFunctionInfo::HasReceiver::kNo) rather than an adapter that accepts
-// and discards a receiver V8 no longer pushes into this slot.
-template<int Slot>
-int32_t DispatchInt32Fast_Core(int32_t a0) {
-  const lo_fn_desc_t* desc = g_descriptors[Slot];
-  typedef int32_t (*F)(int32_t);
-  return ((F)desc->fn)(a0);
+// CFunctionInfo::HasReceiver::kNo) removed the need for one, so a fast
+// wrapper's parameter list lines up exactly with desc->fn's own real C
+// signature (same idea `bind_fastcallSlow` already applies to dlopen'd
+// FFI calls, just resolved by codegen instead of at call-bind time).
+inline bool ToFastCType(lo_type_t t, CTypeInfo::Type* out) {
+  switch (t) {
+    case LO_I8: case LO_I16: case LO_I32: *out = CTypeInfo::Type::kInt32; return true;
+    case LO_U8: case LO_U16: case LO_U32: *out = CTypeInfo::Type::kUint32; return true;
+    case LO_BOOL: *out = CTypeInfo::Type::kBool; return true;
+    case LO_ISIZE: *out = CTypeInfo::Type::kInt64; return true;
+    case LO_USIZE: case LO_POINTER: case LO_BUFFER: *out = CTypeInfo::Type::kUint64; return true;
+    case LO_VOID: *out = CTypeInfo::Type::kVoid; return true;
+    default: return false; // LO_STRING/LO_F32/LO_F64/LO_I64/LO_U64/LO_FUNCTION/LO_U32ARRAY
+  }
 }
 
-CTypeInfo kInt32FastCArgs[1] = { CTypeInfo(CTypeInfo::Type::kInt32) };
-CTypeInfo kInt32FastReturn = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo kInt32FastInfo(kInt32FastReturn, 1, kInt32FastCArgs,
-  CFunctionInfo::Int64Representation::kNumber, CFunctionInfo::HasReceiver::kNo);
+// Per-slot storage for the dynamically-built CTypeInfo/CFunctionInfo/
+// CFunction a fast-eligible descriptor needs -- same lifetime as
+// g_descriptors (process lifetime, built once at registration), so
+// indexed by slot rather than heap allocation per call the way
+// bind_fastcallSlow does per dlopen'd bind (that path binds once per FFI
+// call site set up at runtime; this one binds once per statically-known
+// function). g_fast_cargs is a vector, not a fixed CTypeInfo[kMaxArgs]
+// array, because CTypeInfo has no default constructor -- an empty
+// vector needs none either, only push_back's move/copy, which it has;
+// .data() stays valid afterward since nothing here ever grows a slot's
+// vector again post-registration.
+std::vector<CTypeInfo> g_fast_cargs[kMaxSlots];
+std::optional<CFunctionInfo> g_fast_info[kMaxSlots];
+std::optional<CFunction> g_fast_cfunc[kMaxSlots];
 
-template<int... Is>
-std::array<CFunction, sizeof...(Is)> MakeInt32FastTable(std::integer_sequence<int, Is...>) {
-  return { CFunction((const void*)&DispatchInt32Fast_Core<Is>, &kInt32FastInfo)... };
+// Builds slot's fast CFunction from desc, if desc->fast_fn is set and
+// every param/result type is fast-callable. Returns it, or nullptr if
+// this descriptor has no usable fast path -- checked here rather than
+// trusted from codegen, so a hand-written or buggy lo_fn_desc_t can
+// never cause a real type-confused Fast API Call, only silently fall
+// back to the always-correct slow path.
+CFunction* BuildFastCFunction(int slot, const lo_fn_desc_t* desc) {
+  if (!desc->fast_fn) return nullptr;
+  CTypeInfo::Type return_type;
+  if (!ToFastCType(desc->result, &return_type)) return nullptr;
+  for (uint8_t i = 0; i < desc->nparams; i++) {
+    CTypeInfo::Type t;
+    if (!ToFastCType(desc->params[i], &t)) return nullptr;
+    g_fast_cargs[slot].push_back(CTypeInfo(t));
+  }
+  g_fast_info[slot].emplace(CTypeInfo(return_type), desc->nparams, g_fast_cargs[slot].data(),
+    CFunctionInfo::Int64Representation::kNumber, CFunctionInfo::HasReceiver::kNo);
+  g_fast_cfunc[slot].emplace(desc->fast_fn, &*g_fast_info[slot]);
+  return &*g_fast_cfunc[slot];
 }
-const std::array<CFunction, kMaxSlots> kInt32FastTable = MakeInt32FastTable(std::make_integer_sequence<int, kMaxSlots>{});
 
 } // namespace
 
@@ -388,20 +406,13 @@ lo_status_t lo_register_functions(lo_engine_t* engine, lo_exports_t* exports,
     // No `data` argument at all -- see the tier-0/tier-1/tier-2 comment
     // above for why avoiding Data() entirely is the point of this table.
     Local<FunctionTemplate> ft;
-    if (desc->nparams == 0 && desc->result == LO_VOID) {
-      // Fast API Call smoke test -- see its comment above for scope.
+    CFunction* fast = BuildFastCFunction(slot, desc);
+    if (fast) {
       // The slow callback (cb, already built above) still gets passed
       // through as the required fallback -- V8 only takes the fast path
       // once Turbofan/Maglev has actually optimized the call site.
       ft = FunctionTemplate::New(isolate, cb, Local<Value>(), Local<Signature>(),
-        0, ConstructorBehavior::kThrow, SideEffectType::kHasNoSideEffect,
-        const_cast<CFunction*>(&kNoArgsFastTable[slot]));
-    } else if (desc->nparams == 1 && desc->params[0] == LO_I32 && desc->result == LO_I32) {
-      // Tier 1 fast-call proof of concept -- see DispatchInt32Fast_Core
-      // above. Same fallback contract as the 0-arg case.
-      ft = FunctionTemplate::New(isolate, cb, Local<Value>(), Local<Signature>(),
-        0, ConstructorBehavior::kThrow, SideEffectType::kHasNoSideEffect,
-        const_cast<CFunction*>(&kInt32FastTable[slot]));
+        0, ConstructorBehavior::kThrow, SideEffectType::kHasNoSideEffect, fast);
     } else {
       ft = FunctionTemplate::New(isolate, cb);
     }

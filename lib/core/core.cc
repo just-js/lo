@@ -2841,8 +2841,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "RTLD_LOCAL", Integer::New(isolate, (int32_t)RTLD_LOCAL));
   SET_VALUE(isolate, module, "RTLD_NODELETE", Integer::New(isolate, (int32_t)RTLD_NODELETE));
   SET_VALUE(isolate, module, "RTLD_NOLOAD", Integer::New(isolate, (int32_t)RTLD_NOLOAD));
-  SET_VALUE(isolate, module, "RTLD_DEFAULT", BigInt::New(isolate, (uint64_t)RTLD_DEFAULT));
-  SET_VALUE(isolate, module, "RTLD_NEXT", BigInt::New(isolate, (uint64_t)RTLD_NEXT));
+  SET_VALUE(isolate, module, "RTLD_DEFAULT", BigInt::NewFromUnsigned(isolate, (uint64_t)RTLD_DEFAULT));
+  SET_VALUE(isolate, module, "RTLD_NEXT", BigInt::NewFromUnsigned(isolate, (uint64_t)RTLD_NEXT));
   SET_VALUE(isolate, module, "PROT_READ", Integer::New(isolate, (int32_t)PROT_READ));
   SET_VALUE(isolate, module, "PROT_WRITE", Integer::New(isolate, (int32_t)PROT_WRITE));
   SET_VALUE(isolate, module, "PROT_EXEC", Integer::New(isolate, (int32_t)PROT_EXEC));

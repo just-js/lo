@@ -396,7 +396,7 @@ files directly rather than assuming:
 | Gap | Bindings affected | Priority |
 |---|---|---|
 | `constants` (`lo_exports_set_*` declared in `lo_abi.h`, not implemented in `lo_abi_v8.cc`) | 24 of 43 (56%) | **Highest — do first** |
-| `structs` (no `lo_abi.h` equivalent by design) | 7 (`core`, `core2`, `curl`, `epoll`, `mach`, `net`, `pico`) | Medium |
+| `structs` (see correction below — turned out to be free once constants landed) | 7 (`core`, `core2`, `curl`, `epoll`, `mach`, `net`, `pico`) | ~~Medium~~ **Done** |
 | per-function `override` | 8, mostly crypto (`boringssl`, `mbedtls`, `libssl`) + `core`/`core2`/`net`/`ada`/`simdutf8` | Medium |
 | `linux`/`mac` OS-conditional sections (`bindingsAbi()` doesn't support this shape at all yet) | 7 (`core`, `curl`, `libffi`, `libssl`, `net`, `pthread`, `system`) | Medium |
 | `f32`/`f64` | 1 (`sqlite`) | **Lowest** — confirms the "very few need float support" read; don't front-load this work |
@@ -418,6 +418,19 @@ section. Also fixed along the way: a real bug in the *V8-specific*
 codegen's own `u64` constant handling (`BigInt::New` silently wrapping
 values above `INT64_MAX`), caught by the same cross-codegen test that
 validated the new ABI-side setter.
+
+**Correction, same session, from the user directly:** the table's
+`structs` row above wrongly carried forward this entry's original "no
+`lo_abi.h` equivalent by design" framing. Checked `lib/gen.js`'s
+`initStruct` directly, not assumed: a `structs` entry never marshals a
+struct by value, in `bindings()` or here — it only ever exposes
+`sizeof(name)` as a plain `i32` constant. So it needed no new
+`lo_abi.h`/`lo_abi_v8.cc` surface at all, just the same
+`lo_exports_set_i32` path constants already use (`initStructAbi`).
+Verified against `lib/epoll` (blocked only by `structs`): builds under
+the abi target, `struct_epoll_event_size` comes back as the real
+`sizeof(struct epoll_event)` (12), and `epoll_create1`/`close` both run
+correctly.
 
 ## F. Build system & binary size
 

@@ -43,7 +43,7 @@ while (1) {
   }
 
   {
-    const runs = 60000000
+    const runs = 200000000
 
     for (let i = 0; i < iter; i++) {
       bench.start('foo_abi.sum_buffer')
