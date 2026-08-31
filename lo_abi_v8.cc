@@ -13,11 +13,14 @@
 #include "lo.h"
 #include "lo_abi.h"
 
-#include <array>
-#include <atomic>
-#include <optional>
-#include <utility>
+#include <cstring>
 #include <vector>
+
+#if defined(_WIN32)
+#include <windows.h>
+#else
+#include <sys/mman.h>
+#endif
 
 using namespace v8;
 
@@ -46,14 +49,11 @@ inline ExportsImpl* AsExports(lo_exports_t* exports) {
 //
 // 1. args.Data() itself -- via v8::External or an internal field, doesn't
 //    matter which -- costs ~9ns/call (V8's own GetFunctionTemplateData
-//    mints a fresh Handle every call). Avoided entirely below: each
-//    registered function gets a fixed "slot" at registration time, and a
-//    compile-time-generated table of function-pointer-per-slot dispatch
-//    bodies (the index_sequence machinery further down) lets
-//    FunctionTemplate::New install a distinct compiled function per slot
-//    -- which slot a call belongs to is baked into *which compiled
-//    function got installed*, not looked up via any V8 mechanism at call
-//    time.
+//    mints a fresh Handle every call). Avoided below, but no longer via a
+//    compile-time table of one compiled function per registered slot --
+//    see "Runtime-generated dispatch trampolines" further down for why
+//    that approach (which worked, and is what shipped for a while) got
+//    replaced, and doc/LO_ABI.md for the full writeup.
 // 2. A single monolithic dispatcher makes even a 0-arg call pay for the
 //    worst case's register pressure: `objdump`'ing the compiled code
 //    (doc/PROFILING.md's "reading generated code directly" section)
@@ -68,10 +68,11 @@ inline ExportsImpl* AsExports(lo_exports_t* exports) {
 // Known limitations of this first pass (fine for lib/foo_abi, not a
 // complete implementation): no LO_F32/LO_F64 (float register class needs
 // separate handling on both x64 SysV and ARM64 AAPCS64 -- real work, not
-// needed by any binding yet), max 6 params, LO_STRING extraction always
-// copies (matches today's String::Utf8Value-based Slow paths -- no attempt
-// at V8's zero-copy FastOneByteString path here, see doc/WORK.E.1.md's
-// "Open question" section).
+// needed by any binding yet), LO_STRING extraction always copies (matches
+// today's String::Utf8Value-based Slow paths -- no attempt at V8's
+// zero-copy FastOneByteString path here, see doc/WORK.E.1.md's "Open
+// question" section, and doc/LO_ABI.md for why this makes every
+// LO_STRING-taking function's slow tier the *only* tier it ever gets).
 // 10 covers the real max across every binding's api.js today
 // (lib/pico's on_headers_complete callback registration) -- surveyed
 // directly (grep every generated *_params[] array), not guessed. This
@@ -85,29 +86,10 @@ inline ExportsImpl* AsExports(lo_exports_t* exports) {
 // abi-target binding linked into a real runtime/lo build, not by
 // reading the code -- exactly the "compiles and links isn't enough"
 // lesson from the registration-shim bug (see lo_abi.h's comment on
-// lo_abi_v8_register_binding).
+// lo_abi_v8_register_binding). This one *is* a real fixed limit (argv[]
+// is a real stack buffer, not a table of compiled functions) -- unlike
+// kMaxSlots/kMaxBindings below, which this file no longer has at all.
 constexpr int kMaxArgs = 10;
-
-// Bump if a real binding ever needs more than this many total registered
-// ABI functions across the process -- each slot costs one entry in each
-// of the three dispatch tables below, so this is a compile-time/binary-
-// size tradeoff, not a design limit. Genuinely process-wide, not per-
-// binding, now that lo_abi_v8.cc compiles once into the runtime itself
-// rather than once per binding's own .so (see lib/build.js's
-// compile_bindings) -- every ABI-targeted binding loaded in one process
-// shares this same pool. 256 was already tight against just lib/core_abi
-// alone (~66 functions); 1024 leaves real headroom for several bindings
-// loaded together.
-constexpr int kMaxSlots = 1024;
-
-const lo_fn_desc_t* g_descriptors[kMaxSlots] = {};
-// Registration happens once per isolate setup, but lo can run one
-// isolate per OS thread (lo_abi.h's own doc comment on lo_engine_t) --
-// std::atomic here costs nothing on the call hot path (only touched at
-// registration) and avoids a real race if two isolates ever register
-// concurrently, since g_descriptors/g_next_slot are process-wide, not
-// per-isolate.
-std::atomic<int> g_next_slot{0};
 
 // Recovers the real return value's mathematical bit pattern from a call
 // made through the canonical-uint64_t-return dispatch trick (the
@@ -168,25 +150,25 @@ inline void SetResult(const FunctionCallbackInfo<Value>& args, lo_type_t result,
 
 // Tier 0: zero-argument functions. No argv array, no marshaling loop, no
 // locals to speak of -- as close to a hand-generated wrapper's own
-// compiled shape as this generic mechanism can get.
-template<int Slot>
-void DispatchNoArgs(const FunctionCallbackInfo<Value>& args) {
-  const lo_fn_desc_t* desc = g_descriptors[Slot];
+// compiled shape as this generic mechanism can get. `desc` used to be
+// recovered from a per-slot global table via a template<int Slot> that
+// stamped out a distinct copy of this whole function per registered
+// slot; it's a real parameter now -- see "Runtime-generated dispatch
+// trampolines" below for how it still arrives here without args.Data().
+void DispatchNoArgs(const FunctionCallbackInfo<Value>& args, const lo_fn_desc_t* desc) {
   typedef uint64_t (*F)();
   uint64_t rv = ((F)desc->fn)();
   SetResult(args, desc->result, NarrowResult(desc->result, rv));
 }
 
-// Tier 1: 1-6 scalar/pointer arguments, no strings. Needs argv[] and the
+// Tier 1: 1-10 scalar/pointer arguments, no strings. Needs argv[] and the
 // marshaling loop, but deliberately has no LO_STRING case at all -- kept
 // out of this tier's compiled body entirely so functions that never take
 // a string don't pay for the extra register pressure/stack-protector
 // trigger that strdup/free-based string handling brings with it (see
 // tier 2). desc->nparams is validated against kMaxArgs once, at
 // registration (lo_register_functions below) -- not re-checked per call.
-template<int Slot>
-void DispatchPrimitiveArgs(const FunctionCallbackInfo<Value>& args) {
-  const lo_fn_desc_t* desc = g_descriptors[Slot];
+void DispatchPrimitiveArgs(const FunctionCallbackInfo<Value>& args, const lo_fn_desc_t* desc) {
   uint64_t argv[kMaxArgs] = {0};
 
   for (uint8_t i = 0; i < desc->nparams; i++) {
@@ -244,9 +226,7 @@ void DispatchPrimitiveArgs(const FunctionCallbackInfo<Value>& args) {
 // kMaxArgs -- matching lib/core/api.js's SlowCallback temp_strs[]/s
 // pattern). Only functions that actually take a string pay for this
 // tier's larger register footprint.
-template<int Slot>
-void DispatchGeneral(const FunctionCallbackInfo<Value>& args) {
-  const lo_fn_desc_t* desc = g_descriptors[Slot];
+void DispatchGeneral(const FunctionCallbackInfo<Value>& args, const lo_fn_desc_t* desc) {
   Isolate* isolate = args.GetIsolate();
   uint64_t argv[kMaxArgs] = {0};
   char* strdup_strs[kMaxArgs];
@@ -320,28 +300,177 @@ void DispatchGeneral(const FunctionCallbackInfo<Value>& args) {
   SetResult(args, desc->result, NarrowResult(desc->result, rv));
 }
 
-// Builds a kMaxSlots-entry table of &Dispatch<0>, &Dispatch<1>, ... at
-// compile time -- one table per tier, so lo_register_functions just
-// indexes by slot rather than generating anything itself. Three near-
-// identical builders, not one generic over Dispatch -- a template
-// template parameter can only bind a class template, never a function
-// template like DispatchNoArgs/DispatchPrimitiveArgs/DispatchGeneral.
-template<int... Is>
-constexpr std::array<FunctionCallback, sizeof...(Is)> MakeNoArgsTable(std::integer_sequence<int, Is...>) {
-  return { &DispatchNoArgs<Is>... };
-}
-template<int... Is>
-constexpr std::array<FunctionCallback, sizeof...(Is)> MakePrimitiveTable(std::integer_sequence<int, Is...>) {
-  return { &DispatchPrimitiveArgs<Is>... };
-}
-template<int... Is>
-constexpr std::array<FunctionCallback, sizeof...(Is)> MakeGeneralTable(std::integer_sequence<int, Is...>) {
-  return { &DispatchGeneral<Is>... };
+// ---------------------------------------------------------------------
+// Runtime-generated dispatch trampolines. Full writeup: doc/LO_ABI.md
+// ("Why JIT'd trampolines, not templates").
+//
+// What this replaced: a compile-time table of &DispatchNoArgs<0>,
+// &DispatchNoArgs<1>, ... built via template<int Slot> +
+// std::integer_sequence, one table per tier, up to a fixed kMaxSlots
+// (1024) ceiling -- which slot a call belonged to was baked into *which
+// compiled function got installed*, avoiding args.Data() entirely. It
+// worked, but had two real, measured costs of its own: ~3200 near-
+// identical compiled functions took lo_abi_v8.cc from ~50s to compile
+// to ~69s after the kMaxArgs 6->10 case-arm growth above (2.6MB of
+// .text, most never executed -- only ~323 of 1024 slots actually used by
+// a real runtime/lo build), and it still left a hard compile-time cap:
+// any process that dlopen's more ABI bindings/functions than the table
+// was sized for fails registration silently past it, exactly like the
+// kMaxArgs=6 bug this file already hit once, just at a different choke
+// point. Since this ABI's whole premise is bindings loaded independently
+// at runtime, a fixed compile-time ceiling on how many can ever coexist
+// in one process isn't acceptable at any size.
+//
+// What replaced it: each registered function gets a tiny, hand-written
+// machine-code trampoline (same spirit as lib/asm/x64.js's/arm64.js's
+// own hand-rolled opcodes -- a fixed, small instruction subset, not a
+// general assembler) that bakes its lo_fn_desc_t* directly into its own
+// immediate operand and tail-jumps into one shared, ordinary (non-
+// template) DispatchNoArgs/DispatchPrimitiveArgs/DispatchGeneral. No
+// kMaxSlots, no kMaxBindings, no compile-time cost per registered
+// function, no shared mutable global state to synchronize either (no
+// slot counter left to race on -- each registration is independent).
+//
+// Why this doesn't reintroduce the args.Data() cost (~9ns/call,
+// doc/PROFILING.md): Data() is slow because V8's own
+// GetFunctionTemplateData mints a fresh Handle from the FunctionTemplate
+// on every call. Baking the pointer into the trampoline's own immediate
+// operand needs no V8 call, no Handle, not even a memory load -- it's
+// sitting directly in the instruction stream next to the jump/branch.
+// The only added cost versus the old per-slot compiled function is one
+// extra register load and one indirect jmp/br whose target is a
+// compile-time-fixed constant for that specific trampoline -- a single,
+// always-same-target branch that predicts for free after warmup.
+// Measured before/after in bench-abi.js: doc/LO_ABI.md.
+//
+// V8 calls a FunctionCallback with exactly one argument (the
+// FunctionCallbackInfo, passed as its address per C++'s reference-
+// parameter ABI) regardless of the receiver-elision patch mentioned
+// above -- that patch is about the separate Fast API native-call path
+// (desc->fast_fn), not this slow-path callback, so there's no argument
+// to shift here. The trampoline below never touches the register V8
+// already put that address in; it only adds one more.
+#if defined(__x86_64__) || defined(_M_X64)
+
+// Encoding-index per architectural register -- see lib/asm/x64.js's own
+// `gp` table (rax=0, rcx=1, rdx=2, ..., rsi=6, rdi=7, r8=8, ...), which
+// this mirrors byte-for-byte rather than re-deriving.
+#if defined(_WIN32)
+// Microsoft x64 calling convention: first four integer/pointer args in
+// RCX, RDX, R8, R9 -- there is no separate "stdcall" on x64, that's a
+// 32-bit-only distinction. A tail-jmp (not call) needs no shadow-space/
+// alignment handling of its own: whatever V8 already set up to call
+// *into* the trampoline carries straight through to the shared Dispatch
+// function untouched.
+constexpr int kArgRegs[] = {1, 2, 8, 9};
+#else
+// SysV AMD64 (Linux/macOS): RDI, RSI, RDX, RCX, R8, R9.
+constexpr int kArgRegs[] = {7, 6, 2, 1, 8, 9};
+#endif
+constexpr int kScratchReg = 0; // rax -- caller-saved on both conventions,
+                                // never used to pass FunctionCallbackInfo*
+                                // or a BindingInfo*/lo_fn_desc_t* here.
+
+inline void EmitMovImm64(std::vector<uint8_t>& out, int reg, uint64_t value) {
+  // OpCode: REX.W [+B] + B8+rd io -- MOV r64, imm64 (same encoding
+  // lib/asm/x64.js's movabs() uses).
+  out.push_back(0x48 | (reg >= 8 ? 1 : 0));
+  out.push_back(0xB8 + (reg % 8));
+  for (int i = 0; i < 8; i++) out.push_back(uint8_t(value >> (8 * i)));
 }
 
-constexpr auto kNoArgsTable = MakeNoArgsTable(std::make_integer_sequence<int, kMaxSlots>{});
-constexpr auto kPrimitiveTable = MakePrimitiveTable(std::make_integer_sequence<int, kMaxSlots>{});
-constexpr auto kGeneralTable = MakeGeneralTable(std::make_integer_sequence<int, kMaxSlots>{});
+inline void EmitJmpReg(std::vector<uint8_t>& out, int reg) {
+  // OpCode: FF /4 -- JMP r/m64 (indirect, defaults to 64-bit operand size
+  // in long mode, no REX.W needed -- only REX.B if reg is r8-r15).
+  if (reg >= 8) out.push_back(0x41);
+  out.push_back(0xFF);
+  out.push_back(uint8_t(0xE0 | (reg % 8))); // ModRM: mod=11, reg=/4, rm=reg
+}
+
+std::vector<uint8_t> BuildTrampoline(int arg_index, uint64_t ctx, uint64_t target) {
+  std::vector<uint8_t> code;
+  EmitMovImm64(code, kArgRegs[arg_index], ctx);
+  EmitMovImm64(code, kScratchReg, target);
+  EmitJmpReg(code, kScratchReg);
+  return code;
+}
+
+#elif defined(__aarch64__) || defined(_M_ARM64)
+
+// AAPCS64: integer/pointer args in X0-X7. X16 (IP0) is the conventional
+// scratch register for exactly this job -- linker-generated long-branch
+// veneers use it the same way, for the same reason (a value the callee
+// is never expecting to carry meaning, safe to clobber before an
+// indirect branch).
+constexpr int kArgRegs[] = {0, 1, 2, 3, 4, 5, 6, 7};
+constexpr int kScratchReg = 16;
+
+inline void EmitMovWide(std::vector<uint8_t>& out, uint32_t base, int reg, uint16_t imm, int shift) {
+  uint32_t instr = base | ((uint32_t(shift) / 16) << 21) | (uint32_t(imm) << 5) | (uint32_t(reg) & 0x1F);
+  for (int i = 0; i < 4; i++) out.push_back(uint8_t(instr >> (8 * i)));
+}
+
+inline void EmitMovImm64(std::vector<uint8_t>& out, int reg, uint64_t value) {
+  // MOVZ Xd, #imm16 (shift 0), then three MOVK Xd, #imm16, lsl #N to fill
+  // in the rest -- same sequence as lib/asm/arm64.js's own movabs().
+  EmitMovWide(out, 0xD2800000u, reg, uint16_t(value), 0);
+  EmitMovWide(out, 0xF2800000u, reg, uint16_t(value >> 16), 16);
+  EmitMovWide(out, 0xF2800000u, reg, uint16_t(value >> 32), 32);
+  EmitMovWide(out, 0xF2800000u, reg, uint16_t(value >> 48), 48);
+}
+
+inline void EmitBr(std::vector<uint8_t>& out, int reg) {
+  uint32_t instr = 0xD61F0000u | ((uint32_t(reg) & 0x1F) << 5);
+  for (int i = 0; i < 4; i++) out.push_back(uint8_t(instr >> (8 * i)));
+}
+
+std::vector<uint8_t> BuildTrampoline(int arg_index, uint64_t ctx, uint64_t target) {
+  std::vector<uint8_t> code;
+  EmitMovImm64(code, kArgRegs[arg_index], ctx);
+  EmitMovImm64(code, kScratchReg, target);
+  EmitBr(code, kScratchReg);
+  return code;
+}
+
+#else
+#error "lo_abi_v8.cc's trampoline emitter has no encoder for this architecture"
+#endif
+
+// W^X: write the freshly-built bytes into a private RW mapping first,
+// then flip it to RX -- never both at once. Same two-step this project's
+// own JIT already uses (lib/asm/compiler.js's Compiler.compile()), just
+// the native-code-side equivalent. Never freed: trampolines live for the
+// registered function's entire process lifetime, same as g_fast_cargs/
+// etc. below and the lo_fn_desc_t*/BindingInfo* they point at.
+void* MakeExecutable(const std::vector<uint8_t>& code) {
+#if defined(_WIN32)
+  void* mem = VirtualAlloc(nullptr, code.size(), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+  if (!mem) return nullptr;
+  memcpy(mem, code.data(), code.size());
+  DWORD old_protect;
+  if (!VirtualProtect(mem, code.size(), PAGE_EXECUTE_READ, &old_protect)) {
+    VirtualFree(mem, 0, MEM_RELEASE);
+    return nullptr;
+  }
+#else
+  void* mem = mmap(nullptr, code.size(), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  if (mem == MAP_FAILED) return nullptr;
+  memcpy(mem, code.data(), code.size());
+  if (mprotect(mem, code.size(), PROT_READ | PROT_EXEC) != 0) {
+    munmap(mem, code.size());
+    return nullptr;
+  }
+#endif
+  return mem;
+}
+
+// arg_index 1: FunctionCallback's real single argument (the
+// FunctionCallbackInfo) is argument 0; the lo_fn_desc_t* trampolines in
+// as argument 1.
+FunctionCallback EmitDispatchTrampoline(const lo_fn_desc_t* desc, void* dispatch_fn) {
+  auto code = BuildTrampoline(1, reinterpret_cast<uint64_t>(desc), reinterpret_cast<uint64_t>(dispatch_fn));
+  return reinterpret_cast<FunctionCallback>(MakeExecutable(code));
+}
 
 // ---------------------------------------------------------------------
 // V8 Fast API Calls, generalized past the original 0-arg/int32-arg
@@ -384,40 +513,31 @@ inline bool ToFastCType(lo_type_t t, CTypeInfo::Type* out) {
   }
 }
 
-// Per-slot storage for the dynamically-built CTypeInfo/CFunctionInfo/
-// CFunction a fast-eligible descriptor needs -- same lifetime as
-// g_descriptors (process lifetime, built once at registration), so
-// indexed by slot rather than heap allocation per call the way
-// bind_fastcallSlow does per dlopen'd bind (that path binds once per FFI
-// call site set up at runtime; this one binds once per statically-known
-// function). g_fast_cargs is a vector, not a fixed CTypeInfo[kMaxArgs]
-// array, because CTypeInfo has no default constructor -- an empty
-// vector needs none either, only push_back's move/copy, which it has;
-// .data() stays valid afterward since nothing here ever grows a slot's
-// vector again post-registration.
-std::vector<CTypeInfo> g_fast_cargs[kMaxSlots];
-std::optional<CFunctionInfo> g_fast_info[kMaxSlots];
-std::optional<CFunction> g_fast_cfunc[kMaxSlots];
-
-// Builds slot's fast CFunction from desc, if desc->fast_fn is set and
-// every param/result type is fast-callable. Returns it, or nullptr if
-// this descriptor has no usable fast path -- checked here rather than
-// trusted from codegen, so a hand-written or buggy lo_fn_desc_t can
-// never cause a real type-confused Fast API Call, only silently fall
-// back to the always-correct slow path.
-CFunction* BuildFastCFunction(int slot, const lo_fn_desc_t* desc) {
+// Builds desc's fast CFunction, if desc->fast_fn is set and every
+// param/result type is fast-callable. Returns it, or nullptr if this
+// descriptor has no usable fast path -- checked here rather than trusted
+// from codegen, so a hand-written or buggy lo_fn_desc_t can never cause
+// a real type-confused Fast API Call, only silently fall back to the
+// always-correct slow path. Heap-allocated, one CTypeInfo vector/
+// CFunctionInfo/CFunction per registered function, same process lifetime
+// as the trampolines above and never freed -- there's no longer a
+// kMaxSlots-sized table to index into (bind_fastcallSlow already does
+// the equivalent per-call-site heap allocation for dlopen'd FFI binds;
+// this is the same idea, just once per statically-known function instead
+// of once per call site).
+CFunction* BuildFastCFunction(const lo_fn_desc_t* desc) {
   if (!desc->fast_fn) return nullptr;
   CTypeInfo::Type return_type;
   if (!ToFastCType(desc->result, &return_type)) return nullptr;
+  auto* cargs = new std::vector<CTypeInfo>();
   for (uint8_t i = 0; i < desc->nparams; i++) {
     CTypeInfo::Type t;
-    if (!ToFastCType(desc->params[i], &t)) return nullptr;
-    g_fast_cargs[slot].push_back(CTypeInfo(t));
+    if (!ToFastCType(desc->params[i], &t)) { delete cargs; return nullptr; }
+    cargs->push_back(CTypeInfo(t));
   }
-  g_fast_info[slot].emplace(CTypeInfo(return_type), desc->nparams, g_fast_cargs[slot].data(),
+  auto* info = new CFunctionInfo(CTypeInfo(return_type), desc->nparams, cargs->data(),
     CFunctionInfo::Int64Representation::kNumber, CFunctionInfo::HasReceiver::kNo);
-  g_fast_cfunc[slot].emplace(desc->fast_fn, &*g_fast_info[slot]);
-  return &*g_fast_cfunc[slot];
+  return new CFunction(desc->fast_fn, info);
 }
 
 // ---------------------------------------------------------------------
@@ -439,41 +559,43 @@ CFunction* BuildFastCFunction(int slot, const lo_fn_desc_t* desc) {
 // code rewritten too). Caught via `nm -D`/`ldd` showing exactly those
 // undefined v8:: symbols in a binding's own .so.
 //
-// Fixed the same way the call dispatch above already solves "one
-// compiled function per runtime-determined slot": GenericInit<Slot>
-// below is instantiated kMaxBindings times, entirely within this file,
-// and lo_abi_v8_register_binding (extern "C", declared in lo_abi.h) is
-// the *only* symbol a binding's generated _register_<name>() ever calls
-// -- a fully portable signature (lo_register_fn, const char*) -> void*,
-// no v8:: type appears in it or at its call site, so the binding's own
-// .cc genuinely never touches v8::, not even indirectly.
-constexpr int kMaxBindings = 128;
-
+// Fixed the same way the call dispatch above now does: no more
+// GenericInit<Slot> instantiated kMaxBindings times, no more fixed
+// ceiling on how many bindings can ever register in one process. A
+// binding's BindingInfo is heap-allocated once (process lifetime, never
+// freed -- same as the descriptors/CFunctionInfo above) and its pointer
+// gets baked into a trampoline exactly like a Dispatch trampoline above,
+// just with the context landing in argument slot 2 instead of 1
+// (InitializerCallback's real parameters -- Isolate*, Local<ObjectTemplate>
+// -- occupy slots 0 and 1). lo_abi_v8_register_binding (extern "C",
+// declared in lo_abi.h) is still the *only* symbol a binding's generated
+// _register_<name>() ever calls -- a fully portable signature
+// (lo_register_fn, const char*) -> void*, no v8:: type appears in it or
+// at its call site, so the binding's own .cc genuinely never touches
+// v8::, not even indirectly.
 struct BindingInfo {
   lo_register_fn register_fn;
   const char* name;
 };
-BindingInfo g_bindings[kMaxBindings];
-std::atomic<int> g_next_binding{0};
 
-template<int Slot>
-void GenericInit(Isolate* isolate, Local<ObjectTemplate> target) {
-  const BindingInfo& info = g_bindings[Slot];
+void GenericInit(Isolate* isolate, Local<ObjectTemplate> target, const BindingInfo* info) {
   ExportsImpl impl{isolate, ObjectTemplate::New(isolate)};
-  lo_status_t rc = info.register_fn(
+  lo_status_t rc = info->register_fn(
     reinterpret_cast<lo_engine_t*>(isolate),
     nullptr, // realm -- unused by this ABI's V8 backend
     reinterpret_cast<lo_exports_t*>(&impl),
     lo_abi_version());
   if (rc != LO_OK) return;
-  lo::SET_MODULE(isolate, target, info.name, impl.tmpl);
+  lo::SET_MODULE(isolate, target, info->name, impl.tmpl);
 }
 
-template<int... Is>
-constexpr std::array<lo::InitializerCallback, sizeof...(Is)> MakeInitTable(std::integer_sequence<int, Is...>) {
-  return { &GenericInit<Is>... };
+// arg_index 2: InitializerCallback's real parameters (Isolate*,
+// Local<ObjectTemplate>) are arguments 0 and 1; the BindingInfo*
+// trampolines in as argument 2.
+lo::InitializerCallback EmitInitTrampoline(const BindingInfo* info, void* init_fn) {
+  auto code = BuildTrampoline(2, reinterpret_cast<uint64_t>(info), reinterpret_cast<uint64_t>(init_fn));
+  return reinterpret_cast<lo::InitializerCallback>(MakeExecutable(code));
 }
-constexpr auto kInitTable = MakeInitTable(std::make_integer_sequence<int, kMaxBindings>{});
 
 } // namespace
 
@@ -499,29 +621,26 @@ lo_status_t lo_register_functions(lo_engine_t* engine, lo_exports_t* exports,
   for (uint32_t i = 0; i < count; i++) {
     const lo_fn_desc_t* desc = &fns[i];
     if (desc->nparams > kMaxArgs) return LO_INVALID_ARG;
-
-    int slot = g_next_slot.fetch_add(1);
-    if (slot >= kMaxSlots) return LO_OUT_OF_MEMORY;
     // fns[] is the binding's own `static const lo_fn_desc_t[]` (see
     // lib/foo_abi/foo_abi.cc) -- static storage duration, so the pointer
-    // stays valid for the process lifetime and can be stored directly,
-    // no copy needed.
-    g_descriptors[slot] = desc;
+    // stays valid for the process lifetime and can be baked into a
+    // trampoline directly, no copy needed.
 
     bool has_string = false;
     for (uint8_t p = 0; p < desc->nparams; p++) {
       if (desc->params[p] == LO_STRING) { has_string = true; break; }
     }
 
-    FunctionCallback cb;
-    if (desc->nparams == 0) cb = kNoArgsTable[slot];
-    else if (has_string) cb = kGeneralTable[slot];
-    else cb = kPrimitiveTable[slot];
+    void* dispatch_fn = desc->nparams == 0 ? (void*)&DispatchNoArgs
+      : has_string ? (void*)&DispatchGeneral : (void*)&DispatchPrimitiveArgs;
+    FunctionCallback cb = EmitDispatchTrampoline(desc, dispatch_fn);
+    if (!cb) return LO_OUT_OF_MEMORY;
 
-    // No `data` argument at all -- see the tier-0/tier-1/tier-2 comment
-    // above for why avoiding Data() entirely is the point of this table.
+    // No `data` argument at all -- see the "Runtime-generated dispatch
+    // trampolines" comment above for why avoiding Data() entirely is the
+    // point of baking desc into the trampoline instead.
     Local<FunctionTemplate> ft;
-    CFunction* fast = BuildFastCFunction(slot, desc);
+    CFunction* fast = BuildFastCFunction(desc);
     if (fast) {
       // The slow callback (cb, already built above) still gets passed
       // through as the required fallback -- V8 only takes the fast path
@@ -565,12 +684,10 @@ lo_status_t lo_exports_set_string(lo_exports_t* exports, const char* name, const
 // (see lib/gen.js's bindingsAbi()) -- see the "Per-binding registration"
 // comment above for why this exists and what it replaced. Fully
 // portable signature: no v8:: type appears here or at any binding's own
-// call site, only in this file's own GenericInit<Slot>/kInitTable.
+// call site, only in this file's own GenericInit/EmitInitTrampoline.
 void* lo_abi_v8_register_binding(lo_register_fn fn, const char* name) {
-  int slot = g_next_binding.fetch_add(1);
-  if (slot >= kMaxBindings) return nullptr;
-  g_bindings[slot] = { fn, name };
-  return (void*)kInitTable[slot];
+  auto* info = new BindingInfo{fn, name}; // process lifetime, never freed
+  return reinterpret_cast<void*>(EmitInitTrampoline(info, (void*)&GenericInit));
 }
 
 } // extern "C"
