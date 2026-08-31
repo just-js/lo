@@ -227,10 +227,10 @@ listed above as explicitly out of scope for this pass — is now done.
 `bindingsAbi()` generates `lo_abi.h`-conformant code from the same
 `api.js` shape the V8-specific `bindings()` already uses, selected via
 `target = 'abi'` in a binding's own `api.js` (or `LO_GEN_TARGET` env var
-override); `lib/build.js`'s `compile_bindings` compiles and links
-`lo_abi_v8.cc` automatically for `target: 'abi'` bindings, no per-binding
-hand-written `build.js` needed. `lib/foo_abi/foo_abi.cc` is now fully
-auto-generated, not hand-written.
+override). `lib/foo_abi/foo_abi.cc` is now fully auto-generated, not
+hand-written. (`lib/build.js`'s `compile_bindings` used to compile and
+link `lo_abi_v8.cc` per binding here — no longer true, see the later
+"runtime integration" update below.)
 
 `lib/foo`/`lib/foo_abi` were consolidated onto one shared definitions
 module (`lib/foo_abi/shared.js`, 14 functions — one per currently-
@@ -278,11 +278,12 @@ chosen as the smallest binding blocked by *only* the constants gap, per
   new binding needed a hand-added line there, which doesn't scale (and
   meant `fsmount.so` *compiled* clean but had no `_register_fsmount`
   symbol at all, failing silently at `dlopen`/`dlsym` time, not build
-  time — a real, non-obvious failure mode, not a guess). Fixed by moving
-  `ExportsImpl` and the shim macro into a new shared header,
-  `lo_abi_v8_shim.h`, that `lib/gen.js`'s `bindingsAbi()` now includes
-  and instantiates (`LO_ABI_V8_BINDING(<name>)`) in every generated
-  binding's own `.cc` — no more hand-editing `lo_abi_v8.cc` per binding.
+  time — a real, non-obvious failure mode, not a guess). First fix: moved
+  `ExportsImpl` and the shim macro into a shared header, `lo_abi_v8_shim.h`,
+  included and instantiated by every binding's own generated `.cc`.
+  **This first fix was itself wrong** — see the later "engine dependency
+  found via `nm`/`ldd`" update below; superseded, `lo_abi_v8_shim.h` no
+  longer exists.
 
 Also found and fixed along the way, unrelated to the ABI path itself: a
 real, previously-undiscovered bug in `lib/gen.js`'s *V8-specific*
