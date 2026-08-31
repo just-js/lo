@@ -2325,7 +2325,7 @@ void isolate_createSlow(const FunctionCallbackInfo<Value> &args) {
   char* v6 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[6])->Value());
   int32_t v7 = Local<Integer>::Cast(args[7])->Value();
   int32_t v8 = Local<Integer>::Cast(args[8])->Value();
-  uint64_t v9 = Local<Integer>::Cast(args[9])->Value();
+  uint64_t v9 = Local<BigInt>::Cast(args[9])->Uint64Value();
   String::Utf8Value v10(isolate, args[10]);
   String::Utf8Value v11(isolate, args[11]);
   int32_t v12 = Local<Integer>::Cast(args[12])->Value();
@@ -2346,7 +2346,7 @@ void isolate_context_createSlow(const FunctionCallbackInfo<Value> &args) {
   char* v6 = reinterpret_cast<char*>((uint64_t)Local<Integer>::Cast(args[6])->Value());
   int32_t v7 = Local<Integer>::Cast(args[7])->Value();
   int32_t v8 = Local<Integer>::Cast(args[8])->Value();
-  uint64_t v9 = Local<Integer>::Cast(args[9])->Value();
+  uint64_t v9 = Local<BigInt>::Cast(args[9])->Uint64Value();
   String::Utf8Value v10(isolate, args[10]);
   String::Utf8Value v11(isolate, args[11]);
   int32_t v12 = Local<Integer>::Cast(args[12])->Value();

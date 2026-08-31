@@ -336,6 +336,69 @@ out of scope for `ABI.md`'s own pass, not designed anywhere yet.
 preamble** for the Windows build — flagged in passing in
 [`CODE_REVIEW.md` § "Not reviewed in this pass"](CODE_REVIEW.md#not-reviewed-in-this-pass).
 
+**E.8** **Correctness/tracking backlog from the `lib/gen.js` codegen-
+integration + surface-expansion pass** — real gaps found by actually
+building both codegen targets from the same definitions
+(`lib/foo`/`lib/foo_abi`, `lib/foo_abi/shared.js`) and testing them
+against each other (`test/abi.js`), not yet fixed:
+
+- **`i64`/`u64` are explicitly `BigInt` now, consistently, on both
+  codegens** (a real decision, not the default either started with —
+  `isz`/`usz` deliberately stay plain `Number`, like `pointer`, since
+  BigInt overhead isn't worth paying for pointer-sized values that are
+  always well within safe-integer range). But **the Fast API Call path
+  for `i64`/`u64` is not yet consistent with this**: `lib/gen.js` never
+  sets `CFunctionInfo::Int64Representation`, so it always defaults to
+  `kNumber` (plain double) regardless of what the slow path does — a
+  fast-callable `i64`/`u64` function would silently mismatch its own
+  slow path once a call site got JIT-optimized. Forced `nofast: true`
+  on `add1_i64`/`add1_u64` in `shared.js` as a stopgap. Needs: thread
+  `Int64Representation::kBigInt` through `lib/gen.js`'s `CFunctionInfo`
+  construction for `i64`/`u64`, or keep `nofast` permanent for these
+  types until that's done.
+- **A real, previously-undiscovered bug in `lo_abi_v8.cc`'s slow-path
+  dispatch, now fixed**: calling through the canonical-`uint64_t`-
+  return function-pointer trick and reading the full 64-bit register
+  gave garbage for any narrower real return type (`bool`/`i8`/`u8`/
+  `i16`/`u16`) — the callee only writes the low bits, the rest of the
+  register is unspecified. `i32`/`u32` happened to work by x86-64
+  hardware coincidence (32-bit register writes auto-zero-extend into
+  the full 64-bit register), which masked this until `not_bool`/
+  `neg_i8`/etc. actually exercised it. Fixed via `NarrowResult()`
+  (sign/zero-extends from the real declared width before use) — but
+  worth a deliberate check this also holds on ARM64 once that's
+  actually built/tested, not just reasoned about.
+- **`bool` as a *result* type differs between the two codegens**:
+  V8-codegen returns a plain `uint8_t`/Number; `lo_abi_v8.cc` returns a
+  real JS boolean. `shared.js`'s `not_bool()` sidesteps this by testing
+  `bool` only as a parameter (consistent) and returning `u8` instead.
+  Needs a real decision (likely: make the ABI path match V8-codegen's
+  existing plain-Number convention, since that's probably what more
+  existing code assumes) before `bool` results can be used for real.
+- **General note, not a specific bug**: this pass found three real,
+  independent correctness gaps in under an hour of actually building
+  and testing both targets against each other, none caught by code
+  review alone. Expect more of the same as the surface grows — budget
+  for real test coverage (`test/abi.js` growing alongside every new
+  type/shape) as a first-class part of this work, not a follow-up.
+
+**E.9** **Porting priority for existing real bindings, by how many
+bindings each gap actually blocks** — surveyed all 43 `lib/*/api.js`
+files directly rather than assuming:
+
+| Gap | Bindings affected | Priority |
+|---|---|---|
+| `constants` (`lo_exports_set_*` declared in `lo_abi.h`, not implemented in `lo_abi_v8.cc`) | 24 of 43 (56%) | **Highest — do first** |
+| `structs` (no `lo_abi.h` equivalent by design) | 7 (`core`, `core2`, `curl`, `epoll`, `mach`, `net`, `pico`) | Medium |
+| per-function `override` | 8, mostly crypto (`boringssl`, `mbedtls`, `libssl`) + `core`/`core2`/`net`/`ada`/`simdutf8` | Medium |
+| `linux`/`mac` OS-conditional sections (`bindingsAbi()` doesn't support this shape at all yet) | 7 (`core`, `curl`, `libffi`, `libssl`, `net`, `pthread`, `system`) | Medium |
+| `f32`/`f64` | 1 (`sqlite`) | **Lowest** — confirms the "very few need float support" read; don't front-load this work |
+
+Implication: **implementing `lo_exports_set_i32`/`u64`/`string` in
+`lo_abi_v8.cc`** unblocks more real bindings than any other single
+piece of work here, including the float/arity work already scoped in
+`E.2`'s "Result" follow-ons — worth doing before those, not after.
+
 ## F. Build system & binary size
 
 Source: [`PROPOSAL.md`](PROPOSAL.md), [`BUILD.md`](BUILD.md).

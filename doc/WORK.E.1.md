@@ -191,11 +191,38 @@ against.
 
 ## Status
 
-Prototype validated and benchmarked for one real shape (0-arg, `LO_VOID`
-result) — both the slow path and, as of the Fast API Call smoke test, the
-fast path reach parity with hand-generated V8-specific bindings. Not yet
-done: generalizing tiers 1/2 (primitive-args, string-args) to also get
-Fast API Call support (needs the per-register-class typing noted above),
-porting a real multi-function binding (`lib/encode_abi` is the natural
-next candidate — see "Result"), and `lib/gen.js` codegen integration
-(still explicitly out of scope, per "Non-goals" above).
+**Update, second follow-on session:** `lib/gen.js` codegen integration —
+listed above as explicitly out of scope for this pass — is now done.
+`bindingsAbi()` generates `lo_abi.h`-conformant code from the same
+`api.js` shape the V8-specific `bindings()` already uses, selected via
+`target = 'abi'` in a binding's own `api.js` (or `LO_GEN_TARGET` env var
+override); `lib/build.js`'s `compile_bindings` compiles and links
+`lo_abi_v8.cc` automatically for `target: 'abi'` bindings, no per-binding
+hand-written `build.js` needed. `lib/foo_abi/foo_abi.cc` is now fully
+auto-generated, not hand-written.
+
+`lib/foo`/`lib/foo_abi` were consolidated onto one shared definitions
+module (`lib/foo_abi/shared.js`, 14 functions — one per currently-
+ABI-supported non-float `lo_type_t`) built under each target for direct
+comparison (`bench-abi.js`, `test/abi.js`). Actually building and
+cross-testing both targets against each other (not just against
+themselves) surfaced three real, independent correctness bugs in under
+an hour — none caught by code review alone. Full detail, plus a survey
+of all 43 real `lib/*/api.js` bindings for what porting them actually
+needs (headline: **constants block 56% of bindings — the single biggest
+lever, well ahead of floats**, which only one binding needs): `WORK.md`
+tasks `E.8`/`E.9`.
+
+**Recommended next step for whoever picks this up**: implement
+`lo_exports_set_i32`/`u64`/`string` in `lo_abi_v8.cc` (`lo_abi.h`
+already declares them; nothing implements them yet) — per `E.9`, this
+unblocks more real bindings than the remaining float/arity/fast-call
+generalization work combined, and none of that work is blocked waiting
+for it either, so there's no ordering risk in doing it first.
+
+Still not done: generalizing tiers 1/2's Fast API Call support past the
+one `int32` proof of concept (needs the per-register-class typing noted
+above, plus threading `Int64Representation` through for `i64`/`u64` —
+see `E.8`), porting a real multi-function binding (`lib/encode_abi` is
+still the natural next candidate once constants work), and the
+`bool`-as-result-type inconsistency between the two codegens (`E.8`).

@@ -18,7 +18,6 @@ lib/inflate/em_inflate.c
 lib/inflate/em_inflate.h
 lib/**/*.cc
 !lib/win/win.cc
-!lib/foo_abi/foo_abi.cc
 !lib/core/core.cc
 !lib/epoll/epoll.cc
 !lib/kevents/kevents.cc

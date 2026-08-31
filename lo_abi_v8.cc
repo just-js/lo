@@ -87,6 +87,29 @@ const lo_fn_desc_t* g_descriptors[kMaxSlots] = {};
 // per-isolate.
 std::atomic<int> g_next_slot{0};
 
+// Recovers the real return value's mathematical bit pattern from a call
+// made through the canonical-uint64_t-return dispatch trick (the
+// nparams-switches below), before it reaches SetResult's own narrowing
+// casts. Necessary because a callee that actually returns a narrower
+// type (bool/i8/u8/i16/u16) only writes the low bits of its return
+// register -- the ABI leaves the rest unspecified, not necessarily
+// zero. i32/u32 happen to already come back correctly on x86-64 (32-bit
+// register writes there hardware-zero-extend into the full 64-bit
+// register) -- confirmed by testing add1() before this fix existed --
+// but that's an x86-64 coincidence, not something to rely on generally
+// (this project targets ARM64 too); handled uniformly here regardless.
+inline uint64_t NarrowResult(lo_type_t result, uint64_t rv) {
+  switch (result) {
+    case LO_I8: return (uint64_t)(int64_t)(int8_t)(uint8_t)rv;
+    case LO_U8: case LO_BOOL: return (uint8_t)rv;
+    case LO_I16: return (uint64_t)(int64_t)(int16_t)(uint16_t)rv;
+    case LO_U16: return (uint16_t)rv;
+    case LO_I32: return (uint64_t)(int64_t)(int32_t)(uint32_t)rv;
+    case LO_U32: return (uint32_t)rv;
+    default: return rv;
+  }
+}
+
 // Shared by all three tiers -- setting the JS return value from the raw
 // uint64_t every native call produces. Isolate is only fetched (by the
 // two branches that need it) lazily, not by every caller up front.
@@ -103,12 +126,16 @@ inline void SetResult(const FunctionCallbackInfo<Value>& args, lo_type_t result,
     case LO_U8: case LO_U16: case LO_U32:
       args.GetReturnValue().Set((uint32_t)rv);
       return;
-    case LO_POINTER: case LO_BUFFER:
+    case LO_POINTER: case LO_BUFFER: case LO_ISIZE: case LO_USIZE:
       // matches the existing convention (e.g. epoll.cc's *Slow functions):
-      // addresses cross into JS as plain numbers.
+      // addresses/sizes cross into JS as plain numbers, precise enough for
+      // any pointer-sized value on architectures actually targeted here.
+      // Only LO_I64/LO_U64 -- genuine 64-bit values that could realistically
+      // need the full range -- use BigInt; nothing else does (explicit
+      // decision, see WORK.md).
       args.GetReturnValue().Set((double)rv);
       return;
-    case LO_I64: case LO_U64: case LO_ISIZE: case LO_USIZE:
+    case LO_I64: case LO_U64:
       args.GetReturnValue().Set(BigInt::NewFromUnsigned(args.GetIsolate(), rv));
       return;
     default:
@@ -125,7 +152,7 @@ void DispatchNoArgs(const FunctionCallbackInfo<Value>& args) {
   const lo_fn_desc_t* desc = g_descriptors[Slot];
   typedef uint64_t (*F)();
   uint64_t rv = ((F)desc->fn)();
-  SetResult(args, desc->result, rv);
+  SetResult(args, desc->result, NarrowResult(desc->result, rv));
 }
 
 // Tier 1: 1-6 scalar/pointer arguments, no strings. Needs argv[] and the
@@ -144,6 +171,8 @@ void DispatchPrimitiveArgs(const FunctionCallbackInfo<Value>& args) {
     switch (desc->params[i]) {
       case LO_POINTER:
       case LO_BUFFER:
+      case LO_ISIZE:
+      case LO_USIZE:
         argv[i] = (uint64_t)Local<Integer>::Cast(args[i])->Value();
         break;
       case LO_BOOL:
@@ -151,7 +180,7 @@ void DispatchPrimitiveArgs(const FunctionCallbackInfo<Value>& args) {
       case LO_I32: case LO_U32:
         argv[i] = (uint64_t)(int64_t)Local<Integer>::Cast(args[i])->Value();
         break;
-      case LO_I64: case LO_U64: case LO_ISIZE: case LO_USIZE:
+      case LO_I64: case LO_U64:
         argv[i] = (uint64_t)Local<BigInt>::Cast(args[i])->Int64Value();
         break;
       default:
@@ -179,7 +208,7 @@ void DispatchPrimitiveArgs(const FunctionCallbackInfo<Value>& args) {
     case 5: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4]); break; }
     case 6: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]); break; }
   }
-  SetResult(args, desc->result, rv);
+  SetResult(args, desc->result, NarrowResult(desc->result, rv));
 }
 
 // Tier 2: has at least one LO_STRING argument -- the full machinery
@@ -207,6 +236,8 @@ void DispatchGeneral(const FunctionCallbackInfo<Value>& args) {
       }
       case LO_POINTER:
       case LO_BUFFER:
+      case LO_ISIZE:
+      case LO_USIZE:
         argv[i] = (uint64_t)Local<Integer>::Cast(args[i])->Value();
         break;
       case LO_BOOL:
@@ -214,7 +245,7 @@ void DispatchGeneral(const FunctionCallbackInfo<Value>& args) {
       case LO_I32: case LO_U32:
         argv[i] = (uint64_t)(int64_t)Local<Integer>::Cast(args[i])->Value();
         break;
-      case LO_I64: case LO_U64: case LO_ISIZE: case LO_USIZE:
+      case LO_I64: case LO_U64:
         argv[i] = (uint64_t)Local<BigInt>::Cast(args[i])->Int64Value();
         break;
       default:
@@ -234,7 +265,7 @@ void DispatchGeneral(const FunctionCallbackInfo<Value>& args) {
     case 6: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]); break; }
   }
   for (int i = 0; i < nstrdup; i++) free(strdup_strs[i]);
-  SetResult(args, desc->result, rv);
+  SetResult(args, desc->result, NarrowResult(desc->result, rv));
 }
 
 // Builds a kMaxSlots-entry table of &Dispatch<0>, &Dispatch<1>, ... at

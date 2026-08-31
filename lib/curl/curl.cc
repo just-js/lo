@@ -352,7 +352,7 @@ int32_t easy_setopt_2Fast(void* p, uint64_t* p0, uint32_t p1, uint32_t p2) {
 void easy_setopt_3Slow(const FunctionCallbackInfo<Value> &args) {
   CURL* v0 = reinterpret_cast<CURL*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  uint64_t v2 = Local<Integer>::Cast(args[2])->Value();
+  uint64_t v2 = Local<BigInt>::Cast(args[2])->Uint64Value();
   int32_t rc = curl_easy_setopt(v0, (CURLoption)v1, v2);
   args.GetReturnValue().Set(rc);
 }
