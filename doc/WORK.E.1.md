@@ -257,6 +257,48 @@ for it either, so there's no ordering risk in doing it first.
 `LO_V8_HAS_RECEIVER_KNO` shim referenced throughout this doc no longer
 exists in `lo_abi_v8.cc`.
 
+Same session, following straight on from that: **`E.9`'s recommended
+"do first" step (constants) is done, and a real binding ported end to
+end for the first time.** `lo_exports_set_i32`/`u64`/`string` are
+implemented in `lo_abi_v8.cc` (`u32` shares `i32`'s setter, `i64` shares
+`u64`'s — see `lib/gen.js`'s `initConstantAbi`, and `E.9`'s per-type
+tally: 321 real `i32` constants, 26 `u64`, 17 `u32`, zero of anything
+else, across all 43 bindings). Two more real gaps found immediately
+while actually trying to port a real (not toy) binding — `lib/fsmount`,
+chosen as the smallest binding blocked by *only* the constants gap, per
+`E.9`'s table — neither guessed in advance:
+
+- `bindingsAbi()` had no `includes` support at all (`fsmount` needs
+  `<sys/mount.h>` for `mount`/`umount`/`umount2` themselves, not just
+  its constants) — added, mirroring `bindings()`'s own plain-`includes`/
+  `externs` handling (still no `linux`/`mac` OS-conditional variant,
+  that's `E.9`'s separate still-open gap).
+- The registration shim (`LO_ABI_V8_BINDING(name)`) only actually existed
+  for `foo_abi`, hardcoded at the bottom of `lo_abi_v8.cc` itself — every
+  new binding needed a hand-added line there, which doesn't scale (and
+  meant `fsmount.so` *compiled* clean but had no `_register_fsmount`
+  symbol at all, failing silently at `dlopen`/`dlsym` time, not build
+  time — a real, non-obvious failure mode, not a guess). Fixed by moving
+  `ExportsImpl` and the shim macro into a new shared header,
+  `lo_abi_v8_shim.h`, that `lib/gen.js`'s `bindingsAbi()` now includes
+  and instantiates (`LO_ABI_V8_BINDING(<name>)`) in every generated
+  binding's own `.cc` — no more hand-editing `lo_abi_v8.cc` per binding.
+
+Also found and fixed along the way, unrelated to the ABI path itself: a
+real, previously-undiscovered bug in `lib/gen.js`'s *V8-specific*
+`initConstant` — its `u64` branch called `BigInt::New` (which takes
+`int64_t`), silently wrapping any real `u64` constant above `INT64_MAX`
+to a negative value. Surfaced by the same cross-codegen constants test
+(`test/abi.js`'s `FOO_BIG = 18446744073709551615n`) that validated the
+new `lo_exports_set_u64` — `foo` (the V8-codegen baseline) failed it,
+`foo_abi` didn't. Fixed with `BigInt::NewFromUnsigned`.
+
+`fsmount` now builds under `LO_GEN_TARGET=abi` and, loaded via
+`lo.load('fsmount')`, its real constants (`MS_RDONLY`, `MNT_FORCE`, ...)
+and real syscalls (`umount()` on a nonexistent path correctly returns
+`-1`) both verified working — the first real, non-`foo`/`foo_abi`
+binding actually running through this ABI end to end.
+
 Still not done: generalizing tiers 1/2's Fast API Call support past the
 one `int32` proof of concept (needs the per-register-class typing noted
 above, plus threading `Int64Representation` through for `i64`/`u64` —

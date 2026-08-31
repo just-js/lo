@@ -58,6 +58,12 @@ function checkBinding (mod, label) {
   assert(Number(mod.identity_ptr(buf.ptr)) === buf.ptr, `${label}.identity_ptr`)
   assert(mod.sum_buffer(buf.ptr, 5) === 15, `${label}.sum_buffer`)
   assert(mod.str_len('hello world') === 11, `${label}.str_len`)
+
+  // constants (E.9: lo_exports_set_i32/u64 -- 'u32' shares i32's setter,
+  // see lib/gen.js's initConstantAbi)
+  assert(mod.FOO_ANSWER === 42, `${label}.FOO_ANSWER`)
+  assert(mod.FOO_FLAG === 16, `${label}.FOO_FLAG`)
+  assert(mod.FOO_BIG === 18446744073709551615n, `${label}.FOO_BIG`)
 }
 
 const { foo } = load('foo')

@@ -12,6 +12,7 @@
 
 #include "lo.h"
 #include "lo_abi.h"
+#include "lo_abi_v8_shim.h"
 
 #include <array>
 #include <atomic>
@@ -20,23 +21,6 @@
 using namespace v8;
 
 namespace {
-
-// The concrete definition behind the opaque lo_exports_t declared in
-// lo_abi.h — "an exports object under construction," backed by a real
-// V8 ObjectTemplate for this engine. Lives only as long as one
-// registration call (see the shim below) — never persisted past it.
-struct ExportsImpl {
-  Isolate* isolate;
-  Local<ObjectTemplate> tmpl;
-};
-
-inline Isolate* AsIsolate(lo_engine_t* engine) {
-  return reinterpret_cast<Isolate*>(engine);
-}
-
-inline ExportsImpl* AsExports(lo_exports_t* exports) {
-  return reinterpret_cast<ExportsImpl*>(exports);
-}
 
 // Three-tier dispatch, chosen per descriptor at *registration* time, not
 // branched on per call. Two real, measured costs drove this (see
@@ -426,43 +410,38 @@ lo_status_t lo_register_functions(lo_engine_t* engine, lo_exports_t* exports,
   return LO_OK;
 }
 
+// lib/gen.js's constants codegen (initConstant) covers u32/i32/u64/i64 on
+// the V8-specific target; lo_abi.h only declares the three below (E.9
+// surveyed all 43 real bindings' actual constants -- i32/u64/string cover
+// every value seen there once sign/width are folded into the call site,
+// same as lo_register_functions's own params[]/result already do for
+// function shapes).
+lo_status_t lo_exports_set_i32(lo_exports_t* exports, const char* name, int32_t value) {
+  ExportsImpl* impl = AsExports(exports);
+  impl->tmpl->Set(impl->isolate, name, Integer::New(impl->isolate, value));
+  return LO_OK;
+}
+
+lo_status_t lo_exports_set_u64(lo_exports_t* exports, const char* name, uint64_t value) {
+  ExportsImpl* impl = AsExports(exports);
+  impl->tmpl->Set(impl->isolate, name, BigInt::NewFromUnsigned(impl->isolate, value));
+  return LO_OK;
+}
+
+lo_status_t lo_exports_set_string(lo_exports_t* exports, const char* name, const char* value) {
+  ExportsImpl* impl = AsExports(exports);
+  impl->tmpl->Set(impl->isolate, name,
+    String::NewFromUtf8(impl->isolate, value).ToLocalChecked());
+  return LO_OK;
+}
+
 } // extern "C"
 
-// ---------------------------------------------------------------------
-// Registration shim: adapts today's `_register_<name>() -> void*` /
-// InitializerCallback convention (see lo.h, main.h) to the portable
-// `lo_register_<name>(engine, realm, exports, abi_version)` entry point a
-// lo_abi.h-targeted binding actually exports.
-//
-// Generalized as a macro (not hand-written per binding) once a second
-// binding target (foo_abi) showed the encode_abi-only prototype's Init
-// body was pure boilerplate -- every ABI-targeted binding needs the exact
-// same three lines (build an ExportsImpl, call lo_register_<name>, SET_MODULE
-// the result), just with <name> substituted throughout. One
-// LO_ABI_V8_BINDING(name) line per binding still needs to live here --
-// lib/gen.js codegen integration to emit this automatically is separate,
-// later work (doc/WORK.E.1.md's non-goals).
-// ---------------------------------------------------------------------
-
-#define LO_ABI_V8_BINDING(name) \
-  extern "C" lo_status_t lo_register_##name( \
-    lo_engine_t*, lo_realm_t*, lo_exports_t*, uint32_t); \
-  namespace lo { namespace name##_abi_shim { \
-    void Init(Isolate* isolate, Local<ObjectTemplate> target) { \
-      ExportsImpl impl{isolate, ObjectTemplate::New(isolate)}; \
-      lo_status_t rc = lo_register_##name( \
-        reinterpret_cast<lo_engine_t*>(isolate), \
-        nullptr, /* realm -- unused by this binding */ \
-        reinterpret_cast<lo_exports_t*>(&impl), \
-        lo_abi_version()); \
-      if (rc != LO_OK) return; \
-      SET_MODULE(isolate, target, #name, impl.tmpl); \
-    } \
-  } } \
-  extern "C" { \
-    DLL_PUBLIC void* _register_##name() { \
-      return (void*)lo::name##_abi_shim::Init; \
-    } \
-  }
-
-LO_ABI_V8_BINDING(foo_abi)
+// No LO_ABI_V8_BINDING(...) here anymore -- lo_abi_v8.cc is the shared
+// dispatch engine, compiled fresh into every ABI-targeted binding's own
+// .so (see lib/build.js's compile_bindings). The registration shim itself
+// now lives in lo_abi_v8_shim.h, included and instantiated by each
+// binding's own generated .cc (lib/gen.js's bindingsAbi() emits
+// LO_ABI_V8_BINDING(<name>) automatically) -- not hand-added here per
+// binding, which didn't scale past the one prototype binding it was
+// written against.

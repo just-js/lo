@@ -406,6 +406,19 @@ Implication: **implementing `lo_exports_set_i32`/`u64`/`string` in
 piece of work here, including the float/arity work already scoped in
 `E.2`'s "Result" follow-ons — worth doing before those, not after.
 
+**Update, later session: done, and validated against a real binding, not
+just compiled.** `lo_exports_set_i32`/`u64`/`string` are implemented;
+`lib/fsmount` (smallest binding blocked *only* by this gap) now builds
+under the abi target and runs correctly end to end — real constants and
+real syscalls both verified. Getting there surfaced two more real,
+unguessed gaps, both now fixed: `bindingsAbi()` had no `includes`
+support at all, and the registration shim only worked for one hardcoded
+binding name — full detail in [`WORK.E.1.md`](WORK.E.1.md)'s "Result"
+section. Also fixed along the way: a real bug in the *V8-specific*
+codegen's own `u64` constant handling (`BigInt::New` silently wrapping
+values above `INT64_MAX`), caught by the same cross-codegen test that
+validated the new ABI-side setter.
+
 ## F. Build system & binary size
 
 Source: [`PROPOSAL.md`](PROPOSAL.md), [`BUILD.md`](BUILD.md).
