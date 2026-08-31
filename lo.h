@@ -155,6 +155,53 @@ enum FastTypes: int {
   buffer = 15, function = 16, u32array = 17, boolean = 18, string = 19
 };
 
+// ---------------------------------------------------------------------
+// Generic dlopen'd-FFI-call machinery: JIT a real x64/arm64 trampoline
+// (lib/asm/*.js, lib/ffi.js) for a call to an arbitrary resolved symbol,
+// then bind it to a JS function through these -- a runtime-built
+// CTypeInfo/CFunctionInfo/CFunction (bind_fastcallSlow) or the plain
+// slow path alone (bind_slowcallSlow), both funneling through the same
+// generic SlowCallback. Only 'struct fastcall' (bind-time state, not a
+// V8 type) is a real lo_abi_v8.h-style struct here -- everything else
+// is real v8:: use, moved out of lib/core/api.js's own preamble (this
+// was originally hand-written there, "a kind of experiment," per the
+// user directly, and lib/core2/api.js had its own near-verbatim copy
+// for the Windows build, WORK.md's E.7).
+//
+// Declared here (lo.h, included by every generated binding regardless)
+// but *implemented in lo_ffi.cc, not lo.cc* -- deliberately a separate
+// translation unit, compiled and linked only when a runtime config's
+// bindings actually need it (lib/build.js's build_runtime, gated on
+// 'core'/'core2' being present), same pattern this codebase already
+// uses for musl-glibc-compat.o. lo.cc itself is unconditional in every
+// runtime build, including runtime/zero.config.js's deliberately
+// core-less, bindings-free build -- putting this here instead keeps
+// that guarantee real rather than depending on linker dead-code
+// stripping (-Wl,--gc-sections isn't even set in zero.config.js's own
+// link_type today).
+struct fastcall {
+  void* wrapper;      // 0-7   :   v8 fastcall wrapper function pointer
+  uint8_t result;     // 8     :   the type of the result
+  uint8_t nparam;     // 9     :   the number of args (max 255)
+  uint8_t param[30];  // 10-39 :   an array of types of the arguments
+  uint64_t args[32];  // 40-295:   an array of pointer slots for arguments
+                      // these will be filled in dynamically by
+                      // lo::SlowCallback for the slow call
+                      // and then the slowcall wrapper will shift them from
+                      // this structure into regs + stack and make the call
+                      // the first slot is reserved for the result
+  void* fn;           // 296-303:  the slowcall wrapper function pointer
+};
+
+typedef void (*lo_fast_call)(void*);
+
+DLL_PUBLIC uint8_t needsunwrap(FastTypes t);
+DLL_PUBLIC v8::CTypeInfo* CTypeFromV8(uint8_t v8Type);
+DLL_PUBLIC void lo_fastcall(struct fastcall* state);
+DLL_PUBLIC void SlowCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+DLL_PUBLIC void bind_fastcallSlow(const v8::FunctionCallbackInfo<v8::Value>& args);
+DLL_PUBLIC void bind_slowcallSlow(const v8::FunctionCallbackInfo<v8::Value>& args);
+
 // v8 callbacks
 // callback for heap limit reached
 size_t nearHeapLimitCallback(void* data, size_t current_heap_limit,

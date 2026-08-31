@@ -250,16 +250,22 @@ hand-generated code for the 0-arg shape, including a working V8 Fast API
 Call path. Full writeup: [`WORK.E.1.md`](WORK.E.1.md)'s "Result" section,
 [`PROFILING.md`](PROFILING.md) for the investigation itself. Generating
 the dispatch table from `lib/gen.js` rather than hand-writing it is now
-done too (`bindingsAbi()`, see `E.8`/`E.9`). Not yet done: the same
-Fast API Call treatment for argument-taking/string-taking shapes beyond
-the single `int32` proof of concept (tiers 1/2 exist and are measured on
-the slow path only) — no longer blocked on a receiver-shift workaround,
-since the patched V8 (`CFunctionInfo::HasReceiver::kNo`, see
-[`WORK.E.1.md`](WORK.E.1.md)'s "Open question" section) is built and
-linked and the `LO_V8_HAS_RECEIVER_KNO` adapter is gone from
-`lo_abi_v8.cc` — what's left is real per-register-class typing
-(float/double, `Int64Representation` for `i64`/`u64`) and arity, not a
-V8-side blocker.
+done too (`bindingsAbi()`, see `E.8`/`E.9`).
+
+**Update, later session: Fast API Call support generalized past the
+single `int32` proof of concept.** Every integer/bool/pointer-class
+shape (any arity up to `kMaxArgs`, no `LO_STRING`) now gets a real fast
+path — `lib/gen.js`'s `bindingsAbi()` codegens one concretely-typed
+wrapper per eligible function directly into the binding's own `.cc`
+(`getAbiFastCType`/`genAbiFastWrapper`), and `lo_abi_v8.cc`'s
+`BuildFastCFunction` builds the matching `CTypeInfo`/`CFunctionInfo` from
+`desc->params`/`desc->result` generically at registration time — no more
+per-shape hand-written dispatch tables. Measured: `sum_buffer` (`pointer,
+u32 -> u32`) ~30ns/call → ~7-8ns/call; previously-slow-only shapes like
+`add1_u32`/`identity_ptr` now ~10-11ns instead of tens of ns. Still not
+done: `f32`/`f64` (real register-class typing) and `i64`/`u64`
+(`Int64Representation::kBigInt` needs threading through) — full detail,
+[`WORK.E.1.md`](WORK.E.1.md)'s fourth follow-on-session update.
 
 **E.3** **Enumerate the exact accessor list for every `lo_type_t`** (only an
 illustrative subset exists in the sketch today).
@@ -338,10 +344,38 @@ first place, so the fix should transfer the same way.
 `-bundle_loader`/`-rdynamic` currently exists for the Windows build;
 out of scope for `ABI.md`'s own pass, not designed anywhere yet.
 
-**E.7** *(Smaller, noted in the review but not the ABI doc itself)*
+**E.7** ~~*(Smaller, noted in the review but not the ABI doc itself)*
 **de-duplicate `lib/core2/api.js`'s near-verbatim copy of `core`'s FFI
 preamble** for the Windows build — flagged in passing in
-[`CODE_REVIEW.md` § "Not reviewed in this pass"](CODE_REVIEW.md#not-reviewed-in-this-pass).
+[`CODE_REVIEW.md` § "Not reviewed in this pass"](CODE_REVIEW.md#not-reviewed-in-this-pass).~~
+
+**Done, later session, as a side effect of a different, user-requested
+refactor** ("`core`'s FFI machinery was only ever an experiment, move it
+out of `core` entirely" — not an ABI-work task, but resolves this one
+directly). `struct fastcall`/`SlowCallback`/`bind_fastcallSlow`/
+`bind_slowcallSlow`/`CTypeFromV8`/`needsunwrap`/`lo_fastcall` moved out
+of `lib/core/api.js`'s preamble (and `lib/core2/api.js`'s duplicate,
+including its Windows `#define strdup _strdup` shim) into a new
+`lo_ffi.cc`, declared in `lo.h`. Real constraint respected, checked
+before writing any code: `lo.cc` itself is unconditional in *every*
+runtime build, including `runtime/zero.config.js`'s deliberately
+core-less, `bindings: []` build — so this couldn't just move into
+`lo.cc` without permanently taxing every minimal build with real,
+unused `CTypeInfo`/`CFunctionInfo`/`CFunction` construction code, which
+the user confirmed still needs to be possible. `lo_ffi.cc` is instead
+compiled and linked only when a runtime's `bindings` list actually
+includes `core`/`core2` (`lib/build.js`'s `build_runtime`), the same
+conditional-linking pattern this codebase already uses for
+`musl-glibc-compat.o`. `core.cc`'s/`core2.cc`'s own `SET_METHOD(...,
+bind_fastcallSlow)`-style install calls needed zero changes — normal
+C++ namespace lookup already resolves the now-external `lo::`-scoped
+symbol from inside `lo::core::`/`lo::core2::`, confirmed by an actual
+build, not assumed. Verified two ways: `zero` builds and runs correctly
+with `lo_ffi.o` absent from both the link command and (`nm`-checked) the
+final binary's symbol table; `lo` (with `core`) still runs
+`test-ffi.js`'s real fast (`bind_fastcallSlow`) and slow
+(`bind_slowcallSlow`/`SlowCallback`/`lo_fastcall`) FFI paths correctly
+against a real `dlopen`'d `sum.so`.
 
 **E.8** **Correctness/tracking backlog from the `lib/gen.js` codegen-
 integration + surface-expansion pass** — real gaps found by actually
@@ -397,7 +431,7 @@ files directly rather than assuming:
 |---|---|---|
 | `constants` (`lo_exports_set_*` declared in `lo_abi.h`, not implemented in `lo_abi_v8.cc`) | 24 of 43 (56%) | **Highest — do first** |
 | `structs` (see correction below — turned out to be free once constants landed) | 7 (`core`, `core2`, `curl`, `epoll`, `mach`, `net`, `pico`) | ~~Medium~~ **Done** |
-| per-function `override` | 8, mostly crypto (`boringssl`, `mbedtls`, `libssl`) + `core`/`core2`/`net`/`ada`/`simdutf8` | Medium |
+| per-function `override` (see correction below — done) | 8, mostly crypto (`boringssl`, `mbedtls`, `libssl`) + `core`/`core2`/`net`/`ada`/`simdutf8` | ~~Medium~~ **Done** |
 | `linux`/`mac` OS-conditional sections (`bindingsAbi()` doesn't support this shape at all yet) | 7 (`core`, `curl`, `libffi`, `libssl`, `net`, `pthread`, `system`) | Medium |
 | `f32`/`f64` | 1 (`sqlite`) | **Lowest** — confirms the "very few need float support" read; don't front-load this work |
 
@@ -431,6 +465,82 @@ Verified against `lib/epoll` (blocked only by `structs`): builds under
 the abi target, `struct_epoll_event_size` comes back as the real
 `sizeof(struct epoll_event)` (12), and `epoll_create1`/`close` both run
 correctly.
+
+**Update, later session: `lib/core_abi` — a real, ~66-function binding,
+not a proof-of-concept-scale one.** Ports `core`'s real syscall surface
+(minus its separate V8-specific FFI-JIT machinery — `E.5`'s job, not
+redone here). Validated the constants/structs/includes/fast-call work
+above at real scale, and surfaced two more real gaps of its own: missing
+`stdlib.h`/`limits.h`/`errno.h` in both `core_abi`'s and the real,
+shipped `epoll`'s `includes` lists (masked forever by `bindings()`
+always pulling in `<v8.h>`, which transitively covers for it — fixed in
+both `api.js` files), and a real architectural bug in the registration
+shim this section's "First fix" note above shipped — it compiled
+`v8::ObjectTemplate::New`/`lo::SET_MODULE` directly into every binding's
+own `.so`, defeating the ABI's actual point. Full detail on both:
+[`WORK.E.1.md`](WORK.E.1.md)'s fourth follow-on-session update.
+
+**Update, later session, from the user going through real bindings one
+by one: `u32array` fixed, `casts`/`rpointer` clarified.** `lib/curl`
+(blocked by `u32array` — `easy_getinfo`'s out-param) exposed that
+`getAbiType()` simply hadn't added it, even though `lib/gen.js`'s own
+*active* codegen for `u32array` is byte-identical to `pointer`/`buffer`
+(a raw JS number, `reinterpret_cast` straight to a pointer type — the
+real TypedArray-aware version is commented out in both, removed from V8
+itself as a Fast API Calls sequence type around v9; worth writing up
+properly, see `V8.md` in the outer repo). Added `LO_U32ARRAY` alongside
+`LO_POINTER`/`LO_BUFFER` everywhere in `lo_abi_v8.cc` (four spots:
+`SetResult`, both slow-tier param loops, `ToFastCType`) and in
+`getAbiFastCType`. Verified against `easy_getinfo` itself, including its
+`casts: [, '(CURLINFO)']`: runs correctly with **no cast-handling code
+needed at all** — both codegens' dispatch calls through a canonical,
+type-erased function pointer, so a pure bit-identical reinterpretation
+cast transmits the same bits regardless of what C++ type name the call
+site declares (`rpointer` is the same story — a V8-codegen-only local-
+variable type override, no equivalent needed here either). Checking
+every real `casts` user (`lib/pthread`/`lib/sqlite`/`lib/mbedtls`/
+`lib/python`/`lib/libffi`/`lib/boringssl`/`lib/curl` itself) confirmed
+all of those are this same safe, no-op-for-the-abi-target category.
+**`lib/raylib`/`lib/wireguard` are a genuinely different, still-
+unsupported case**, though: a *dereference* cast (`'*(Color*)'`, bare
+`'*'`) means the real C function takes a small struct *by value*
+(`ClearBackground(Color color)`) — the canonical dispatch would pass the
+raw pointer's bits as if they were the struct's, silently wrong rather
+than a build error (same underlying gap as `f32`/`f64`'s register-class
+work — no `lo_type_t` for "struct by value" exists). `bindingsAbi()` now
+rejects this explicitly (checks for a `casts` entry starting with `*`)
+instead of silently emitting the wrong code.
+
+**Update, later session: `declare_only` and `override` (the table's
+remaining gap) both done.** `declare_only` (`lib/heap`'s `snapshot`,
+`core`'s `bind_fastcall`/`bind_slowcall`) means "hand-written, inherently
+engine-specific, no `lo_type_t` shape at all" — `bindingsAbi()` was
+crashing on it (`getAbiType(undefined)`); fixed by excluding
+`declare_only` functions from the abi target's exports entirely, plus a
+related edge case it exposed (a binding where *every* function is
+`declare_only`, like `lib/heap`, produced an illegal zero-length
+`lo_fn_desc_t[]` — now only emitted when non-empty). `override` (8
+bindings) turned out to be exactly two real shapes across all 13 actual
+call sites, surveyed directly: a trailing length parameter derived from
+`strlen()` of a preceding string (12/13 — `write_string(fd, str)` →
+real `write(fd, buf, len)`), and one literal-`0` trailing flags param
+(`net`'s `send_string`). `lo_fn_desc_t` gained an `overrides` array
+(`LO_NO_OVERRIDE`/`LO_OVERRIDE_LITERAL_ZERO`/an earlier-string-parameter
+index), handled generically in `lo_abi_v8.cc`'s `DispatchGeneral` (the
+only tier that ever sees a string) — no per-function codegen needed,
+unlike the fast-call wrappers. Verified against real functions on two
+different bindings: `lib/core_abi`'s `write_string`/`strnlen_str`
+(added to exercise this, since the *real* `lib/core`'s own preamble is
+inherently V8-specific — same limitation as `lib/heap`, unrelated to
+`override` itself) and `lib/net`'s real `send_string`, round-tripped
+through an actual `socketpair()`.
+
+Real, structural gap this surfaced, not new but now concretely hit:
+changing `lo_fn_desc_t`'s layout (this session did it twice — `fast_fn`,
+then `overrides`) silently stales every previously-built abi-target
+`.so` until it's rebuilt, with no detection if a stale one gets loaded —
+exactly the versioning story `E.4` already flags as "needed before this
+ships, not designed yet."
 
 ## F. Build system & binary size
 

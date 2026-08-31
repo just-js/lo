@@ -300,10 +300,123 @@ and real syscalls (`umount()` on a nonexistent path correctly returns
 `-1`) both verified working — the first real, non-`foo`/`foo_abi`
 binding actually running through this ABI end to end.
 
-Still not done: generalizing tiers 1/2's Fast API Call support past the
-one `int32` proof of concept (needs the per-register-class typing noted
-above, plus threading `Int64Representation` through for `i64`/`u64` —
-see `E.8` — and dropping the 0-arg tier's now-unnecessary receiver
-parameter too), porting a real multi-function binding (`lib/encode_abi`
-is still the natural next candidate once constants work), and the
-`bool`-as-result-type inconsistency between the two codegens (`E.8`).
+Still not done at this point: generalizing tiers 1/2's Fast API Call
+support past the one `int32` proof of concept (needs the per-register-
+class typing noted above, plus threading `Int64Representation` through
+for `i64`/`u64` — see `E.8` — and dropping the 0-arg tier's now-
+unnecessary receiver parameter too), porting a real multi-function
+binding (`lib/encode_abi` is still the natural next candidate once
+constants work), and the `bool`-as-result-type inconsistency between the
+two codegens (`E.8`).
+
+**Update, fourth follow-on session: `core_abi`/second real multi-function
+binding, `structs` correction, Fast API Call generalization past `int32`,
+and a real architectural bug in the previous session's own registration
+fix.** Four distinct pieces of work, in the order they actually happened:
+
+**1. `lib/core_abi`** — `lib/core`'s real syscall surface (~66 functions:
+`dlopen` family, `read`/`write`/`open`/`close`/`stat` family, `mmap`/
+`malloc` family, process/env/rusage, string helpers) ported to the abi
+target, dropping the preamble and `bind_fastcall`/`bind_slowcall`/
+`fastcall` entirely (core's separate, V8-specific FFI-JIT machinery for
+`lib/ffi.js`'s dlopen story — no ABI equivalent, and exactly what `E.5`
+already scopes as separate work, not redone here) and the `isolate_*`/
+`callback` family (embedder-internal, needs `u32array`, not supported).
+Verified end-to-end: real `open`/`write`/`read`/`close`/`unlink`
+round-trip on an actual file, `malloc`/`memset`/`free`, `dlopen`/
+`dlsym`/`dlclose` against libc, `stat` into a correctly-sized buffer.
+
+**2. `structs` correction, from the user directly.** The `E.9` table's
+"structs: no `lo_abi.h` equivalent by design" framing was simply wrong —
+checked `lib/gen.js`'s `initStruct` directly (not assumed): a `structs`
+entry never marshals a struct by value in *either* codegen, it only ever
+exposes `sizeof(name)` as a plain `i32` constant. Needed no new surface
+at all, just the same `lo_exports_set_i32` path (`initStructAbi`).
+Verified against `lib/epoll` (blocked only by `structs`): builds under
+the abi target, `struct_epoll_event_size` comes back as the real
+`sizeof(struct epoll_event)` (12), `epoll_create1`/`close` both run
+correctly. (Naming note: it's `struct_epoll_event_size`, not doubled —
+`lib/core_abi`'s own `struct_struct_stat_size` looks odd only because
+its entry is the literal string `'struct stat'`, which already contains
+"struct "; the `struct_` prefix and the entry name are just concatenated
+as-is, same in both codegens.)
+
+**3. Fast API Call generalization past the one `int32` proof of
+concept**, now that the receiver-shift patch is real (see the "Open
+question" update above) — every integer/bool/pointer-class shape is
+eligible now (no `LO_STRING`, no `f32`/`f64`, no `i64`/`u64` — the last
+two need `Int64Representation::kBigInt` threaded through, not done; the
+first two need real float register-class handling, not done). Unlike
+the slow tiers, a Fast API Call has no generic per-shape dispatcher
+available — V8 calls the entry point directly with real native types in
+real ABI registers matching `CFunctionInfo` exactly — so `lo_fn_desc_t`
+gained a `fast_fn` field and `lib/gen.js`'s `bindingsAbi()` codegens one
+small, concretely-typed wrapper per eligible function directly into the
+binding's own `.cc` (`getAbiFastCType`/`genAbiFastWrapper`), reusing the
+same canonical-wide-integer-call trick the slow path already documents.
+`lo_abi_v8.cc`'s old hand-written `DispatchNoArgsFast`/
+`DispatchInt32Fast_Core` tables are gone, replaced by a generic
+`BuildFastCFunction` that builds `CTypeInfo`/`CFunctionInfo` from
+`desc->params`/`desc->result` at registration time and double-checks
+eligibility itself rather than trusting codegen blindly. Measured, not
+assumed: `sum_buffer` (`pointer, u32 -> u32`) went from ~30ns/call to
+~7-8ns/call; `add1_u32`/`add1_isize`/`identity_ptr` (previously always
+slow-path) now run at ~10-11ns instead of tens of ns.
+
+**4. Runtime integration, and a real bug in how it was first done.**
+Compiling `lo_abi_v8.cc` into every binding's own `.so` (as it had been
+since the prototype's start) was real, measurable duplication once more
+than one or two abi-target bindings existed. Moved it to compile exactly
+once, into the runtime binary itself (`lib/build.js`'s `build_runtime`,
+alongside `lo.cc`), exported the same way `lo.cc`'s `SET_VALUE`/
+`SET_FAST_METHOD`/`SET_MODULE` already are (`-rdynamic`, already the
+default `link_type`) — `compile_bindings` no longer compiles or links
+`lo_abi_v8.cc` for any binding. `kMaxSlots` bumped 256→1024 since the
+call-dispatch slot pool is now genuinely process-wide, not per-`.so` —
+confirmed safe with three bindings (`foo_abi`+`core_abi`+`fsmount`)
+loaded in one process simultaneously.
+
+**The first version of this integration broke the ABI's own point**,
+caught directly (`nm -D`/`ldd` on a rebuilt `core_abi.so`, flagged by the
+user, not self-caught), not guessed: moving `LO_ABI_V8_BINDING`'s macro
+body into `lo_abi_v8_shim.h` (this doc's earlier "First fix" note above)
+meant every binding's own generated `.cc` *instantiated* that macro
+itself — so `v8::ObjectTemplate::New` and `lo::SET_MODULE` (itself
+v8::-typed) ended up compiled directly into `core_abi.so`'s own object
+code. Exactly the dependency the whole ABI exists to avoid: a binding
+relinked against a different engine's backend would have needed that
+code rewritten too, not just `lo_abi_v8.cc` swapped out. Fixed with the
+same pattern the call dispatch above already uses for "one compiled
+function per runtime-determined slot": a new `GenericInit<Slot>`/
+`kInitTable` in `lo_abi_v8.cc` alone, and a new fully-portable extern "C"
+function, `lo_abi_v8_register_binding(lo_register_fn, const char*) ->
+void*` (declared in `lo_abi.h`, real implementation only in
+`lo_abi_v8.cc`) — the *only* symbol a binding's generated
+`_register_<name>()` calls now (`LO_ABI_V8_REGISTER` macro, also in
+`lo_abi.h`, itself has zero `v8::` in it). `lo_abi_v8_shim.h` is deleted.
+Verified via `nm -D` on every rebuilt binding's `.so` (`foo_abi`,
+`fsmount`, `core_abi`, `epoll` under the abi target): zero mangled
+`v8::`/`lo::` C++ symbols left undefined anywhere — only real libc
+functions and the portable `lo_*` C functions, resolved against the
+runtime at `dlopen` time same as before, but now with a genuinely
+engine-agnostic signature at the call site.
+
+**Two more real, latent gaps this surfaced, unrelated to the
+registration fix itself**: `lib/core_abi/api.js` and the real, already-
+shipped `lib/epoll/api.js` were both missing explicit `stdlib.h`/
+`limits.h`/`errno.h` (`malloc`/`free`/`exit`/`getenv`-family, `NAME_MAX`,
+`EAGAIN`) — silently masked forever because `bindings()` (the V8-specific
+target) always includes `<v8.h>` first, which transitively drags in
+enough of the standard library to cover the gap. The abi target now
+includes no engine header at all, so building under it for the first
+time (after this fix removed the *other* accidental v8.h pull-in via the
+old shim header) surfaced both. Fixed at the source in both `api.js`
+files — `lib/epoll`'s is a small, real, permanent improvement to a
+shipped binding, not just the prototype.
+
+Still not done: everything listed in the "Still not done" paragraph
+above (float/`i64`/`u64` fast calls, `bool`-as-result, `lib/encode_abi`),
+plus the 0-arg tier's now-unnecessary receiver parameter (noted in the
+"Open question" update, not yet removed) and the `linux`/`mac`
+OS-conditional `includes` shape (`E.9`'s remaining gap, unaffected by
+anything in this update).

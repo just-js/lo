@@ -72,7 +72,21 @@ inline ExportsImpl* AsExports(lo_exports_t* exports) {
 // copies (matches today's String::Utf8Value-based Slow paths -- no attempt
 // at V8's zero-copy FastOneByteString path here, see doc/WORK.E.1.md's
 // "Open question" section).
-constexpr int kMaxArgs = 6;
+// 10 covers the real max across every binding's api.js today
+// (lib/pico's on_headers_complete callback registration) -- surveyed
+// directly (grep every generated *_params[] array), not guessed. This
+// was silently too small at 6: lo_register_functions below rejects any
+// function past kMaxArgs with LO_INVALID_ARG, and the abi target's
+// LO_REGISTER(name) body bails out on the *first* such rejection before
+// SET_MODULE ever runs -- so a binding with just one >6-arg function
+// (libssl, sqlite, pico) registered *zero* exports at all, silently:
+// it compiled and linked fine, `lo.library(name)` just returned an
+// empty object. Found by actually calling lo.library() on every
+// abi-target binding linked into a real runtime/lo build, not by
+// reading the code -- exactly the "compiles and links isn't enough"
+// lesson from the registration-shim bug (see lo_abi.h's comment on
+// lo_abi_v8_register_binding).
+constexpr int kMaxArgs = 10;
 
 // Bump if a real binding ever needs more than this many total registered
 // ABI functions across the process -- each slot costs one entry in each
@@ -134,7 +148,7 @@ inline void SetResult(const FunctionCallbackInfo<Value>& args, lo_type_t result,
     case LO_U8: case LO_U16: case LO_U32:
       args.GetReturnValue().Set((uint32_t)rv);
       return;
-    case LO_POINTER: case LO_BUFFER: case LO_ISIZE: case LO_USIZE:
+    case LO_POINTER: case LO_BUFFER: case LO_U32ARRAY: case LO_ISIZE: case LO_USIZE:
       // matches the existing convention (e.g. epoll.cc's *Slow functions):
       // addresses/sizes cross into JS as plain numbers, precise enough for
       // any pointer-sized value on architectures actually targeted here.
@@ -179,6 +193,7 @@ void DispatchPrimitiveArgs(const FunctionCallbackInfo<Value>& args) {
     switch (desc->params[i]) {
       case LO_POINTER:
       case LO_BUFFER:
+      case LO_U32ARRAY:
       case LO_ISIZE:
       case LO_USIZE:
         argv[i] = (uint64_t)Local<Integer>::Cast(args[i])->Value();
@@ -215,6 +230,10 @@ void DispatchPrimitiveArgs(const FunctionCallbackInfo<Value>& args) {
     case 4: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3]); break; }
     case 5: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4]); break; }
     case 6: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]); break; }
+    case 7: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]); break; }
+    case 8: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6], argv[7]); break; }
+    case 9: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6], argv[7], argv[8]); break; }
+    case 10: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6], argv[7], argv[8], argv[9]); break; }
   }
   SetResult(args, desc->result, NarrowResult(desc->result, rv));
 }
@@ -232,11 +251,30 @@ void DispatchGeneral(const FunctionCallbackInfo<Value>& args) {
   uint64_t argv[kMaxArgs] = {0};
   char* strdup_strs[kMaxArgs];
   int nstrdup = 0;
+  uint8_t js_arg = 0; // separate counter: overridden positions (below)
+                      // consume no JS argument at all, so position i in
+                      // desc->params[] and args[] only stay in lockstep
+                      // until the first override -- trailing-only, by
+                      // construction (lib/gen.js enforces this).
 
   for (uint8_t i = 0; i < desc->nparams; i++) {
+    if (desc->overrides && desc->overrides[i] != LO_NO_OVERRIDE) {
+      // Computed, not caller-supplied -- see lo_abi.h's own comment on
+      // `overrides`.
+      if (desc->overrides[i] == LO_OVERRIDE_LITERAL_ZERO) {
+        argv[i] = 0;
+      } else {
+        // A trailing length-of-a-preceding-string -- the referenced
+        // position's strdup'd pointer is already sitting in argv[]
+        // from an earlier iteration of this same loop.
+        const char* target = reinterpret_cast<const char*>(argv[desc->overrides[i]]);
+        argv[i] = (uint64_t)strlen(target);
+      }
+      continue;
+    }
     switch (desc->params[i]) {
       case LO_STRING: {
-        String::Utf8Value str(isolate, args[i]);
+        String::Utf8Value str(isolate, args[js_arg]);
         strdup_strs[nstrdup] = strdup(*str);
         argv[i] = reinterpret_cast<uint64_t>(strdup_strs[nstrdup]);
         nstrdup++;
@@ -244,22 +282,24 @@ void DispatchGeneral(const FunctionCallbackInfo<Value>& args) {
       }
       case LO_POINTER:
       case LO_BUFFER:
+      case LO_U32ARRAY:
       case LO_ISIZE:
       case LO_USIZE:
-        argv[i] = (uint64_t)Local<Integer>::Cast(args[i])->Value();
+        argv[i] = (uint64_t)Local<Integer>::Cast(args[js_arg])->Value();
         break;
       case LO_BOOL:
       case LO_I8: case LO_U8: case LO_I16: case LO_U16:
       case LO_I32: case LO_U32:
-        argv[i] = (uint64_t)(int64_t)Local<Integer>::Cast(args[i])->Value();
+        argv[i] = (uint64_t)(int64_t)Local<Integer>::Cast(args[js_arg])->Value();
         break;
       case LO_I64: case LO_U64:
-        argv[i] = (uint64_t)Local<BigInt>::Cast(args[i])->Int64Value();
+        argv[i] = (uint64_t)Local<BigInt>::Cast(args[js_arg])->Int64Value();
         break;
       default:
         isolate->ThrowError("lo_abi: unsupported argument type in generic dispatch");
         return;
     }
+    js_arg++;
   }
 
   uint64_t rv = 0;
@@ -271,6 +311,10 @@ void DispatchGeneral(const FunctionCallbackInfo<Value>& args) {
     case 4: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3]); break; }
     case 5: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4]); break; }
     case 6: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]); break; }
+    case 7: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]); break; }
+    case 8: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6], argv[7]); break; }
+    case 9: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6], argv[7], argv[8]); break; }
+    case 10: { typedef uint64_t (*F)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t); rv = ((F)desc->fn)(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6], argv[7], argv[8], argv[9]); break; }
   }
   for (int i = 0; i < nstrdup; i++) free(strdup_strs[i]);
   SetResult(args, desc->result, NarrowResult(desc->result, rv));
@@ -334,9 +378,9 @@ inline bool ToFastCType(lo_type_t t, CTypeInfo::Type* out) {
     case LO_U8: case LO_U16: case LO_U32: *out = CTypeInfo::Type::kUint32; return true;
     case LO_BOOL: *out = CTypeInfo::Type::kBool; return true;
     case LO_ISIZE: *out = CTypeInfo::Type::kInt64; return true;
-    case LO_USIZE: case LO_POINTER: case LO_BUFFER: *out = CTypeInfo::Type::kUint64; return true;
+    case LO_USIZE: case LO_POINTER: case LO_BUFFER: case LO_U32ARRAY: *out = CTypeInfo::Type::kUint64; return true;
     case LO_VOID: *out = CTypeInfo::Type::kVoid; return true;
-    default: return false; // LO_STRING/LO_F32/LO_F64/LO_I64/LO_U64/LO_FUNCTION/LO_U32ARRAY
+    default: return false; // LO_STRING/LO_F32/LO_F64/LO_I64/LO_U64/LO_FUNCTION
   }
 }
 

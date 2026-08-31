@@ -232,8 +232,33 @@ typedef struct {
   // (patches/15.3-cfunctioninfo-has-receiver-kno.patch) removed the need
   // for one; see doc/WORK.E.1.md.
   void* fast_fn;
+  // Optional per-parameter "computed, not caller-supplied" markers --
+  // NULL if this function has no such parameters (the common case).
+  // Otherwise an `nparams`-length array, one entry per position:
+  //   - LO_NO_OVERRIDE (0xFF): read normally, the caller passes this
+  //     JS argument.
+  //   - LO_OVERRIDE_LITERAL_ZERO (0xFE): don't read a JS argument here
+  //     at all -- always pass a literal 0.
+  //   - any other value N (< kMaxArgs, see lo_abi_v8.cc): don't read a
+  //     JS argument here either -- pass strlen() of the already-
+  //     marshaled LO_STRING at parameter index N instead.
+  // Covers the two real shapes every binding's own V8-specific-codegen
+  // `override` field actually uses, surveyed directly across all 13
+  // real call sites, not guessed: a trailing length parameter derived
+  // from a preceding string (e.g. `write_string(fd, str)` calling the
+  // real 3-arg `write(fd, buf, len)`), and a trailing literal-0 flags
+  // parameter (`net`'s `send_string`). Not a general field-access/
+  // constant-substitution mechanism the way the V8-specific codegen's
+  // `override` is (that also allows arbitrary Number/String literals
+  // and arbitrary field expressions, unused by any real binding today).
+  // Overridden positions must be trailing (no ordinary parameter may
+  // follow one) -- lib/gen.js enforces this at generation time.
+  const uint8_t* overrides;
   uint32_t flags;
 } lo_fn_desc_t;
+
+#define LO_NO_OVERRIDE 0xFFu
+#define LO_OVERRIDE_LITERAL_ZERO 0xFEu
 
 LO_ABI_PUBLIC lo_status_t lo_register_functions(lo_engine_t*, lo_exports_t*,
   const lo_fn_desc_t* fns, uint32_t count);
