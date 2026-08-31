@@ -43,3 +43,16 @@ this will test building core modules and runtimes is working as expected
 ```shell
 lo test/build.js
 ```
+
+## abi.js
+
+correctness tests for the lo_abi.h prototype (see doc/WORK.E.1.md/
+doc/PROFILING.md) against lib/foo_abi, covering both the slow-call
+dispatch tiers and the V8 Fast API Call path (via warmup loops, since
+V8 only takes the fast path once a call site is actually optimized).
+foo_abi/noop/add1 are the prototype's current names, expected to be
+renamed/refactored as the ABI work generalizes.
+
+```shell
+lo test/abi.js
+```

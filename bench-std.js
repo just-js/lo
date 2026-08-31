@@ -8,7 +8,7 @@ const iter = 5
 
 while (1) {
   {
-    const runs = 200000000
+    const runs = 400000000
 
     for (let i = 0; i < iter; i++) {
       bench.start('foo.noop')

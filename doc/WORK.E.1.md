@@ -90,8 +90,112 @@ Checked against `lib/encode/encode.cc`'s real generated Fast paths:
   an explicit, opt-in V8-backend extension on top of the portable ABI, never
   as a cross-engine `lo_type_t` tag.
 
-Not designed in this pass. Next real question once this prototype lands.
+**Update, follow-on session: no longer fully open.** A smoke test proved
+the mechanism for the narrowest real shape (0 params, `LO_VOID` result) —
+see "Result" below. The `void* receiver` wrinkle turned out to be
+mechanical, not hard. The harder part flagged for the *next* pass, not
+yet done: generalizing past this one shape needs real per-register-class
+typing (float/double args must be genuinely typed `double`/`float` in the
+fast callback's C++ signature so SysV/AAPCS64 places them in the XMM vs.
+general-purpose register file correctly) — the slow path's "cast
+everything to `uint64_t` and call through one canonical signature" trick
+does not carry over to the fast path, since Fast API Calls skip V8's
+boxed-`Value` marshaling entirely and call with the real native types
+directly.
+
+## Result (follow-on session, `foo`/`foo_abi` rather than `encode`/`encode_abi`)
+
+Prototyped and benchmarked essentially as planned, with two deliberate
+deviations from the plan above, both because they turned out to be
+unnecessary for what the benchmark needed:
+
+- **`lib/foo_abi`** (a new, minimal single-function `noop()` binding) was
+  used instead of `lib/encode_abi` — simplest possible shape first, so a
+  side-by-side benchmark (`bench-abi.js`) could isolate dispatch overhead
+  itself before adding argument-marshaling complexity. `lib/encode_abi`
+  (already committed, `api.js` only) remains the natural next binding to
+  port once more shapes are validated.
+- **Steps 5-7 (wire into `main.h`, recompile `main.cc`, a separate
+  `lo_abi` binary) turned out unnecessary.** `main.js`'s `load()` already
+  `dlopen`s `lib/<name>/<name>.so` and resolves `_register_<name>` at
+  runtime for *any* binding, static-`main.h`-registered or not — so
+  `foo_abi.so` works as a normal dynamically-loaded binding against the
+  real, unmodified `lo` binary. Wiring into `main.h` is only needed for a
+  binding that should ship *statically linked into* `lo` itself, which
+  was never a requirement here.
+
+What was actually built, well beyond "prove it compiles and returns
+correct results":
+
+- `lo_abi_v8.cc`: a real, generalized V8 backend — `lo_register_functions`
+  picks one of **three dispatch tiers** per descriptor at registration
+  time (0-arg / primitive-args / has-a-string-arg), each a family of
+  `kMaxSlots` compile-time template instantiations indexed by registration
+  slot, so no call ever touches `FunctionTemplate::Data()` at all (see
+  "Why three tiers" below).
+- A working **V8 Fast API Call smoke test**, narrowly scoped to the 0-arg/
+  `LO_VOID` shape — dynamically-built `CTypeInfo`/`CFunctionInfo`/
+  `CFunction`, confirmed via `perf` to actually be taken by Turbofan/
+  Maglev after warmup (not just reachable in principle).
+- Real, measured performance, not assumed:
+
+  | Version | ns/call (0-arg `noop()`) | vs. hand-generated |
+  |---|---|---|
+  | Generated (`lib/gen.js`), fast+slow paths (real baseline) | ~9ns | — |
+  | ABI, `v8::External`-based `Data()` | ~17ns | ~1.9x |
+  | ABI, internal-field `Data()` | ~19-22ns | ~2.2x (mechanism swap alone didn't help — see below) |
+  | ABI, `Data()` eliminated (static descriptor, single-function test) | ~12ns | ~1.4x |
+  | ABI, three-tier split (0-arg tier, no `Data()`) | ~10.5ns | ~1.17x |
+  | ABI, three-tier + Fast API Call smoke test | **parity** | **1.0x** |
+
+  Why three tiers, not one dispatcher: `perf annotate`/`objdump` (see
+  [`PROFILING.md`](PROFILING.md)) showed two distinct, separately-measured
+  costs, not one — (1) `args.Data()` itself costs ~9ns/call regardless of
+  *what's* stored in it (`v8::External` vs. an internal field never
+  mattered; V8's own `GetFunctionTemplateData` mints a fresh `Handle`
+  every call), and (2) a single monolithic dispatcher forces even a 0-arg
+  call to pay for the worst case's register pressure — `objdump` showed 6
+  callee-saved register pushes and a stack-protector canary on *every*
+  call, because the compiler sizes a function's prologue for its whole
+  body (the multi-arg/string-handling branch), not the branch actually
+  taken. Splitting by shape fixes (2) directly; avoiding `Data()` (via
+  the per-slot template table) fixes (1).
+
+Full investigation, including the `perf`/`objdump` commands used and the
+tail-call-optimization detour while trying to get a fair non-inlined
+baseline (`__attribute__((not_tail_called))`, not just `noinline`):
+[`PROFILING.md`](PROFILING.md).
+
+## A second unlock, beyond multi-engine portability: `-fvisibility=hidden` on V8 itself
+
+Not just "bindings that survive an engine swap" — this also removes the
+one thing currently forcing V8's own C++ API surface to stay exported.
+Today, a generated binding (`foo.cc`, `lib/core/core.cc`, ...) calls
+`v8::FunctionTemplate::New`/`v8::Isolate::*`/etc. *directly*, compiled
+into its own `.so` and linked against wherever those symbols live — so
+those symbols (thousands of them, across all of V8's public C++ classes)
+have to stay visible across that link/dlopen boundary, or bindings fail
+to resolve them. An `lo_abi.h`-targeted binding never touches `v8::` at
+all — every call crosses through `lo_abi_v8.cc`'s narrow, curated
+`extern "C"` surface (`lo_register_functions`, `lo_engine_throw`, ...)
+instead. If *every* binding went through that boundary, nothing outside
+`lo_abi_v8.cc` itself would need direct access to a `v8::` symbol, and
+V8's own enormous public API surface could be built `-fvisibility=hidden`
+(only the narrow `lo_*` `extern "C"` set staying exported) without
+breaking anything — a real, additional binary-size/symbol-table lever
+on top of the `symbol_level`/`v8_enable_webassembly`-style cuts already
+tracked in `repos/v8`'s own `doc/V8-BUILD-OPTS.md`. Not attempted here —
+noted because it falls out of this design directly, and is worth
+remembering once more than one ABI-targeted binding exists to test it
+against.
 
 ## Status
 
-Not started. Implementation begins when explicitly requested.
+Prototype validated and benchmarked for one real shape (0-arg, `LO_VOID`
+result) — both the slow path and, as of the Fast API Call smoke test, the
+fast path reach parity with hand-generated V8-specific bindings. Not yet
+done: generalizing tiers 1/2 (primitive-args, string-args) to also get
+Fast API Call support (needs the per-register-class typing noted above),
+porting a real multi-function binding (`lib/encode_abi` is the natural
+next candidate — see "Result"), and `lib/gen.js` codegen integration
+(still explicitly out of scope, per "Non-goals" above).

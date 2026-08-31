@@ -239,16 +239,20 @@ against any engine backend. Source: [`ABI.md`](ABI.md).
 `lo_abi.h` sketch this produced.
 [`ABI.md` § "The open question"](ABI.md#the-open-question-how-functions-actually-get-registered).
 
-**E.2** **Prototype Option 1 against one real binding** (`epoll` suggested —
-small, self-contained) **and benchmark it against today's codegen'd
-version** before committing to a full migration — explicitly called out
-as needed rather than assumed, since the generic-dispatch-loop perf cost
-vs. per-function-JIT mitigation is unmeasured. `lo_abi.h` sketches the
-*shape* of the descriptor/dispatch mechanism but doesn't implement a real
-dispatcher (interpreted or JIT'd) or generate a table from `lib/gen.js` —
-this item is still that follow-through work, now against a concrete
-header instead of a paragraph in `ABI.md`.
-[`ABI.md` § "Where this leaves it"](ABI.md#where-this-leaves-it).
+**E.2** ~~Prototype Option 1 against one real binding and benchmark it
+against today's codegen'd version before committing to a full
+migration.~~ **Done, follow-on session** — `lib/foo_abi` (not `epoll`;
+simplest possible shape first) against a real `lo_abi_v8.cc` V8 backend,
+benchmarked in detail (`bench-abi.js`, `perf`/`objdump`). The
+generic-dispatch-loop perf cost was real (~2.2x at first) but tracked
+down to two distinct, fixable causes and closed to parity with
+hand-generated code for the 0-arg shape, including a working V8 Fast API
+Call path. Full writeup: [`WORK.E.1.md`](WORK.E.1.md)'s "Result" section,
+[`PROFILING.md`](PROFILING.md) for the investigation itself. Not yet
+done: the same treatment for argument-taking/string-taking shapes (tiers
+1/2 exist and are measured on the slow path, but don't yet have Fast API
+Call support), and generating the dispatch table from `lib/gen.js` rather
+than hand-writing it — both explicitly still open.
 
 **E.3** **Enumerate the exact accessor list for every `lo_type_t`** (only an
 illustrative subset exists in the sketch today).
@@ -257,11 +261,71 @@ illustrative subset exists in the sketch today).
 loader checks before calling `lo_register_*`, most likely; needed before
 this ships, not designed yet.
 
-**E.5** **Plan the migration/porting of `core`'s FFI preamble
-(`bind_fastcall`/`bind_slowcall`/`SlowCallback`/`CTypeFromV8`) onto
-whichever option is picked** — nontrivial since it's the mechanism
-everything else in `ABI.md` leans on; deserves its own pass once Option
-1 vs. 2 (`WORK.E.1`) is decided.
+**E.5** **Port `core`'s FFI preamble (`bind_fastcall`/`bind_slowcall`/
+`SlowCallback`/`CTypeFromV8`) onto the three-tier/no-`Data()` dispatch
+design `WORK.E.1`'s "Result" validated** — nontrivial since it's the
+mechanism everything else in `ABI.md` leans on. Scoped, not started.
+
+**Motivation, not assumed:** `bench-ffi.js` already measured `core`'s
+real, shipped `SlowCallback` at ~20ns/call — the same overhead
+`GenericDispatch` had before the `WORK.E.1` fixes, and for the identical
+reason: `SlowCallback` reads its descriptor via `args.Data().As<Object>()
+->GetAlignedPointerFromInternalField(1, tag)` (`lib/core/api.js:540-545`)
+— the exact mechanism proven to cost ~9ns/call on its own. `lo_fn_desc_t`/
+`GenericDispatch` were modeled on `struct fastcall`/`SlowCallback` in the
+first place, so the fix should transfer the same way.
+
+**What transfers directly:**
+- Per-call-site slot assignment via the same `std::atomic<int>` counter +
+  compile-time `std::integer_sequence` table trick — nothing in that
+  design assumed compile-time-known bindings, only a compile-time-fixed
+  *slot count*. `bind_fastcall`/`bind_slowcall` discover shapes at
+  `dlopen`-bind time (runtime), which is no different in kind from
+  `lo_register_functions` assigning slots at module-registration time.
+- Splitting by shape (0-arg / primitives / strings) instead of one
+  monolithic `SlowCallback` — same register-pressure/stack-protector
+  argument `WORK.E.1`'s `objdump` evidence made for `GenericDispatch`
+  almost certainly applies here too, likely worse: `struct fastcall`'s
+  `args[32]` is a much larger worst-case footprint than `lo_fn_desc_t`'s
+  `kMaxArgs=6`.
+
+**What's new here, not deferrable the way it was for `foo_abi`:**
+- **`LO_F32`/`LO_F64` have to actually be solved.** Unhandled everywhere
+  in `WORK.E.1`'s work so far (no binding exercised it). Real FFI calls
+  into arbitrary C libraries routinely pass floats/doubles — the slow
+  path's "cast everything to `uint64_t`, call through one canonical
+  signature" trick doesn't preserve a `double`'s register class (SysV/
+  AAPCS64 need it in XMM, not a GPR), so this needs real per-register-
+  class dispatch variants, not a cast.
+- **Arity: 6 vs. 32.** `kMaxArgs` needs raising to match `struct
+  fastcall`'s real range, or an explicit, deliberate decision to cap FFI
+  arity lower (a real behavior change for existing callers — needs
+  checking who currently relies on >6 args before considering it).
+- **The fast path is already more mature here than `WORK.E.1`'s.**
+  `bind_fastcallSlow` already dynamically builds `CFunction`/`CTypeInfo`
+  for arbitrary shapes at bind time — ahead of `WORK.E.1`'s Fast API
+  smoke test, which only covers one shape. Porting means matching (or
+  not regressing) that existing generality, not just the slow-path win.
+- **Correctness stakes are real, not prototype-scale.** Every FFI call in
+  shipped `lo` programs goes through this path today, unlike `foo_abi`'s
+  single test binding — needs real test coverage (existing FFI test
+  programs, not just a smoke test) before landing, not after.
+
+**Open questions to resolve before starting implementation:**
+1. Does the per-register-class tier split apply only to whether a
+   position is float-class, or does it need finer granularity (e.g.
+   distinguishing `f32` from `f64` matters for which XMM-loading
+   instruction gets emitted, even though both are "float-class")?
+2. Is a lower, explicit arity cap (with a clear error for anything
+   beyond it) acceptable, or must the full 32-arg range be preserved?
+   Needs checking real callers, not assuming.
+3. Does `bind_fastcallSlow`'s existing dynamic `CFunction`/`CTypeInfo`
+   construction need to change at all, or does only the *slow* path
+   (`SlowCallback`) need the tier-split/no-`Data()` treatment, with the
+   fast path left as-is since it doesn't hit the `Data()` cost the same
+   way (need to confirm: does `bind_fastcallSlow`'s fast path use
+   `Data()` at all, or does its `CFunction` receiver-based calling
+   convention already sidestep it)?
 
 **E.6** **Windows dynamic-addon-loading story** — no analog to
 `-bundle_loader`/`-rdynamic` currently exists for the Windows build;
