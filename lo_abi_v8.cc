@@ -332,29 +332,14 @@ std::array<CFunction, sizeof...(Is)> MakeNoArgsFastTable(std::integer_sequence<i
 const std::array<CFunction, kMaxSlots> kNoArgsFastTable = MakeNoArgsFastTable(std::make_integer_sequence<int, kMaxSlots>{});
 
 // ---------------------------------------------------------------------
-// Shim for V8's not-yet-landed CFunctionInfo::HasReceiver (this repo's
-// own patches/15.3-cfunctioninfo-has-receiver-kno.patch -- pushed, not
-// yet built/linked here). Lets the real, receiver-free business logic
-// below get written, compiled, and correctness-tested *today* against
-// the current, unpatched libv8_monolith.a, ready to drop the adapter
-// with a one-line change once the patched build lands -- not a rewrite.
-//
-// Real constraint this respects, not glossed over: today's compiled V8
-// unconditionally treats arg_info[0] as the receiver slot and pushes a
-// real live JS receiver value into that register regardless of what we
-// claim -- so this never lies to the real CFunctionInfo/CFunction about
-// the shape (that would be genuine type confusion at the ABI boundary,
-// not just a missed perf win). Flip this to 1 once the patched V8 is
-// actually linked; every block below says exactly what to delete.
-#define LO_V8_HAS_RECEIVER_KNO 0
-
 // Tier 1 proof-of-concept: a single concrete shape (1 arg, both int32),
 // not the full arity/register-class generalization scoped separately --
-// proves the "direct-install, no wrapper needed" design and the
-// HasReceiver shim pattern before generalizing. "Core" business logic:
-// what every future int32-shaped fast call should look like once the
-// patch lands -- no receiver parameter, argument positions line up
-// exactly with desc->fn's own real C signature.
+// proves the "direct-install, no wrapper needed" design. No receiver
+// parameter -- argument positions line up exactly with desc->fn's own
+// real C signature, via this repo's own V8 patch
+// (patches/15.3-cfunctioninfo-has-receiver-kno.patch, upstreaming
+// CFunctionInfo::HasReceiver::kNo) rather than an adapter that accepts
+// and discards a receiver V8 no longer pushes into this slot.
 template<int Slot>
 int32_t DispatchInt32Fast_Core(int32_t a0) {
   const lo_fn_desc_t* desc = g_descriptors[Slot];
@@ -362,44 +347,14 @@ int32_t DispatchInt32Fast_Core(int32_t a0) {
   return ((F)desc->fn)(a0);
 }
 
-#if LO_V8_HAS_RECEIVER_KNO
-// Once LO_V8_HAS_RECEIVER_KNO is 1: DispatchInt32Fast_Core<Slot> is
-// installed directly as the CFunction target below -- delete this
-// #else branch (the adapter and its args/table) entirely, nothing else
-// changes.
-#else
-// Adapter: today's real V8 still requires -- and will actually place a
-// live JS receiver value into -- a leading parameter. Accept it, ignore
-// it, forward to the real logic above. Safe and correct under today's
-// real, unpatched ABI; costs exactly the register-shift the patch
-// exists to remove.
-template<int Slot>
-int32_t DispatchInt32Fast(void* /* receiver, ignored -- see LO_V8_HAS_RECEIVER_KNO above */, int32_t a0) {
-  return DispatchInt32Fast_Core<Slot>(a0);
-}
-#endif
-
-#if LO_V8_HAS_RECEIVER_KNO
 CTypeInfo kInt32FastCArgs[1] = { CTypeInfo(CTypeInfo::Type::kInt32) };
-#else
-CTypeInfo kInt32FastCArgs[2] = { CTypeInfo(CTypeInfo::Type::kV8Value),
-                                CTypeInfo(CTypeInfo::Type::kInt32) };
-#endif
 CTypeInfo kInt32FastReturn = CTypeInfo(CTypeInfo::Type::kInt32);
-#if LO_V8_HAS_RECEIVER_KNO
 CFunctionInfo kInt32FastInfo(kInt32FastReturn, 1, kInt32FastCArgs,
   CFunctionInfo::Int64Representation::kNumber, CFunctionInfo::HasReceiver::kNo);
-#else
-CFunctionInfo kInt32FastInfo(kInt32FastReturn, 2, kInt32FastCArgs);
-#endif
 
 template<int... Is>
 std::array<CFunction, sizeof...(Is)> MakeInt32FastTable(std::integer_sequence<int, Is...>) {
-#if LO_V8_HAS_RECEIVER_KNO
   return { CFunction((const void*)&DispatchInt32Fast_Core<Is>, &kInt32FastInfo)... };
-#else
-  return { CFunction((const void*)&DispatchInt32Fast<Is>, &kInt32FastInfo)... };
-#endif
 }
 const std::array<CFunction, kMaxSlots> kInt32FastTable = MakeInt32FastTable(std::make_integer_sequence<int, kMaxSlots>{});
 
@@ -458,8 +413,8 @@ lo_status_t lo_register_functions(lo_engine_t* engine, lo_exports_t* exports,
         0, ConstructorBehavior::kThrow, SideEffectType::kHasNoSideEffect,
         const_cast<CFunction*>(&kNoArgsFastTable[slot]));
     } else if (desc->nparams == 1 && desc->params[0] == LO_I32 && desc->result == LO_I32) {
-      // Tier 1 fast-call proof of concept -- see the HasReceiver shim
-      // comment above. Same fallback contract as the 0-arg case.
+      // Tier 1 fast-call proof of concept -- see DispatchInt32Fast_Core
+      // above. Same fallback contract as the 0-arg case.
       ft = FunctionTemplate::New(isolate, cb, Local<Value>(), Local<Signature>(),
         0, ConstructorBehavior::kThrow, SideEffectType::kHasNoSideEffect,
         const_cast<CFunction*>(&kInt32FastTable[slot]));

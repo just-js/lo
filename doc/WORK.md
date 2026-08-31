@@ -248,11 +248,18 @@ generic-dispatch-loop perf cost was real (~2.2x at first) but tracked
 down to two distinct, fixable causes and closed to parity with
 hand-generated code for the 0-arg shape, including a working V8 Fast API
 Call path. Full writeup: [`WORK.E.1.md`](WORK.E.1.md)'s "Result" section,
-[`PROFILING.md`](PROFILING.md) for the investigation itself. Not yet
-done: the same treatment for argument-taking/string-taking shapes (tiers
-1/2 exist and are measured on the slow path, but don't yet have Fast API
-Call support), and generating the dispatch table from `lib/gen.js` rather
-than hand-writing it — both explicitly still open.
+[`PROFILING.md`](PROFILING.md) for the investigation itself. Generating
+the dispatch table from `lib/gen.js` rather than hand-writing it is now
+done too (`bindingsAbi()`, see `E.8`/`E.9`). Not yet done: the same
+Fast API Call treatment for argument-taking/string-taking shapes beyond
+the single `int32` proof of concept (tiers 1/2 exist and are measured on
+the slow path only) — no longer blocked on a receiver-shift workaround,
+since the patched V8 (`CFunctionInfo::HasReceiver::kNo`, see
+[`WORK.E.1.md`](WORK.E.1.md)'s "Open question" section) is built and
+linked and the `LO_V8_HAS_RECEIVER_KNO` adapter is gone from
+`lo_abi_v8.cc` — what's left is real per-register-class typing
+(float/double, `Int64Representation` for `i64`/`u64`) and arity, not a
+V8-side blocker.
 
 **E.3** **Enumerate the exact accessor list for every `lo_type_t`** (only an
 illustrative subset exists in the sketch today).

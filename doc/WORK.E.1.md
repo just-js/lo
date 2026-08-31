@@ -103,6 +103,37 @@ does not carry over to the fast path, since Fast API Calls skip V8's
 boxed-`Value` marshaling entirely and call with the real native types
 directly.
 
+**Update, later session: the `void* receiver` wrinkle is gone for real,
+not just worked around.** `repos/v8`'s own patch
+(`patches/15.3-cfunctioninfo-has-receiver-kno.patch`, adapting Node's
+closed `nodejs/node#63140`) landed in a real CI build
+([run `33341673702`](https://github.com/just-js/v8/actions/runs/33341673702),
+V8 15.3.76, confirmed via `include/v8-fast-api-calls.h`'s `HasReceiver`
+enum) and `lo` has been rebuilt against it. The `LO_V8_HAS_RECEIVER_KNO`
+adapter this section originally shipped as a stopgap is deleted from
+`lo_abi_v8.cc` — `DispatchInt32Fast_Core` installs directly as the
+`CFunction` target now, with `CFunctionInfo::HasReceiver::kNo`
+unconditional, no leading ignored parameter. Verified, not assumed:
+`test/abi.js` passes clean against the rebuilt `foo`/`foo_abi` bindings,
+and `bench-abi.js` shows `foo_abi.add1` (the int32 tier this shim
+covered) at ~4.2-5.2ns/call and `foo_abi.noop` at ~4.5-5.6ns/call — both
+in the hundreds-of-millions-calls/sec range consistent with the Fast API
+Call path genuinely being taken, not a slow-path fallback.
+
+Real, non-obvious gotcha hit getting there: any `lib/*/*.so` binding
+still compiled against the pre-patch V8 segfaults on `dlopen` against the
+new monolith (confirmed with `lib/foo/foo.so` specifically — crashed on
+load, before any call; rebuilding it against the current V8 fixed it).
+Anything else still linking the old `libv8_monolith.a`'s ABI will need
+the same rebuild before use.
+
+The 0-arg tier (`DispatchNoArgsFast`) never had this adapter — a true
+0-arg Fast API Call still had nothing *but* the receiver to accept before
+the patch, so it always took one directly rather than wrapping a receiver-
+free "core" function. Now that `HasReceiver::kNo` is real, that tier can
+drop its `void* receiver` parameter too — not done here, in scope for the
+next pass generalizing past these two proof-of-concept shapes.
+
 ## Result (follow-on session, `foo`/`foo_abi` rather than `encode`/`encode_abi`)
 
 Prototyped and benchmarked essentially as planned, with two deliberate
@@ -220,9 +251,16 @@ unblocks more real bindings than the remaining float/arity/fast-call
 generalization work combined, and none of that work is blocked waiting
 for it either, so there's no ordering risk in doing it first.
 
+**Update, third follow-on session:** the patched V8 (15.3.76, with
+`CFunctionInfo::HasReceiver::kNo`) is built and linked — see the
+"Open question" section above for the verified before/after. The
+`LO_V8_HAS_RECEIVER_KNO` shim referenced throughout this doc no longer
+exists in `lo_abi_v8.cc`.
+
 Still not done: generalizing tiers 1/2's Fast API Call support past the
 one `int32` proof of concept (needs the per-register-class typing noted
 above, plus threading `Int64Representation` through for `i64`/`u64` —
-see `E.8`), porting a real multi-function binding (`lib/encode_abi` is
-still the natural next candidate once constants work), and the
+see `E.8` — and dropping the 0-arg tier's now-unnecessary receiver
+parameter too), porting a real multi-function binding (`lib/encode_abi`
+is still the natural next candidate once constants work), and the
 `bool`-as-result-type inconsistency between the two codegens (`E.8`).
