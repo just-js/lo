@@ -12,7 +12,6 @@
 
 #include "lo.h"
 #include "lo_abi.h"
-#include "lo_abi_v8_shim.h"
 
 #include <array>
 #include <atomic>
@@ -23,6 +22,23 @@
 using namespace v8;
 
 namespace {
+
+// The concrete definition behind the opaque lo_exports_t declared in
+// lo_abi.h — "an exports object under construction," backed by a real
+// V8 ObjectTemplate for this engine. Lives only as long as one
+// registration call (see GenericInit below) — never persisted past it.
+struct ExportsImpl {
+  Isolate* isolate;
+  Local<ObjectTemplate> tmpl;
+};
+
+inline Isolate* AsIsolate(lo_engine_t* engine) {
+  return reinterpret_cast<Isolate*>(engine);
+}
+
+inline ExportsImpl* AsExports(lo_exports_t* exports) {
+  return reinterpret_cast<ExportsImpl*>(exports);
+}
 
 // Three-tier dispatch, chosen per descriptor at *registration* time, not
 // branched on per call. Two real, measured costs drove this (see
@@ -360,6 +376,61 @@ CFunction* BuildFastCFunction(int slot, const lo_fn_desc_t* desc) {
   return &*g_fast_cfunc[slot];
 }
 
+// ---------------------------------------------------------------------
+// Per-binding registration. lo.cc/main.h's existing `_register_<name>()
+// -> void*` convention (lo::Library reinterpret_casts the result
+// straight to InitializerCallback and calls it with a real Isolate*/
+// Local<ObjectTemplate>) has no way to close over extra context -- a
+// plain function pointer, not a capturing lambda -- so *some* concrete
+// Isolate*/Local<ObjectTemplate>-taking function has to exist per
+// binding somewhere.
+//
+// The first version of this put that function directly in each
+// binding's own generated .cc (a small header-based macro,
+// LO_ABI_V8_BINDING) -- which genuinely worked, but broke the ABI's own
+// point in the process: v8::ObjectTemplate::New and lo::SET_MODULE
+// (itself v8::-typed) ended up compiled directly into the binding's own
+// object code, a real dependency the whole design exists to avoid (a
+// binding relinked against a different engine's backend would need that
+// code rewritten too). Caught via `nm -D`/`ldd` showing exactly those
+// undefined v8:: symbols in a binding's own .so.
+//
+// Fixed the same way the call dispatch above already solves "one
+// compiled function per runtime-determined slot": GenericInit<Slot>
+// below is instantiated kMaxBindings times, entirely within this file,
+// and lo_abi_v8_register_binding (extern "C", declared in lo_abi.h) is
+// the *only* symbol a binding's generated _register_<name>() ever calls
+// -- a fully portable signature (lo_register_fn, const char*) -> void*,
+// no v8:: type appears in it or at its call site, so the binding's own
+// .cc genuinely never touches v8::, not even indirectly.
+constexpr int kMaxBindings = 128;
+
+struct BindingInfo {
+  lo_register_fn register_fn;
+  const char* name;
+};
+BindingInfo g_bindings[kMaxBindings];
+std::atomic<int> g_next_binding{0};
+
+template<int Slot>
+void GenericInit(Isolate* isolate, Local<ObjectTemplate> target) {
+  const BindingInfo& info = g_bindings[Slot];
+  ExportsImpl impl{isolate, ObjectTemplate::New(isolate)};
+  lo_status_t rc = info.register_fn(
+    reinterpret_cast<lo_engine_t*>(isolate),
+    nullptr, // realm -- unused by this ABI's V8 backend
+    reinterpret_cast<lo_exports_t*>(&impl),
+    lo_abi_version());
+  if (rc != LO_OK) return;
+  lo::SET_MODULE(isolate, target, info.name, impl.tmpl);
+}
+
+template<int... Is>
+constexpr std::array<lo::InitializerCallback, sizeof...(Is)> MakeInitTable(std::integer_sequence<int, Is...>) {
+  return { &GenericInit<Is>... };
+}
+constexpr auto kInitTable = MakeInitTable(std::make_integer_sequence<int, kMaxBindings>{});
+
 } // namespace
 
 extern "C" {
@@ -446,13 +517,16 @@ lo_status_t lo_exports_set_string(lo_exports_t* exports, const char* name, const
   return LO_OK;
 }
 
-} // extern "C"
+// The only symbol a binding's own generated _register_<name>() calls
+// (see lib/gen.js's bindingsAbi()) -- see the "Per-binding registration"
+// comment above for why this exists and what it replaced. Fully
+// portable signature: no v8:: type appears here or at any binding's own
+// call site, only in this file's own GenericInit<Slot>/kInitTable.
+void* lo_abi_v8_register_binding(lo_register_fn fn, const char* name) {
+  int slot = g_next_binding.fetch_add(1);
+  if (slot >= kMaxBindings) return nullptr;
+  g_bindings[slot] = { fn, name };
+  return (void*)kInitTable[slot];
+}
 
-// No LO_ABI_V8_BINDING(...) here anymore -- lo_abi_v8.cc is the shared
-// dispatch engine, compiled fresh into every ABI-targeted binding's own
-// .so (see lib/build.js's compile_bindings). The registration shim itself
-// now lives in lo_abi_v8_shim.h, included and instantiated by each
-// binding's own generated .cc (lib/gen.js's bindingsAbi() emits
-// LO_ABI_V8_BINDING(<name>) automatically) -- not hand-added here per
-// binding, which didn't scale past the one prototype binding it was
-// written against.
+} // extern "C"

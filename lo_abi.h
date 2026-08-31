@@ -262,6 +262,29 @@ typedef lo_status_t (*lo_register_fn)(lo_engine_t*, lo_realm_t*, lo_exports_t*, 
   LO_REGISTER_LINKAGE LO_ABI_PUBLIC lo_status_t lo_register_##name( \
     lo_engine_t* engine, lo_realm_t* realm, lo_exports_t* exports, uint32_t abi_version)
 
+// Implemented once, in lo_abi_v8.cc, compiled only into the runtime
+// itself (not into any binding's own .a/.so — see lib/build.js's
+// compile_bindings) and resolved by a dynamically-loaded binding at
+// dlopen time (-rdynamic), same mechanism lo.h's SET_VALUE/
+// SET_FAST_METHOD/SET_MODULE already rely on. Fully portable signature —
+// no v8:: (or any engine-specific type) appears here, only inside
+// lo_abi_v8.cc's own GenericInit<Slot>/kInitTable — so a binding calling
+// this (via LO_ABI_V8_REGISTER below) genuinely never touches the
+// engine, not even indirectly. Returns an opaque `void*` matching what
+// `_register_<name>()` itself must return per today's `_register_<name>
+// () -> void*`/InitializerCallback convention (lo.h, main.h).
+LO_ABI_PUBLIC void* lo_abi_v8_register_binding(lo_register_fn fn, const char* name);
+
+// Helper for a binding's own generated .cc file (lib/gen.js's
+// bindingsAbi() emits this automatically) — the `_register_<name>()`
+// entry point `main.js`'s loader actually calls, wired to the portable
+// registration function above instead of a per-binding, engine-specific
+// Init function.
+#define LO_ABI_V8_REGISTER(name) \
+  LO_REGISTER_LINKAGE LO_ABI_PUBLIC void* _register_##name() { \
+    return lo_abi_v8_register_binding(lo_register_##name, #name); \
+  }
+
 // ---------------------------------------------------------------------
 // Memory wrapping (WORK.C.3). "Wrap (ptr, len) as a JS (Shared)ArrayBuffer,
 // optionally freeing it via a given deleter on collection" — one ABI
