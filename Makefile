@@ -23,7 +23,7 @@ ifeq ($(MUSL),1)
 endif
 OPT=-O3
 VERSION=0.0.34-pre
-V8_VERSION=15.3
+V8_VERSION=15.2
 RUNTIME=lo
 LO_HOME=$(shell pwd)
 BINDINGS=core.o inflate.a curl.o system.o
