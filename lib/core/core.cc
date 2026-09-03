@@ -865,15 +865,6 @@ CTypeInfo rcfree = CTypeInfo(CTypeInfo::Type::kVoid);
 CFunctionInfo infofree = CFunctionInfo(rcfree, 2, cargsfree);
 CFunction pFfree = CFunction((const void*)&freeFast, &infofree);
 
-void fastcallFast(void* p, uint64_t* p0);
-CTypeInfo cargsfastcall[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcfastcall = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infofastcall = CFunctionInfo(rcfastcall, 2, cargsfastcall);
-CFunction pFfastcall = CFunction((const void*)&fastcallFast, &infofastcall);
-
 void getenvFast(void* p, struct FastOneByteString* const p0, uint64_t* p_ret);
 CTypeInfo cargsgetenv[3] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
@@ -1125,24 +1116,6 @@ CTypeInfo rctimes = CTypeInfo(CTypeInfo::Type::kUint32);
 CFunctionInfo infotimes = CFunctionInfo(rctimes, 2, cargstimes);
 CFunction pFtimes = CFunction((const void*)&timesFast, &infotimes);
 
-void isolate_context_destroyFast(void* p, uint64_t* p0);
-CTypeInfo cargsisolate_context_destroy[2] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-  CTypeInfo(CTypeInfo::Type::kUint64),
-};
-CTypeInfo rcisolate_context_destroy = CTypeInfo(CTypeInfo::Type::kVoid);
-CFunctionInfo infoisolate_context_destroy = CFunctionInfo(rcisolate_context_destroy, 2, cargsisolate_context_destroy);
-CFunction pFisolate_context_destroy = CFunction((const void*)&isolate_context_destroyFast, &infoisolate_context_destroy);
-
-int32_t isolate_context_sizeFast(void* p);
-CTypeInfo cargsisolate_context_size[1] = {
-  CTypeInfo(CTypeInfo::Type::kV8Value),
-
-};
-CTypeInfo rcisolate_context_size = CTypeInfo(CTypeInfo::Type::kInt32);
-CFunctionInfo infoisolate_context_size = CFunctionInfo(rcisolate_context_size, 1, cargsisolate_context_size);
-CFunction pFisolate_context_size = CFunction((const void*)&isolate_context_sizeFast, &infoisolate_context_size);
-
 void memmemFast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t p3, uint64_t* p_ret);
 CTypeInfo cargsmemmem[6] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
@@ -1193,6 +1166,33 @@ CTypeInfo cargssync[1] = {
 CTypeInfo rcsync = CTypeInfo(CTypeInfo::Type::kVoid);
 CFunctionInfo infosync = CFunctionInfo(rcsync, 1, cargssync);
 CFunction pFsync = CFunction((const void*)&syncFast, &infosync);
+
+void fastcallFast(void* p, uint64_t* p0);
+CTypeInfo cargsfastcall[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+};
+CTypeInfo rcfastcall = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infofastcall = CFunctionInfo(rcfastcall, 2, cargsfastcall);
+CFunction pFfastcall = CFunction((const void*)&fastcallFast, &infofastcall);
+
+void isolate_context_destroyFast(void* p, uint64_t* p0);
+CTypeInfo cargsisolate_context_destroy[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+};
+CTypeInfo rcisolate_context_destroy = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infoisolate_context_destroy = CFunctionInfo(rcisolate_context_destroy, 2, cargsisolate_context_destroy);
+CFunction pFisolate_context_destroy = CFunction((const void*)&isolate_context_destroyFast, &infoisolate_context_destroy);
+
+int32_t isolate_context_sizeFast(void* p);
+CTypeInfo cargsisolate_context_size[1] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+
+};
+CTypeInfo rcisolate_context_size = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoisolate_context_size = CFunctionInfo(rcisolate_context_size, 1, cargsisolate_context_size);
+CFunction pFisolate_context_size = CFunction((const void*)&isolate_context_sizeFast, &infoisolate_context_size);
 
 #ifdef __linux__
 
@@ -2008,15 +2008,6 @@ void freeFast(void* p, uint64_t* p0) {
   void* v0 = reinterpret_cast<void*>(p0);
   free(v0);
 }
-void fastcallSlow(const FunctionCallbackInfo<Value> &args) {
-  struct fastcall* v0 = reinterpret_cast<struct fastcall*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
-  lo_fastcall(v0);
-}
-
-void fastcallFast(void* p, uint64_t* p0) {
-  struct fastcall* v0 = reinterpret_cast<struct fastcall*>(p0);
-  lo_fastcall(v0);
-}
 void getenvSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
@@ -2314,6 +2305,81 @@ uint32_t timesFast(void* p, uint64_t* p0) {
   struct tms* v0 = reinterpret_cast<struct tms*>(p0);
   return times(v0);
 }
+void memmemSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  void* v2 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
+  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  void* rc = memmem(v0, v1, v2, v3);
+  args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
+}
+
+void memmemFast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t p3, uint64_t* p_ret) {
+  void* v0 = reinterpret_cast<void*>(p0);
+  uint32_t v1 = p1;
+  void* v2 = reinterpret_cast<void*>(p2);
+  uint32_t v3 = p3;
+  void* r = memmem(v0, v1, v2, v3);
+
+  p_ret[0] = (uint64_t)r;
+}
+void strnlenSlow(const FunctionCallbackInfo<Value> &args) {
+  const char* v0 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  uint32_t rc = strnlen(v0, v1);
+  args.GetReturnValue().Set(rc);
+}
+
+uint32_t strnlenFast(void* p, uint64_t* p0, uint32_t p1) {
+  const char* v0 = reinterpret_cast<const char*>(p0);
+  uint32_t v1 = p1;
+  return strnlen(v0, v1);
+}
+void symlinkSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  String::Utf8Value v1(isolate, args[1]);
+  int32_t rc = symlink(*v0, *v1);
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t symlinkFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1) {
+  struct FastOneByteString* const v0 = p0;
+  struct FastOneByteString* const v1 = p1;
+  return symlink(v0->data, v1->data);
+}
+void strnlen_strSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  String::Utf8Value v0(isolate, args[0]);
+  uint32_t v1 = v0.length();
+  uint32_t rc = strnlen(*v0, v1);
+  args.GetReturnValue().Set(rc);
+}
+
+uint32_t strnlen_strFast(void* p, struct FastOneByteString* const p0) {
+  struct FastOneByteString* const v0 = p0;
+  uint32_t v1 = p0->length;
+  return strnlen(v0->data, v1);
+}
+void syncSlow(const FunctionCallbackInfo<Value> &args) {
+
+  sync();
+}
+
+void syncFast(void* p) {
+
+  sync();
+}
+void fastcallSlow(const FunctionCallbackInfo<Value> &args) {
+  struct fastcall* v0 = reinterpret_cast<struct fastcall*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  lo_fastcall(v0);
+}
+
+void fastcallFast(void* p, uint64_t* p0) {
+  struct fastcall* v0 = reinterpret_cast<struct fastcall*>(p0);
+  lo_fastcall(v0);
+}
 void isolate_createSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -2385,72 +2451,6 @@ void callbackSlow(const FunctionCallbackInfo<Value> &args) {
   lo_callback(v0);
 }
 
-void memmemSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  void* v0 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
-  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  void* v2 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[2])->Value());
-  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
-  void* rc = memmem(v0, v1, v2, v3);
-  args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<uint64_t>(rc)));
-}
-
-void memmemFast(void* p, uint64_t* p0, uint32_t p1, uint64_t* p2, uint32_t p3, uint64_t* p_ret) {
-  void* v0 = reinterpret_cast<void*>(p0);
-  uint32_t v1 = p1;
-  void* v2 = reinterpret_cast<void*>(p2);
-  uint32_t v3 = p3;
-  void* r = memmem(v0, v1, v2, v3);
-
-  p_ret[0] = (uint64_t)r;
-}
-void strnlenSlow(const FunctionCallbackInfo<Value> &args) {
-  const char* v0 = reinterpret_cast<const char*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
-  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
-  uint32_t rc = strnlen(v0, v1);
-  args.GetReturnValue().Set(rc);
-}
-
-uint32_t strnlenFast(void* p, uint64_t* p0, uint32_t p1) {
-  const char* v0 = reinterpret_cast<const char*>(p0);
-  uint32_t v1 = p1;
-  return strnlen(v0, v1);
-}
-void symlinkSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  String::Utf8Value v0(isolate, args[0]);
-  String::Utf8Value v1(isolate, args[1]);
-  int32_t rc = symlink(*v0, *v1);
-  args.GetReturnValue().Set(rc);
-}
-
-int32_t symlinkFast(void* p, struct FastOneByteString* const p0, struct FastOneByteString* const p1) {
-  struct FastOneByteString* const v0 = p0;
-  struct FastOneByteString* const v1 = p1;
-  return symlink(v0->data, v1->data);
-}
-void strnlen_strSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  String::Utf8Value v0(isolate, args[0]);
-  uint32_t v1 = v0.length();
-  uint32_t rc = strnlen(*v0, v1);
-  args.GetReturnValue().Set(rc);
-}
-
-uint32_t strnlen_strFast(void* p, struct FastOneByteString* const p0) {
-  struct FastOneByteString* const v0 = p0;
-  uint32_t v1 = p0->length;
-  return strnlen(v0->data, v1);
-}
-void syncSlow(const FunctionCallbackInfo<Value> &args) {
-
-  sync();
-}
-
-void syncFast(void* p) {
-
-  sync();
-}
 #ifdef __linux__
 
 void makedevSlow(const FunctionCallbackInfo<Value> &args) {
@@ -2724,9 +2724,6 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "realloc", &pFrealloc, reallocSlow);
   SET_FAST_METHOD(isolate, module, "aligned_alloc", &pFaligned_alloc, aligned_allocSlow);
   SET_FAST_METHOD(isolate, module, "free", &pFfree, freeSlow);
-  SET_METHOD(isolate, module, "bind_fastcall", bind_fastcallSlow);
-  SET_METHOD(isolate, module, "bind_slowcall", bind_slowcallSlow);
-  SET_FAST_METHOD(isolate, module, "fastcall", &pFfastcall, fastcallSlow);
   SET_FAST_METHOD(isolate, module, "getenv", &pFgetenv, getenvSlow);
   SET_FAST_METHOD(isolate, module, "setenv", &pFsetenv, setenvSlow);
   SET_FAST_METHOD(isolate, module, "unsetenv", &pFunsetenv, unsetenvSlow);
@@ -2753,17 +2750,20 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "sysconf", &pFsysconf, sysconfSlow);
   SET_FAST_METHOD(isolate, module, "getrusage", &pFgetrusage, getrusageSlow);
   SET_FAST_METHOD(isolate, module, "times", &pFtimes, timesSlow);
+  SET_FAST_METHOD(isolate, module, "memmem", &pFmemmem, memmemSlow);
+  SET_FAST_METHOD(isolate, module, "strnlen", &pFstrnlen, strnlenSlow);
+  SET_FAST_METHOD(isolate, module, "symlink", &pFsymlink, symlinkSlow);
+  SET_FAST_METHOD(isolate, module, "strnlen_str", &pFstrnlen_str, strnlen_strSlow);
+  SET_FAST_METHOD(isolate, module, "sync", &pFsync, syncSlow);
+  SET_METHOD(isolate, module, "bind_fastcall", bind_fastcallSlow);
+  SET_METHOD(isolate, module, "bind_slowcall", bind_slowcallSlow);
+  SET_FAST_METHOD(isolate, module, "fastcall", &pFfastcall, fastcallSlow);
   SET_METHOD(isolate, module, "isolate_create", isolate_createSlow);
   SET_METHOD(isolate, module, "isolate_context_create", isolate_context_createSlow);
   SET_FAST_METHOD(isolate, module, "isolate_context_destroy", &pFisolate_context_destroy, isolate_context_destroySlow);
   SET_FAST_METHOD(isolate, module, "isolate_context_size", &pFisolate_context_size, isolate_context_sizeSlow);
   SET_METHOD(isolate, module, "isolate_start", isolate_startSlow);
   SET_METHOD(isolate, module, "callback", callbackSlow);
-  SET_FAST_METHOD(isolate, module, "memmem", &pFmemmem, memmemSlow);
-  SET_FAST_METHOD(isolate, module, "strnlen", &pFstrnlen, strnlenSlow);
-  SET_FAST_METHOD(isolate, module, "symlink", &pFsymlink, symlinkSlow);
-  SET_FAST_METHOD(isolate, module, "strnlen_str", &pFstrnlen_str, strnlen_strSlow);
-  SET_FAST_METHOD(isolate, module, "sync", &pFsync, syncSlow);
 
 #ifdef __linux__
   SET_FAST_METHOD(isolate, module, "makedev", &pFmakedev, makedevSlow);
