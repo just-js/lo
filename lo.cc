@@ -1,6 +1,12 @@
 #include <map>
 #include "lo.h"
 
+#if !defined _WIN32 && !defined __CYGWIN__
+#include <signal.h>
+#include <stdlib.h>
+#include <string.h>
+#endif
+
 using v8::String;
 using v8::FunctionCallbackInfo;
 using v8::Array;
@@ -1532,8 +1538,28 @@ void lo::Setup(
     const char* v8flags,
     int v8_threads,
     int v8flags_from_commandline) {
+#if !defined _WIN32 && !defined __CYGWIN__
+  // block signals in this
+  // (main) thread before the V8 platform's worker thread pool gets
+  // created just below - Linux signal masks are per-thread and fixed at
+  // thread-creation time, so a JS-side sigprocmask() call (necessarily
+  // after Setup() returns and user code starts running) only ever covers
+  // the calling thread, never the pool threads NewDefaultPlatform spawns
+  // here. Blocking here first means every pool thread inherits the block
+  // (pthread_create inherits the creating thread's mask), so a blocked,
+  // signalfd-consumed signal can't land on an unblocked V8 thread and
+  // fall through to its default (terminating) disposition instead.
+  // Opt-in and unset by default - this must never change behavior for a
+  // target that doesn't ask for it.
+  sigset_t set;
+  sigemptyset(&set);
+  sigaddset(&set, SIGUSR1);
+  sigaddset(&set, SIGHUP);
+  sigaddset(&set, SIGTERM);
+  sigprocmask(SIG_BLOCK, &set, nullptr);
+#endif
   // create the v8 platform
-  platform = 
+  platform =
     v8::platform::NewDefaultPlatform(v8_threads, 
       v8::platform::IdleTaskSupport::kDisabled, 
       v8::platform::InProcessStackDumping::kDisabled, nullptr);
