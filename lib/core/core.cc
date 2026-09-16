@@ -68,6 +68,7 @@ using v8::HandleScope;
 using v8::BigInt;
 
 
+#include <optional>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -75,18 +76,21 @@ using v8::BigInt;
 #include <string.h>
 
 struct fastcall {
-  void* wrapper;      // 0-7   :   v8 fastcall wrapper function pointer
-  uint8_t result;     // 8     :   the type of the result
-  uint8_t nparam;     // 9     :   the number of args (max 255) 
-  uint8_t param[30];  // 10-39 :   an array of types of the arguments
-  uint64_t args[32];  // 40-295:   an array of pointer slots for arguments
-                      // these will be filled in dynamically by 
-                      // lo::core::SlowCallback for the slow call
-                      // and then the slowcall wrapper will shift them from
-                      // this structure into regs + stack and make the call
-                      // the first slot is reserved for the result
-  void* fn;           // 296-303:  the slowcall wrapper function pointer
+  void* wrapper;        // 0-7   :   v8 fastcall wrapper function pointer
+  uint8_t result;       // 8     :   the type of the result
+  uint8_t nparam;       // 9     :   the number of args (max 255) 
+  uint8_t param[30];    // 10-39 :   an array of types of the arguments
+  uint64_t args[32];    // 40-295:   an array of pointer slots for arguments
+                        // these will be filled in dynamically by 
+                        // lo::core::SlowCallback for the slow call
+                        // and then the slowcall wrapper will shift them from
+                        // this structure into regs + stack and make the call
+                        // the first slot is reserved for the result
+  void* fn;             // 296-303:  the slowcall wrapper function pointer
+  uint8_t has_receiver; // 304:  the slowcall wrapper function pointer
+  uint8_t empty[7];     // 305-311 :   an array of types of the arguments
 };
+
 
 typedef void (*lo_fast_call)(void*);
 
@@ -143,26 +147,17 @@ void lo_fastcall (struct fastcall* state) {
   ((lo_fast_call)state->fn)(&state->args);
 }
 
-void SlowCallback(const FunctionCallbackInfo<Value> &args) {
-  Isolate* isolate = args.GetIsolate();
-  HandleScope scope(isolate);
-#if LO_V8_INTERNAL_FIELD_TAG
-  struct fastcall* state = (struct fastcall*)args.Data()
-    .As<Object>()->GetAlignedPointerFromInternalField(1, v8::kEmbedderDataTypeTagDefault);
-#else
-  struct fastcall* state = (struct fastcall*)args.Data()
-    .As<Object>()->GetAlignedPointerFromInternalField(1);
-#endif
+void SlowCallbackGeneric(const FunctionCallbackInfo<Value> &args, struct fastcall* state) {
   int r = 1;
   int s = 0;
-  char* temp_strs[100];
+  std::optional<String::Utf8Value> utf8_strs[30];
   for (int i = 0; i < state->nparam; i++) {
     switch (state->param[i]) {
       case FastTypes::string:
         {
-          String::Utf8Value arg0(isolate, args[i]);
-          temp_strs[s] = strdup(*arg0);
-          state->args[r++] = (uint64_t)temp_strs[s++];
+          utf8_strs[s].emplace(args.GetIsolate(), args[i]);
+          state->args[r++] = (uint64_t)**utf8_strs[s];
+          s++;
         }
         break;
       case FastTypes::u32:
@@ -228,9 +223,6 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
     }
   }
   lo_fastcall(state);
-  for (int i = 0; i < s; i++) {
-    free(temp_strs[i]);
-  }
   switch (state->result) {
     case FastTypes::i32:
       args.GetReturnValue().Set((int32_t)state->args[0]);
@@ -244,13 +236,13 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
     case FastTypes::f32:
       {
         float* dst = (float*)&state->args[0];
-        args.GetReturnValue().Set(Number::New(isolate, *dst));
+        args.GetReturnValue().Set(Number::New(args.GetIsolate(), *dst));
       }
       break;
     case FastTypes::f64:
       {
         double* dst = (double*)&state->args[0];
-        args.GetReturnValue().Set(Number::New(isolate, *dst));
+        args.GetReturnValue().Set(Number::New(args.GetIsolate(), *dst));
       }
       break;
     case FastTypes::i64:
@@ -271,66 +263,137 @@ void SlowCallback(const FunctionCallbackInfo<Value> &args) {
   }
 }
 
-void bind_fastcallSlow(const FunctionCallbackInfo<Value> &args) {
+void SlowCallbackI32(const FunctionCallbackInfo<Value> &args, struct fastcall* state) {
+  lo_fastcall(state);
+  args.GetReturnValue().Set((int32_t)state->args[0]);
+}
+
+void SlowCallbackI32I32(const FunctionCallbackInfo<Value> &args, struct fastcall* state) {
+  state->args[1] = (int32_t)Local<Integer>::Cast(args[0])->Value();
+  lo_fastcall(state);
+  args.GetReturnValue().Set((int32_t)state->args[0]);
+}
+
+void SlowCallbackV(const FunctionCallbackInfo<Value> &args, struct fastcall* state) {
+  lo_fastcall(state);
+}
+
+void SlowCallbackVI32(const FunctionCallbackInfo<Value> &args, struct fastcall* state) {
+  state->args[1] = (int32_t)Local<Integer>::Cast(args[0])->Value();
+  lo_fastcall(state);
+}
+
+FunctionCallback make_stub(struct fastcall* state, void* target) {
+  // System V AMD64: movabs $state,%rsi ; movabs $SlowCallbackCommon,%rax ; jmp *%rax
+  uint8_t code[] = {
+    0x48, 0xBE,                                     // movabs $imm64, %rsi
+    0,0,0,0,0,0,0,0,                                // <state, patched below>
+    0x48, 0xB8,                                     // movabs $imm64, %rax
+    0,0,0,0,0,0,0,0,                                // <SlowCallbackCommon, patched below>
+    0xFF, 0xE0                                       // jmp *%rax
+  };
+  memcpy(code + 2,  &state, 8);
+  memcpy(code + 12, &target, 8);
+  size_t page = sysconf(_SC_PAGESIZE);
+  void* mem = mmap(nullptr, page, PROT_READ | PROT_WRITE,
+                    MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  memcpy(mem, code, sizeof(code));
+  mprotect(mem, page, PROT_READ | PROT_EXEC);   // W^X: write phase done, now exec-only
+  return reinterpret_cast<FunctionCallback>(mem);
+}
+
+void bindFunction(const FunctionCallbackInfo<Value> &args, bool fast = false) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
-  // TODO - does integer work?
   struct fastcall* state = reinterpret_cast<struct fastcall*>(
     Local<Integer>::Cast(args[0])->Value());
-  Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
-  tpl->SetInternalFieldCount(2);
-  Local<Object> data = tpl->NewInstance(context).ToLocalChecked();
-#if LO_V8_INTERNAL_FIELD_TAG
-  data->SetAlignedPointerInInternalField(1, state, v8::kEmbedderDataTypeTagDefault);
-#else
-  data->SetAlignedPointerInInternalField(1, state);
-#endif
-  uint8_t unwrap = needsunwrap((FastTypes)state->result);
-  int fastlen = state->nparam + 1 + unwrap;
-  CTypeInfo* cargs = (CTypeInfo*)calloc(fastlen, sizeof(CTypeInfo));
-  cargs[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
-  for (int i = 0; i < state->nparam; i++) {
-    uint8_t ptype = state->param[i];
-    cargs[i + 1] = *CTypeFromV8(ptype);
+  CFunction* fastCFunc;
+  if (fast) {
+    uint8_t unwrap = needsunwrap((FastTypes)state->result);
+    CFunctionInfo* info;
+    if (state->has_receiver == 1) {
+      int fastlen = state->nparam + 1 + unwrap;
+      CTypeInfo* cargs = (CTypeInfo*)calloc(fastlen, sizeof(CTypeInfo));
+      cargs[0] = CTypeInfo(CTypeInfo::Type::kV8Value);
+      for (int i = 0; i < state->nparam; i++) {
+        uint8_t ptype = state->param[i];
+        cargs[i + 1] = *CTypeFromV8(ptype);
+      }
+      CTypeInfo* rc;
+      if (unwrap) {
+        cargs[fastlen - 1] = *CTypeFromV8(FastTypes::u32array);
+        rc = CTypeFromV8(FastTypes::empty);
+      } else {
+        rc = CTypeFromV8((FastTypes)state->result);
+      }
+      info = new CFunctionInfo(*rc, fastlen, cargs, v8::CFunctionInfo::Int64Representation::kNumber, v8::CFunctionInfo::HasReceiver::kYes);
+    } else {
+      int fastlen = state->nparam + unwrap;
+      CTypeInfo* cargs = (CTypeInfo*)calloc(fastlen, sizeof(CTypeInfo));
+      for (int i = 0; i < state->nparam; i++) {
+        uint8_t ptype = state->param[i];
+        cargs[i] = *CTypeFromV8(ptype);
+      }
+      CTypeInfo* rc;
+      if (unwrap) {
+        cargs[fastlen - 1] = *CTypeFromV8(FastTypes::u32array);
+        rc = CTypeFromV8(FastTypes::empty);
+      } else {
+        rc = CTypeFromV8((FastTypes)state->result);
+      }
+      info = new CFunctionInfo(*rc, fastlen, cargs, v8::CFunctionInfo::Int64Representation::kNumber, v8::CFunctionInfo::HasReceiver::kNo);
+    }
+    fastCFunc = new CFunction(state->wrapper, info);
   }
-  CTypeInfo* rc;
-  if (unwrap) {
-    cargs[fastlen - 1] = *CTypeFromV8(FastTypes::u32array);
-    rc = CTypeFromV8(FastTypes::empty);
+  FunctionCallback f;
+  if (state->nparam == 0) {
+    if (state->result == lo::FastTypes::i32) {
+      f = make_stub(state, reinterpret_cast<void*>(&SlowCallbackI32));
+    } else if (state->result == lo::FastTypes::empty) {
+      f = make_stub(state, reinterpret_cast<void*>(&SlowCallbackV));
+    } else {
+      f = make_stub(state, reinterpret_cast<void*>(&SlowCallbackGeneric));
+    }
+  } else if (state->nparam == 1) {
+    if (state->result == lo::FastTypes::i32) {
+      f = make_stub(state, reinterpret_cast<void*>(&SlowCallbackI32I32));
+    } else if (state->result == lo::FastTypes::empty) {
+      f = make_stub(state, reinterpret_cast<void*>(&SlowCallbackVI32));
+    } else {
+      f = make_stub(state, reinterpret_cast<void*>(&SlowCallbackGeneric));
+    }
   } else {
-    rc = CTypeFromV8((FastTypes)state->result);
+    f = make_stub(state, reinterpret_cast<void*>(&SlowCallbackGeneric));
   }
-  CFunctionInfo* info = new CFunctionInfo(*rc, fastlen, cargs);
-  CFunction* fastCFunc = new CFunction(state->wrapper, info);
-  Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(isolate,
-    SlowCallback, data, Local<v8::Signature>(), 0, v8::ConstructorBehavior::kThrow,
-    v8::SideEffectType::kHasNoSideEffect, fastCFunc
-  );
+  Local<FunctionTemplate> funcTemplate;
+  if (fast) {
+    funcTemplate = FunctionTemplate::New(
+      isolate,
+      f,
+      Local<Value>(), 
+      Local<v8::Signature>(), 
+      0, 
+      v8::ConstructorBehavior::kThrow,
+      v8::SideEffectType::kHasNoSideEffect, 
+      fastCFunc
+    );
+  } else {
+    funcTemplate = FunctionTemplate::New(
+      isolate,
+      f
+    );
+  }
   Local<Function> fun =
     funcTemplate->GetFunction(context).ToLocalChecked();
   args.GetReturnValue().Set(fun);
 }
 
+void bind_fastcallSlow(const FunctionCallbackInfo<Value> &args) {
+  bindFunction(args, true);
+}
+
 void bind_slowcallSlow(const FunctionCallbackInfo<Value> &args) {
-  Isolate *isolate = args.GetIsolate();
-  Local<Context> context = isolate->GetCurrentContext();
-  struct fastcall* state = reinterpret_cast<struct fastcall*>(
-    Local<Integer>::Cast(args[0])->Value());
-  Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
-  tpl->SetInternalFieldCount(2);
-  Local<Object> data = tpl->NewInstance(context).ToLocalChecked();
-#if LO_V8_INTERNAL_FIELD_TAG
-  data->SetAlignedPointerInInternalField(1, state, v8::kEmbedderDataTypeTagDefault);
-#else
-  data->SetAlignedPointerInInternalField(1, state);
-#endif
-  Local<FunctionTemplate> funcTemplate = FunctionTemplate::New(isolate,
-    SlowCallback, data, Local<v8::Signature>(), 0, v8::ConstructorBehavior::kThrow,
-    v8::SideEffectType::kHasNoSideEffect, 0
-  );
-  Local<Function> fun =
-    funcTemplate->GetFunction(context).ToLocalChecked();
-  args.GetReturnValue().Set(fun);
+  bindFunction(args, false);
 }
 
 #ifdef __linux__
@@ -2827,6 +2890,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "EAGAIN", Integer::New(isolate, (int32_t)EAGAIN));
   SET_VALUE(isolate, module, "WNOHANG", Integer::New(isolate, (int32_t)WNOHANG));
   SET_VALUE(isolate, module, "SIGTERM", Integer::New(isolate, (int32_t)SIGTERM));
+  SET_VALUE(isolate, module, "SIGHUP", Integer::New(isolate, (int32_t)SIGHUP));
+  SET_VALUE(isolate, module, "SIGUSR1", Integer::New(isolate, (int32_t)SIGUSR1));
   SET_VALUE(isolate, module, "MAP_SHARED", Integer::New(isolate, (int32_t)MAP_SHARED));
   SET_VALUE(isolate, module, "MAP_ANONYMOUS", Integer::New(isolate, (int32_t)MAP_ANONYMOUS));
   SET_VALUE(isolate, module, "MAP_PRIVATE", Integer::New(isolate, (int32_t)MAP_PRIVATE));
