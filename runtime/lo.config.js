@@ -10,10 +10,12 @@ const bindings = [
   'pthread',
   'sqlite',
   'system',
+  { 'netlink': ['linux'] },
   { 'epoll': ['linux'] },
   { 'kevents': ['mac'] },
   { 'mach': ['mac'] },
-  'zlib'
+  'zlib',
+  'lz4',
 ]
 
 const libs = [
