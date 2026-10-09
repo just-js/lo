@@ -559,27 +559,40 @@ CTypeInfo rcclose = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infoclose = CFunctionInfo(rcclose, 2, cargsclose);
 CFunction pFclose = CFunction((const void*)&closeFast, &infoclose);
 
-int32_t preadFast(void* p, int32_t p0, uint64_t* p1, int32_t p2, uint32_t p3);
+int32_t preadFast(void* p, int32_t p0, uint64_t* p1, int32_t p2, int64_t p3);
 CTypeInfo cargspread[5] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kInt32),
   CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kInt64),
 };
 CTypeInfo rcpread = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infopread = CFunctionInfo(rcpread, 5, cargspread);
 CFunction pFpread = CFunction((const void*)&preadFast, &infopread);
 
-uint32_t lseekFast(void* p, int32_t p0, uint32_t p1, int32_t p2);
-CTypeInfo cargslseek[4] = {
+int32_t pwriteFast(void* p, int32_t p0, uint64_t* p1, int32_t p2, int64_t p3);
+CTypeInfo cargspwrite[5] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kInt32),
+  CTypeInfo(CTypeInfo::Type::kInt64),
 };
-CTypeInfo rclseek = CTypeInfo(CTypeInfo::Type::kUint32);
-CFunctionInfo infolseek = CFunctionInfo(rclseek, 4, cargslseek);
+CTypeInfo rcpwrite = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infopwrite = CFunctionInfo(rcpwrite, 5, cargspwrite);
+CFunction pFpwrite = CFunction((const void*)&pwriteFast, &infopwrite);
+
+void lseekFast(void* p, int32_t p0, int64_t p1, int32_t p2, uint64_t* p_ret);
+CTypeInfo cargslseek[5] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+  CTypeInfo(CTypeInfo::Type::kInt64),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+  CTypeInfo(CTypeInfo::Type::kUint64)
+};
+CTypeInfo rclseek = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infolseek = CFunctionInfo(rclseek, 5, cargslseek);
 CFunction pFlseek = CFunction((const void*)&lseekFast, &infolseek);
 
 int32_t fstatFast(void* p, int32_t p0, uint64_t* p1);
@@ -603,11 +616,11 @@ CTypeInfo rcfcntl = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infofcntl = CFunctionInfo(rcfcntl, 4, cargsfcntl);
 CFunction pFfcntl = CFunction((const void*)&fcntlFast, &infofcntl);
 
-int32_t ftruncateFast(void* p, int32_t p0, uint32_t p1);
+int32_t ftruncateFast(void* p, int32_t p0, int64_t p1);
 CTypeInfo cargsftruncate[3] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kInt32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kInt64),
 };
 CTypeInfo rcftruncate = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infoftruncate = CFunctionInfo(rcftruncate, 3, cargsftruncate);
@@ -1345,18 +1358,19 @@ CTypeInfo rcgetaffinity = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infogetaffinity = CFunctionInfo(rcgetaffinity, 4, cargsgetaffinity);
 CFunction pFgetaffinity = CFunction((const void*)&getaffinityFast, &infogetaffinity);
 
-uint32_t copy_file_rangeFast(void* p, int32_t p0, uint64_t* p1, int32_t p2, uint64_t* p3, uint32_t p4, uint32_t p5);
-CTypeInfo cargscopy_file_range[7] = {
+void copy_file_rangeFast(void* p, int32_t p0, uint64_t* p1, int32_t p2, uint64_t* p3, uint64_t p4, uint32_t p5, uint64_t* p_ret);
+CTypeInfo cargscopy_file_range[8] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kInt32),
   CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kInt32),
   CTypeInfo(CTypeInfo::Type::kUint64),
+  CTypeInfo(CTypeInfo::Type::kUint64),
   CTypeInfo(CTypeInfo::Type::kUint32),
-  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kUint64)
 };
-CTypeInfo rccopy_file_range = CTypeInfo(CTypeInfo::Type::kUint32);
-CFunctionInfo infocopy_file_range = CFunctionInfo(rccopy_file_range, 7, cargscopy_file_range);
+CTypeInfo rccopy_file_range = CTypeInfo(CTypeInfo::Type::kVoid);
+CFunctionInfo infocopy_file_range = CFunctionInfo(rccopy_file_range, 8, cargscopy_file_range);
 CFunction pFcopy_file_range = CFunction((const void*)&copy_file_rangeFast, &infocopy_file_range);
 
 int32_t memfd_createFast(void* p, struct FastOneByteString* const p0, uint32_t p1);
@@ -1594,31 +1608,50 @@ void preadSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
-  uint32_t v3 = Local<Integer>::Cast(args[3])->Value();
+  int64_t v3 = Local<Integer>::Cast(args[3])->Value();
   int32_t rc = pread(v0, v1, v2, v3);
   args.GetReturnValue().Set(rc);
 }
 
-int32_t preadFast(void* p, int32_t p0, uint64_t* p1, int32_t p2, uint32_t p3) {
+int32_t preadFast(void* p, int32_t p0, uint64_t* p1, int32_t p2, int64_t p3) {
   int32_t v0 = p0;
   void* v1 = reinterpret_cast<void*>(p1);
   int32_t v2 = p2;
-  uint32_t v3 = p3;
+  int64_t v3 = p3;
   return pread(v0, v1, v2, v3);
 }
-void lseekSlow(const FunctionCallbackInfo<Value> &args) {
+void pwriteSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  void* v1 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
-  uint32_t rc = lseek(v0, v1, v2);
+  int64_t v3 = Local<Integer>::Cast(args[3])->Value();
+  int32_t rc = pwrite(v0, v1, v2, v3);
   args.GetReturnValue().Set(rc);
 }
 
-uint32_t lseekFast(void* p, int32_t p0, uint32_t p1, int32_t p2) {
+int32_t pwriteFast(void* p, int32_t p0, uint64_t* p1, int32_t p2, int64_t p3) {
   int32_t v0 = p0;
-  uint32_t v1 = p1;
+  void* v1 = reinterpret_cast<void*>(p1);
   int32_t v2 = p2;
-  return lseek(v0, v1, v2);
+  int64_t v3 = p3;
+  return pwrite(v0, v1, v2, v3);
+}
+void lseekSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int64_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int64_t rc = lseek(v0, v1, v2);
+  args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<int64_t>(rc)));
+}
+
+void lseekFast(void* p, int32_t p0, int64_t p1, int32_t p2, uint64_t* p_ret) {
+  int32_t v0 = p0;
+  int64_t v1 = p1;
+  int32_t v2 = p2;
+  int64_t r = lseek(v0, v1, v2);
+
+  p_ret[0] = (uint64_t)r;
 }
 void fstatSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
@@ -1648,14 +1681,14 @@ int32_t fcntlFast(void* p, int32_t p0, int32_t p1, int32_t p2) {
 }
 void ftruncateSlow(const FunctionCallbackInfo<Value> &args) {
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
-  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int64_t v1 = Local<Integer>::Cast(args[1])->Value();
   int32_t rc = ftruncate(v0, v1);
   args.GetReturnValue().Set(rc);
 }
 
-int32_t ftruncateFast(void* p, int32_t p0, uint32_t p1) {
+int32_t ftruncateFast(void* p, int32_t p0, int64_t p1) {
   int32_t v0 = p0;
-  uint32_t v1 = p1;
+  int64_t v1 = p1;
   return ftruncate(v0, v1);
 }
 void mknodSlow(const FunctionCallbackInfo<Value> &args) {
@@ -2625,24 +2658,27 @@ int32_t getaffinityFast(void* p, int32_t p0, uint32_t p1, uint64_t* p2) {
   return sched_getaffinity(v0, v1, v2);
 }
 void copy_file_rangeSlow(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
   int32_t v0 = Local<Integer>::Cast(args[0])->Value();
   loff_t* v1 = reinterpret_cast<loff_t*>((uint64_t)Local<Integer>::Cast(args[1])->Value());
   int32_t v2 = Local<Integer>::Cast(args[2])->Value();
   loff_t* v3 = reinterpret_cast<loff_t*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
-  uint32_t v4 = Local<Integer>::Cast(args[4])->Value();
+  uint64_t v4 = Local<Integer>::Cast(args[4])->Value();
   uint32_t v5 = Local<Integer>::Cast(args[5])->Value();
-  uint32_t rc = copy_file_range(v0, v1, v2, v3, v4, v5);
-  args.GetReturnValue().Set(rc);
+  int64_t rc = copy_file_range(v0, v1, v2, v3, v4, v5);
+  args.GetReturnValue().Set(Number::New(isolate, reinterpret_cast<int64_t>(rc)));
 }
 
-uint32_t copy_file_rangeFast(void* p, int32_t p0, uint64_t* p1, int32_t p2, uint64_t* p3, uint32_t p4, uint32_t p5) {
+void copy_file_rangeFast(void* p, int32_t p0, uint64_t* p1, int32_t p2, uint64_t* p3, uint64_t p4, uint32_t p5, uint64_t* p_ret) {
   int32_t v0 = p0;
   loff_t* v1 = reinterpret_cast<loff_t*>(p1);
   int32_t v2 = p2;
   loff_t* v3 = reinterpret_cast<loff_t*>(p3);
-  uint32_t v4 = p4;
+  uint64_t v4 = p4;
   uint32_t v5 = p5;
-  return copy_file_range(v0, v1, v2, v3, v4, v5);
+  int64_t r = copy_file_range(v0, v1, v2, v3, v4, v5);
+
+  p_ret[0] = (uint64_t)r;
 }
 void memfd_createSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
@@ -2753,6 +2789,7 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "getchar", &pFgetchar, getcharSlow);
   SET_FAST_METHOD(isolate, module, "close", &pFclose, closeSlow);
   SET_FAST_METHOD(isolate, module, "pread", &pFpread, preadSlow);
+  SET_FAST_METHOD(isolate, module, "pwrite", &pFpwrite, pwriteSlow);
   SET_FAST_METHOD(isolate, module, "lseek", &pFlseek, lseekSlow);
   SET_FAST_METHOD(isolate, module, "fstat", &pFfstat, fstatSlow);
   SET_FAST_METHOD(isolate, module, "fcntl", &pFfcntl, fcntlSlow);
