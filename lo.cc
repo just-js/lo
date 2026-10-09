@@ -772,6 +772,16 @@ void lo::RegisterCallback(const FunctionCallbackInfo<Value>& args) {
 
 // TODO: UnregisterCallback
 
+// fulfillment handler for a module's evaluation promise: the namespace,
+// passed as the function's data
+static void ModuleNamespace(const FunctionCallbackInfo<Value> &args) {
+  args.GetReturnValue().Set(args.Data());
+}
+
+// Returns the module's namespace once the module has run: the namespace
+// itself if evaluation has already finished, or a promise of it while a
+// module with top-level await is still running. Throws the module's error
+// if evaluation failed, now or on an earlier import.
 void lo::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
@@ -779,33 +789,62 @@ void lo::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
 
   std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));
   Local<Module> module = (*module_map)[identity].Get(isolate);
-  if (module->GetStatus() >= 4) {
-    args.GetReturnValue().Set(module->GetModuleNamespace().As<Promise>());
+  Module::Status status = module->GetStatus();
+  // only reachable from the module's own synchronous evaluation (e.g. it
+  // imports itself); V8 CHECK-fails on Evaluate() in this state
+  if (status == Module::kInstantiating || status == Module::kEvaluating) {
+    isolate->ThrowException(Exception::Error(String::NewFromUtf8Literal(
+      isolate, "module is still being evaluated")));
     return;
   }
-  Maybe<bool> result = module->InstantiateModule(context, 
-    lo::OnModuleInstantiate);
-  if (result.IsNothing()) {
-    printf("\nCan't instantiate module.\n");
-    return;
+  if (status == Module::kUninstantiated) {
+    Maybe<bool> result = module->InstantiateModule(context,
+      lo::OnModuleInstantiate);
+    if (result.IsNothing()) {
+      printf("\nCan't instantiate module.\n");
+      return;
+    }
   }
-/*
-  if (module->GetStatus() >= 4) {
-    args.GetReturnValue().Set(module->GetModuleNamespace().As<Promise>());
-    return;
-  }
-*/
-  TryCatch try_catch(isolate);
+  // Evaluate() is fine on an evaluated or errored module too: it returns
+  // that evaluation's promise again
   Local<Value> retValue;
-  if (!module->Evaluate(context).ToLocal(&retValue)) {
-    printf("Error evaluating module!\n");
+  {
+    // scoped to Evaluate(): it would also swallow the ThrowException below
+    TryCatch try_catch(isolate);
+    if (!module->Evaluate(context).ToLocal(&retValue)) {
+      if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
+        try_catch.ReThrow();
+      }
+      return;
+    }
+  }
+  Local<Value> ns = module->GetModuleNamespace();
+  if (!retValue->IsPromise()) {
+    args.GetReturnValue().Set(ns);
     return;
   }
-  if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
-    try_catch.ReThrow();
-    return;
+  // with top-level await, the promise is pending until the module (and any
+  // async dependency) has finished running
+  Local<Promise> promise = retValue.As<Promise>();
+  switch (promise->State()) {
+    case Promise::kFulfilled:
+      args.GetReturnValue().Set(ns);
+      return;
+    case Promise::kRejected:
+      promise->MarkAsHandled();
+      isolate->ThrowException(promise->Result());
+      return;
+    case Promise::kPending: {
+      Local<Function> on_fulfilled;
+      Local<Promise> ready;
+      if (!Function::New(context, ModuleNamespace, ns).ToLocal(&on_fulfilled) ||
+          !promise->Then(context, on_fulfilled).ToLocal(&ready)) {
+        return;
+      }
+      args.GetReturnValue().Set(ready);
+      return;
+    }
   }
-  args.GetReturnValue().Set(module->GetModuleNamespace().As<Promise>());
 }
 
 // TODO: this is terribly slow

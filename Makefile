@@ -193,6 +193,7 @@ check: ## run the runtime sanity tests
 	./${RUNTIME} test/runtime.js
 	./${RUNTIME} test/dump.js
 	./${RUNTIME} test/fs.js
+	./${RUNTIME} test/import.js
 	./${RUNTIME} test/dump-binding.js core
 	./${RUNTIME} test/dump-binding.js inflate
 	./${RUNTIME} test/dump-binding.js curl

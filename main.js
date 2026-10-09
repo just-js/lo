@@ -231,30 +231,50 @@ async function load_source (specifier, resource) {
   return src
 }
 
-// async module loader
-async function on_module_load (specifier, resource) {
+// async module loader (import()). Concurrent imports of one specifier share
+// its in-flight load, so the module is compiled and run once. A failed load
+// is dropped from moduleLoads, so a later import retries a failed fetch;
+// a module whose code threw stays errored in V8 and rejects again.
+const moduleLoads = new Map()
+
+function on_module_load (specifier, resource) {
   if (!specifier) return
-  if (moduleCache.has(specifier)) {
-    const mod = moduleCache.get(specifier)
-    if (!mod.evaluated) {
-      mod.namespace = await evaluateModule(mod.identity)
-      mod.evaluated = true
-    }
-    return mod.namespace
+  let load = moduleLoads.get(specifier)
+  if (!load) {
+    load = load_and_evaluate(specifier, resource)
+    moduleLoads.set(specifier, load)
+    load.catch(() => moduleLoads.delete(specifier))
   }
-  // todo: allow overriding loadSource - return a promise
-  // todo: this should be async
-  const src = await load_source(specifier, resource)
-  const mod = loadModule(src, specifier)
-  mod.resource = resource
-  moduleCache.set(specifier, mod)
-  const { requests } = mod
-  for (const request of requests) {
-    const src = await load_source(request, resource)
-    const mod = loadModule(src, request)
-    moduleCache.set(request, mod)
+  return load
+}
+
+async function load_and_evaluate (specifier, resource) {
+  let mod = moduleCache.get(specifier)
+  if (!mod) {
+    // todo: allow overriding loadSource - return a promise
+    const src = await load_source(specifier, resource)
+    // a static import may have loaded it while we waited
+    mod = moduleCache.get(specifier)
+    if (!mod) {
+      mod = loadModule(src, specifier)
+      mod.resource = resource
+      moduleCache.set(specifier, mod)
+      for (const request of mod.requests) {
+        if (moduleCache.has(request)) continue
+        const src = await load_source(request, resource)
+        if (moduleCache.has(request)) continue
+        moduleCache.set(request, loadModule(src, request))
+      }
+    }
+  } else {
+    // a cached module may be mid-way through its own synchronous evaluation
+    // (it imported itself, or a module it statically imports did): that
+    // finishes before any microtask runs, so evaluate after one
+    await null
   }
   if (!mod.evaluated) {
+    // the namespace, or a promise of it while a module with top-level await
+    // is still running
     mod.namespace = await evaluateModule(mod.identity)
     mod.evaluated = true
   }
