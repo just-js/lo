@@ -40,6 +40,7 @@ V8_FLAGS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT
 LIB_DIRS=
 
 ifeq ($(OS),Windows_NT)
+	SHELL := cmd.exe
 	os=win
 else
 	UNAME_S := $(shell uname -s)
