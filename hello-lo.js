@@ -17,7 +17,10 @@ const {
 } = net
 const { sockaddr_in } = net.types
 const { Blocked } = Loop
-const { parse_request, decode_chunked } = pico
+const { parse_request } = pico
+// strict chunked decoding (RFC 9112 7.1): lib/chunked, built into the runtime
+const { chunked } = lo.load('chunked')
+const decode_chunked = chunked.decode
 
 function update_headers () {
   plaintext = `content-type: text/plain;charset=utf-8\r\nDate: ${(new Date()).toUTCString()}\r\n`
@@ -407,7 +410,6 @@ function process_buffer (fd, socket) {
       } else {
         socket.head = socket.dec = parsed
         socket.decoder.fill(0)
-        socket.decoder[CONSUME_TRAILER] = 1
         continue
       }
     }
@@ -442,7 +444,7 @@ function create_socket (fd) {
     buf, base: buf.ptr >>> 0, len: 0, fd, closing: false, head: 0, dec: 0,
     // write queue (allocated on first use): wq[wq_off..wq_off+wq_len)
     wq: null, wq_off: 0, wq_len: 0,
-    decoder: ptr(new Uint8Array(pico.struct_phr_chunked_decoder_size))
+    decoder: ptr(new Uint8Array(chunked.struct_chunked_decoder_size))
   }
 }
 
@@ -510,10 +512,8 @@ const path_len = ptr(new Uint32Array(2))
 const minor_version = ptr(new Uint32Array(1))
 const num_headers = ptr(new Uint32Array(2))
 const headers = ptr(new Uint32Array(8 * MAX_HEADERS))
-// phr_decode_chunked's in/out size_t
+// chunked.decode's in/out size_t
 const size = ptr(new Uint32Array(2))
-// struct phr_chunked_decoder: size_t bytes_left_in_chunk, char consume_trailer
-const CONSUME_TRAILER = 8
 const bytes = s => new Uint8Array([...s].map(c => c.charCodeAt(0)))
 const CONTENT_LENGTH = bytes('content-length')
 const TRANSFER_ENCODING = bytes('transfer-encoding')
