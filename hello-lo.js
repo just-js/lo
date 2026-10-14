@@ -13,7 +13,7 @@ const {
 } = net
 const {
   SOCK_STREAM, AF_INET, SOMAXCONN, SO_REUSEPORT, SOL_SOCKET, SOCKADDR_LEN,
-  SHUT_WR
+  SHUT_WR, MSG_NOSIGNAL
 } = net
 const { sockaddr_in } = net.types
 const { Blocked } = Loop
@@ -288,13 +288,59 @@ function respond (socket, body_off, body_len, out) {
   return out + utf8EncodeIntoAtOffset(`${head_string(HELLO.length)}${HELLO}`, wbuf.ptr, out)
 }
 
-// send what's queued, then shut down our side; the read handler discards
-// input until the peer closes
+// send wbuf[0..out). what the kernel doesn't take (partial write or
+// EAGAIN) is copied to the socket's write queue, and the socket switches
+// to EPOLLOUT only: it stops reading until the queue drains
+// (backpressure). returns true when everything was sent; false when
+// queued, or when the socket was closed on a send error
+function flush (fd, socket, out) {
+  let n = send(fd, wbuf.ptr, out, MSG_NOSIGNAL)
+  if (n === out) return true
+  if (n < 0) {
+    if (lo.errno !== Blocked) {
+      close_socket(fd)
+      return false
+    }
+    n = 0
+  }
+  const rest = out - n
+  if (socket.wq === null) socket.wq = ptr(new Uint8Array(WBUFSIZE))
+  memcpy(socket.wq.ptr, wbuf.ptr + n, rest)
+  socket.wq_off = 0
+  socket.wq_len = rest
+  loop.modify(fd, on_socket_writable, Loop.Writable, close_socket)
+  return false
+}
+
+// EPOLLOUT while the write queue holds data: send more of it. once it's
+// empty, shut down if the connection was finishing, else go back to
+// reading, after answering the requests still in the buffer
+function on_socket_writable (fd) {
+  const socket = sockets.get(fd)
+  const n = send(fd, socket.wq.ptr + socket.wq_off, socket.wq_len, MSG_NOSIGNAL)
+  if (n < 0) {
+    if (lo.errno !== Blocked) close_socket(fd)
+    return
+  }
+  socket.wq_off += n
+  socket.wq_len -= n
+  if (socket.wq_len > 0) return
+  loop.modify(fd, on_socket_event, Loop.Readable, close_socket)
+  if (socket.closing) {
+    shutdown(fd, SHUT_WR)
+    return
+  }
+  if (socket.len > 0) process_buffer(fd, socket)
+}
+
+// stop reading requests, send what's queued, then shut down our side (once
+// the write queue has drained, if it had to queue); the read handler
+// discards input until the peer closes
 function finish (fd, socket, out) {
-  if (out > 0) send(fd, wbuf.ptr, out, 0)
-  shutdown(fd, SHUT_WR)
   socket.closing = true
   socket.len = 0
+  if (out > 0 && !flush(fd, socket, out)) return
+  shutdown(fd, SHUT_WR)
 }
 
 // queue an error response after anything already queued and finish
@@ -302,80 +348,88 @@ function fail (fd, socket, response, out) {
   finish(fd, socket, out + utf8EncodeIntoAtOffset(response, wbuf.ptr, out))
 }
 
-// every request in this read is answered into wbuf and sent with one send()
-// (like Bun's cork). unparsed bytes stay in the socket's buffer for the next
-// read, so a request split across reads, or pipelined, is handled. a
-// Content-Length body is waited for by parsing the head again on the next
-// read; a chunked body is decoded in place as it arrives (socket.head is
-// the head's length, socket.dec the decoded end, both from the request
-// start). after a response that closes the connection nothing more is
-// read (RFC 9112 9.6)
-function on_socket_event (fd) {
-  const socket = sockets.get(fd)
+// answer the requests in buf[0..socket.len): every response goes into
+// wbuf and is sent with one send() (like Bun's cork). unparsed bytes stay
+// in the buffer for the next read, so a request split across reads, or
+// pipelined, is handled. a Content-Length body is waited for by parsing
+// the head again on the next read; a chunked body is decoded in place as
+// it arrives (socket.head is the head's length, socket.dec the decoded
+// end, both from the request start). after a response that closes the
+// connection nothing more is read (RFC 9112 9.6). if a send can't complete,
+// processing stops with the remaining requests kept in the buffer, and
+// on_socket_writable resumes it
+function process_buffer (fd, socket) {
   const { buf } = socket
-  const bytes = recv(fd, buf.ptr + socket.len, BUFSIZE - socket.len, 0)
-  if (bytes > 0) {
-    if (socket.closing) return
-    let len = socket.len += bytes
-    let off = 0
-    let out = 0
-    while (off < len) {
-      if (socket.head > 0) {
-        // chunked body in progress
-        const dec_off = off + socket.dec
-        size[0] = len - dec_off
-        const rc = decode_chunked(socket.decoder.ptr, buf.ptr + dec_off, size.ptr)
-        if (rc === -1) return fail(fd, socket, BAD_REQUEST, out)
-        socket.dec += size[0]
-        if (rc === -2) {
-          len = off + socket.dec
-          if (len - off === BUFSIZE) return fail(fd, socket, TOO_LARGE, out)
-          break
-        }
-        // done: the rc bytes after the body were moved to follow it. parse
-        // the head again: other sockets have used the shared arrays since
-        const head = socket.head
-        const end = off + socket.dec
-        len = end + rc
-        socket.head = 0
-        parse_head(buf, off, off + head)
-        read_head(buf, socket.base)
-        out = respond(socket, off + head, socket.dec - head, out)
-        off = end
-      } else {
-        const parsed = parse_head(buf, off, len)
-        if (parsed === -2) {
-          if (method_too_long(buf, off, len)) return fail(fd, socket, BAD_REQUEST, out)
-          if (len - off === BUFSIZE) return fail(fd, socket, HEAD_TOO_LARGE, out)
-          break
-        }
-        if (parsed < 0) return fail(fd, socket, BAD_REQUEST, out)
-        const error = read_head(buf, socket.base)
-        if (error !== null) return fail(fd, socket, error, out)
-        if (framing === FRAME_NONE) {
-          out = respond(socket, 0, 0, out)
-          off += parsed
-        } else if (framing === FRAME_LENGTH) {
-          if (parsed + content_length > BUFSIZE) return fail(fd, socket, TOO_LARGE, out)
-          if (len - off < parsed + content_length) break
-          out = respond(socket, off + parsed, content_length, out)
-          off += parsed + content_length
-        } else {
-          socket.head = socket.dec = parsed
-          socket.decoder.fill(0)
-          socket.decoder[CONSUME_TRAILER] = 1
-          continue
-        }
+  let len = socket.len
+  let off = 0
+  let out = 0
+  while (off < len) {
+    if (socket.head > 0) {
+      // chunked body in progress
+      const dec_off = off + socket.dec
+      size[0] = len - dec_off
+      const rc = decode_chunked(socket.decoder.ptr, buf.ptr + dec_off, size.ptr)
+      if (rc === -1) return fail(fd, socket, BAD_REQUEST, out)
+      socket.dec += size[0]
+      if (rc === -2) {
+        len = off + socket.dec
+        if (len - off === BUFSIZE) return fail(fd, socket, TOO_LARGE, out)
+        break
       }
-      if (!keep_alive) return finish(fd, socket, out)
-      if (out > WBUF_FLUSH) {
-        send(fd, wbuf.ptr, out, 0)
-        out = 0
+      // done: the rc bytes after the body were moved to follow it. parse
+      // the head again: other sockets have used the shared arrays since
+      const head = socket.head
+      const end = off + socket.dec
+      len = end + rc
+      socket.head = 0
+      parse_head(buf, off, off + head)
+      read_head(buf, socket.base)
+      out = respond(socket, off + head, socket.dec - head, out)
+      off = end
+    } else {
+      const parsed = parse_head(buf, off, len)
+      if (parsed === -2) {
+        if (method_too_long(buf, off, len)) return fail(fd, socket, BAD_REQUEST, out)
+        if (len - off === BUFSIZE) return fail(fd, socket, HEAD_TOO_LARGE, out)
+        break
+      }
+      if (parsed < 0) return fail(fd, socket, BAD_REQUEST, out)
+      const error = read_head(buf, socket.base)
+      if (error !== null) return fail(fd, socket, error, out)
+      if (framing === FRAME_NONE) {
+        out = respond(socket, 0, 0, out)
+        off += parsed
+      } else if (framing === FRAME_LENGTH) {
+        if (parsed + content_length > BUFSIZE) return fail(fd, socket, TOO_LARGE, out)
+        if (len - off < parsed + content_length) break
+        out = respond(socket, off + parsed, content_length, out)
+        off += parsed + content_length
+      } else {
+        socket.head = socket.dec = parsed
+        socket.decoder.fill(0)
+        socket.decoder[CONSUME_TRAILER] = 1
+        continue
       }
     }
-    if (out > 0) send(fd, wbuf.ptr, out, 0)
-    if (off > 0 && off < len) memmove(buf.ptr, buf.ptr + off, len - off)
-    socket.len = len - off
+    if (!keep_alive) return finish(fd, socket, out)
+    if (out > WBUF_FLUSH) {
+      const sent = flush(fd, socket, out)
+      out = 0
+      if (!sent) break
+    }
+  }
+  if (off > 0 && off < len) memmove(buf.ptr, buf.ptr + off, len - off)
+  socket.len = len - off
+  if (out > 0) flush(fd, socket, out)
+}
+
+function on_socket_event (fd) {
+  const socket = sockets.get(fd)
+  const bytes = recv(fd, socket.buf.ptr + socket.len, BUFSIZE - socket.len, 0)
+  if (bytes > 0) {
+    if (socket.closing) return
+    socket.len += bytes
+    process_buffer(fd, socket)
     return
   }
   if (bytes < 0 && lo.errno === Blocked) return
@@ -386,6 +440,8 @@ function create_socket (fd) {
   const buf = ptr(new Uint8Array(BUFSIZE))
   return {
     buf, base: buf.ptr >>> 0, len: 0, fd, closing: false, head: 0, dec: 0,
+    // write queue (allocated on first use): wq[wq_off..wq_off+wq_len)
+    wq: null, wq_off: 0, wq_len: 0,
     decoder: ptr(new Uint8Array(pico.struct_phr_chunked_decoder_size))
   }
 }
@@ -436,7 +492,8 @@ const sockets = new Map()
 // one request (head + body) must fit: larger gets 413 (431 for a head)
 const BUFSIZE = 65536
 // responses for one read go here; flushed early past WBUF_FLUSH, so the
-// headroom above it must fit the largest single response
+// headroom above it must fit the largest single response. a socket's write
+// queue is the same size: it holds at most one flush
 const WBUFSIZE = 4 * BUFSIZE
 const WBUF_FLUSH = 2 * BUFSIZE
 const wbuf = ptr(new Uint8Array(WBUFSIZE))
