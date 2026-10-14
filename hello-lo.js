@@ -27,8 +27,36 @@ function update_headers () {
 }
 
 function on_timer () {
+  now++
   stats.log()
   update_headers()
+  sweep()
+}
+
+// once a second: enforce the timeouts (seconds, so each fires up to 1 s
+// late). per connection, in order:
+// - closing (our side shut down): close once the peer hasn't closed its
+//   side within CLOSE_TIMEOUT, or the write queue hasn't drained within
+//   WRITE_TIMEOUT
+// - write queue stalled (peer not reading): close after WRITE_TIMEOUT
+// - a request in progress (head or body): 408 if it isn't complete
+//   REQUEST_TIMEOUT after its first byte, however slowly bytes keep
+//   arriving (slowloris)
+// - idle keep-alive: close after IDLE_TIMEOUT without a request
+function sweep () {
+  for (const [fd, socket] of sockets) {
+    if (socket.fd === 0) continue
+    if (socket.closing) {
+      if (socket.wq_len > 0 ? now - socket.wq_since >= WRITE_TIMEOUT
+        : now - socket.closing_since >= CLOSE_TIMEOUT) close_socket(fd)
+    } else if (socket.wq_len > 0) {
+      if (now - socket.wq_since >= WRITE_TIMEOUT) close_socket(fd)
+    } else if (socket.len > 0 || socket.head > 0) {
+      if (now - socket.req_start >= REQUEST_TIMEOUT) fail(fd, socket, REQUEST_TIMED_OUT, 0)
+    } else if (now - socket.last >= IDLE_TIMEOUT) {
+      close_socket(fd)
+    }
+  }
 }
 
 function status_line (status = 200, message = 'OK') {
@@ -38,6 +66,9 @@ function status_line (status = 200, message = 'OK') {
 function close_socket (fd) {
   if (!sockets.has(fd)) return
   const socket = sockets.get(fd)
+  // closed already: the entry stays in the map until the fd is reused, and
+  // the fd number may belong to a new connection by now
+  if (socket.fd === 0) return
   if (fd > 0) {
     loop.remove(fd)
     close(fd)
@@ -311,6 +342,7 @@ function flush (fd, socket, out) {
   memcpy(socket.wq.ptr, wbuf.ptr + n, rest)
   socket.wq_off = 0
   socket.wq_len = rest
+  socket.wq_since = now
   loop.modify(fd, on_socket_writable, Loop.Writable, close_socket)
   return false
 }
@@ -331,6 +363,7 @@ function on_socket_writable (fd) {
   loop.modify(fd, on_socket_event, Loop.Readable, close_socket)
   if (socket.closing) {
     shutdown(fd, SHUT_WR)
+    socket.closing_since = now
     return
   }
   if (socket.len > 0) process_buffer(fd, socket)
@@ -344,6 +377,7 @@ function finish (fd, socket, out) {
   socket.len = 0
   if (out > 0 && !flush(fd, socket, out)) return
   shutdown(fd, SHUT_WR)
+  socket.closing_since = now
 }
 
 // queue an error response after anything already queued and finish
@@ -396,7 +430,8 @@ function process_buffer (fd, socket) {
         if (len - off === BUFSIZE) return fail(fd, socket, HEAD_TOO_LARGE, out)
         break
       }
-      if (parsed < 0) return fail(fd, socket, BAD_REQUEST, out)
+      // pico stops with num_headers === MAX_HEADERS when it runs out of slots
+      if (parsed < 0) return fail(fd, socket, num_headers[0] === MAX_HEADERS ? HEAD_TOO_LARGE : BAD_REQUEST, out)
       const error = read_head(buf, socket.base)
       if (error !== null) return fail(fd, socket, error, out)
       if (framing === FRAME_NONE) {
@@ -420,7 +455,10 @@ function process_buffer (fd, socket) {
       if (!sent) break
     }
   }
-  if (off > 0 && off < len) memmove(buf.ptr, buf.ptr + off, len - off)
+  if (off > 0) {
+    if (off < len) memmove(buf.ptr, buf.ptr + off, len - off)
+    socket.req_start = now
+  }
   socket.len = len - off
   if (out > 0) flush(fd, socket, out)
 }
@@ -430,6 +468,8 @@ function on_socket_event (fd) {
   const bytes = recv(fd, socket.buf.ptr + socket.len, BUFSIZE - socket.len, 0)
   if (bytes > 0) {
     if (socket.closing) return
+    socket.last = now
+    if (socket.len === 0 && socket.head === 0) socket.req_start = now
     socket.len += bytes
     process_buffer(fd, socket)
     return
@@ -444,6 +484,9 @@ function create_socket (fd) {
     buf, base: buf.ptr >>> 0, len: 0, fd, closing: false, head: 0, dec: 0,
     // write queue (allocated on first use): wq[wq_off..wq_off+wq_len)
     wq: null, wq_off: 0, wq_len: 0,
+    // timeouts (seconds of `now`): last read, first byte of the request
+    // in progress, write queue stalled since, closing wait started
+    last: now, req_start: now, wq_since: 0, closing_since: 0,
     decoder: ptr(new Uint8Array(chunked.struct_chunked_decoder_size))
   }
 }
@@ -499,7 +542,8 @@ const BUFSIZE = 65536
 const WBUFSIZE = 4 * BUFSIZE
 const WBUF_FLUSH = 2 * BUFSIZE
 const wbuf = ptr(new Uint8Array(WBUFSIZE))
-const MAX_HEADERS = 64
+// more headers than this: 431
+const MAX_HEADERS = 128
 // longest method accepted, so a request line that is all method fails early
 const MAX_METHOD = 32
 // phr_parse_request outputs: pointers and size_t are 64 bit (two u32s);
@@ -551,6 +595,14 @@ const KEEP_ALIVE_HEADER = 'Connection: keep-alive\r\n'
 const BAD_REQUEST = 'HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n'
 const TOO_LARGE = 'HTTP/1.1 413 Content Too Large\r\nConnection: close\r\nContent-Length: 0\r\n\r\n'
 const HEAD_TOO_LARGE = 'HTTP/1.1 431 Request Header Fields Too Large\r\nConnection: close\r\nContent-Length: 0\r\n\r\n'
+const REQUEST_TIMED_OUT = 'HTTP/1.1 408 Request Timeout\r\nConnection: close\r\nContent-Length: 0\r\n\r\n'
+// timeouts in seconds, from the environment (tests use short ones)
+const IDLE_TIMEOUT = parseInt(getenv('HTTP_IDLE_TIMEOUT') || '10', 10)
+const REQUEST_TIMEOUT = parseInt(getenv('HTTP_REQUEST_TIMEOUT') || '10', 10)
+const WRITE_TIMEOUT = parseInt(getenv('HTTP_WRITE_TIMEOUT') || '30', 10)
+const CLOSE_TIMEOUT = parseInt(getenv('HTTP_CLOSE_TIMEOUT') || '5', 10)
+// coarse clock for the timeouts: seconds, advanced by on_timer
+let now = 0
 const NOT_IMPLEMENTED = 'HTTP/1.1 501 Not Implemented\r\nConnection: close\r\nContent-Length: 0\r\n\r\n'
 const loop = new Loop()
 let plaintext =
