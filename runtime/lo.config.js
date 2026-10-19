@@ -14,8 +14,7 @@ const bindings = [
   { 'epoll': ['linux'] },
   { 'kevents': ['mac'] },
   { 'mach': ['mac'] },
-  'zlib',
-  'lz4',
+  'zlib'
 ]
 
 const libs = [
