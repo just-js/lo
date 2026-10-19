@@ -6,7 +6,10 @@ rem V8_COMPRESS_POINTERS must match repos/v8's own v8_enable_pointer_compression
 rem (all 6 args.*.gn platform files) or V8::Initialize() hard-aborts with
 rem "Embedder-vs-V8 build configuration mismatch" (real CI failure, run
 rem 32610257944).
-set V8_OPTS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS -DV8_COMPRESS_POINTERS
+rem V8_CPPGC_MICROTASK_QUEUE must match repos/v8 v8_cppgc_microtask_queue
+rem (gni/v8.gni default true, not overridden in args.*.gn); V8 15.4 headers
+rem #error without it (v8-microtask-queue.h).
+set V8_OPTS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS -DV8_COMPRESS_POINTERS -DV8_CPPGC_MICROTASK_QUEUE
 rem libc++'s __config_site deliberately doesn't set this - its own
 rem comment says so: "_LIBCPP_HARDENING_MODE_DEFAULT is not defined
 rem here. Instead, we define _LIBCPP_HARDENING_MODE in

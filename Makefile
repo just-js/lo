@@ -36,7 +36,10 @@ LIBS=-ldl -lcurl -lssl -lz
 # "Embedder-vs-V8 build configuration mismatch" (real CI failure, run
 # 32610257944) - api.cc's build_config compatibility check compares this
 # embedder-side define against what libv8_monolith.a was actually built with.
-V8_FLAGS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS -DV8_COMPRESS_POINTERS
+# V8_CPPGC_MICROTASK_QUEUE must match repos/v8 v8_cppgc_microtask_queue
+# (gni/v8.gni default true, not overridden in args.*.gn); V8 15.4 headers
+# #error without it (v8-microtask-queue.h).
+V8_FLAGS=-DV8_TYPED_ARRAY_MAX_SIZE_IN_HEAP=64 -DV8_ALLOCATION_FOLDING -DV8_SHORT_BUILTIN_CALLS -DV8_COMPRESS_POINTERS -DV8_CPPGC_MICROTASK_QUEUE
 LIB_DIRS=
 
 ifeq ($(OS),Windows_NT)
