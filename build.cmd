@@ -1,5 +1,5 @@
 @echo off
-set VERSION=0.0.34-pre
+set VERSION=0.0.35-pre
 set V8=15.4
 set RUNTIME=lo
 rem V8_COMPRESS_POINTERS must match repos/v8's own v8_enable_pointer_compression
