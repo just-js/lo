@@ -3,8 +3,8 @@
 //   sema-tsc [-p <tsconfig.json or dir>] [--checkers <n> | --singleThreaded | --threads <n>] [--lib <dir>]
 //            [--diagnostics] [--timing] [--json]
 //
-// TypeScript 7.0.2's lib.*.d.ts files are built in, as in `bun check`; --lib (or SEMA_TS_LIB) reads another set from
-// a directory. Prints the diagnostics like `tsc --pretty false` and exits 1 when there are errors. --json prints the
+// TypeScript 7.0.2's lib.*.d.ts files are built in, as in `bun check`; lib files embedded in the runtime replace them
+// (runtime/sema-custom.config.js); --lib (or SEMA_TS_LIB) reads another set from a directory. Prints the diagnostics like `tsc --pretty false` and exits 1 when there are errors. --json prints the
 // raw report. For benchmarks next to tsc/tsgo/tsrs (repos/tsrs-bench), it takes their command line: --noEmit,
 // --incremental <v> and --pretty <v> are accepted and ignored (it never emits, and prints plain output), --checkers
 // <n> and --singleThreaded set the thread count (default: one per core it may run on), and --diagnostics prints
@@ -45,8 +45,35 @@ for (let i = 0; i < argv.length; i++) {
 if (!project) usage('-p needs a value')
 if (!Number.isInteger(threads) || threads < 0) usage('--threads/--checkers needs a whole number')
 
+// lib.*.d.ts files embedded in the runtime (a config's `embeds`, e.g. runtime/sema-custom.config.js) replace the
+// built-in set: only they then exist for the checker. Registered with sema.set_libs, which borrows: the texts are the
+// embedded bytes themselves (lo.builtin(path, false), no copy), the names C strings kept in `registered` for the
+// life of the process. --lib (a directory) still takes precedence.
+const registered = []
+const embedded_libs = lo.builtins().filter(path => /(^|\/)lib\.[^/]+\.d\.ts$/.test(path))
+if (embedded_libs.length && !lib_dir) {
+  const count = embedded_libs.length
+  const names = new BigUint64Array(count)
+  const texts = new BigUint64Array(count)
+  const lens = new BigUint64Array(count)
+  embedded_libs.forEach((path, i) => {
+    const name = cstr(path.slice(path.lastIndexOf('/') + 1))
+    const text = ptr(new Uint8Array(lo.builtin(path, false)))
+    registered.push(name, text)
+    names[i] = BigInt(name.ptr)
+    texts[i] = BigInt(text.ptr)
+    lens[i] = BigInt(text.length)
+  })
+  const status = sema.set_libs(ptr(new Uint8Array(names.buffer)).ptr, ptr(new Uint8Array(texts.buffer)).ptr,
+    ptr(new Uint8Array(lens.buffer)).ptr, count)
+  if (status !== 0) {
+    console.error(`sema-tsc: registering the ${count} embedded lib files failed (${status})`)
+    lo.exit(2)
+  }
+}
+
 const project_c = cstr(project)
-// No --lib: a null pointer, which selects the built-in libs.
+// No --lib: a null pointer, which selects the registered (embedded) libs, else the built-in ones.
 const lib_c = lib_dir ? cstr(lib_dir) : null
 const len = ptr(new Uint8Array(8))
 

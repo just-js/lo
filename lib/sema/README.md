@@ -17,10 +17,17 @@ sema.free(report)                       // bun_sema_free, never libc free()
 
 `runtime/sema-tsc.js` is a full example: a tsc-compatible command line.
 
+Lib files: `sema.set_libs(names, texts, lens, count)` (arrays of addresses, before
+the first check) replaces the built-in TypeScript lib files for the rest of the
+process, borrowing the texts. Files embedded in a custom runtime are ideal:
+`lo.builtin('lib.es2022.d.ts', false)` returns the embedded bytes without a copy.
+`sema.builtin_lib(name, len)` returns a built-in file's text (free it with
+`sema.free`).
+
 ## Building
 
 `build.js` makes `ts_sema.o` (the library linked into one relocatable object,
-with only `bun_sema_check`/`bun_sema_free` left global) and `ts_sema.h`. The
+with only the C ABI's four `bun_sema_*` functions left global) and `ts_sema.h`. The
 archive comes from:
 
 - `TS_SEMA_A=<path>/libts_sema.a`: a local ts-sema build (its `dist/`, which
