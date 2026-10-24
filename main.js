@@ -328,7 +328,10 @@ function on_unhandled_rejection (err) {
 
 const builtin_cache = new Map()
 
-function on_load_builtin (identifier) {
+function on_load_builtin (identifier, is_source = true) {
+  if (!is_source) {
+    return builtin(identifier, true);
+  }
   if (builtin_cache.has(identifier)) return builtin_cache.get(identifier)
   // todo: use the actual index.js specified for the compiled runtime if we are in a compiled runtime
   if (identifier === 'worker_source.js') {
