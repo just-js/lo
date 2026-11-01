@@ -1,4 +1,7 @@
 #include <map>
+#include <memory>
+#include <optional>
+#include <vector>
 #include "lo.h"
 
 #if !defined _WIN32 && !defined __CYGWIN__
@@ -68,6 +71,10 @@ using v8::kPromiseHandlerAddedAfterReject;
 using v8::Script;
 using v8::HeapStatistics;
 using v8::BigUint64Array;
+using v8::ValueSerializer;
+using v8::ValueDeserializer;
+using v8::SharedValueConveyor;
+using v8::Just;
 
 #ifdef _WIN32
 static uint64_t hrtime_frequency_ = 0;
@@ -204,8 +211,14 @@ void lo::FreeMemory(void* buf, size_t length, void* data) {
 // memory and never free it? how do we ensure all memory created by an isolate
 // is free when the isolate is destroyed?
 void cleanupIsolate (Isolate* isolate) {
-  isolate->ContextDisposedNotification();
-  isolate->ClearKeptObjects();
+  {
+    // the isolate must be entered on this thread: ContextDisposedNotification
+    // flushes queued Maglev jobs, and touching their functions goes through
+    // Isolate::Current() (the dispatch table). Dispose() below needs it exited
+    Isolate::Scope isolate_scope(isolate);
+    isolate->ContextDisposedNotification();
+    isolate->ClearKeptObjects();
+  }
   // drop the platform's per-isolate foreground task runner (and any tasks
   // still queued on it), as d8 does before every Dispose()
   v8::platform::NotifyIsolateShutdown(platform.get(), isolate);
@@ -1254,6 +1267,115 @@ void lo::UnWrapMemory(const FunctionCallbackInfo<Value> &args) {
   // todo: return pointer here so we don't need to get it before
 }
 
+// a serialized value, owned by native code so it can be handed to another
+// isolate by address. like d8's SerializationData: the bytes, plus whatever
+// must stay alive until the receiver has deserialized it
+struct lo_message {
+  uint8_t* data = nullptr;
+  size_t size = 0;
+  std::vector<std::shared_ptr<BackingStore>> shared_array_buffers;
+  std::optional<SharedValueConveyor> conveyor;
+};
+
+class MessageSerializer : public ValueSerializer::Delegate {
+ public:
+  MessageSerializer(Isolate* isolate, lo_message* message)
+    : isolate_(isolate), message_(message) {}
+
+  void ThrowDataCloneError(Local<String> message) override {
+    isolate_->ThrowException(Exception::Error(message));
+  }
+
+  Maybe<uint32_t> GetSharedArrayBufferId(Isolate* isolate,
+    Local<SharedArrayBuffer> sab) override {
+    std::shared_ptr<BackingStore> store = sab->GetBackingStore();
+    auto& stores = message_->shared_array_buffers;
+    for (size_t i = 0; i < stores.size(); i++) {
+      if (stores[i] == store) return Just<uint32_t>(i);
+    }
+    stores.push_back(store);
+    return Just<uint32_t>(stores.size() - 1);
+  }
+
+  bool AdoptSharedValueConveyor(Isolate* isolate,
+    SharedValueConveyor&& conveyor) override {
+    message_->conveyor.emplace(std::move(conveyor));
+    return true;
+  }
+
+ private:
+  Isolate* isolate_;
+  lo_message* message_;
+};
+
+class MessageDeserializer : public ValueDeserializer::Delegate {
+ public:
+  explicit MessageDeserializer(lo_message* message) : message_(message) {}
+
+  MaybeLocal<SharedArrayBuffer> GetSharedArrayBufferFromId(Isolate* isolate,
+    uint32_t id) override {
+    if (id >= message_->shared_array_buffers.size()) return {};
+    return SharedArrayBuffer::New(isolate, message_->shared_array_buffers[id]);
+  }
+
+  const SharedValueConveyor* GetSharedValueConveyor(Isolate* isolate) override {
+    return message_->conveyor ? &*message_->conveyor : nullptr;
+  }
+
+ private:
+  lo_message* message_;
+};
+
+// lo.serialize(value) -> address of a native message
+void lo::Serialize(const FunctionCallbackInfo<Value> &args) {
+  Isolate* isolate = args.GetIsolate();
+  Local<Context> context = isolate->GetCurrentContext();
+  lo_message* message = new lo_message();
+  MessageSerializer delegate(isolate, message);
+  ValueSerializer serializer(isolate, &delegate);
+  serializer.WriteHeader();
+  if (serializer.WriteValue(context, args[0]).IsNothing()) {
+    delete message;
+    return;
+  }
+  std::pair<uint8_t*, size_t> buf = serializer.Release();
+  message->data = buf.first;
+  message->size = buf.second;
+  args.GetReturnValue().Set(Number::New(isolate, (double)(uint64_t)message));
+}
+
+// lo.deserialize(address) -> value. the message stays valid until freed
+void lo::Deserialize(const FunctionCallbackInfo<Value> &args) {
+  Isolate* isolate = args.GetIsolate();
+  Local<Context> context = isolate->GetCurrentContext();
+  lo_message* message = reinterpret_cast<lo_message*>(
+    (uint64_t)Local<Number>::Cast(args[0])->Value());
+  MessageDeserializer delegate(message);
+  ValueDeserializer deserializer(isolate, message->data, message->size,
+    &delegate);
+  if (deserializer.ReadHeader(context).IsNothing()) return;
+  Local<Value> value;
+  if (deserializer.ReadValue(context).ToLocal(&value)) {
+    args.GetReturnValue().Set(value);
+  }
+}
+
+// lo.free_message(address)
+void lo::FreeMessage(const FunctionCallbackInfo<Value> &args) {
+  lo_message* message = reinterpret_cast<lo_message*>(
+    (uint64_t)Local<Number>::Cast(args[0])->Value());
+  free(message->data);
+  delete message;
+}
+
+// lo.message_size(address) -> size of the serialized bytes
+void lo::MessageSize(const FunctionCallbackInfo<Value> &args) {
+  lo_message* message = reinterpret_cast<lo_message*>(
+    (uint64_t)Local<Number>::Cast(args[0])->Value());
+  args.GetReturnValue().Set(Number::New(args.GetIsolate(),
+    (double)message->size));
+}
+
 void lo::SetFlags(const FunctionCallbackInfo<Value> &args) {
   String::Utf8Value flags(args.GetIsolate(), args[0]);
   //V8::SetFlagsFromString(*flags, static_cast<size_t>(flags.length()));
@@ -1669,6 +1791,10 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "wrapMemory", WrapMemory);
   SET_METHOD(isolate, target, "wrapMemoryShared", WrapMemoryShared);
   SET_METHOD(isolate, target, "unwrapMemory", UnWrapMemory);
+  SET_METHOD(isolate, target, "serialize", Serialize);
+  SET_METHOD(isolate, target, "deserialize", Deserialize);
+  SET_METHOD(isolate, target, "free_message", FreeMessage);
+  SET_METHOD(isolate, target, "message_size", MessageSize);
 
   // 50% throughput
   SET_METHOD(isolate, target, "getAddress", GetAddress);

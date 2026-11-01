@@ -231,6 +231,13 @@ void WrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
 void WrapMemoryShared(const v8::FunctionCallbackInfo<v8::Value> &args);
 void UnWrapMemory(const v8::FunctionCallbackInfo<v8::Value> &args);
 
+// messages between isolates: structured clone, plus shared structs/arrays
+// (--harmony-struct) and SharedArrayBuffers shared by reference
+void Serialize(const v8::FunctionCallbackInfo<v8::Value> &args);
+void Deserialize(const v8::FunctionCallbackInfo<v8::Value> &args);
+void FreeMessage(const v8::FunctionCallbackInfo<v8::Value> &args);
+void MessageSize(const v8::FunctionCallbackInfo<v8::Value> &args);
+
 void GetMeta(const v8::FunctionCallbackInfo<v8::Value> &args);
 void HeapUsage(const v8::FunctionCallbackInfo<v8::Value> &args);
 void SharedMemoryUsage(const v8::FunctionCallbackInfo<v8::Value> &args);
