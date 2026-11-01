@@ -62,7 +62,7 @@
 #     doesn't get built from source in the default config.
 
 TC := /root/demo/alpine-toolchain/root
-NODE_DIR := /root/demo/node-v22.19.0-linux-x64-musl
+NODE_DIR := /root/demo/node
 ALPINE_PKG := /root/cloned/claude/alpine-pkg.sh
 LO := /root/lo
 
