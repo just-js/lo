@@ -43,3 +43,16 @@ this will test building core modules and runtimes is working as expected
 ```shell
 lo test/build.js
 ```
+
+## isolates.js
+
+this spawns isolates one after another in a tight loop (lib/worker.js, one
+thread per isolate) and fails if RSS keeps growing per isolate after a
+warm-up. it takes ~45 seconds with the defaults. set ISOLATES_WARMUP,
+ISOLATES_COUNT, ISOLATES_SAMPLE and ISOLATES_MAX_SLOPE (bytes per isolate)
+to change them
+
+```shell
+lo test/isolates.js
+make check-isolates
+```

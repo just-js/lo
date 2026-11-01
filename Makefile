@@ -204,6 +204,9 @@ check: ## run the runtime sanity tests
 check-build: ## test building works
 	LO_HOME=${LO_HOME} ./${RUNTIME} test/build.js
 
+check-isolates: ## check isolate create/teardown does not leak (~45 s)
+	./${RUNTIME} test/isolates.js
+
 docs:
 	rm -fr docs
 	curl -L -o docs.tar.gz https://github.com/just-js/docs/archive/$(VERSION).tar.gz
