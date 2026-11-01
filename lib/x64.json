@@ -1,0 +1,5522 @@
+{
+  "read": {
+    "name": "read",
+    "syscall_nr": 0,
+    "args": [
+      "u32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "write": {
+    "name": "write",
+    "syscall_nr": 1,
+    "args": [
+      "u32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "open": {
+    "name": "open",
+    "syscall_nr": 2,
+    "args": [
+      "string",
+      "i32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "close": {
+    "name": "close",
+    "syscall_nr": 3,
+    "args": [
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "stat": {
+    "name": "stat",
+    "syscall_nr": 4,
+    "args": [
+      "string",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fstat": {
+    "name": "fstat",
+    "syscall_nr": 5,
+    "args": [
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "lstat": {
+    "name": "lstat",
+    "syscall_nr": 6,
+    "args": [
+      "string",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "poll": {
+    "name": "poll",
+    "syscall_nr": 7,
+    "args": [
+      "pointer",
+      "u32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "lseek": {
+    "name": "lseek",
+    "syscall_nr": 8,
+    "args": [
+      "u32",
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mprotect": {
+    "name": "mprotect",
+    "syscall_nr": 10,
+    "args": [
+      "u64",
+      "u32",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "munmap": {
+    "name": "munmap",
+    "syscall_nr": 11,
+    "args": [
+      "u64",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "brk": {
+    "name": "brk",
+    "syscall_nr": 12,
+    "args": [
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "rt_sigaction": {
+    "name": "rt_sigaction",
+    "syscall_nr": 13,
+    "args": [
+      "i32",
+      "pointer",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "rt_sigprocmask": {
+    "name": "rt_sigprocmask",
+    "syscall_nr": 14,
+    "args": [
+      "i32",
+      "pointer",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "ioctl": {
+    "name": "ioctl",
+    "syscall_nr": 16,
+    "args": [
+      "u32",
+      "u32",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "pread64": {
+    "name": "pread64",
+    "syscall_nr": 17,
+    "args": [
+      "u32",
+      "pointer",
+      "u32",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "pwrite64": {
+    "name": "pwrite64",
+    "syscall_nr": 18,
+    "args": [
+      "u32",
+      "pointer",
+      "u32",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "readv": {
+    "name": "readv",
+    "syscall_nr": 19,
+    "args": [
+      "u64",
+      "pointer",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "writev": {
+    "name": "writev",
+    "syscall_nr": 20,
+    "args": [
+      "u64",
+      "pointer",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "access": {
+    "name": "access",
+    "syscall_nr": 21,
+    "args": [
+      "string",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "pipe": {
+    "name": "pipe",
+    "syscall_nr": 22,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "select": {
+    "name": "select",
+    "syscall_nr": 23,
+    "args": [
+      "i32",
+      "pointer",
+      "pointer",
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sched_yield": {
+    "name": "sched_yield",
+    "syscall_nr": 24,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mremap": {
+    "name": "mremap",
+    "syscall_nr": 25,
+    "args": [
+      "u64",
+      "u64",
+      "u64",
+      "u64",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "msync": {
+    "name": "msync",
+    "syscall_nr": 26,
+    "args": [
+      "u64",
+      "u32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mincore": {
+    "name": "mincore",
+    "syscall_nr": 27,
+    "args": [
+      "u64",
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "madvise": {
+    "name": "madvise",
+    "syscall_nr": 28,
+    "args": [
+      "u64",
+      "u32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "shmget": {
+    "name": "shmget",
+    "syscall_nr": 29,
+    "args": [
+      "i32",
+      "u32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "shmat": {
+    "name": "shmat",
+    "syscall_nr": 30,
+    "args": [
+      "i32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "shmctl": {
+    "name": "shmctl",
+    "syscall_nr": 31,
+    "args": [
+      "i32",
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "dup": {
+    "name": "dup",
+    "syscall_nr": 32,
+    "args": [
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "dup2": {
+    "name": "dup2",
+    "syscall_nr": 33,
+    "args": [
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "pause": {
+    "name": "pause",
+    "syscall_nr": 34,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "nanosleep": {
+    "name": "nanosleep",
+    "syscall_nr": 35,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getitimer": {
+    "name": "getitimer",
+    "syscall_nr": 36,
+    "args": [
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "alarm": {
+    "name": "alarm",
+    "syscall_nr": 37,
+    "args": [
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setitimer": {
+    "name": "setitimer",
+    "syscall_nr": 38,
+    "args": [
+      "i32",
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getpid": {
+    "name": "getpid",
+    "syscall_nr": 39,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sendfile": {
+    "name": "sendfile",
+    "syscall_nr": 40,
+    "args": [
+      "i32",
+      "i32",
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "socket": {
+    "name": "socket",
+    "syscall_nr": 41,
+    "args": [
+      "i32",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "connect": {
+    "name": "connect",
+    "syscall_nr": 42,
+    "args": [
+      "i32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "accept": {
+    "name": "accept",
+    "syscall_nr": 43,
+    "args": [
+      "i32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sendto": {
+    "name": "sendto",
+    "syscall_nr": 44,
+    "args": [
+      "i32",
+      "pointer",
+      "u32",
+      "u32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "recvfrom": {
+    "name": "recvfrom",
+    "syscall_nr": 45,
+    "args": [
+      "i32",
+      "pointer",
+      "u32",
+      "u32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sendmsg": {
+    "name": "sendmsg",
+    "syscall_nr": 46,
+    "args": [
+      "i32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "recvmsg": {
+    "name": "recvmsg",
+    "syscall_nr": 47,
+    "args": [
+      "i32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "shutdown": {
+    "name": "shutdown",
+    "syscall_nr": 48,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "bind": {
+    "name": "bind",
+    "syscall_nr": 49,
+    "args": [
+      "i32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "listen": {
+    "name": "listen",
+    "syscall_nr": 50,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getsockname": {
+    "name": "getsockname",
+    "syscall_nr": 51,
+    "args": [
+      "i32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getpeername": {
+    "name": "getpeername",
+    "syscall_nr": 52,
+    "args": [
+      "i32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "socketpair": {
+    "name": "socketpair",
+    "syscall_nr": 53,
+    "args": [
+      "i32",
+      "i32",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setsockopt": {
+    "name": "setsockopt",
+    "syscall_nr": 54,
+    "args": [
+      "i32",
+      "i32",
+      "i32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getsockopt": {
+    "name": "getsockopt",
+    "syscall_nr": 55,
+    "args": [
+      "i32",
+      "i32",
+      "i32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "clone": {
+    "name": "clone",
+    "syscall_nr": 56,
+    "args": [
+      "u64",
+      "u64",
+      "i32",
+      "i32",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fork": {
+    "name": "fork",
+    "syscall_nr": 57,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "vfork": {
+    "name": "vfork",
+    "syscall_nr": 58,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "execve": {
+    "name": "execve",
+    "syscall_nr": 59,
+    "args": [
+      "string",
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "exit": {
+    "name": "exit",
+    "syscall_nr": 60,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "wait4": {
+    "name": "wait4",
+    "syscall_nr": 61,
+    "args": [
+      "i32",
+      "i32",
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "kill": {
+    "name": "kill",
+    "syscall_nr": 62,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "uname": {
+    "name": "uname",
+    "syscall_nr": 63,
+    "args": [
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "semget": {
+    "name": "semget",
+    "syscall_nr": 64,
+    "args": [
+      "i32",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "semop": {
+    "name": "semop",
+    "syscall_nr": 65,
+    "args": [
+      "i32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "semctl": {
+    "name": "semctl",
+    "syscall_nr": 66,
+    "args": [
+      "i32",
+      "i32",
+      "i32",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "shmdt": {
+    "name": "shmdt",
+    "syscall_nr": 67,
+    "args": [
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "msgget": {
+    "name": "msgget",
+    "syscall_nr": 68,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "msgsnd": {
+    "name": "msgsnd",
+    "syscall_nr": 69,
+    "args": [
+      "i32",
+      "pointer",
+      "u32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "msgrcv": {
+    "name": "msgrcv",
+    "syscall_nr": 70,
+    "args": [
+      "i32",
+      "pointer",
+      "u32",
+      "i64",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "msgctl": {
+    "name": "msgctl",
+    "syscall_nr": 71,
+    "args": [
+      "i32",
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fcntl": {
+    "name": "fcntl",
+    "syscall_nr": 72,
+    "args": [
+      "u32",
+      "u32",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "flock": {
+    "name": "flock",
+    "syscall_nr": 73,
+    "args": [
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fsync": {
+    "name": "fsync",
+    "syscall_nr": 74,
+    "args": [
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fdatasync": {
+    "name": "fdatasync",
+    "syscall_nr": 75,
+    "args": [
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "truncate": {
+    "name": "truncate",
+    "syscall_nr": 76,
+    "args": [
+      "pointer",
+      "i64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "ftruncate": {
+    "name": "ftruncate",
+    "syscall_nr": 77,
+    "args": [
+      "u32",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getdents": {
+    "name": "getdents",
+    "syscall_nr": 78,
+    "args": [
+      "u32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getcwd": {
+    "name": "getcwd",
+    "syscall_nr": 79,
+    "args": [
+      "pointer",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "chdir": {
+    "name": "chdir",
+    "syscall_nr": 80,
+    "args": [
+      "string"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fchdir": {
+    "name": "fchdir",
+    "syscall_nr": 81,
+    "args": [
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "rename": {
+    "name": "rename",
+    "syscall_nr": 82,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mkdir": {
+    "name": "mkdir",
+    "syscall_nr": 83,
+    "args": [
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "rmdir": {
+    "name": "rmdir",
+    "syscall_nr": 84,
+    "args": [
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "creat": {
+    "name": "creat",
+    "syscall_nr": 85,
+    "args": [
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "link": {
+    "name": "link",
+    "syscall_nr": 86,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "unlink": {
+    "name": "unlink",
+    "syscall_nr": 87,
+    "args": [
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "symlink": {
+    "name": "symlink",
+    "syscall_nr": 88,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "readlink": {
+    "name": "readlink",
+    "syscall_nr": 89,
+    "args": [
+      "pointer",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "chmod": {
+    "name": "chmod",
+    "syscall_nr": 90,
+    "args": [
+      "string",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fchmod": {
+    "name": "fchmod",
+    "syscall_nr": 91,
+    "args": [
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "chown": {
+    "name": "chown",
+    "syscall_nr": 92,
+    "args": [
+      "string",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fchown": {
+    "name": "fchown",
+    "syscall_nr": 93,
+    "args": [
+      "u32",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "lchown": {
+    "name": "lchown",
+    "syscall_nr": 94,
+    "args": [
+      "string",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "umask": {
+    "name": "umask",
+    "syscall_nr": 95,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "gettimeofday": {
+    "name": "gettimeofday",
+    "syscall_nr": 96,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getrlimit": {
+    "name": "getrlimit",
+    "syscall_nr": 97,
+    "args": [
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getrusage": {
+    "name": "getrusage",
+    "syscall_nr": 98,
+    "args": [
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sysinfo": {
+    "name": "sysinfo",
+    "syscall_nr": 99,
+    "args": [
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "times": {
+    "name": "times",
+    "syscall_nr": 100,
+    "args": [
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "ptrace": {
+    "name": "ptrace",
+    "syscall_nr": 101,
+    "args": [
+      "i64",
+      "i64",
+      "u64",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getuid": {
+    "name": "getuid",
+    "syscall_nr": 102,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "syslog": {
+    "name": "syslog",
+    "syscall_nr": 103,
+    "args": [
+      "i32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getgid": {
+    "name": "getgid",
+    "syscall_nr": 104,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setuid": {
+    "name": "setuid",
+    "syscall_nr": 105,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setgid": {
+    "name": "setgid",
+    "syscall_nr": 106,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "geteuid": {
+    "name": "geteuid",
+    "syscall_nr": 107,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getegid": {
+    "name": "getegid",
+    "syscall_nr": 108,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setpgid": {
+    "name": "setpgid",
+    "syscall_nr": 109,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getppid": {
+    "name": "getppid",
+    "syscall_nr": 110,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getpgrp": {
+    "name": "getpgrp",
+    "syscall_nr": 111,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setsid": {
+    "name": "setsid",
+    "syscall_nr": 112,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setreuid": {
+    "name": "setreuid",
+    "syscall_nr": 113,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setregid": {
+    "name": "setregid",
+    "syscall_nr": 114,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getgroups": {
+    "name": "getgroups",
+    "syscall_nr": 115,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setgroups": {
+    "name": "setgroups",
+    "syscall_nr": 116,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setresuid": {
+    "name": "setresuid",
+    "syscall_nr": 117,
+    "args": [
+      "i32",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getresuid": {
+    "name": "getresuid",
+    "syscall_nr": 118,
+    "args": [
+      "i32",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setresgid": {
+    "name": "setresgid",
+    "syscall_nr": 119,
+    "args": [
+      "i32",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getresgid": {
+    "name": "getresgid",
+    "syscall_nr": 120,
+    "args": [
+      "i32",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getpgid": {
+    "name": "getpgid",
+    "syscall_nr": 121,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setfsuid": {
+    "name": "setfsuid",
+    "syscall_nr": 122,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setfsgid": {
+    "name": "setfsgid",
+    "syscall_nr": 123,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getsid": {
+    "name": "getsid",
+    "syscall_nr": 124,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "capget": {
+    "name": "capget",
+    "syscall_nr": 125,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "capset": {
+    "name": "capset",
+    "syscall_nr": 126,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "rt_sigpending": {
+    "name": "rt_sigpending",
+    "syscall_nr": 127,
+    "args": [
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "rt_sigtimedwait": {
+    "name": "rt_sigtimedwait",
+    "syscall_nr": 128,
+    "args": [
+      "pointer",
+      "pointer",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "rt_sigqueueinfo": {
+    "name": "rt_sigqueueinfo",
+    "syscall_nr": 129,
+    "args": [
+      "i32",
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "rt_sigsuspend": {
+    "name": "rt_sigsuspend",
+    "syscall_nr": 130,
+    "args": [
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sigaltstack": {
+    "name": "sigaltstack",
+    "syscall_nr": 131,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "utime": {
+    "name": "utime",
+    "syscall_nr": 132,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mknod": {
+    "name": "mknod",
+    "syscall_nr": 133,
+    "args": [
+      "string",
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "uselib": {
+    "name": "uselib",
+    "syscall_nr": 134,
+    "args": [
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "personality": {
+    "name": "personality",
+    "syscall_nr": 135,
+    "args": [
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "ustat": {
+    "name": "ustat",
+    "syscall_nr": 136,
+    "args": [
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "statfs": {
+    "name": "statfs",
+    "syscall_nr": 137,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fstatfs": {
+    "name": "fstatfs",
+    "syscall_nr": 138,
+    "args": [
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sysfs": {
+    "name": "sysfs",
+    "syscall_nr": 139,
+    "args": [
+      "i32",
+      "u64",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getpriority": {
+    "name": "getpriority",
+    "syscall_nr": 140,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setpriority": {
+    "name": "setpriority",
+    "syscall_nr": 141,
+    "args": [
+      "i32",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sched_setparam": {
+    "name": "sched_setparam",
+    "syscall_nr": 142,
+    "args": [
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sched_getparam": {
+    "name": "sched_getparam",
+    "syscall_nr": 143,
+    "args": [
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sched_setscheduler": {
+    "name": "sched_setscheduler",
+    "syscall_nr": 144,
+    "args": [
+      "i32",
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sched_getscheduler": {
+    "name": "sched_getscheduler",
+    "syscall_nr": 145,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sched_get_priority_max": {
+    "name": "sched_get_priority_max",
+    "syscall_nr": 146,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sched_get_priority_min": {
+    "name": "sched_get_priority_min",
+    "syscall_nr": 147,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sched_rr_get_interval": {
+    "name": "sched_rr_get_interval",
+    "syscall_nr": 148,
+    "args": [
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mlock": {
+    "name": "mlock",
+    "syscall_nr": 149,
+    "args": [
+      "u64",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "munlock": {
+    "name": "munlock",
+    "syscall_nr": 150,
+    "args": [
+      "u64",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mlockall": {
+    "name": "mlockall",
+    "syscall_nr": 151,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "munlockall": {
+    "name": "munlockall",
+    "syscall_nr": 152,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "vhangup": {
+    "name": "vhangup",
+    "syscall_nr": 153,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "pivot_root": {
+    "name": "pivot_root",
+    "syscall_nr": 155,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "prctl": {
+    "name": "prctl",
+    "syscall_nr": 157,
+    "args": [
+      "i32",
+      "u64",
+      "u64",
+      "u64",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "adjtimex": {
+    "name": "adjtimex",
+    "syscall_nr": 159,
+    "args": [
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setrlimit": {
+    "name": "setrlimit",
+    "syscall_nr": 160,
+    "args": [
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "chroot": {
+    "name": "chroot",
+    "syscall_nr": 161,
+    "args": [
+      "string"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sync": {
+    "name": "sync",
+    "syscall_nr": 162,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "acct": {
+    "name": "acct",
+    "syscall_nr": 163,
+    "args": [
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "settimeofday": {
+    "name": "settimeofday",
+    "syscall_nr": 164,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mount": {
+    "name": "mount",
+    "syscall_nr": 165,
+    "args": [
+      "pointer",
+      "pointer",
+      "pointer",
+      "u64",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "swapon": {
+    "name": "swapon",
+    "syscall_nr": 167,
+    "args": [
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "swapoff": {
+    "name": "swapoff",
+    "syscall_nr": 168,
+    "args": [
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "reboot": {
+    "name": "reboot",
+    "syscall_nr": 169,
+    "args": [
+      "i32",
+      "i32",
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sethostname": {
+    "name": "sethostname",
+    "syscall_nr": 170,
+    "args": [
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setdomainname": {
+    "name": "setdomainname",
+    "syscall_nr": 171,
+    "args": [
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "ioperm": {
+    "name": "ioperm",
+    "syscall_nr": 173,
+    "args": [
+      "u64",
+      "u64",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "init_module": {
+    "name": "init_module",
+    "syscall_nr": 175,
+    "args": [
+      "pointer",
+      "u64",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "delete_module": {
+    "name": "delete_module",
+    "syscall_nr": 176,
+    "args": [
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "quotactl": {
+    "name": "quotactl",
+    "syscall_nr": 179,
+    "args": [
+      "u32",
+      "pointer",
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "gettid": {
+    "name": "gettid",
+    "syscall_nr": 186,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "readahead": {
+    "name": "readahead",
+    "syscall_nr": 187,
+    "args": [
+      "i32",
+      "u64",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setxattr": {
+    "name": "setxattr",
+    "syscall_nr": 188,
+    "args": [
+      "pointer",
+      "pointer",
+      "pointer",
+      "u32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "lsetxattr": {
+    "name": "lsetxattr",
+    "syscall_nr": 189,
+    "args": [
+      "pointer",
+      "pointer",
+      "pointer",
+      "u32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fsetxattr": {
+    "name": "fsetxattr",
+    "syscall_nr": 190,
+    "args": [
+      "i32",
+      "pointer",
+      "pointer",
+      "u32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getxattr": {
+    "name": "getxattr",
+    "syscall_nr": 191,
+    "args": [
+      "pointer",
+      "pointer",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "lgetxattr": {
+    "name": "lgetxattr",
+    "syscall_nr": 192,
+    "args": [
+      "pointer",
+      "pointer",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fgetxattr": {
+    "name": "fgetxattr",
+    "syscall_nr": 193,
+    "args": [
+      "i32",
+      "pointer",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "listxattr": {
+    "name": "listxattr",
+    "syscall_nr": 194,
+    "args": [
+      "pointer",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "llistxattr": {
+    "name": "llistxattr",
+    "syscall_nr": 195,
+    "args": [
+      "pointer",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "flistxattr": {
+    "name": "flistxattr",
+    "syscall_nr": 196,
+    "args": [
+      "i32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "removexattr": {
+    "name": "removexattr",
+    "syscall_nr": 197,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "lremovexattr": {
+    "name": "lremovexattr",
+    "syscall_nr": 198,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fremovexattr": {
+    "name": "fremovexattr",
+    "syscall_nr": 199,
+    "args": [
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "tkill": {
+    "name": "tkill",
+    "syscall_nr": 200,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "time": {
+    "name": "time",
+    "syscall_nr": 201,
+    "args": [
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "futex": {
+    "name": "futex",
+    "syscall_nr": 202,
+    "args": [
+      "u32",
+      "i32",
+      "u32",
+      "pointer",
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sched_setaffinity": {
+    "name": "sched_setaffinity",
+    "syscall_nr": 203,
+    "args": [
+      "i32",
+      "u32",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sched_getaffinity": {
+    "name": "sched_getaffinity",
+    "syscall_nr": 204,
+    "args": [
+      "i32",
+      "u32",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "io_setup": {
+    "name": "io_setup",
+    "syscall_nr": 206,
+    "args": [
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "io_destroy": {
+    "name": "io_destroy",
+    "syscall_nr": 207,
+    "args": [
+      "aio_context_t ctx"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "io_getevents": {
+    "name": "io_getevents",
+    "syscall_nr": 208,
+    "args": [
+      "aio_context_t ctx_id",
+      "i64",
+      "i64",
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "io_submit": {
+    "name": "io_submit",
+    "syscall_nr": 209,
+    "args": [
+      "aio_context_t",
+      "i64",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "io_cancel": {
+    "name": "io_cancel",
+    "syscall_nr": 210,
+    "args": [
+      "aio_context_t ctx_id",
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "lookup_dcookie": {
+    "name": "lookup_dcookie",
+    "syscall_nr": 212,
+    "args": [
+      "u64",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "epoll_create": {
+    "name": "epoll_create",
+    "syscall_nr": 213,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "remap_file_pages": {
+    "name": "remap_file_pages",
+    "syscall_nr": 216,
+    "args": [
+      "u64",
+      "u64",
+      "u64",
+      "u64",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getdents64": {
+    "name": "getdents64",
+    "syscall_nr": 217,
+    "args": [
+      "u32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "set_tid_address": {
+    "name": "set_tid_address",
+    "syscall_nr": 218,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "restart_syscall": {
+    "name": "restart_syscall",
+    "syscall_nr": 219,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "semtimedop": {
+    "name": "semtimedop",
+    "syscall_nr": 220,
+    "args": [
+      "i32",
+      "pointer",
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fadvise64": {
+    "name": "fadvise64",
+    "syscall_nr": 221,
+    "args": [
+      "i32",
+      "u64",
+      "u32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "timer_create": {
+    "name": "timer_create",
+    "syscall_nr": 222,
+    "args": [
+      "i32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "timer_settime": {
+    "name": "timer_settime",
+    "syscall_nr": 223,
+    "args": [
+      "i32",
+      "i32",
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "timer_gettime": {
+    "name": "timer_gettime",
+    "syscall_nr": 224,
+    "args": [
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "timer_getoverrun": {
+    "name": "timer_getoverrun",
+    "syscall_nr": 225,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "timer_delete": {
+    "name": "timer_delete",
+    "syscall_nr": 226,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "clock_settime": {
+    "name": "clock_settime",
+    "syscall_nr": 227,
+    "args": [
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "clock_gettime": {
+    "name": "clock_gettime",
+    "syscall_nr": 228,
+    "args": [
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "clock_getres": {
+    "name": "clock_getres",
+    "syscall_nr": 229,
+    "args": [
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "clock_nanosleep": {
+    "name": "clock_nanosleep",
+    "syscall_nr": 230,
+    "args": [
+      "i32",
+      "i32",
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "exit_group": {
+    "name": "exit_group",
+    "syscall_nr": 231,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "epoll_wait": {
+    "name": "epoll_wait",
+    "syscall_nr": 232,
+    "args": [
+      "i32",
+      "pointer",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "epoll_ctl": {
+    "name": "epoll_ctl",
+    "syscall_nr": 233,
+    "args": [
+      "i32",
+      "i32",
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "tgkill": {
+    "name": "tgkill",
+    "syscall_nr": 234,
+    "args": [
+      "i32",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "utimes": {
+    "name": "utimes",
+    "syscall_nr": 235,
+    "args": [
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mbind": {
+    "name": "mbind",
+    "syscall_nr": 237,
+    "args": [
+      "u64",
+      "u64",
+      "u64",
+      "pointer",
+      "u64",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "set_mempolicy": {
+    "name": "set_mempolicy",
+    "syscall_nr": 238,
+    "args": [
+      "i32",
+      "pointer",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "get_mempolicy": {
+    "name": "get_mempolicy",
+    "syscall_nr": 239,
+    "args": [
+      "i32",
+      "u64",
+      "u64",
+      "u64",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mq_open": {
+    "name": "mq_open",
+    "syscall_nr": 240,
+    "args": [
+      "pointer",
+      "i32",
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mq_unlink": {
+    "name": "mq_unlink",
+    "syscall_nr": 241,
+    "args": [
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mq_timedsend": {
+    "name": "mq_timedsend",
+    "syscall_nr": 242,
+    "args": [
+      "i32",
+      "pointer",
+      "u32",
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mq_timedreceive": {
+    "name": "mq_timedreceive",
+    "syscall_nr": 243,
+    "args": [
+      "i32",
+      "pointer",
+      "u32",
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mq_notify": {
+    "name": "mq_notify",
+    "syscall_nr": 244,
+    "args": [
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mq_getsetattr": {
+    "name": "mq_getsetattr",
+    "syscall_nr": 245,
+    "args": [
+      "i32",
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "kexec_load": {
+    "name": "kexec_load",
+    "syscall_nr": 246,
+    "args": [
+      "u64",
+      "u64",
+      "pointer",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "waitid": {
+    "name": "waitid",
+    "syscall_nr": 247,
+    "args": [
+      "i32",
+      "i32",
+      "pointer",
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "add_key": {
+    "name": "add_key",
+    "syscall_nr": 248,
+    "args": [
+      "pointer",
+      "pointer",
+      "pointer",
+      "u32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "request_key": {
+    "name": "request_key",
+    "syscall_nr": 249,
+    "args": [
+      "pointer",
+      "pointer",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "keyctl": {
+    "name": "keyctl",
+    "syscall_nr": 250,
+    "args": [
+      "i32",
+      "u64",
+      "u64",
+      "u64",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "ioprio_set": {
+    "name": "ioprio_set",
+    "syscall_nr": 251,
+    "args": [
+      "i32",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "ioprio_get": {
+    "name": "ioprio_get",
+    "syscall_nr": 252,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "inotify_init": {
+    "name": "inotify_init",
+    "syscall_nr": 253,
+    "args": [],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "inotify_add_watch": {
+    "name": "inotify_add_watch",
+    "syscall_nr": 254,
+    "args": [
+      "i32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "inotify_rm_watch": {
+    "name": "inotify_rm_watch",
+    "syscall_nr": 255,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "migrate_pages": {
+    "name": "migrate_pages",
+    "syscall_nr": 256,
+    "args": [
+      "i32",
+      "u64",
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "openat": {
+    "name": "openat",
+    "syscall_nr": 257,
+    "args": [
+      "i32",
+      "string",
+      "i32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mkdirat": {
+    "name": "mkdirat",
+    "syscall_nr": 258,
+    "args": [
+      "i32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mknodat": {
+    "name": "mknodat",
+    "syscall_nr": 259,
+    "args": [
+      "i32",
+      "pointer",
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fchownat": {
+    "name": "fchownat",
+    "syscall_nr": 260,
+    "args": [
+      "i32",
+      "string",
+      "i32",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "futimesat": {
+    "name": "futimesat",
+    "syscall_nr": 261,
+    "args": [
+      "i32",
+      "string",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "newfstatat": {
+    "name": "newfstatat",
+    "syscall_nr": 262,
+    "args": [
+      "i32",
+      "string",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "unlinkat": {
+    "name": "unlinkat",
+    "syscall_nr": 263,
+    "args": [
+      "i32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "renameat": {
+    "name": "renameat",
+    "syscall_nr": 264,
+    "args": [
+      "i32",
+      "pointer",
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "linkat": {
+    "name": "linkat",
+    "syscall_nr": 265,
+    "args": [
+      "i32",
+      "pointer",
+      "i32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "symlinkat": {
+    "name": "symlinkat",
+    "syscall_nr": 266,
+    "args": [
+      "pointer",
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "readlinkat": {
+    "name": "readlinkat",
+    "syscall_nr": 267,
+    "args": [
+      "i32",
+      "pointer",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fchmodat": {
+    "name": "fchmodat",
+    "syscall_nr": 268,
+    "args": [
+      "i32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "faccessat": {
+    "name": "faccessat",
+    "syscall_nr": 269,
+    "args": [
+      "i32",
+      "string",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "pselect6": {
+    "name": "pselect6",
+    "syscall_nr": 270,
+    "args": [
+      "i32",
+      "pointer",
+      "pointer",
+      "pointer",
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "ppoll": {
+    "name": "ppoll",
+    "syscall_nr": 271,
+    "args": [
+      "pointer",
+      "u32",
+      "pointer",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "unshare": {
+    "name": "unshare",
+    "syscall_nr": 272,
+    "args": [
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "set_robust_list": {
+    "name": "set_robust_list",
+    "syscall_nr": 273,
+    "args": [
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "get_robust_list": {
+    "name": "get_robust_list",
+    "syscall_nr": 274,
+    "args": [
+      "i32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "splice": {
+    "name": "splice",
+    "syscall_nr": 275,
+    "args": [
+      "i32",
+      "u64",
+      "i32",
+      "u64",
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "tee": {
+    "name": "tee",
+    "syscall_nr": 276,
+    "args": [
+      "i32",
+      "i32",
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sync_file_range": {
+    "name": "sync_file_range",
+    "syscall_nr": 277,
+    "args": [
+      "i32",
+      "u64",
+      "u64",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "vmsplice": {
+    "name": "vmsplice",
+    "syscall_nr": 278,
+    "args": [
+      "i32",
+      "pointer",
+      "u64",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "move_pages": {
+    "name": "move_pages",
+    "syscall_nr": 279,
+    "args": [
+      "i32",
+      "u64",
+      "pointer",
+      "pointer",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "utimensat": {
+    "name": "utimensat",
+    "syscall_nr": 280,
+    "args": [
+      "i32",
+      "string",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "epoll_pwait": {
+    "name": "epoll_pwait",
+    "syscall_nr": 281,
+    "args": [
+      "i32",
+      "pointer",
+      "i32",
+      "i32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "signalfd": {
+    "name": "signalfd",
+    "syscall_nr": 282,
+    "args": [
+      "i32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "timerfd_create": {
+    "name": "timerfd_create",
+    "syscall_nr": 283,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "eventfd": {
+    "name": "eventfd",
+    "syscall_nr": 284,
+    "args": [
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fallocate": {
+    "name": "fallocate",
+    "syscall_nr": 285,
+    "args": [
+      "i32",
+      "i32",
+      "u64",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "timerfd_settime": {
+    "name": "timerfd_settime",
+    "syscall_nr": 286,
+    "args": [
+      "i32",
+      "i32",
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "timerfd_gettime": {
+    "name": "timerfd_gettime",
+    "syscall_nr": 287,
+    "args": [
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "accept4": {
+    "name": "accept4",
+    "syscall_nr": 288,
+    "args": [
+      "i32",
+      "pointer",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "signalfd4": {
+    "name": "signalfd4",
+    "syscall_nr": 289,
+    "args": [
+      "i32",
+      "pointer",
+      "u32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "eventfd2": {
+    "name": "eventfd2",
+    "syscall_nr": 290,
+    "args": [
+      "u32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "epoll_create1": {
+    "name": "epoll_create1",
+    "syscall_nr": 291,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "dup3": {
+    "name": "dup3",
+    "syscall_nr": 292,
+    "args": [
+      "u32",
+      "u32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "pipe2": {
+    "name": "pipe2",
+    "syscall_nr": 293,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "inotify_init1": {
+    "name": "inotify_init1",
+    "syscall_nr": 294,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "preadv": {
+    "name": "preadv",
+    "syscall_nr": 295,
+    "args": [
+      "u64",
+      "pointer",
+      "u64",
+      "u64",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "pwritev": {
+    "name": "pwritev",
+    "syscall_nr": 296,
+    "args": [
+      "u64",
+      "pointer",
+      "u64",
+      "u64",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "rt_tgsigqueueinfo": {
+    "name": "rt_tgsigqueueinfo",
+    "syscall_nr": 297,
+    "args": [
+      "i32",
+      "i32",
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "perf_event_open": {
+    "name": "perf_event_open",
+    "syscall_nr": 298,
+    "args": [
+      "pointer",
+      "i32",
+      "i32",
+      "i32",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "recvmmsg": {
+    "name": "recvmmsg",
+    "syscall_nr": 299,
+    "args": [
+      "i32",
+      "pointer",
+      "u32",
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fanotify_init": {
+    "name": "fanotify_init",
+    "syscall_nr": 300,
+    "args": [
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "fanotify_mark": {
+    "name": "fanotify_mark",
+    "syscall_nr": 301,
+    "args": [
+      "i32",
+      "u32",
+      "u64",
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "prlimit64": {
+    "name": "prlimit64",
+    "syscall_nr": 302,
+    "args": [
+      "i32",
+      "u32",
+      "pointer",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "name_to_handle_at": {
+    "name": "name_to_handle_at",
+    "syscall_nr": 303,
+    "args": [
+      "i32",
+      "pointer",
+      "pointer",
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "open_by_handle_at": {
+    "name": "open_by_handle_at",
+    "syscall_nr": 304,
+    "args": [
+      "i32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "clock_adjtime": {
+    "name": "clock_adjtime",
+    "syscall_nr": 305,
+    "args": [
+      "i32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "syncfs": {
+    "name": "syncfs",
+    "syscall_nr": 306,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sendmmsg": {
+    "name": "sendmmsg",
+    "syscall_nr": 307,
+    "args": [
+      "i32",
+      "pointer",
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "setns": {
+    "name": "setns",
+    "syscall_nr": 308,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getcpu": {
+    "name": "getcpu",
+    "syscall_nr": 309,
+    "args": [
+      "u32",
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "process_vm_readv": {
+    "name": "process_vm_readv",
+    "syscall_nr": 310,
+    "args": [
+      "i32",
+      "pointer",
+      "u64",
+      "pointer",
+      "u64",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "process_vm_writev": {
+    "name": "process_vm_writev",
+    "syscall_nr": 311,
+    "args": [
+      "i32",
+      "pointer",
+      "u64",
+      "pointer",
+      "u64",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "kcmp": {
+    "name": "kcmp",
+    "syscall_nr": 312,
+    "args": [
+      "i32",
+      "i32",
+      "i32",
+      "u64",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "finit_module": {
+    "name": "finit_module",
+    "syscall_nr": 313,
+    "args": [
+      "i32",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sched_setattr": {
+    "name": "sched_setattr",
+    "syscall_nr": 314,
+    "args": [
+      "i32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "sched_getattr": {
+    "name": "sched_getattr",
+    "syscall_nr": 315,
+    "args": [
+      "i32",
+      "pointer",
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "renameat2": {
+    "name": "renameat2",
+    "syscall_nr": 316,
+    "args": [
+      "i32",
+      "pointer",
+      "i32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "seccomp": {
+    "name": "seccomp",
+    "syscall_nr": 317,
+    "args": [
+      "u32",
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "getrandom": {
+    "name": "getrandom",
+    "syscall_nr": 318,
+    "args": [
+      "pointer",
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "memfd_create": {
+    "name": "memfd_create",
+    "syscall_nr": 319,
+    "args": [
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "kexec_file_load": {
+    "name": "kexec_file_load",
+    "syscall_nr": 320,
+    "args": [
+      "i32",
+      "i32",
+      "u64",
+      "pointer",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "bpf": {
+    "name": "bpf",
+    "syscall_nr": 321,
+    "args": [
+      "i32",
+      "pointer",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "execveat": {
+    "name": "execveat",
+    "syscall_nr": 322,
+    "args": [
+      "i32",
+      "string",
+      "pointer",
+      "pointer",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "userfaultfd": {
+    "name": "userfaultfd",
+    "syscall_nr": 323,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "membarrier": {
+    "name": "membarrier",
+    "syscall_nr": 324,
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "mlock2": {
+    "name": "mlock2",
+    "syscall_nr": 325,
+    "args": [
+      "u64",
+      "u32",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "copy_file_range": {
+    "name": "copy_file_range",
+    "syscall_nr": 326,
+    "args": [
+      "i32",
+      "u64",
+      "i32",
+      "u64",
+      "u32",
+      "u32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "preadv2": {
+    "name": "preadv2",
+    "syscall_nr": 327,
+    "args": [
+      "u64",
+      "pointer",
+      "u64",
+      "u64",
+      "u64",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "pwritev2": {
+    "name": "pwritev2",
+    "syscall_nr": 328,
+    "args": [
+      "u64",
+      "pointer",
+      "u64",
+      "u64",
+      "u64",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "pkey_mprotect": {
+    "name": "pkey_mprotect",
+    "syscall_nr": 329,
+    "args": [
+      "u64",
+      "u32",
+      "u64",
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "pkey_alloc": {
+    "name": "pkey_alloc",
+    "syscall_nr": 330,
+    "args": [
+      "u64",
+      "u64"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "pkey_free": {
+    "name": "pkey_free",
+    "syscall_nr": 331,
+    "args": [
+      "i32"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  },
+  "statx": {
+    "name": "statx",
+    "syscall_nr": 332,
+    "args": [
+      "i32",
+      "pointer",
+      "u32",
+      "u32",
+      "pointer"
+    ],
+    "reg": [
+      "rax",
+      "rdi",
+      "rsi",
+      "rdx",
+      "r10",
+      "r8",
+      "r9"
+    ]
+  }
+}
