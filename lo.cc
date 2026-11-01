@@ -206,6 +206,9 @@ void lo::FreeMemory(void* buf, size_t length, void* data) {
 void cleanupIsolate (Isolate* isolate) {
   isolate->ContextDisposedNotification();
   isolate->ClearKeptObjects();
+  // drop the platform's per-isolate foreground task runner (and any tasks
+  // still queued on it), as d8 does before every Dispose()
+  v8::platform::NotifyIsolateShutdown(platform.get(), isolate);
   isolate->Dispose();
 }
 
@@ -749,9 +752,8 @@ void lo::RunMicroTasks(const FunctionCallbackInfo<Value> &args) {
 }
 
 void lo::PumpMessageLoop(const FunctionCallbackInfo<Value> &args) {
-//  Isolate* isolate = args.GetIsolate();
-//  v8::platform::PumpMessageLoop(default_platform, isolate, v8::platform::MessageLoopBehavior::kDoNotWait);
-
+  Isolate* isolate = args.GetIsolate();
+  v8::platform::PumpMessageLoop(platform.get(), isolate, v8::platform::MessageLoopBehavior::kDoNotWait);
 }
 
 void lo::NextTick(const FunctionCallbackInfo<Value>& args) {
@@ -1716,24 +1718,24 @@ void lo_create_isolate_context (int argc, char** argv,
   ctx->argv = argv;
   ctx->argv = (char**)calloc(argc + 1, sizeof(char*));
   for (int i = 0; i < argc; i++) {
-    ctx->argv[i] = (char*)calloc(1, strnlen(argv[i], 4096));
-    memcpy(ctx->argv[i], argv[i], strnlen(argv[i], 4096));
+    ctx->argv[i] = (char*)calloc(1, strnlen(argv[i], 4095) + 1);
+    memcpy(ctx->argv[i], argv[i], strnlen(argv[i], 4095) + 1);
   }
   ctx->argv[argc] = NULL;
-  ctx->main = (char*)calloc(1, main_len);
+  ctx->main = (char*)calloc(1, main_len + 1);
   memcpy(ctx->main, main, main_len);
   ctx->main_len = main_len;
-  ctx->js = (char*)calloc(1, js_len);
+  ctx->js = (char*)calloc(1, js_len + 1);
   memcpy(ctx->js, js, js_len);
   ctx->js_len = js_len;
   ctx->buf = buf;
   ctx->buflen = buflen;
   ctx->fd = fd;
   ctx->start = start;
-  ctx->globalobj = (char*)calloc(1, strnlen(globalobj, 4096));
-  memcpy(ctx->globalobj, globalobj, strnlen(globalobj, 4096));
-  ctx->scriptname = (char*)calloc(1, strnlen(scriptname, 4096));
-  memcpy(ctx->scriptname, scriptname, strnlen(scriptname, 4096));
+  ctx->globalobj = (char*)calloc(1, strnlen(globalobj, 4095) + 1);
+  memcpy(ctx->globalobj, globalobj, strnlen(globalobj, 4095));
+  ctx->scriptname = (char*)calloc(1, strnlen(scriptname, 4095) + 1);
+  memcpy(ctx->scriptname, scriptname, strnlen(scriptname, 4095));
   ctx->cleanup = cleanup;
   ctx->onexit = onexit;
   ctx->startup_data = startup_data;
