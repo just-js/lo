@@ -1,0 +1,20 @@
+[package]
+name = "sanstun_capi"
+description = "A C ABI over sanstun (sans-IO WireGuard) for lo's lib/sanstun binding"
+version = "0.0.1"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+sanstun = { path = "../deps/sanstun" }
+zeroize = "1.5.6"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+debug = false

@@ -1225,13 +1225,14 @@ CTypeInfo rcsymlink = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infosymlink = CFunctionInfo(rcsymlink, 3, cargssymlink);
 CFunction pFsymlink = CFunction((const void*)&symlinkFast, &infosymlink);
 
-uint32_t strnlen_strFast(void* p, struct FastOneByteString* const p0);
-CTypeInfo cargsstrnlen_str[2] = {
+uint32_t strnlen_strFast(void* p, struct FastOneByteString* const p0, uint32_t p1);
+CTypeInfo cargsstrnlen_str[3] = {
   CTypeInfo(CTypeInfo::Type::kV8Value),
   CTypeInfo(CTypeInfo::Type::kSeqOneByteString),
+  CTypeInfo(CTypeInfo::Type::kUint32),
 };
 CTypeInfo rcstrnlen_str = CTypeInfo(CTypeInfo::Type::kUint32);
-CFunctionInfo infostrnlen_str = CFunctionInfo(rcstrnlen_str, 2, cargsstrnlen_str);
+CFunctionInfo infostrnlen_str = CFunctionInfo(rcstrnlen_str, 3, cargsstrnlen_str);
 CFunction pFstrnlen_str = CFunction((const void*)&strnlen_strFast, &infostrnlen_str);
 
 void syncFast(void* p);
@@ -1269,6 +1270,24 @@ CTypeInfo cargsisolate_context_size[1] = {
 CTypeInfo rcisolate_context_size = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infoisolate_context_size = CFunctionInfo(rcisolate_context_size, 1, cargsisolate_context_size);
 CFunction pFisolate_context_size = CFunction((const void*)&isolate_context_sizeFast, &infoisolate_context_size);
+
+int32_t isolate_terminateFast(void* p, uint64_t* p0);
+CTypeInfo cargsisolate_terminate[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+};
+CTypeInfo rcisolate_terminate = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoisolate_terminate = CFunctionInfo(rcisolate_terminate, 2, cargsisolate_terminate);
+CFunction pFisolate_terminate = CFunction((const void*)&isolate_terminateFast, &infoisolate_terminate);
+
+int32_t isolate_request_statsFast(void* p, uint64_t* p0);
+CTypeInfo cargsisolate_request_stats[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+};
+CTypeInfo rcisolate_request_stats = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infoisolate_request_stats = CFunctionInfo(rcisolate_request_stats, 2, cargsisolate_request_stats);
+CFunction pFisolate_request_stats = CFunction((const void*)&isolate_request_statsFast, &infoisolate_request_stats);
 
 #ifdef __linux__
 
@@ -1444,6 +1463,25 @@ CTypeInfo cargsmadvise[4] = {
 CTypeInfo rcmadvise = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infomadvise = CFunctionInfo(rcmadvise, 4, cargsmadvise);
 CFunction pFmadvise = CFunction((const void*)&madviseFast, &infomadvise);
+
+int32_t setnsFast(void* p, int32_t p0, int32_t p1);
+CTypeInfo cargssetns[3] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+};
+CTypeInfo rcsetns = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infosetns = CFunctionInfo(rcsetns, 3, cargssetns);
+CFunction pFsetns = CFunction((const void*)&setnsFast, &infosetns);
+
+int32_t unshareFast(void* p, int32_t p0);
+CTypeInfo cargsunshare[2] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+};
+CTypeInfo rcunshare = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infounshare = CFunctionInfo(rcunshare, 2, cargsunshare);
+CFunction pFunshare = CFunction((const void*)&unshareFast, &infounshare);
 
 #endif
 #ifdef __MACH__
@@ -2448,14 +2486,14 @@ int32_t symlinkFast(void* p, struct FastOneByteString* const p0, struct FastOneB
 void strnlen_strSlow(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   String::Utf8Value v0(isolate, args[0]);
-  uint32_t v1 = v0.length();
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
   uint32_t rc = strnlen(*v0, v1);
   args.GetReturnValue().Set(rc);
 }
 
-uint32_t strnlen_strFast(void* p, struct FastOneByteString* const p0) {
+uint32_t strnlen_strFast(void* p, struct FastOneByteString* const p0, uint32_t p1) {
   struct FastOneByteString* const v0 = p0;
-  uint32_t v1 = p0->length;
+  uint32_t v1 = p1;
   return strnlen(v0->data, v1);
 }
 void syncSlow(const FunctionCallbackInfo<Value> &args) {
@@ -2542,6 +2580,26 @@ void isolate_startSlow(const FunctionCallbackInfo<Value> &args) {
   lo_start_isolate(v0);
 }
 
+void isolate_terminateSlow(const FunctionCallbackInfo<Value> &args) {
+  struct isolate_context* v0 = reinterpret_cast<struct isolate_context*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t rc = lo_terminate_isolate(v0);
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t isolate_terminateFast(void* p, uint64_t* p0) {
+  struct isolate_context* v0 = reinterpret_cast<struct isolate_context*>(p0);
+  return lo_terminate_isolate(v0);
+}
+void isolate_request_statsSlow(const FunctionCallbackInfo<Value> &args) {
+  struct isolate_context* v0 = reinterpret_cast<struct isolate_context*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
+  int32_t rc = lo_isolate_request_stats(v0);
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t isolate_request_statsFast(void* p, uint64_t* p0) {
+  struct isolate_context* v0 = reinterpret_cast<struct isolate_context*>(p0);
+  return lo_isolate_request_stats(v0);
+}
 void callbackSlow(const FunctionCallbackInfo<Value> &args) {
   exec_info* v0 = reinterpret_cast<exec_info*>((uint64_t)Local<Integer>::Cast(args[0])->Value());
   lo_callback(v0);
@@ -2770,6 +2828,28 @@ int32_t madviseFast(void* p, uint64_t* p0, uint32_t p1, int32_t p2) {
   int32_t v2 = p2;
   return madvise(v0, v1, v2);
 }
+void setnsSlow(const FunctionCallbackInfo<Value> &args) {
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t rc = setns(v0, v1);
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t setnsFast(void* p, int32_t p0, int32_t p1) {
+  int32_t v0 = p0;
+  int32_t v1 = p1;
+  return setns(v0, v1);
+}
+void unshareSlow(const FunctionCallbackInfo<Value> &args) {
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t rc = unshare(v0);
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t unshareFast(void* p, int32_t p0) {
+  int32_t v0 = p0;
+  return unshare(v0);
+}
 #endif
 #ifdef __MACH__
 
@@ -2863,6 +2943,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "isolate_context_destroy", &pFisolate_context_destroy, isolate_context_destroySlow);
   SET_FAST_METHOD(isolate, module, "isolate_context_size", &pFisolate_context_size, isolate_context_sizeSlow);
   SET_METHOD(isolate, module, "isolate_start", isolate_startSlow);
+  SET_FAST_METHOD(isolate, module, "isolate_terminate", &pFisolate_terminate, isolate_terminateSlow);
+  SET_FAST_METHOD(isolate, module, "isolate_request_stats", &pFisolate_request_stats, isolate_request_statsSlow);
   SET_METHOD(isolate, module, "callback", callbackSlow);
 
 #ifdef __linux__
@@ -2882,6 +2964,8 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "vfexecve", &pFvfexecve, vfexecveSlow);
   SET_FAST_METHOD(isolate, module, "getpagesize", &pFgetpagesize, getpagesizeSlow);
   SET_FAST_METHOD(isolate, module, "madvise", &pFmadvise, madviseSlow);
+  SET_FAST_METHOD(isolate, module, "setns", &pFsetns, setnsSlow);
+  SET_FAST_METHOD(isolate, module, "unshare", &pFunshare, unshareSlow);
 
 #endif
 #ifdef __MACH__
@@ -2975,6 +3059,13 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "POSIX_FADV_RANDOM", Integer::New(isolate, (int32_t)POSIX_FADV_RANDOM));
   SET_VALUE(isolate, module, "POSIX_FADV_DONTNEED", Integer::New(isolate, (int32_t)POSIX_FADV_DONTNEED));
   SET_VALUE(isolate, module, "S_IFLNK", Integer::New(isolate, (int32_t)S_IFLNK));
+  SET_VALUE(isolate, module, "CLONE_NEWNET", Integer::New(isolate, (int32_t)CLONE_NEWNET));
+  SET_VALUE(isolate, module, "CLONE_NEWNS", Integer::New(isolate, (int32_t)CLONE_NEWNS));
+  SET_VALUE(isolate, module, "CLONE_NEWUTS", Integer::New(isolate, (int32_t)CLONE_NEWUTS));
+  SET_VALUE(isolate, module, "CLONE_NEWIPC", Integer::New(isolate, (int32_t)CLONE_NEWIPC));
+  SET_VALUE(isolate, module, "CLONE_NEWPID", Integer::New(isolate, (int32_t)CLONE_NEWPID));
+  SET_VALUE(isolate, module, "CLONE_NEWUSER", Integer::New(isolate, (int32_t)CLONE_NEWUSER));
+  SET_VALUE(isolate, module, "CLONE_NEWCGROUP", Integer::New(isolate, (int32_t)CLONE_NEWCGROUP));
 
 #endif
 #ifdef __MACH__
@@ -3020,11 +3111,344 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 #endif
   SET_MODULE(isolate, target, "core", module);
 }
+
+// Every native callback this binding registers, both plain (SET_METHOD)
+// and fast-call (SET_FAST_METHOD/SET_FAST_PROP), needed in
+// SnapshotCreator's external_references before this binding's own
+// Init() can safely run inside lo::CreateSnapshot's isolate - PLAN.md
+// task 66. Null-terminated, same convention as lo.cc's own
+// lo_external_references[].
+static const intptr_t core_external_references[] = {
+  (intptr_t)&dlopenSlow,
+  (intptr_t)&pFdlopen, (intptr_t)pFdlopen.GetAddress(),
+    (intptr_t)pFdlopen.GetTypeInfo(),
+  (intptr_t)&dlsymSlow,
+  (intptr_t)&pFdlsym, (intptr_t)pFdlsym.GetAddress(),
+    (intptr_t)pFdlsym.GetTypeInfo(),
+  (intptr_t)&dlcloseSlow,
+  (intptr_t)&pFdlclose, (intptr_t)pFdlclose.GetAddress(),
+    (intptr_t)pFdlclose.GetTypeInfo(),
+  (intptr_t)&dlerrorSlow,
+  (intptr_t)&pFdlerror, (intptr_t)pFdlerror.GetAddress(),
+    (intptr_t)pFdlerror.GetTypeInfo(),
+  (intptr_t)&readSlow,
+  (intptr_t)&pFread, (intptr_t)pFread.GetAddress(),
+    (intptr_t)pFread.GetTypeInfo(),
+  (intptr_t)&read2Slow,
+  (intptr_t)&pFread2, (intptr_t)pFread2.GetAddress(),
+    (intptr_t)pFread2.GetTypeInfo(),
+  (intptr_t)&writeSlow,
+  (intptr_t)&pFwrite, (intptr_t)pFwrite.GetAddress(),
+    (intptr_t)pFwrite.GetTypeInfo(),
+  (intptr_t)&write2Slow,
+  (intptr_t)&pFwrite2, (intptr_t)pFwrite2.GetAddress(),
+    (intptr_t)pFwrite2.GetTypeInfo(),
+  (intptr_t)&write_stringSlow,
+  (intptr_t)&pFwrite_string, (intptr_t)pFwrite_string.GetAddress(),
+    (intptr_t)pFwrite_string.GetTypeInfo(),
+  (intptr_t)&putcharSlow,
+  (intptr_t)&pFputchar, (intptr_t)pFputchar.GetAddress(),
+    (intptr_t)pFputchar.GetTypeInfo(),
+  (intptr_t)&getcharSlow,
+  (intptr_t)&pFgetchar, (intptr_t)pFgetchar.GetAddress(),
+    (intptr_t)pFgetchar.GetTypeInfo(),
+  (intptr_t)&closeSlow,
+  (intptr_t)&pFclose, (intptr_t)pFclose.GetAddress(),
+    (intptr_t)pFclose.GetTypeInfo(),
+  (intptr_t)&preadSlow,
+  (intptr_t)&pFpread, (intptr_t)pFpread.GetAddress(),
+    (intptr_t)pFpread.GetTypeInfo(),
+  (intptr_t)&pwriteSlow,
+  (intptr_t)&pFpwrite, (intptr_t)pFpwrite.GetAddress(),
+    (intptr_t)pFpwrite.GetTypeInfo(),
+  (intptr_t)&lseekSlow,
+  (intptr_t)&pFlseek, (intptr_t)pFlseek.GetAddress(),
+    (intptr_t)pFlseek.GetTypeInfo(),
+  (intptr_t)&fstatSlow,
+  (intptr_t)&pFfstat, (intptr_t)pFfstat.GetAddress(),
+    (intptr_t)pFfstat.GetTypeInfo(),
+  (intptr_t)&fcntlSlow,
+  (intptr_t)&pFfcntl, (intptr_t)pFfcntl.GetAddress(),
+    (intptr_t)pFfcntl.GetTypeInfo(),
+  (intptr_t)&ftruncateSlow,
+  (intptr_t)&pFftruncate, (intptr_t)pFftruncate.GetAddress(),
+    (intptr_t)pFftruncate.GetTypeInfo(),
+  (intptr_t)&mknodSlow,
+  (intptr_t)&pFmknod, (intptr_t)pFmknod.GetAddress(),
+    (intptr_t)pFmknod.GetTypeInfo(),
+  (intptr_t)&statSlow,
+  (intptr_t)&pFstat, (intptr_t)pFstat.GetAddress(),
+    (intptr_t)pFstat.GetTypeInfo(),
+  (intptr_t)&lstatSlow,
+  (intptr_t)&pFlstat, (intptr_t)pFlstat.GetAddress(),
+    (intptr_t)pFlstat.GetTypeInfo(),
+  (intptr_t)&renameSlow,
+  (intptr_t)&pFrename, (intptr_t)pFrename.GetAddress(),
+    (intptr_t)pFrename.GetTypeInfo(),
+  (intptr_t)&accessSlow,
+  (intptr_t)&pFaccess, (intptr_t)pFaccess.GetAddress(),
+    (intptr_t)pFaccess.GetTypeInfo(),
+  (intptr_t)&openSlow,
+  (intptr_t)&pFopen, (intptr_t)pFopen.GetAddress(),
+    (intptr_t)pFopen.GetTypeInfo(),
+  (intptr_t)&unlinkSlow,
+  (intptr_t)&pFunlink, (intptr_t)pFunlink.GetAddress(),
+    (intptr_t)pFunlink.GetTypeInfo(),
+  (intptr_t)&readdirSlow,
+  (intptr_t)&pFreaddir, (intptr_t)pFreaddir.GetAddress(),
+    (intptr_t)pFreaddir.GetTypeInfo(),
+  (intptr_t)&readlinkSlow,
+  (intptr_t)&pFreadlink, (intptr_t)pFreadlink.GetAddress(),
+    (intptr_t)pFreadlink.GetTypeInfo(),
+  (intptr_t)&opendirSlow,
+  (intptr_t)&pFopendir, (intptr_t)pFopendir.GetAddress(),
+    (intptr_t)pFopendir.GetTypeInfo(),
+  (intptr_t)&fstatatSlow,
+  (intptr_t)&pFfstatat, (intptr_t)pFfstatat.GetAddress(),
+    (intptr_t)pFfstatat.GetTypeInfo(),
+  (intptr_t)&mkdirSlow,
+  (intptr_t)&pFmkdir, (intptr_t)pFmkdir.GetAddress(),
+    (intptr_t)pFmkdir.GetTypeInfo(),
+  (intptr_t)&rmdirSlow,
+  (intptr_t)&pFrmdir, (intptr_t)pFrmdir.GetAddress(),
+    (intptr_t)pFrmdir.GetTypeInfo(),
+  (intptr_t)&closedirSlow,
+  (intptr_t)&pFclosedir, (intptr_t)pFclosedir.GetAddress(),
+    (intptr_t)pFclosedir.GetTypeInfo(),
+  (intptr_t)&chdirSlow,
+  (intptr_t)&pFchdir, (intptr_t)pFchdir.GetAddress(),
+    (intptr_t)pFchdir.GetTypeInfo(),
+  (intptr_t)&fchdirSlow,
+  (intptr_t)&pFfchdir, (intptr_t)pFfchdir.GetAddress(),
+    (intptr_t)pFfchdir.GetTypeInfo(),
+  (intptr_t)&mprotectSlow,
+  (intptr_t)&pFmprotect, (intptr_t)pFmprotect.GetAddress(),
+    (intptr_t)pFmprotect.GetTypeInfo(),
+  (intptr_t)&memcpySlow,
+  (intptr_t)&pFmemcpy, (intptr_t)pFmemcpy.GetAddress(),
+    (intptr_t)pFmemcpy.GetTypeInfo(),
+  (intptr_t)&memsetSlow,
+  (intptr_t)&pFmemset, (intptr_t)pFmemset.GetAddress(),
+    (intptr_t)pFmemset.GetTypeInfo(),
+  (intptr_t)&memmoveSlow,
+  (intptr_t)&pFmemmove, (intptr_t)pFmemmove.GetAddress(),
+    (intptr_t)pFmemmove.GetTypeInfo(),
+  (intptr_t)&shm_openSlow,
+  (intptr_t)&pFshm_open, (intptr_t)pFshm_open.GetAddress(),
+    (intptr_t)pFshm_open.GetTypeInfo(),
+  (intptr_t)&shm_unlinkSlow,
+  (intptr_t)&pFshm_unlink, (intptr_t)pFshm_unlink.GetAddress(),
+    (intptr_t)pFshm_unlink.GetTypeInfo(),
+  (intptr_t)&mmapSlow,
+  (intptr_t)&pFmmap, (intptr_t)pFmmap.GetAddress(),
+    (intptr_t)pFmmap.GetTypeInfo(),
+  (intptr_t)&munmapSlow,
+  (intptr_t)&pFmunmap, (intptr_t)pFmunmap.GetAddress(),
+    (intptr_t)pFmunmap.GetTypeInfo(),
+  (intptr_t)&msyncSlow,
+  (intptr_t)&pFmsync, (intptr_t)pFmsync.GetAddress(),
+    (intptr_t)pFmsync.GetTypeInfo(),
+  (intptr_t)&mallocSlow,
+  (intptr_t)&pFmalloc, (intptr_t)pFmalloc.GetAddress(),
+    (intptr_t)pFmalloc.GetTypeInfo(),
+  (intptr_t)&callocSlow,
+  (intptr_t)&pFcalloc, (intptr_t)pFcalloc.GetAddress(),
+    (intptr_t)pFcalloc.GetTypeInfo(),
+  (intptr_t)&reallocSlow,
+  (intptr_t)&pFrealloc, (intptr_t)pFrealloc.GetAddress(),
+    (intptr_t)pFrealloc.GetTypeInfo(),
+  (intptr_t)&aligned_allocSlow,
+  (intptr_t)&pFaligned_alloc, (intptr_t)pFaligned_alloc.GetAddress(),
+    (intptr_t)pFaligned_alloc.GetTypeInfo(),
+  (intptr_t)&freeSlow,
+  (intptr_t)&pFfree, (intptr_t)pFfree.GetAddress(),
+    (intptr_t)pFfree.GetTypeInfo(),
+  (intptr_t)&getenvSlow,
+  (intptr_t)&pFgetenv, (intptr_t)pFgetenv.GetAddress(),
+    (intptr_t)pFgetenv.GetTypeInfo(),
+  (intptr_t)&setenvSlow,
+  (intptr_t)&pFsetenv, (intptr_t)pFsetenv.GetAddress(),
+    (intptr_t)pFsetenv.GetTypeInfo(),
+  (intptr_t)&unsetenvSlow,
+  (intptr_t)&pFunsetenv, (intptr_t)pFunsetenv.GetAddress(),
+    (intptr_t)pFunsetenv.GetTypeInfo(),
+  (intptr_t)&sleepSlow,
+  (intptr_t)&pFsleep, (intptr_t)pFsleep.GetAddress(),
+    (intptr_t)pFsleep.GetTypeInfo(),
+  (intptr_t)&usleepSlow,
+  (intptr_t)&pFusleep, (intptr_t)pFusleep.GetAddress(),
+    (intptr_t)pFusleep.GetTypeInfo(),
+  (intptr_t)&dupSlow,
+  (intptr_t)&pFdup, (intptr_t)pFdup.GetAddress(),
+    (intptr_t)pFdup.GetTypeInfo(),
+  (intptr_t)&dup2Slow,
+  (intptr_t)&pFdup2, (intptr_t)pFdup2.GetAddress(),
+    (intptr_t)pFdup2.GetTypeInfo(),
+  (intptr_t)&getcwdSlow,
+  (intptr_t)&pFgetcwd, (intptr_t)pFgetcwd.GetAddress(),
+    (intptr_t)pFgetcwd.GetTypeInfo(),
+  (intptr_t)&getpidSlow,
+  (intptr_t)&pFgetpid, (intptr_t)pFgetpid.GetAddress(),
+    (intptr_t)pFgetpid.GetTypeInfo(),
+  (intptr_t)&getsidSlow,
+  (intptr_t)&pFgetsid, (intptr_t)pFgetsid.GetAddress(),
+    (intptr_t)pFgetsid.GetTypeInfo(),
+  (intptr_t)&setsidSlow,
+  (intptr_t)&pFsetsid, (intptr_t)pFsetsid.GetAddress(),
+    (intptr_t)pFsetsid.GetTypeInfo(),
+  (intptr_t)&getpgrpSlow,
+  (intptr_t)&pFgetpgrp, (intptr_t)pFgetpgrp.GetAddress(),
+    (intptr_t)pFgetpgrp.GetTypeInfo(),
+  (intptr_t)&setpgidSlow,
+  (intptr_t)&pFsetpgid, (intptr_t)pFsetpgid.GetAddress(),
+    (intptr_t)pFsetpgid.GetTypeInfo(),
+  (intptr_t)&forkSlow,
+  (intptr_t)&pFfork, (intptr_t)pFfork.GetAddress(),
+    (intptr_t)pFfork.GetTypeInfo(),
+  (intptr_t)&killSlow,
+  (intptr_t)&pFkill, (intptr_t)pFkill.GetAddress(),
+    (intptr_t)pFkill.GetTypeInfo(),
+  (intptr_t)&waitpidSlow,
+  (intptr_t)&pFwaitpid, (intptr_t)pFwaitpid.GetAddress(),
+    (intptr_t)pFwaitpid.GetTypeInfo(),
+  (intptr_t)&execvpSlow,
+  (intptr_t)&pFexecvp, (intptr_t)pFexecvp.GetAddress(),
+    (intptr_t)pFexecvp.GetTypeInfo(),
+  (intptr_t)&execveSlow,
+  (intptr_t)&pFexecve, (intptr_t)pFexecve.GetAddress(),
+    (intptr_t)pFexecve.GetTypeInfo(),
+  (intptr_t)&isattySlow,
+  (intptr_t)&pFisatty, (intptr_t)pFisatty.GetAddress(),
+    (intptr_t)pFisatty.GetTypeInfo(),
+  (intptr_t)&tcgetattrSlow,
+  (intptr_t)&pFtcgetattr, (intptr_t)pFtcgetattr.GetAddress(),
+    (intptr_t)pFtcgetattr.GetTypeInfo(),
+  (intptr_t)&tcsetattrSlow,
+  (intptr_t)&pFtcsetattr, (intptr_t)pFtcsetattr.GetAddress(),
+    (intptr_t)pFtcsetattr.GetTypeInfo(),
+  (intptr_t)&exitSlow,
+  (intptr_t)&pFexit, (intptr_t)pFexit.GetAddress(),
+    (intptr_t)pFexit.GetTypeInfo(),
+  (intptr_t)&_exitSlow,
+  (intptr_t)&pF_exit, (intptr_t)pF_exit.GetAddress(),
+    (intptr_t)pF_exit.GetTypeInfo(),
+  (intptr_t)&sysconfSlow,
+  (intptr_t)&pFsysconf, (intptr_t)pFsysconf.GetAddress(),
+    (intptr_t)pFsysconf.GetTypeInfo(),
+  (intptr_t)&getrusageSlow,
+  (intptr_t)&pFgetrusage, (intptr_t)pFgetrusage.GetAddress(),
+    (intptr_t)pFgetrusage.GetTypeInfo(),
+  (intptr_t)&timesSlow,
+  (intptr_t)&pFtimes, (intptr_t)pFtimes.GetAddress(),
+    (intptr_t)pFtimes.GetTypeInfo(),
+  (intptr_t)&memmemSlow,
+  (intptr_t)&pFmemmem, (intptr_t)pFmemmem.GetAddress(),
+    (intptr_t)pFmemmem.GetTypeInfo(),
+  (intptr_t)&strnlenSlow,
+  (intptr_t)&pFstrnlen, (intptr_t)pFstrnlen.GetAddress(),
+    (intptr_t)pFstrnlen.GetTypeInfo(),
+  (intptr_t)&symlinkSlow,
+  (intptr_t)&pFsymlink, (intptr_t)pFsymlink.GetAddress(),
+    (intptr_t)pFsymlink.GetTypeInfo(),
+  (intptr_t)&strnlen_strSlow,
+  (intptr_t)&pFstrnlen_str, (intptr_t)pFstrnlen_str.GetAddress(),
+    (intptr_t)pFstrnlen_str.GetTypeInfo(),
+  (intptr_t)&syncSlow,
+  (intptr_t)&pFsync, (intptr_t)pFsync.GetAddress(),
+    (intptr_t)pFsync.GetTypeInfo(),
+  (intptr_t)&bind_fastcallSlow,
+  (intptr_t)&bind_slowcallSlow,
+  (intptr_t)&fastcallSlow,
+  (intptr_t)&pFfastcall, (intptr_t)pFfastcall.GetAddress(),
+    (intptr_t)pFfastcall.GetTypeInfo(),
+  (intptr_t)&isolate_createSlow,
+  (intptr_t)&isolate_context_createSlow,
+  (intptr_t)&isolate_context_destroySlow,
+  (intptr_t)&pFisolate_context_destroy, (intptr_t)pFisolate_context_destroy.GetAddress(),
+    (intptr_t)pFisolate_context_destroy.GetTypeInfo(),
+  (intptr_t)&isolate_context_sizeSlow,
+  (intptr_t)&pFisolate_context_size, (intptr_t)pFisolate_context_size.GetAddress(),
+    (intptr_t)pFisolate_context_size.GetTypeInfo(),
+  (intptr_t)&isolate_startSlow,
+  (intptr_t)&isolate_terminateSlow,
+  (intptr_t)&pFisolate_terminate, (intptr_t)pFisolate_terminate.GetAddress(),
+    (intptr_t)pFisolate_terminate.GetTypeInfo(),
+  (intptr_t)&isolate_request_statsSlow,
+  (intptr_t)&pFisolate_request_stats, (intptr_t)pFisolate_request_stats.GetAddress(),
+    (intptr_t)pFisolate_request_stats.GetTypeInfo(),
+  (intptr_t)&callbackSlow,
+
+#ifdef __linux__
+  (intptr_t)&makedevSlow,
+  (intptr_t)&pFmakedev, (intptr_t)pFmakedev.GetAddress(),
+    (intptr_t)pFmakedev.GetTypeInfo(),
+  (intptr_t)&posix_fadviseSlow,
+  (intptr_t)&pFposix_fadvise, (intptr_t)pFposix_fadvise.GetAddress(),
+    (intptr_t)pFposix_fadvise.GetTypeInfo(),
+  (intptr_t)&ioctlSlow,
+  (intptr_t)&pFioctl, (intptr_t)pFioctl.GetAddress(),
+    (intptr_t)pFioctl.GetTypeInfo(),
+  (intptr_t)&ioctl2Slow,
+  (intptr_t)&pFioctl2, (intptr_t)pFioctl2.GetAddress(),
+    (intptr_t)pFioctl2.GetTypeInfo(),
+  (intptr_t)&ioctl3Slow,
+  (intptr_t)&pFioctl3, (intptr_t)pFioctl3.GetAddress(),
+    (intptr_t)pFioctl3.GetTypeInfo(),
+  (intptr_t)&rebootSlow,
+  (intptr_t)&pFreboot, (intptr_t)pFreboot.GetAddress(),
+    (intptr_t)pFreboot.GetTypeInfo(),
+  (intptr_t)&getdentsSlow,
+  (intptr_t)&pFgetdents, (intptr_t)pFgetdents.GetAddress(),
+    (intptr_t)pFgetdents.GetTypeInfo(),
+  (intptr_t)&getaffinitySlow,
+  (intptr_t)&pFgetaffinity, (intptr_t)pFgetaffinity.GetAddress(),
+    (intptr_t)pFgetaffinity.GetTypeInfo(),
+  (intptr_t)&copy_file_rangeSlow,
+  (intptr_t)&pFcopy_file_range, (intptr_t)pFcopy_file_range.GetAddress(),
+    (intptr_t)pFcopy_file_range.GetTypeInfo(),
+  (intptr_t)&memfd_createSlow,
+  (intptr_t)&pFmemfd_create, (intptr_t)pFmemfd_create.GetAddress(),
+    (intptr_t)pFmemfd_create.GetTypeInfo(),
+  (intptr_t)&setaffinitySlow,
+  (intptr_t)&pFsetaffinity, (intptr_t)pFsetaffinity.GetAddress(),
+    (intptr_t)pFsetaffinity.GetTypeInfo(),
+  (intptr_t)&vforkSlow,
+  (intptr_t)&pFvfork, (intptr_t)pFvfork.GetAddress(),
+    (intptr_t)pFvfork.GetTypeInfo(),
+  (intptr_t)&vexecveSlow,
+  (intptr_t)&pFvexecve, (intptr_t)pFvexecve.GetAddress(),
+    (intptr_t)pFvexecve.GetTypeInfo(),
+  (intptr_t)&vfexecveSlow,
+  (intptr_t)&pFvfexecve, (intptr_t)pFvfexecve.GetAddress(),
+    (intptr_t)pFvfexecve.GetTypeInfo(),
+  (intptr_t)&getpagesizeSlow,
+  (intptr_t)&pFgetpagesize, (intptr_t)pFgetpagesize.GetAddress(),
+    (intptr_t)pFgetpagesize.GetTypeInfo(),
+  (intptr_t)&madviseSlow,
+  (intptr_t)&pFmadvise, (intptr_t)pFmadvise.GetAddress(),
+    (intptr_t)pFmadvise.GetTypeInfo(),
+  (intptr_t)&setnsSlow,
+  (intptr_t)&pFsetns, (intptr_t)pFsetns.GetAddress(),
+    (intptr_t)pFsetns.GetTypeInfo(),
+  (intptr_t)&unshareSlow,
+  (intptr_t)&pFunshare, (intptr_t)pFunshare.GetAddress(),
+    (intptr_t)pFunshare.GetTypeInfo(),
+
+#endif
+#ifdef __MACH__
+
+#endif
+  0
+};
+
 } // namespace core
 } // namespace lo
 
 extern "C"  {
   DLL_PUBLIC void* _register_core() {
     return (void*)lo::core::Init;
+  }
+  DLL_PUBLIC const intptr_t* _external_references_core() {
+    return lo::core::core_external_references;
   }
 }

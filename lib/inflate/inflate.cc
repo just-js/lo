@@ -110,11 +110,35 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 #endif
   SET_MODULE(isolate, target, "inflate", module);
 }
+
+// Every native callback this binding registers, both plain (SET_METHOD)
+// and fast-call (SET_FAST_METHOD/SET_FAST_PROP), needed in
+// SnapshotCreator's external_references before this binding's own
+// Init() can safely run inside lo::CreateSnapshot's isolate - PLAN.md
+// task 66. Null-terminated, same convention as lo.cc's own
+// lo_external_references[].
+static const intptr_t inflate_external_references[] = {
+  (intptr_t)&inflateSlow,
+  (intptr_t)&pFinflate, (intptr_t)pFinflate.GetAddress(),
+    (intptr_t)pFinflate.GetTypeInfo(),
+
+#ifdef __linux__
+
+#endif
+#ifdef __MACH__
+
+#endif
+  0
+};
+
 } // namespace inflate
 } // namespace lo
 
 extern "C"  {
   DLL_PUBLIC void* _register_inflate() {
     return (void*)lo::inflate::Init;
+  }
+  DLL_PUBLIC const intptr_t* _external_references_inflate() {
+    return lo::inflate::inflate_external_references;
   }
 }

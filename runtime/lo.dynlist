@@ -1,0 +1,45 @@
+/* Symbols lo exports for bindings built as shared libraries (lo.load of lib/<name>/<name>.so).
+   lo is linked without -rdynamic (size), so a .so binding can only resolve what is listed here.
+   Collected 2026-11-03 from every binding wrapper (lib/NAME/api.js) (nm -u), V8 15.6. Add a symbol when a
+   binding needs a new one. Listed names lo does not link in are skipped by the linker. */
+{
+  _ZN2lo10SET_METHODEPN2v87IsolateENS0_5LocalINS0_14ObjectTemplateEEEPKcPFvRKNS0_20FunctionCallbackInfoINS0_5ValueEEEE; /* lo::SET_METHOD(v8::Isolate*, v8::Local<v8::ObjectTemplate>, char const*, void (*)(v8::FunctionCallbackInfo<v8::Value> const&)) */
+  _ZN2lo10SET_MODULEEPN2v87IsolateENS0_5LocalINS0_14ObjectTemplateEEEPKcS5_; /* lo::SET_MODULE(v8::Isolate*, v8::Local<v8::ObjectTemplate>, char const*, v8::Local<v8::ObjectTemplate>) */
+  _ZN2lo15SET_FAST_METHODEPN2v87IsolateENS0_5LocalINS0_14ObjectTemplateEEEPKcPNS0_9CFunctionEPFvRKNS0_20FunctionCallbackInfoINS0_5ValueEEEE; /* lo::SET_FAST_METHOD(v8::Isolate*, v8::Local<v8::ObjectTemplate>, char const*, v8::CFunction*, void (*)(v8::FunctionCallbackInfo<v8::Value> const&)) */
+  _ZN2lo9SET_VALUEEPN2v87IsolateENS0_5LocalINS0_14ObjectTemplateEEEPKcNS3_INS0_5ValueEEE; /* lo::SET_VALUE(v8::Isolate*, v8::Local<v8::ObjectTemplate>, char const*, v8::Local<v8::Value>) */
+  _ZN2v812HeapProfiler16TakeHeapSnapshotERKNS0_19HeapSnapshotOptionsE; /* v8::HeapProfiler::TakeHeapSnapshot(v8::HeapProfiler::HeapSnapshotOptions const&) */
+  _ZN2v812HeapSnapshot6DeleteEv; /* v8::HeapSnapshot::Delete() */
+  _ZN2v812api_internal12ToLocalEmptyEv; /* v8::api_internal::ToLocalEmpty() */
+  _ZN2v813CFunctionInfoC1ERKNS_9CTypeInfoEjPS2_NS0_19Int64RepresentationENS0_11HasReceiverE; /* v8::CFunctionInfo::CFunctionInfo(v8::CTypeInfo const&, unsigned int, v8::CTypeInfo const*, v8::CFunctionInfo::Int64Representation, v8::CFunctionInfo::HasReceiver) */
+  _ZN2v814ObjectTemplate11NewInstanceENS_5LocalINS_7ContextEEE; /* v8::ObjectTemplate::NewInstance(v8::Local<v8::Context>) */
+  _ZN2v814ObjectTemplate21SetInternalFieldCountEi; /* v8::ObjectTemplate::SetInternalFieldCount(int) */
+  _ZN2v814ObjectTemplate3NewEPNS_7IsolateENS_5LocalINS_16FunctionTemplateEEE; /* v8::ObjectTemplate::New(v8::Isolate*, v8::Local<v8::FunctionTemplate>) */
+  _ZN2v815ArrayBufferView10ByteOffsetEv; /* v8::ArrayBufferView::ByteOffset() */
+  _ZN2v815ArrayBufferView6BufferEv; /* v8::ArrayBufferView::Buffer() */
+  _ZN2v816FunctionTemplate11GetFunctionENS_5LocalINS_7ContextEEE; /* v8::FunctionTemplate::GetFunction(v8::Local<v8::Context>) */
+  _ZN2v816FunctionTemplate3NewEPNS_7IsolateEPFvRKNS_20FunctionCallbackInfoINS_5ValueEEEENS_5LocalIS4_EENSA_INS_9SignatureEEEiNS_19ConstructorBehaviorENS_14SideEffectTypeEPKNS_9CFunctionEttt; /* v8::FunctionTemplate::New(v8::Isolate*, void (*)(v8::FunctionCallbackInfo<v8::Value> const&), v8::Local<v8::Value>, v8::Local<v8::Signature>, int, v8::ConstructorBehavior, v8::SideEffectType, v8::CFunction const*, unsigned short, unsigned short, unsigned short) */
+  _ZN2v86BigInt3NewEPNS_7IsolateEl; /* v8::BigInt::New(v8::Isolate*, long) */
+  _ZN2v86Number3NewEPNS_7IsolateEd; /* v8::Number::New(v8::Isolate*, double) */
+  _ZN2v86Object32SetAlignedPointerInInternalFieldEiPvt; /* v8::Object::SetAlignedPointerInInternalField(int, void*, unsigned short) */
+  _ZN2v86Object38SlowGetAlignedPointerFromInternalFieldEit; /* v8::Object::SlowGetAlignedPointerFromInternalField(int, unsigned short) */
+  _ZN2v86Object3GetENS_5LocalINS_7ContextEEEj; /* v8::Object::Get(v8::Local<v8::Context>, unsigned int) */
+  _ZN2v86String5ValueC1EPNS_7IsolateENS_5LocalINS_5ValueEEE; /* v8::String::Value::Value(v8::Isolate*, v8::Local<v8::Value>) */
+  _ZN2v86String5ValueD1Ev; /* v8::String::Value::~Value() */
+  _ZN2v86String9Utf8ValueC1EPNS_7IsolateENS_5LocalINS_5ValueEEE; /* v8::String::Utf8Value::Utf8Value(v8::Isolate*, v8::Local<v8::Value>) */
+  _ZN2v86String9Utf8ValueD1Ev; /* v8::String::Utf8Value::~Utf8Value() */
+  _ZN2v87Integer15NewFromUnsignedEPNS_7IsolateEj; /* v8::Integer::NewFromUnsigned(v8::Isolate*, unsigned int) */
+  _ZN2v87Integer3NewEPNS_7IsolateEi; /* v8::Integer::New(v8::Isolate*, int) */
+  _ZN2v87Isolate15GetHeapProfilerEv; /* v8::Isolate::GetHeapProfiler() */
+  _ZN2v87Isolate17GetCurrentContextEv; /* v8::Isolate::GetCurrentContext() */
+  _ZN2v89CFunctionC1EPKvPKNS_13CFunctionInfoE; /* v8::CFunction::CFunction(void const*, v8::CFunctionInfo const*) */
+  _ZNK2v811ArrayBuffer4DataEv; /* v8::ArrayBuffer::Data() const */
+  _ZNK2v812HeapSnapshot9SerializeEPNS_12OutputStreamENS0_19SerializationFormatE; /* v8::HeapSnapshot::Serialize(v8::OutputStream*, v8::HeapSnapshot::SerializationFormat) const */
+  _ZNK2v85Array6LengthEv; /* v8::Array::Length() const */
+  _ZNK2v86Number5ValueEv; /* v8::Number::Value() const */
+  _ZNK2v87Integer5ValueEv; /* v8::Integer::Value() const */
+  _Znwm; /* operator new(unsigned long) */
+  _Znam; /* operator new[](unsigned long) */
+  _ZdlPv; /* operator delete(void*) */
+  _ZdaPv; /* operator delete[](void*) */
+  _ZdlPvm; /* operator delete(void*, unsigned long) */
+};

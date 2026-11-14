@@ -15,6 +15,7 @@
 
 
 #ifdef __linux__
+#include <sched.h>
 #include <sys/eventfd.h>
 #include <sys/timerfd.h>
 #include <sys/sysinfo.h>
@@ -418,6 +419,39 @@ CTypeInfo cargsclock_gettime[3] = {
 CTypeInfo rcclock_gettime = CTypeInfo(CTypeInfo::Type::kInt32);
 CFunctionInfo infoclock_gettime = CFunctionInfo(rcclock_gettime, 3, cargsclock_gettime);
 CFunction pFclock_gettime = CFunction((const void*)&clock_gettimeFast, &infoclock_gettime);
+
+int32_t setpriorityFast(void* p, int32_t p0, uint32_t p1, int32_t p2);
+CTypeInfo cargssetpriority[4] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+};
+CTypeInfo rcsetpriority = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infosetpriority = CFunctionInfo(rcsetpriority, 4, cargssetpriority);
+CFunction pFsetpriority = CFunction((const void*)&setpriorityFast, &infosetpriority);
+
+int32_t getpriorityFast(void* p, int32_t p0, uint32_t p1);
+CTypeInfo cargsgetpriority[3] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+  CTypeInfo(CTypeInfo::Type::kUint32),
+};
+CTypeInfo rcgetpriority = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infogetpriority = CFunctionInfo(rcgetpriority, 3, cargsgetpriority);
+CFunction pFgetpriority = CFunction((const void*)&getpriorityFast, &infogetpriority);
+
+int32_t sched_setschedulerFast(void* p, int32_t p0, int32_t p1, int32_t p2, uint64_t* p3);
+CTypeInfo cargssched_setscheduler[5] = {
+  CTypeInfo(CTypeInfo::Type::kV8Value),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+  CTypeInfo(CTypeInfo::Type::kInt32),
+  CTypeInfo(CTypeInfo::Type::kUint64),
+};
+CTypeInfo rcsched_setscheduler = CTypeInfo(CTypeInfo::Type::kInt32);
+CFunctionInfo infosched_setscheduler = CFunctionInfo(rcsched_setscheduler, 5, cargssched_setscheduler);
+CFunction pFsched_setscheduler = CFunction((const void*)&sched_setschedulerFast, &infosched_setscheduler);
 
 #endif
 #ifdef __MACH__
@@ -858,6 +892,48 @@ int32_t clock_gettimeFast(void* p, int32_t p0, uint64_t* p1) {
   timespec* v1 = reinterpret_cast<timespec*>(p1);
   return clock_gettime(v0, v1);
 }
+void setprioritySlow(const FunctionCallbackInfo<Value> &args) {
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  int32_t rc = setpriority(v0, v1, v2);
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t setpriorityFast(void* p, int32_t p0, uint32_t p1, int32_t p2) {
+  int32_t v0 = p0;
+  uint32_t v1 = p1;
+  int32_t v2 = p2;
+  return setpriority(v0, v1, v2);
+}
+void getprioritySlow(const FunctionCallbackInfo<Value> &args) {
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  uint32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t rc = getpriority(v0, v1);
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t getpriorityFast(void* p, int32_t p0, uint32_t p1) {
+  int32_t v0 = p0;
+  uint32_t v1 = p1;
+  return getpriority(v0, v1);
+}
+void sched_setschedulerSlow(const FunctionCallbackInfo<Value> &args) {
+  int32_t v0 = Local<Integer>::Cast(args[0])->Value();
+  int32_t v1 = Local<Integer>::Cast(args[1])->Value();
+  int32_t v2 = Local<Integer>::Cast(args[2])->Value();
+  void* v3 = reinterpret_cast<void*>((uint64_t)Local<Integer>::Cast(args[3])->Value());
+  int32_t rc = syscall(v0, v1, v2, v3);
+  args.GetReturnValue().Set(rc);
+}
+
+int32_t sched_setschedulerFast(void* p, int32_t p0, int32_t p1, int32_t p2, uint64_t* p3) {
+  int32_t v0 = p0;
+  int32_t v1 = p1;
+  int32_t v2 = p2;
+  void* v3 = reinterpret_cast<void*>(p3);
+  return syscall(v0, v1, v2, v3);
+}
 #endif
 #ifdef __MACH__
 
@@ -900,6 +976,9 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_FAST_METHOD(isolate, module, "timerfd_settime", &pFtimerfd_settime, timerfd_settimeSlow);
   SET_FAST_METHOD(isolate, module, "eventfd", &pFeventfd, eventfdSlow);
   SET_FAST_METHOD(isolate, module, "clock_gettime", &pFclock_gettime, clock_gettimeSlow);
+  SET_FAST_METHOD(isolate, module, "setpriority", &pFsetpriority, setprioritySlow);
+  SET_FAST_METHOD(isolate, module, "getpriority", &pFgetpriority, getprioritySlow);
+  SET_FAST_METHOD(isolate, module, "sched_setscheduler", &pFsched_setscheduler, sched_setschedulerSlow);
 
 #endif
 #ifdef __MACH__
@@ -917,6 +996,10 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_VALUE(isolate, module, "EFD_SEMAPHORE", Integer::New(isolate, (int32_t)EFD_SEMAPHORE));
   SET_VALUE(isolate, module, "CLOCK_MONOTONIC_COARSE", Integer::New(isolate, (int32_t)CLOCK_MONOTONIC_COARSE));
   SET_VALUE(isolate, module, "CLOCK_BOOTTIME", Integer::New(isolate, (int32_t)CLOCK_BOOTTIME));
+  SET_VALUE(isolate, module, "PRIO_PROCESS", Integer::New(isolate, (int32_t)PRIO_PROCESS));
+  SET_VALUE(isolate, module, "SCHED_OTHER", Integer::New(isolate, (int32_t)SCHED_OTHER));
+  SET_VALUE(isolate, module, "SCHED_BATCH", Integer::New(isolate, (int32_t)SCHED_BATCH));
+  SET_VALUE(isolate, module, "SCHED_IDLE", Integer::New(isolate, (int32_t)SCHED_IDLE));
 
 #endif
 #ifdef __MACH__
@@ -931,11 +1014,143 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 #endif
   SET_MODULE(isolate, target, "system", module);
 }
+
+// Every native callback this binding registers, both plain (SET_METHOD)
+// and fast-call (SET_FAST_METHOD/SET_FAST_PROP), needed in
+// SnapshotCreator's external_references before this binding's own
+// Init() can safely run inside lo::CreateSnapshot's isolate - PLAN.md
+// task 66. Null-terminated, same convention as lo.cc's own
+// lo_external_references[].
+static const intptr_t system_external_references[] = {
+  (intptr_t)&mmapSlow,
+  (intptr_t)&pFmmap, (intptr_t)pFmmap.GetAddress(),
+    (intptr_t)pFmmap.GetTypeInfo(),
+  (intptr_t)&munmapSlow,
+  (intptr_t)&pFmunmap, (intptr_t)pFmunmap.GetAddress(),
+    (intptr_t)pFmunmap.GetTypeInfo(),
+  (intptr_t)&getcwdSlow,
+  (intptr_t)&pFgetcwd, (intptr_t)pFgetcwd.GetAddress(),
+    (intptr_t)pFgetcwd.GetTypeInfo(),
+  (intptr_t)&mprotectSlow,
+  (intptr_t)&pFmprotect, (intptr_t)pFmprotect.GetAddress(),
+    (intptr_t)pFmprotect.GetTypeInfo(),
+  (intptr_t)&memcpySlow,
+  (intptr_t)&pFmemcpy, (intptr_t)pFmemcpy.GetAddress(),
+    (intptr_t)pFmemcpy.GetTypeInfo(),
+  (intptr_t)&memmoveSlow,
+  (intptr_t)&pFmemmove, (intptr_t)pFmemmove.GetAddress(),
+    (intptr_t)pFmemmove.GetTypeInfo(),
+  (intptr_t)&exitSlow,
+  (intptr_t)&pFexit, (intptr_t)pFexit.GetAddress(),
+    (intptr_t)pFexit.GetTypeInfo(),
+  (intptr_t)&usleepSlow,
+  (intptr_t)&pFusleep, (intptr_t)pFusleep.GetAddress(),
+    (intptr_t)pFusleep.GetTypeInfo(),
+  (intptr_t)&getpidSlow,
+  (intptr_t)&pFgetpid, (intptr_t)pFgetpid.GetAddress(),
+    (intptr_t)pFgetpid.GetTypeInfo(),
+  (intptr_t)&getrusageSlow,
+  (intptr_t)&pFgetrusage, (intptr_t)pFgetrusage.GetAddress(),
+    (intptr_t)pFgetrusage.GetTypeInfo(),
+  (intptr_t)&sleepSlow,
+  (intptr_t)&pFsleep, (intptr_t)pFsleep.GetAddress(),
+    (intptr_t)pFsleep.GetTypeInfo(),
+  (intptr_t)&forkSlow,
+  (intptr_t)&pFfork, (intptr_t)pFfork.GetAddress(),
+    (intptr_t)pFfork.GetTypeInfo(),
+  (intptr_t)&killSlow,
+  (intptr_t)&pFkill, (intptr_t)pFkill.GetAddress(),
+    (intptr_t)pFkill.GetTypeInfo(),
+  (intptr_t)&waitpidSlow,
+  (intptr_t)&pFwaitpid, (intptr_t)pFwaitpid.GetAddress(),
+    (intptr_t)pFwaitpid.GetTypeInfo(),
+  (intptr_t)&execvpSlow,
+  (intptr_t)&pFexecvp, (intptr_t)pFexecvp.GetAddress(),
+    (intptr_t)pFexecvp.GetTypeInfo(),
+  (intptr_t)&readlinkSlow,
+  (intptr_t)&pFreadlink, (intptr_t)pFreadlink.GetAddress(),
+    (intptr_t)pFreadlink.GetTypeInfo(),
+  (intptr_t)&sysconfSlow,
+  (intptr_t)&pFsysconf, (intptr_t)pFsysconf.GetAddress(),
+    (intptr_t)pFsysconf.GetTypeInfo(),
+  (intptr_t)&getrlimitSlow,
+  (intptr_t)&pFgetrlimit, (intptr_t)pFgetrlimit.GetAddress(),
+    (intptr_t)pFgetrlimit.GetTypeInfo(),
+  (intptr_t)&setrlimitSlow,
+  (intptr_t)&pFsetrlimit, (intptr_t)pFsetrlimit.GetAddress(),
+    (intptr_t)pFsetrlimit.GetTypeInfo(),
+  (intptr_t)&strerror_rSlow,
+  (intptr_t)&pFstrerror_r, (intptr_t)pFstrerror_r.GetAddress(),
+    (intptr_t)pFstrerror_r.GetTypeInfo(),
+  (intptr_t)&timesSlow,
+  (intptr_t)&pFtimes, (intptr_t)pFtimes.GetAddress(),
+    (intptr_t)pFtimes.GetTypeInfo(),
+  (intptr_t)&getenvSlow,
+  (intptr_t)&pFgetenv, (intptr_t)pFgetenv.GetAddress(),
+    (intptr_t)pFgetenv.GetTypeInfo(),
+  (intptr_t)&callocSlow,
+  (intptr_t)&pFcalloc, (intptr_t)pFcalloc.GetAddress(),
+    (intptr_t)pFcalloc.GetTypeInfo(),
+  (intptr_t)&freeSlow,
+  (intptr_t)&pFfree, (intptr_t)pFfree.GetAddress(),
+    (intptr_t)pFfree.GetTypeInfo(),
+
+#ifdef __linux__
+  (intptr_t)&sysinfoSlow,
+  (intptr_t)&pFsysinfo, (intptr_t)pFsysinfo.GetAddress(),
+    (intptr_t)pFsysinfo.GetTypeInfo(),
+  (intptr_t)&get_avphys_pagesSlow,
+  (intptr_t)&pFget_avphys_pages, (intptr_t)pFget_avphys_pages.GetAddress(),
+    (intptr_t)pFget_avphys_pages.GetTypeInfo(),
+  (intptr_t)&signalSlow,
+  (intptr_t)&pFsignal, (intptr_t)pFsignal.GetAddress(),
+    (intptr_t)pFsignal.GetTypeInfo(),
+  (intptr_t)&memfd_createSlow,
+  (intptr_t)&pFmemfd_create, (intptr_t)pFmemfd_create.GetAddress(),
+    (intptr_t)pFmemfd_create.GetTypeInfo(),
+  (intptr_t)&pidfd_openSlow,
+  (intptr_t)&pFpidfd_open, (intptr_t)pFpidfd_open.GetAddress(),
+    (intptr_t)pFpidfd_open.GetTypeInfo(),
+  (intptr_t)&gettidSlow,
+  (intptr_t)&pFgettid, (intptr_t)pFgettid.GetAddress(),
+    (intptr_t)pFgettid.GetTypeInfo(),
+  (intptr_t)&timerfd_createSlow,
+  (intptr_t)&pFtimerfd_create, (intptr_t)pFtimerfd_create.GetAddress(),
+    (intptr_t)pFtimerfd_create.GetTypeInfo(),
+  (intptr_t)&timerfd_settimeSlow,
+  (intptr_t)&pFtimerfd_settime, (intptr_t)pFtimerfd_settime.GetAddress(),
+    (intptr_t)pFtimerfd_settime.GetTypeInfo(),
+  (intptr_t)&eventfdSlow,
+  (intptr_t)&pFeventfd, (intptr_t)pFeventfd.GetAddress(),
+    (intptr_t)pFeventfd.GetTypeInfo(),
+  (intptr_t)&clock_gettimeSlow,
+  (intptr_t)&pFclock_gettime, (intptr_t)pFclock_gettime.GetAddress(),
+    (intptr_t)pFclock_gettime.GetTypeInfo(),
+  (intptr_t)&setprioritySlow,
+  (intptr_t)&pFsetpriority, (intptr_t)pFsetpriority.GetAddress(),
+    (intptr_t)pFsetpriority.GetTypeInfo(),
+  (intptr_t)&getprioritySlow,
+  (intptr_t)&pFgetpriority, (intptr_t)pFgetpriority.GetAddress(),
+    (intptr_t)pFgetpriority.GetTypeInfo(),
+  (intptr_t)&sched_setschedulerSlow,
+  (intptr_t)&pFsched_setscheduler, (intptr_t)pFsched_setscheduler.GetAddress(),
+    (intptr_t)pFsched_setscheduler.GetTypeInfo(),
+
+#endif
+#ifdef __MACH__
+
+#endif
+  0
+};
+
 } // namespace system
 } // namespace lo
 
 extern "C"  {
   DLL_PUBLIC void* _register_system() {
     return (void*)lo::system::Init;
+  }
+  DLL_PUBLIC const intptr_t* _external_references_system() {
+    return lo::system::system_external_references;
   }
 }

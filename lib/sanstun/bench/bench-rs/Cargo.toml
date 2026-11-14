@@ -1,0 +1,20 @@
+[package]
+name = "sanstun_bench"
+description = "lib/sanstun/test.js in plain Rust: the same handshake, checks and benchmark loop, sanstun's Rust API"
+version = "0.0.1"
+edition = "2021"
+publish = false
+
+[dependencies]
+sanstun = { path = "../../deps/sanstun" }
+zeroize = "1.5.6"
+libc = "0.2"
+tokio = { version = "1", default-features = false, features = ["rt", "net", "time", "macros"] }
+
+# the same as capi/ (the lo binding's build), so the comparison is like for like
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+debug = false

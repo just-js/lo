@@ -4,6 +4,7 @@ const bindings = [
   'curl',
   'encode',
   'inflate',
+  'chunked',
   'libssl',
   'net',
   'pico',
@@ -93,8 +94,11 @@ const v8_opts = {
   v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init'
 }
 
-const link_type = lo.core.os === 'linux' ? 
+// runtime/lo.dynlist: the V8/lo symbols shared-library bindings (lo.load of a .so) need, exported instead of
+// -rdynamic's everything (the link runs in LO_HOME, so the path is relative to it)
+const link_type = lo.core.os === 'linux' ?
   '-static-libstdc++ -static-libgcc -fuse-ld=lld -Wl,--gc-sections -Wl,--icf=all -no-pie' :
+//  '-static-libstdc++ -static-libgcc -fuse-ld=lld -Wl,--gc-sections -Wl,--icf=all -no-pie -Wl,--dynamic-list=runtime/lo.dynlist' :
   '-rdynamic -w -framework CoreFoundation'
 
 const link_args = ['-s', '-O3', '-fno-exceptions']
