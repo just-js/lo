@@ -178,8 +178,8 @@ function load (name) {
     // TODO
     return
   } else {
-    const handle = core.dlopen(`lib/${name}/${name}.so`, RTLD_LAZY) ||
-      core.dlopen(`${LO_HOME}/lib/${name}/${name}.so`, RTLD_LAZY)
+    const handle = core.dlopen(`lib/${name}/${name}.so`, RTLD_NOW) ||
+      core.dlopen(`${LO_HOME}/lib/${name}/${name}.so`, RTLD_NOW)
     if (!handle) return
     const sym = core.dlsym(handle, `_register_${name}`)
     if (!sym) return
@@ -383,7 +383,7 @@ const {
 const { core } = library('core')
 const {
   O_WRONLY, O_CREAT, O_TRUNC, O_RDONLY, S_IWUSR, S_IRUSR, S_IRGRP, S_IROTH,
-  S_IFREG, STDOUT, STDERR, S_IFMT, RTLD_LAZY
+  S_IFREG, STDOUT, STDERR, S_IFMT, RTLD_NOW
 } = core
 const {
   write_string, open, fstat, read, write, close, strnlen
