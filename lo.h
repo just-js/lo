@@ -200,6 +200,14 @@ DLL_PUBLIC int CreateIsolate(int argc, char** argv,
 DLL_PUBLIC int CreateIsolate(int argc, char** argv,
   const char* main, unsigned int main_len, uint64_t start,
   const char* globalobj, int cleanup, int onexit, void* startup_data);
+// builds a V8 startup snapshot by running main_src (definitions only -
+// no per-invocation state) in a dedicated, throwaway isolate, then
+// writes the resulting blob to out_path. keep_code selects
+// FunctionCodeHandling::kKeep (retain already-compiled bytecode/code)
+// over the default kClear (discard it, recompile lazily on first real
+// call after loading) - see PLAN.md task 64.
+DLL_PUBLIC int CreateSnapshot(const char* main_src, unsigned int main_len,
+  const char* out_path, int keep_code, int argc, char** argv);
 void PrintStackTrace(v8::Isolate* isolate, const v8::TryCatch& try_catch);
 void PromiseRejectCallback(v8::PromiseRejectMessage message);
 void FreeMemory(void* buf, size_t length, void* data);
@@ -237,6 +245,7 @@ void Serialize(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Deserialize(const v8::FunctionCallbackInfo<v8::Value> &args);
 void FreeMessage(const v8::FunctionCallbackInfo<v8::Value> &args);
 void MessageSize(const v8::FunctionCallbackInfo<v8::Value> &args);
+void CreateSnapshotJS(const v8::FunctionCallbackInfo<v8::Value> &args);
 
 void GetMeta(const v8::FunctionCallbackInfo<v8::Value> &args);
 void HeapUsage(const v8::FunctionCallbackInfo<v8::Value> &args);
@@ -274,6 +283,7 @@ void GetLoCallbackAddress(const v8::FunctionCallbackInfo<v8::Value> &args);
 
 // Module Initialization
 void Init(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> target);
+void InitSnapshot(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> target);
 }
 
 #ifdef __cplusplus
@@ -299,7 +309,21 @@ struct isolate_context {
   char* scriptname;
   void* startup_data;
   void* isolate;
+  // the fields below are only used by lo_start_isolate (worker threads)
+  uint64_t heap_limit;      // in: max old generation bytes, 0 = V8 default
+  uint64_t heap_used;       // out, from lo_isolate_request_stats
+  uint64_t heap_total;
+  uint64_t heap_max;        // V8's heap_size_limit
+  uint64_t heap_external;   // external memory, incl. ArrayBuffer backing stores
+  uint64_t gc_count;        // GCs since start
+  uint64_t stats_time;      // lo::hrtime() of the last stats update, 0 = none
+  int exit_reason;          // LO_EXIT_*: why the isolate stopped
+  int padding;
 };
+
+#define LO_EXIT_NORMAL 0
+#define LO_EXIT_TERMINATED 1  // lo_terminate_isolate
+#define LO_EXIT_HEAP_LIMIT 2  // near heap limit: terminated instead of OOM
 
 DLL_PUBLIC int lo_create_isolate (int argc, char** argv, 
   const char* main, unsigned int main_len,
@@ -313,6 +337,8 @@ DLL_PUBLIC void lo_create_isolate_context (int argc, char** argv,
   uint64_t start, const char* globalobj, const char* scriptname,
   int cleanup, int onexit, void* startup_data, struct isolate_context* ctx);
 DLL_PUBLIC void lo_start_isolate (void* ptr);
+DLL_PUBLIC int lo_terminate_isolate (struct isolate_context* ctx);
+DLL_PUBLIC int lo_isolate_request_stats (struct isolate_context* ctx);
 DLL_PUBLIC void lo_destroy_isolate_context (struct isolate_context* ctx);
 
 struct exec_info {
