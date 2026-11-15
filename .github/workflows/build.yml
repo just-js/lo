@@ -110,14 +110,52 @@ jobs:
       - name: compile
         run: |
           docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-glibc make ARCH=${{ matrix.platform }} lo
+      # Core dumps, for crashes like the intermittent test/dump.js segfault
+      # (repos/lo PLAN task 53 in the mother repo). The pattern is a host
+      # sysctl, but the kernel opens the file in the crashing process's
+      # mount namespace, so /src/cores is this workspace's cores/ even for a
+      # process inside the container.
+      - name: enable core dumps
+        run: |
+          mkdir -p cores
+          sudo sysctl -w kernel.core_pattern=/src/cores/core.%e.%p
       - name: check
         run: |
-          docker run --rm -e LO_HOME=/src -v "${{ github.workspace }}:/src" -w /src lo-glibc sh -c "make check && make check-build && ./lo build runtime runtime/lo -v"
+          docker run --rm --ulimit core=-1 -e LO_HOME=/src -v "${{ github.workspace }}:/src" -w /src lo-glibc sh -c "make check && make check-build && ./lo build runtime runtime/lo -v"
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/lo
           name: lo-linux-${{ matrix.platform }}
+      # The binaries go in with the cores: a core is only readable against
+      # the exact binary that wrote it. zstd if the runner has it, else gzip;
+      # the upload doesn't compress again.
+      - name: collect core dumps
+        if: failure()
+        run: |
+          if ls cores/core.* > /dev/null 2>&1; then
+            sudo chown -R "$(id -u):$(id -g)" cores
+            for b in lo build_test_lo build_test_base; do
+              if [ -f "$b" ]; then cp "$b" cores/; fi
+            done
+            ls -la cores
+            if command -v zstd > /dev/null; then
+              tar -C cores -cf - . | zstd -T0 -10 -o cores.tar.zst
+            else
+              tar -C cores -czf cores.tar.gz .
+            fi
+            ls -la cores.tar.*
+          else
+            echo "no core dumps"
+          fi
+      - name: upload core dumps
+        if: failure() && hashFiles('cores.tar.*') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: cores-linux-${{ matrix.platform }}
+          path: cores.tar.*
+          compression-level: 0
+          retention-days: 7
 
   build-linux-musl:
 #    if: ${{ false }}  # disable
@@ -139,6 +177,15 @@ jobs:
       - name: compile
         run: |
           docker run --rm -v "${{ github.workspace }}:/src" -w /src lo-musl make ARCH=${{ matrix.platform }} lo
+      # Core dumps, for crashes like the intermittent test/dump.js segfault
+      # (repos/lo PLAN task 53 in the mother repo). The pattern is a host
+      # sysctl, but the kernel opens the file in the crashing process's
+      # mount namespace, so /src/cores is this workspace's cores/ even for a
+      # process inside the container.
+      - name: enable core dumps
+        run: |
+          mkdir -p cores
+          sudo sysctl -w kernel.core_pattern=/src/cores/core.%e.%p
       # check-build/build runtime added here to match linux (glibc)'s
       # comprehensive check - real risk, not assumed risk-free: musl's
       # own bring-up (LO-MUSL.md) already flagged check-build (test/build.js,
@@ -147,12 +194,41 @@ jobs:
       # sysroot-shaped fix - more are plausible here too (PLAN.md task 34).
       - name: check
         run: |
-          docker run --rm -e LO_HOME=/src -v "${{ github.workspace }}:/src" -w /src lo-musl sh -c "make ARCH=${{ matrix.platform }} check && make ARCH=${{ matrix.platform }} check-build && ./lo build runtime runtime/lo -v"
+          docker run --rm --ulimit core=-1 -e LO_HOME=/src -v "${{ github.workspace }}:/src" -w /src lo-musl sh -c "make ARCH=${{ matrix.platform }} check && make ARCH=${{ matrix.platform }} check-build && ./lo build runtime runtime/lo -v"
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/lo
           name: lo-linux-musl-${{ matrix.platform }}
+      # The binaries go in with the cores: a core is only readable against
+      # the exact binary that wrote it. zstd if the runner has it, else gzip;
+      # the upload doesn't compress again.
+      - name: collect core dumps
+        if: failure()
+        run: |
+          if ls cores/core.* > /dev/null 2>&1; then
+            sudo chown -R "$(id -u):$(id -g)" cores
+            for b in lo build_test_lo build_test_base; do
+              if [ -f "$b" ]; then cp "$b" cores/; fi
+            done
+            ls -la cores
+            if command -v zstd > /dev/null; then
+              tar -C cores -cf - . | zstd -T0 -10 -o cores.tar.zst
+            else
+              tar -C cores -czf cores.tar.gz .
+            fi
+            ls -la cores.tar.*
+          else
+            echo "no core dumps"
+          fi
+      - name: upload core dumps
+        if: failure() && hashFiles('cores.tar.*') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: cores-linux-musl-${{ matrix.platform }}
+          path: cores.tar.*
+          compression-level: 0
+          retention-days: 7
 
   build-windows:
 #    if: ${{ false }}  # disable

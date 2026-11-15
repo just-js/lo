@@ -101,7 +101,7 @@ const v8_opts = {
 const link_type = lo.core.os === 'linux' ?
   '-static-libstdc++ -static-libgcc -fuse-ld=lld -Wl,--gc-sections -Wl,--icf=all -no-pie' :
 //  '-static-libstdc++ -static-libgcc -fuse-ld=lld -Wl,--gc-sections -Wl,--icf=all -no-pie -Wl,--dynamic-list=runtime/lo.dynlist' :
-  '-rdynamic -w -framework CoreFoundation'
+  '-rdynamic -w -framework CoreFoundation -Wl,-dead_strip'
 
 const link_args = ['-s', '-O3', '-fno-exceptions']
 
