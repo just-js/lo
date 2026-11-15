@@ -509,44 +509,102 @@ void lo::PromiseRejectCallback(PromiseRejectMessage data) {
   }
 }
 
-MaybeLocal<Module> lo::OnModuleInstantiate(Local<Context> context,
-  Local<String> specifier,
-  Local<FixedArray> import_assertions, 
-  Local<Module> referrer) {
-
-//  printf("OnModuleInstantiate, assertions: %i\n", import_assertions.->.Length());
-  Isolate* isolate = v8::Isolate::GetCurrent();
-  String::Utf8Value str(isolate, specifier);
-  Local<Function> callback = 
-    context->GetEmbedderData(2).As<Function>();
-  Local<Value> argv[1] = { specifier };
-#if LO_V8_CALL_HAS_ISOLATE_OVERLOAD
-  MaybeLocal<Value> result = callback->Call(isolate, context,
-    context->Global(), 1, argv);
-#else
-  MaybeLocal<Value> result = callback->Call(context,
-    context->Global(), 1, argv);
-#endif
-  int identity = result.ToLocalChecked()->Uint32Value(context).ToChecked();
-  std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));
-  Local<Module> module = (*module_map)[identity].Get(isolate);
-  return module;
+// The module callbacks lo.setModuleCallbacks(on_load, on_instantiate) put in
+// context embedder data slots 1 and 2; empty if they were never set
+static Local<Function> ModuleCallback(Local<Context> context, int slot) {
+  if (context->GetNumberOfEmbedderDataFields() <= (uint32_t)slot) {
+    return Local<Function>();
+  }
+  Local<Value> callback = context->GetEmbedderData(slot);
+  if (!callback->IsFunction()) return Local<Function>();
+  return callback.As<Function>();
 }
 
+static Local<Value> ImportError(Isolate* isolate, Local<String> specifier,
+  const char* reason) {
+  String::Utf8Value spec(isolate, specifier);
+  char message[1024];
+  snprintf(message, sizeof(message), "cannot import \"%s\": %s",
+    *spec ? *spec : "", reason);
+  return Exception::Error(String::NewFromUtf8(isolate, message)
+    .ToLocalChecked());
+}
+
+// V8's resolve callback for static imports, while a module is instantiated.
+// It calls on_instantiate(specifier, referrer_identity), which must return
+// the identity of an already loaded module (lo.loadModule). The importing
+// module's identity lets the callback resolve a relative specifier against
+// its importer. Any failure is a JS exception that fails the instantiation
+// (lo.evaluateModule rethrows it): an empty MaybeLocal with no exception
+// pending, or a crash on a throwing callback, is what this used to do
+// (PLAN.md task 79).
+MaybeLocal<Module> lo::OnModuleInstantiate(Local<Context> context,
+  Local<String> specifier,
+  Local<FixedArray> import_assertions,
+  Local<Module> referrer) {
+  Isolate* isolate = Isolate::GetCurrent();
+  Local<Function> callback = ModuleCallback(context, 2);
+  if (callback.IsEmpty()) {
+    isolate->ThrowException(ImportError(isolate, specifier,
+      "no module callbacks are set (lo.setModuleCallbacks)"));
+    return MaybeLocal<Module>();
+  }
+  Local<Value> argv[2] = { specifier,
+    Integer::New(isolate, referrer->GetIdentityHash()) };
+  Local<Value> result;
+#if LO_V8_CALL_HAS_ISOLATE_OVERLOAD
+  bool called = callback->Call(isolate, context, context->Global(), 2, argv)
+    .ToLocal(&result);
+#else
+  bool called = callback->Call(context, context->Global(), 2, argv)
+    .ToLocal(&result);
+#endif
+  // the callback threw: its exception fails the instantiation
+  if (!called) return MaybeLocal<Module>();
+  if (result->IsNumber()) {
+    int identity = result->Int32Value(context).FromMaybe(0);
+    std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));
+    // find, not operator[]: an unknown identity must not add an empty entry
+    auto found = module_map->find(identity);
+    if (found != module_map->end()) return found->second.Get(isolate);
+  }
+  isolate->ThrowException(ImportError(isolate, specifier,
+    "the module instantiate callback did not return the identity of a "
+    "loaded module (lo.loadModule)"));
+  return MaybeLocal<Module>();
+}
+
+// V8's callback for import(). It calls on_load(specifier, resource_name) and
+// returns its promise. A callback that throws gives a rejected import()
+// instead of a crash, and a non-promise result resolves the import.
 MaybeLocal<Promise> OnDynamicImport(Local<Context> context,
   Local<Data> host_defined_options, Local<Value> resource_name,
   Local<String> specifier,Local<FixedArray> import_assertions) {
-//  uint64_t start64 = (uint64_t)Local<Integer>::Cast(args[0])->Value();
-//  printf("OnModuleInstantiate, assertions: %i\n", import_assertions->Length());
-  Local<Promise::Resolver> resolver =
-      Promise::Resolver::New(context).ToLocalChecked();
-  MaybeLocal<Promise> promise(resolver->GetPromise());
-  Local<Function> callback = 
-    context->GetEmbedderData(1).As<Function>();
+  Isolate* isolate = Isolate::GetCurrent();
+  Local<Promise::Resolver> resolver;
+  if (!Promise::Resolver::New(context).ToLocal(&resolver)) {
+    return MaybeLocal<Promise>();
+  }
+  Local<Function> callback = ModuleCallback(context, 1);
+  if (callback.IsEmpty()) {
+    resolver->Reject(context, ImportError(isolate, specifier,
+      "no module callbacks are set (lo.setModuleCallbacks)")).Check();
+    return resolver->GetPromise();
+  }
   Local<Value> argv[2] = { specifier, resource_name };
-  MaybeLocal<Value> result = callback->Call(context, 
-    context->Global(), 2, argv);
-  return Local<Promise>::Cast(result.ToLocalChecked());
+  Local<Value> result;
+  TryCatch try_catch(isolate);
+  if (!callback->Call(context, context->Global(), 2, argv).ToLocal(&result)) {
+    if (try_catch.HasTerminated() || !try_catch.HasCaught()) {
+      try_catch.ReThrow();
+      return MaybeLocal<Promise>();
+    }
+    resolver->Reject(context, try_catch.Exception()).Check();
+    return resolver->GetPromise();
+  }
+  if (result->IsPromise()) return result.As<Promise>();
+  resolver->Resolve(context, result).Check();
+  return resolver->GetPromise();
 }
 
 /*
@@ -1234,10 +1292,22 @@ static void ModuleNamespace(const FunctionCallbackInfo<Value> &args) {
 void lo::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
   Isolate* isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
-  int identity = Local<Integer>::Cast(args[0])->Value();
+  if (!args[0]->IsNumber()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8Literal(
+      isolate, "evaluateModule: expected a module identity (lo.loadModule)")));
+    return;
+  }
+  int identity = args[0]->Int32Value(context).FromMaybe(0);
 
   std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));
-  Local<Module> module = (*module_map)[identity].Get(isolate);
+  // find, not operator[]: an unknown identity must not add an empty entry
+  auto found = module_map->find(identity);
+  if (found == module_map->end()) {
+    isolate->ThrowException(Exception::Error(String::NewFromUtf8Literal(
+      isolate, "evaluateModule: no loaded module has this identity")));
+    return;
+  }
+  Local<Module> module = found->second.Get(isolate);
   Module::Status status = module->GetStatus();
   // only reachable from the module's own synchronous evaluation (e.g. it
   // imports itself); V8 CHECK-fails on Evaluate() in this state
@@ -1247,10 +1317,25 @@ void lo::EvaluateModule(const FunctionCallbackInfo<Value> &args) {
     return;
   }
   if (status == Module::kUninstantiated) {
-    Maybe<bool> result = module->InstantiateModule(context,
-      lo::OnModuleInstantiate);
-    if (result.IsNothing()) {
-      printf("\nCan't instantiate module.\n");
+    // a failed instantiation leaves an exception pending (an import that
+    // didn't resolve, from lo::OnModuleInstantiate, or V8's own, e.g. a
+    // missing export): rethrow it to the caller
+    bool instantiated;
+    bool caught;
+    {
+      TryCatch try_catch(isolate);
+      instantiated = module->InstantiateModule(context,
+        lo::OnModuleInstantiate).FromMaybe(false);
+      caught = try_catch.HasCaught();
+      if (!instantiated && caught && !try_catch.HasTerminated()) {
+        try_catch.ReThrow();
+      }
+    }
+    if (!instantiated) {
+      if (!caught) {
+        isolate->ThrowException(Exception::Error(String::NewFromUtf8Literal(
+          isolate, "evaluateModule: the module could not be instantiated")));
+      }
       return;
     }
   }

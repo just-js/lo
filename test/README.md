@@ -36,6 +36,20 @@ this will test the lib/timer.js is working as expected
 lo test/timer.js
 ```
 
+## module-callbacks.js
+
+this checks that module loading failures are catchable errors, not crashes:
+the instantiate callback returning nothing or throwing, V8's own
+instantiation errors, bad identities passed to `lo.evaluateModule`, an
+`import()` loader that throws or returns a plain value, and the relative
+import chain in `test/modules/relative/`. it also checks that the instantiate
+callback gets the importing module's identity as its second argument. run it
+from the repo root (it is part of `make check`)
+
+```shell
+lo test/module-callbacks.js
+```
+
 ## build.js
 
 this will test building core modules and runtimes is working as expected
