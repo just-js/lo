@@ -1304,6 +1304,7 @@ void lo::UnloadModule(const FunctionCallbackInfo<Value> &args) {
   (*module_map).erase(identity);
 }
 
+/*
 void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
@@ -1383,11 +1384,10 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
   if (args.Length() == 2) {
     v8::ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
     v8::ScriptCompiler::CachedData* cache = v8::ScriptCompiler::CreateCodeCache(module->GetUnboundModuleScript());
-/*
-    std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
-        (void*)cache->data, cache->length, v8::BackingStore::EmptyDeleter, nullptr);
-    Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
-*/
+//    std::unique_ptr<BackingStore> backing = ArrayBuffer::NewBackingStore(
+//        (void*)cache->data, cache->length, v8::BackingStore::EmptyDeleter, nullptr);
+//    Local<ArrayBuffer> ab = ArrayBuffer::New(isolate, std::move(backing));
+
     Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
     tpl->SetInternalFieldCount(2);
     Local<Object> d = tpl->NewInstance(context).ToLocalChecked();
@@ -1402,6 +1402,84 @@ void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
     data->Set(context, String::NewFromUtf8(isolate, "cache")
       .ToLocalChecked(), d).Check();
   }
+  Local<Array> requests = Array::New(isolate);
+  Local<FixedArray> module_requests = module->GetModuleRequests();
+  int length = module_requests->Length();
+  for (int i = 0; i < length; ++i) {
+#if LO_V8_FIXEDARRAY_GET_NO_CONTEXT
+    Local<ModuleRequest> module_request =
+        module_requests->Get(i).As<ModuleRequest>();
+#else
+    Local<ModuleRequest> module_request =
+        module_requests->Get(context, i).As<ModuleRequest>();
+#endif
+    requests->Set(context, i, module_request->GetSpecifier()).Check();
+  }
+  std::map<int, Global<Module>> *module_map = static_cast<std::map<int, Global<Module>>*>(isolate->GetData(0));
+
+  (*module_map).insert(std::make_pair(module->GetIdentityHash(), 
+    Global<Module>(isolate, module)));
+  data->Set(context, String::NewFromUtf8(isolate, "requests")
+    .ToLocalChecked(), requests).Check();
+  data->Set(context, String::NewFromUtf8(isolate, "isSourceTextModule")
+    .ToLocalChecked(), Boolean::New(isolate, module->IsSourceTextModule()))
+    .Check();
+  data->Set(context, String::NewFromUtf8(isolate, "status")
+    .ToLocalChecked(), Integer::New(isolate, module->GetStatus()))
+    .Check();
+  data->Set(context, String::NewFromUtf8(isolate, "specifier")
+    .ToLocalChecked(), path).Check();
+  data->Set(context, String::NewFromUtf8(isolate, "src")
+    .ToLocalChecked(), source).Check();
+  data->Set(context, String::NewFromUtf8(isolate, "identity")
+    .ToLocalChecked(), Integer::New(isolate, module->GetIdentityHash()))
+    .Check();
+  data->Set(context, String::NewFromUtf8(isolate, "scriptId")
+    .ToLocalChecked(), Integer::New(isolate, module->ScriptId())).Check();
+  args.GetReturnValue().Set(data);
+}
+*/
+
+void lo::LoadModule(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<Context> context = isolate->GetCurrentContext();
+  if (!args[0]->IsString()) {
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8Literal(
+      isolate, "loadModule: source must be a string (got null/non-string - "
+        "the module was likely not found/embedded)")));
+    return;
+  }
+  TryCatch try_catch(isolate);
+  Local<String> source = args[0].As<String>();
+  Local<String> path = args[1].As<String>();
+  Local<PrimitiveArray> opts =
+      PrimitiveArray::New(isolate, lo::HostDefinedOptions::kLength);
+  opts->Set(isolate, lo::HostDefinedOptions::kType,
+                            Number::New(isolate, lo::ScriptType::kModule));
+  ScriptOrigin baseorigin(
+    path, // resource name
+    0, // line offset
+    0,  // column offset
+    false, // is shared cross-origin
+    -1,  // script id
+    Local<Value>(), // source map url
+    false, // is opaque
+    false, // is wasm
+    true, // is module
+    opts);
+  Local<Module> module;
+  ScriptCompiler::Source base(source, baseorigin);
+  bool ok = ScriptCompiler::CompileModule(isolate, &base).ToLocal(&module);
+  if (!ok) {
+    String::Utf8Value path(args.GetIsolate(), args[1]);
+    fprintf(stderr, "Error compiling %s\n", *path);
+    if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
+      try_catch.ReThrow();
+    }
+    return;
+  }
+  Local<ObjectTemplate> tpl = ObjectTemplate::New(isolate);
+  Local<Object> data = tpl->NewInstance(context).ToLocalChecked();
   Local<Array> requests = Array::New(isolate);
   Local<FixedArray> module_requests = module->GetModuleRequests();
   int length = module_requests->Length();

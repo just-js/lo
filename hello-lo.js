@@ -513,7 +513,7 @@ function start_server (addr, port) {
   const fd = socket(AF_INET, SOCK_STREAM, 0)
   assert(fd > 2)
 //  assert(fcntl(fd, F_SETFL, O_NONBLOCK) === 0)
-  assert(!setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, net.on.ptr, 32))
+  assert(!setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, net.on.ptr, 4))
   assert(bind(fd, sockaddr_in(addr, port).ptr, SOCKADDR_LEN) === 0)
   assert(listen(fd, SOMAXCONN) === 0)
   assert(loop.add(fd, on_socket_connect, Loop.Readable, on_accept_error) === 0)

@@ -29,7 +29,7 @@ const opt = '-fno-pic -O3 -ffunction-sections -fdata-sections -march=native -mtu
 
 const v8_opts = {
   v8_cleanup: 0, v8_threads: 1, on_exit: 0,
-  v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init'
+  v8flags: '--stack-trace-limit=10 --use-strict --turbo-fast-api-calls --no-freeze-flags-after-init --no-maglev --invocation-count-for-turbofan=3000 --min-semi-space-size=16'
 }
 // musl linked dynamically, like runtime/lo.config.js: the fully static
 // link (-static, as in echo-server.config.js) crashed under Http11Probe
