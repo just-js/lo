@@ -228,6 +228,10 @@ async function load_source (specifier, resource) {
       src = decoder.decode(read_file(`${LO_HOME}/${specifier}`))
     }
   }
+  if (specifier.substring(specifier.length - 3) === '.ts') {
+    if (!strip) strip = (await import('lib/strip.js')).strip
+    src = strip(src).code
+  }
   return src
 }
 
@@ -236,6 +240,7 @@ async function load_source (specifier, resource) {
 // is dropped from moduleLoads, so a later import retries a failed fetch;
 // a module whose code threw stays errored in V8 and rejects again.
 const moduleLoads = new Map()
+let strip
 
 function on_module_load (specifier, resource) {
   if (!specifier) return

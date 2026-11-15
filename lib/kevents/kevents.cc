@@ -231,11 +231,41 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 #endif
   SET_MODULE(isolate, target, "kevents", module);
 }
+
+// Every native callback this binding registers, both plain (SET_METHOD)
+// and fast-call (SET_FAST_METHOD/SET_FAST_PROP), needed in
+// SnapshotCreator's external_references before this binding's own
+// Init() can safely run inside lo::CreateSnapshot's isolate - PLAN.md
+// task 66. Null-terminated, same convention as lo.cc's own
+// lo_external_references[].
+static const intptr_t kevents_external_references[] = {
+  (intptr_t)&kqueueSlow,
+  (intptr_t)&pFkqueue, (intptr_t)pFkqueue.GetAddress(),
+    (intptr_t)pFkqueue.GetTypeInfo(),
+  (intptr_t)&keventSlow,
+  (intptr_t)&pFkevent, (intptr_t)pFkevent.GetAddress(),
+    (intptr_t)pFkevent.GetTypeInfo(),
+  (intptr_t)&kevent64Slow,
+  (intptr_t)&pFkevent64, (intptr_t)pFkevent64.GetAddress(),
+    (intptr_t)pFkevent64.GetTypeInfo(),
+
+#ifdef __linux__
+
+#endif
+#ifdef __MACH__
+
+#endif
+  0
+};
+
 } // namespace kevents
 } // namespace lo
 
 extern "C"  {
   DLL_PUBLIC void* _register_kevents() {
     return (void*)lo::kevents::Init;
+  }
+  DLL_PUBLIC const intptr_t* _external_references_kevents() {
+    return lo::kevents::kevents_external_references;
   }
 }

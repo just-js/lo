@@ -257,6 +257,7 @@ static const intptr_t lo_external_references[] = {
   (intptr_t)&lo::SharedMemoryUsage,
   (intptr_t)&EnvironSlow,
   (intptr_t)&lo::RunScript,
+  (intptr_t)&lo::RunInNewContext,
   (intptr_t)&lo::RegisterCallback,
   // fast-call sites: CFunction object, GetAddress(), GetTypeInfo() each
   (intptr_t)&pFhrtime, (intptr_t)pFhrtime.GetAddress(),
@@ -1094,17 +1095,18 @@ int lo::CreateSnapshot(const char* main_src, unsigned int main_len,
     fprintf(stderr, "lo: snapshot creation failed\n");
     return 1;
   }
-  int fd = open(out_path, O_WRONLY | O_CREAT | O_TRUNC,
-    S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-  if (fd < 0) {
+  // stdio rather than open()/write(): the same code on Windows, where the
+  // POSIX calls and S_I* modes don't exist. "wb" stops CRLF translation.
+  FILE* out = fopen(out_path, "wb");
+  if (out == nullptr) {
     fprintf(stderr, "lo: unable to open %s for writing\n", out_path);
     delete[] blob.data;
     return 1;
   }
-  long written = write(fd, blob.data, blob.raw_size);
-  close(fd);
+  size_t written = fwrite(blob.data, 1, blob.raw_size, out);
+  int close_err = fclose(out);
   delete[] blob.data;
-  if (written < blob.raw_size) {
+  if (written < (size_t)blob.raw_size || close_err != 0) {
     fprintf(stderr, "lo: short write to %s\n", out_path);
     return 1;
   }
@@ -2047,6 +2049,43 @@ void lo::RunScript(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(result.ToLocalChecked());
 }
 
+// experiment (PLAN.md task 155): runInNewContext(source, name) compiles and
+// runs a classic script in a brand new context of the calling isolate, then
+// drops the context. In an isolate created from a custom snapshot,
+// Context::New gives a fresh copy of the snapshot's default context. Only a
+// primitive result is returned: an object would keep the context alive.
+void lo::RunInNewContext(const FunctionCallbackInfo<Value> &args) {
+  Isolate *isolate = args.GetIsolate();
+  Local<Value> rv;
+  {
+    v8::EscapableHandleScope scope(isolate);
+    Local<Context> context = Context::New(isolate);
+    if (context.IsEmpty()) return;
+    Context::Scope context_scope(context);
+    TryCatch try_catch(isolate);
+    Local<String> source = args[0].As<String>();
+    Local<String> path = args[1].As<String>();
+    ScriptOrigin origin(path);
+    ScriptCompiler::Source script_source(source, origin);
+    Local<Script> script;
+    if (!ScriptCompiler::Compile(context, &script_source).ToLocal(&script)) {
+      if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
+        try_catch.ReThrow();
+      }
+      return;
+    }
+    MaybeLocal<Value> result = script->Run(context);
+    if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
+      try_catch.ReThrow();
+      return;
+    }
+    if (!result.ToLocal(&rv) || !rv->IsPrimitive()) rv = v8::Undefined(isolate);
+    rv = scope.Escape(rv);
+  }
+  isolate->ContextDisposedNotification(v8::ContextDependants::kNoDependants);
+  args.GetReturnValue().Set(rv);
+}
+
 void lo::Os(const FunctionCallbackInfo<Value> &args) {
 #ifdef __MACH__
   args.GetReturnValue().Set(String::NewFromOneByte(args.GetIsolate(), 
@@ -2254,6 +2293,7 @@ void lo::Init(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "environ", EnvironSlow);
 
   SET_METHOD(isolate, target, "runScript", RunScript);
+  SET_METHOD(isolate, target, "runInNewContext", RunInNewContext);
   SET_METHOD(isolate, target, "registerCallback", RegisterCallback);
 }
 
@@ -2300,6 +2340,7 @@ void lo::InitSnapshot(Isolate* isolate, Local<ObjectTemplate> target) {
   SET_METHOD(isolate, target, "shm_usage", SharedMemoryUsage);
   SET_METHOD(isolate, target, "environ", EnvironSlow);
   SET_METHOD(isolate, target, "runScript", RunScript);
+  SET_METHOD(isolate, target, "runInNewContext", RunInNewContext);
   SET_METHOD(isolate, target, "registerCallback", RegisterCallback);
   SET_METHOD(isolate, target, "hrtime", HRTime);
   SET_METHOD(isolate, target, "utf8EncodeIntoAtOffset", Utf8EncodeIntoAtOffset);

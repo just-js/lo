@@ -231,6 +231,7 @@ void Utf8Decode(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Utf8Encode(const v8::FunctionCallbackInfo<v8::Value> &args);
 void latin1Encode(const v8::FunctionCallbackInfo<v8::Value> &args);
 void RunScript(const v8::FunctionCallbackInfo<v8::Value> &args);
+void RunInNewContext(const v8::FunctionCallbackInfo<v8::Value> &args);
 void SetFlags(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Arch(const v8::FunctionCallbackInfo<v8::Value> &args);
 void Os(const v8::FunctionCallbackInfo<v8::Value> &args);

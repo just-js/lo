@@ -162,11 +162,41 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 #endif
   SET_MODULE(isolate, target, "mach", module);
 }
+
+// Every native callback this binding registers, both plain (SET_METHOD)
+// and fast-call (SET_FAST_METHOD/SET_FAST_PROP), needed in
+// SnapshotCreator's external_references before this binding's own
+// Init() can safely run inside lo::CreateSnapshot's isolate - PLAN.md
+// task 66. Null-terminated, same convention as lo.cc's own
+// lo_external_references[].
+static const intptr_t mach_external_references[] = {
+  (intptr_t)&task_infoSlow,
+  (intptr_t)&pFtask_info, (intptr_t)pFtask_info.GetAddress(),
+    (intptr_t)pFtask_info.GetTypeInfo(),
+  (intptr_t)&task_selfSlow,
+  (intptr_t)&pFtask_self, (intptr_t)pFtask_self.GetAddress(),
+    (intptr_t)pFtask_self.GetTypeInfo(),
+  (intptr_t)&get_executable_pathSlow,
+  (intptr_t)&pFget_executable_path, (intptr_t)pFget_executable_path.GetAddress(),
+    (intptr_t)pFget_executable_path.GetTypeInfo(),
+
+#ifdef __linux__
+
+#endif
+#ifdef __MACH__
+
+#endif
+  0
+};
+
 } // namespace mach
 } // namespace lo
 
 extern "C"  {
   DLL_PUBLIC void* _register_mach() {
     return (void*)lo::mach::Init;
+  }
+  DLL_PUBLIC const intptr_t* _external_references_mach() {
+    return lo::mach::mach_external_references;
   }
 }
