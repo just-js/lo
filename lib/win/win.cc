@@ -312,11 +312,42 @@ void Init(Isolate *isolate, Local<ObjectTemplate> target) {
   SET_MODULE(isolate, target, "win", module);
 }
 
+// Every native callback Init() registers, for SnapshotCreator's
+// external_references (PLAN.md task 66). Hand-written, unlike the
+// lib/gen.js bindings: add any new SET_METHOD/SET_FAST_METHOD here.
+// Null-terminated, same convention as lo.cc's lo_external_references[].
+static const intptr_t win_external_references[] = {
+  (intptr_t)&pFtest, (intptr_t)pFtest.GetAddress(),
+    (intptr_t)pFtest.GetTypeInfo(),
+  (intptr_t)&testSlow,
+  (intptr_t)&getLastError,
+  (intptr_t)&createFile,
+  (intptr_t)&getFileSize,
+  (intptr_t)&getFileType,
+  (intptr_t)&copyFile,
+  (intptr_t)&readFile,
+  (intptr_t)&writeFile,
+  (intptr_t)&closeHandle,
+  (intptr_t)&loadLibrary,
+  (intptr_t)&getProcAddress,
+  (intptr_t)&freeLibrary,
+  (intptr_t)&getEnv,
+  (intptr_t)&setEnv,
+  (intptr_t)&isatty,
+  (intptr_t)&getProcessMemoryInfo,
+  (intptr_t)&getCurrentProcess,
+  (intptr_t)&createProcess,
+  0
+};
+
 } // namespace win
 } // namespace lo
 
 extern "C"  {
   void* _register_win() {
     return (void*)lo::win::Init;
+  }
+  const intptr_t* _external_references_win() {
+    return lo::win::win_external_references;
   }
 }

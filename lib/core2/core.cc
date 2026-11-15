@@ -1195,12 +1195,135 @@ void Init(Isolate* isolate, Local<ObjectTemplate> target) {
 #endif
   SET_MODULE(isolate, target, "core", module);
 }
+
+// Every native callback this binding registers, both plain (SET_METHOD)
+// and fast-call (SET_FAST_METHOD/SET_FAST_PROP), needed in
+// SnapshotCreator's external_references before this binding's own
+// Init() can safely run inside lo::CreateSnapshot's isolate - PLAN.md
+// task 66. Null-terminated, same convention as lo.cc's own
+// lo_external_references[].
+static const intptr_t core_external_references[] = {
+  (intptr_t)&callocSlow,
+  (intptr_t)&pFcalloc, (intptr_t)pFcalloc.GetAddress(),
+    (intptr_t)pFcalloc.GetTypeInfo(),
+  (intptr_t)&readSlow,
+  (intptr_t)&pFread, (intptr_t)pFread.GetAddress(),
+    (intptr_t)pFread.GetTypeInfo(),
+  (intptr_t)&writeSlow,
+  (intptr_t)&pFwrite, (intptr_t)pFwrite.GetAddress(),
+    (intptr_t)pFwrite.GetTypeInfo(),
+  (intptr_t)&write_stringSlow,
+  (intptr_t)&pFwrite_string, (intptr_t)pFwrite_string.GetAddress(),
+    (intptr_t)pFwrite_string.GetTypeInfo(),
+  (intptr_t)&putcharSlow,
+  (intptr_t)&pFputchar, (intptr_t)pFputchar.GetAddress(),
+    (intptr_t)pFputchar.GetTypeInfo(),
+  (intptr_t)&getcharSlow,
+  (intptr_t)&pFgetchar, (intptr_t)pFgetchar.GetAddress(),
+    (intptr_t)pFgetchar.GetTypeInfo(),
+  (intptr_t)&closeSlow,
+  (intptr_t)&pFclose, (intptr_t)pFclose.GetAddress(),
+    (intptr_t)pFclose.GetTypeInfo(),
+  (intptr_t)&lseekSlow,
+  (intptr_t)&pFlseek, (intptr_t)pFlseek.GetAddress(),
+    (intptr_t)pFlseek.GetTypeInfo(),
+  (intptr_t)&fstatSlow,
+  (intptr_t)&pFfstat, (intptr_t)pFfstat.GetAddress(),
+    (intptr_t)pFfstat.GetTypeInfo(),
+  (intptr_t)&renameSlow,
+  (intptr_t)&pFrename, (intptr_t)pFrename.GetAddress(),
+    (intptr_t)pFrename.GetTypeInfo(),
+  (intptr_t)&openSlow,
+  (intptr_t)&pFopen, (intptr_t)pFopen.GetAddress(),
+    (intptr_t)pFopen.GetTypeInfo(),
+  (intptr_t)&unlinkSlow,
+  (intptr_t)&pFunlink, (intptr_t)pFunlink.GetAddress(),
+    (intptr_t)pFunlink.GetTypeInfo(),
+  (intptr_t)&memcpySlow,
+  (intptr_t)&pFmemcpy, (intptr_t)pFmemcpy.GetAddress(),
+    (intptr_t)pFmemcpy.GetTypeInfo(),
+  (intptr_t)&memsetSlow,
+  (intptr_t)&pFmemset, (intptr_t)pFmemset.GetAddress(),
+    (intptr_t)pFmemset.GetTypeInfo(),
+  (intptr_t)&memmoveSlow,
+  (intptr_t)&pFmemmove, (intptr_t)pFmemmove.GetAddress(),
+    (intptr_t)pFmemmove.GetTypeInfo(),
+  (intptr_t)&mallocSlow,
+  (intptr_t)&pFmalloc, (intptr_t)pFmalloc.GetAddress(),
+    (intptr_t)pFmalloc.GetTypeInfo(),
+  (intptr_t)&reallocSlow,
+  (intptr_t)&pFrealloc, (intptr_t)pFrealloc.GetAddress(),
+    (intptr_t)pFrealloc.GetTypeInfo(),
+  (intptr_t)&aligned_allocSlow,
+  (intptr_t)&pFaligned_alloc, (intptr_t)pFaligned_alloc.GetAddress(),
+    (intptr_t)pFaligned_alloc.GetTypeInfo(),
+  (intptr_t)&freeSlow,
+  (intptr_t)&pFfree, (intptr_t)pFfree.GetAddress(),
+    (intptr_t)pFfree.GetTypeInfo(),
+  (intptr_t)&bind_fastcallSlow,
+  (intptr_t)&bind_slowcallSlow,
+  (intptr_t)&fastcallSlow,
+  (intptr_t)&pFfastcall, (intptr_t)pFfastcall.GetAddress(),
+    (intptr_t)pFfastcall.GetTypeInfo(),
+  (intptr_t)&getenvSlow,
+  (intptr_t)&pFgetenv, (intptr_t)pFgetenv.GetAddress(),
+    (intptr_t)pFgetenv.GetTypeInfo(),
+  (intptr_t)&dupSlow,
+  (intptr_t)&pFdup, (intptr_t)pFdup.GetAddress(),
+    (intptr_t)pFdup.GetTypeInfo(),
+  (intptr_t)&dup2Slow,
+  (intptr_t)&pFdup2, (intptr_t)pFdup2.GetAddress(),
+    (intptr_t)pFdup2.GetTypeInfo(),
+  (intptr_t)&getcwdSlow,
+  (intptr_t)&pFgetcwd, (intptr_t)pFgetcwd.GetAddress(),
+    (intptr_t)pFgetcwd.GetTypeInfo(),
+  (intptr_t)&getpidSlow,
+  (intptr_t)&pFgetpid, (intptr_t)pFgetpid.GetAddress(),
+    (intptr_t)pFgetpid.GetTypeInfo(),
+  (intptr_t)&execveSlow,
+  (intptr_t)&pFexecve, (intptr_t)pFexecve.GetAddress(),
+    (intptr_t)pFexecve.GetTypeInfo(),
+  (intptr_t)&execvpSlow,
+  (intptr_t)&pFexecvp, (intptr_t)pFexecvp.GetAddress(),
+    (intptr_t)pFexecvp.GetTypeInfo(),
+  (intptr_t)&exitSlow,
+  (intptr_t)&pFexit, (intptr_t)pFexit.GetAddress(),
+    (intptr_t)pFexit.GetTypeInfo(),
+  (intptr_t)&isolate_createSlow,
+  (intptr_t)&isolate_context_createSlow,
+  (intptr_t)&isolate_context_destroySlow,
+  (intptr_t)&pFisolate_context_destroy, (intptr_t)pFisolate_context_destroy.GetAddress(),
+    (intptr_t)pFisolate_context_destroy.GetTypeInfo(),
+  (intptr_t)&isolate_context_sizeSlow,
+  (intptr_t)&pFisolate_context_size, (intptr_t)pFisolate_context_size.GetAddress(),
+    (intptr_t)pFisolate_context_size.GetTypeInfo(),
+  (intptr_t)&isolate_startSlow,
+  (intptr_t)&callbackSlow,
+  (intptr_t)&strnlenSlow,
+  (intptr_t)&pFstrnlen, (intptr_t)pFstrnlen.GetAddress(),
+    (intptr_t)pFstrnlen.GetTypeInfo(),
+  (intptr_t)&isattySlow,
+  (intptr_t)&pFisatty, (intptr_t)pFisatty.GetAddress(),
+    (intptr_t)pFisatty.GetTypeInfo(),
+
+#ifdef __linux__
+
+#endif
+#ifdef __MACH__
+
+#endif
+  0
+};
+
 } // namespace core
 } // namespace lo
 
 extern "C"  {
   DLL_PUBLIC void* _register_core() {
     return (void*)lo::core::Init;
+  }
+  DLL_PUBLIC const intptr_t* _external_references_core() {
+    return lo::core::core_external_references;
   }
 }
 

@@ -3,14 +3,29 @@
 // This file has been automatically generated, please do not change unless you disable auto-generation in the Makefile
 
 #include "lo.h"
+#include <vector>
 
 #include "builtins.h"
 static unsigned int main_js_len = _binary_main_js_len;
 
 extern "C" {
   extern void* _register_core();
+  extern const intptr_t* _external_references_core();
   extern void* _register_win();
+  extern const intptr_t* _external_references_win();
   extern void* _register_inflate();
+  extern const intptr_t* _external_references_inflate();
+}
+
+extern "C" const intptr_t* combined_binding_external_references() {
+  static std::vector<intptr_t> combined;
+  if (combined.empty()) {
+    for (const intptr_t* p = _external_references_core(); *p; p++) combined.push_back(*p);
+    for (const intptr_t* p = _external_references_win(); *p; p++) combined.push_back(*p);
+    for (const intptr_t* p = _external_references_inflate(); *p; p++) combined.push_back(*p);
+    combined.push_back(0);
+  }
+  return combined.data();
 }
 
 void register_builtins() {
@@ -33,4 +48,5 @@ static unsigned int _v8flags_from_commandline = 1;
 static unsigned int _v8_threads = 2;
 static unsigned int _v8_cleanup = 0;
 static unsigned int _on_exit = 0;
+static const v8::StartupData* lo_snapshot_data = nullptr;
 
