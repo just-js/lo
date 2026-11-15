@@ -104,13 +104,16 @@ RUN retry() { for i in 1 2 3; do "$@" && return 0; echo "retry $i/3 failed: $*" 
 # tool gaps like this are plausible as `make check-build`'s wider sweep
 # gets further, same pattern as everywhere else in this bring-up), and
 # everything the existing job's own "check" step installs for
-# `make check-build` (./lo test/build.js's wider binding sweep)
+# `make check-build` (./lo test/build.js's wider binding sweep), and
+# libzstd-dev (the sema binding's -lzstd in runtime/lo's link: "ld.lld:
+# error: unable to find library -lzstd" without it)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl unzip \
     libcurl4-openssl-dev \
     libssl-dev \
     libffi-dev liblz4-dev libseccomp-dev libsqlite3-dev libtcc-dev zlib1g-dev tcc \
+    libzstd-dev \
     python3 python3-pip \
     && rm -rf /var/lib/apt/lists/*
 

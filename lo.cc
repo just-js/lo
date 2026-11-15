@@ -1095,9 +1095,15 @@ int lo::CreateSnapshot(const char* main_src, unsigned int main_len,
     fprintf(stderr, "lo: snapshot creation failed\n");
     return 1;
   }
-  // stdio rather than open()/write(): the same code on Windows, where the
-  // POSIX calls and S_I* modes don't exist. "wb" stops CRLF translation.
-  FILE* out = fopen(out_path, "wb");
+  // stdio rather than open()/write(): the POSIX calls and S_I* modes don't
+  // exist on Windows. "wb" stops CRLF translation. The Microsoft CRT marks
+  // fopen deprecated (an error under -Werror), so Windows uses fopen_s.
+  FILE* out = nullptr;
+#ifdef _WIN32
+  if (fopen_s(&out, out_path, "wb") != 0) out = nullptr;
+#else
+  out = fopen(out_path, "wb");
+#endif
   if (out == nullptr) {
     fprintf(stderr, "lo: unable to open %s for writing\n", out_path);
     delete[] blob.data;
